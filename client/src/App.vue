@@ -1,19 +1,19 @@
 <template>
   <div id="app">
-    <Header msg="Welcome to Your Vue.js App"/>
-    <movie-list/>
+    <nav-bar/>
+    <router-view/>
   </div>
 </template>
 
 <script>
-import Header from './components/Header'
-import MovieList from './components/MovieList'
+import NavBar from './components/NavBar.vue'
+// import MainPage from './pages/MainPage.vue'
 
 export default {
   name: 'App',
   components: {
-    Header,
-    MovieList
+    NavBar,
+    // MainPage
   }
 }
 </script>

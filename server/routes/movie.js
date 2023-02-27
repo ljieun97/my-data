@@ -12,7 +12,7 @@ router.get('/', async(req, res) => {
     const id_key = "Iv6QgLvJvepxu6heSY5H"
     const secret_key = "ZT4gCL0phm"
     const base_url = "https://openapi.naver.com/v1/search/movie.json"
-    const title = "미나리"
+    const title = req.query.searchMovie
 
     const result = await axios.get(
         base_url,

@@ -6,12 +6,13 @@
             label="영화 제목"
             placeholder="영화 제목"
             solo
+            @keyup="getMovies()"
         ></v-text-field>
-        <button @click="getMovieList()">검색</button>
+        <button @click="getMovies()">검색</button>
     </div>
 
     <h3>검색 리스트</h3>
-    <ul v-for="item in searchMovieList" :key="item">
+    <ul v-for="(item, index) in searchMovies" :key="index">
         <p>
             {{replaceTitle(item.title)}}({{item.pubDate}})
             <button @click="onclickMovie(item)">선택</button>
@@ -20,7 +21,7 @@
     <h3>마이 리스트</h3>
     <v-data-table
         :headers="myMovieHeaders"
-        :items="myMovieList"
+        :items="myMovies"
         hide-default-footer
         class="elevation-1"
     ></v-data-table>
@@ -29,7 +30,8 @@
 </template>
 
 <script>
-import MovieService from '@/services/movie.service'
+import AllMovieService from '@/services/all-movie-service'
+import MyMovieService from '@/services/my-movie-service'
 export default {
     name: 'MovieList',
     props: {
@@ -37,36 +39,54 @@ export default {
     data() {
         return {
             searchMovie: "",
-            searchMovieList: [],
+            searchMovies: [],
             myMovieHeaders: [
-                { text: 'Title', value: 'title'},
-                { text: 'PubDate', value: 'pubDate' },
-                { text: 'Director', value: 'director' },
-                { text: 'Actor', value: 'actor' },
-                { text: 'UserRating', value: 'userRating' },
+                { text: 'Date', value: 'myInfo.date' },
+                { text: 'Title', value: 'movieInfo.title'},
+                // { text: 'Director', value: 'movieInfo.director' },
+                // { text: 'Actor', value: 'movieInfo.actor' },
+                // { text: 'UserRating', value: 'movieInfo.userRating' },
+                { text: 'MyRating', value: 'myInfo.myRating' },
             ],
-            myMovieList: [],
+            myMovies: [],
         }
     },
     mounted() {
+        this.getMyMovies()
     },
     methods: {
-        async getMovieList() {
-            await MovieService.getMovieList(this.searchMovie).then((res) => {
-                this.searchMovieList = res.data
-            })
+        getMovies() {
+            AllMovieService.getMovies(this.searchMovie)
+                .then((res) => {
+                    this.searchMovies = res.data
+                })
+        },
+        getMyMovies() {
+            let userId = 1 //나중에 변경
+            MyMovieService.getMyMovies(userId)
+                .then((res) => {
+                    this.myMovies = res.data
+                })
         },
         replaceTitle(value) {
             return value.replace(/(<b>|<\/b>)/g, '')
         },
         onclickMovie(value) {
-            this.myMovieList.push({
-                title: this.replaceTitle(value.title),
-                pubDate: value.pubDate,
+            let userId = 1 //나중에 변경
+            let movieInfo = {
+                title: this.replaceTitle(value.title)+'('+value.pubDate+')',
                 director: value.director,
                 actor: value.actor,
                 userRating: value.userRating,
-            })
+            }
+            let myInfo = {
+                date: '2020-11-11',
+                myRating: 10,
+            }
+            MyMovieService.createMyMovie(userId, movieInfo, myInfo)
+                .then(() => {
+                    this.getMyMovies()
+                })
         }
     },
 }

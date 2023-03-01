@@ -1,24 +1,34 @@
-const express = require('express');
-const app = express();
+const express = require('express')
+const cors = require('cors')
+const mongo = require('./utils/mongodb')
+const app = express()
 
 // port
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 3000)
 
 // Access-Control-Allow-Origin
-var cors = require('cors');
 app.use(cors())
 
+// request body parser
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: false }))
+
 // routes
-const indexRouter = require('./routes/index');
-const userRouter = require('./routes/user');
-const movieRouter = require('./routes/movie');
-app.use('/', indexRouter);
-app.use('/user', userRouter);
-app.use('/movie', movieRouter);
+const indexRouter = require('./routes/index')
+const userRouter = require('./routes/user')
+const allmovieRouter = require('./routes/all-movie-route')
+const myMovieRouter = require('./routes/my-movie-route')
+app.use('/', indexRouter)
+app.use('/user', userRouter)
+app.use('/all-movie', allmovieRouter)
+app.use('/my-movie', myMovieRouter)
 
+// connect to MongoDB
+mongo()
 
+// 포트 기동
 app.listen(app.get('port'), () => {
-    console.log(app.get('port'), '포트 기동');
- });
+    console.log(app.get('port'), '포트 기동')
+})
 
-module.exports = app;
+module.exports = app

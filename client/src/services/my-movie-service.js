@@ -19,15 +19,14 @@ class MyMovieService {
             })
         })
     }
-    createMyMovie(userId, movieInfo, myInfo) {
+    createMyMovie(userId, myMovie) {
         return new Promise(function (resolve, reject) {
             axios({
                 method: 'POST',
                 url: API_URL + '/my-movie',
                 data: {
                     userId: userId,
-                    movieInfo: movieInfo,
-                    myInfo: myInfo,
+                    myMovie: myMovie,
                 },
             })
             .then(function (res) {

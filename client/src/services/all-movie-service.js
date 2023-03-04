@@ -12,7 +12,6 @@ class MovieService {
             },
         })
         .then(function (res) {
-            console.log(res)
             resolve(res)
         })
         .catch(function (err) {

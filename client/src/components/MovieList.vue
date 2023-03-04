@@ -1,5 +1,5 @@
 <template>
-  <div class="hello" style="padding: 120px">
+  <v-app class="hello" style="padding: 120px">
     <div style="display: flex">
         <v-text-field
             v-model="searchMovie"
@@ -8,46 +8,92 @@
             solo
             @keyup="getMovies()"
         ></v-text-field>
-        <button @click="getMovies()">검색</button>
+    </div>
+    <div style="height: 400px; overflow-y: scroll">
+        <table>
+            <tr v-for="item, index in searchMovies" :key="index">
+                <td width="15%">
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-text-field
+                                :value="item.date ? item.date : today"
+                                v-bind="attrs"
+                                v-on="on"
+                                prepend-icon="mdi-calendar"
+                            ></v-text-field>
+                        </template>
+                        <v-date-picker
+                            v-model="item.date"
+                        ></v-date-picker>
+                    </v-menu>
+                </td>
+                <td width="60%">{{replaceTitle(item.title)}}({{item.pubDate}})</td>
+                <td width="15%">
+                    <star-rating 
+                        v-model="item.rating" 
+                        :increment="0.5" 
+                        :star-size="25"
+                        :show-rating="false"
+                    >
+                    </star-rating>
+                </td>
+                <td width="10%"><button @click="onclickCreate(item)">선택</button></td>
+            </tr>
+        </table>
     </div>
 
-    <h3>검색 리스트</h3>
-    <ul v-for="(item, index) in searchMovies" :key="index">
-        <p>
-            {{replaceTitle(item.title)}}({{item.pubDate}})
-            <button @click="onclickMovie(item)">선택</button>
-        </p>
-    </ul>
     <h3>마이 리스트</h3>
-    <v-data-table
-        :headers="myMovieHeaders"
-        :items="myMovies"
-        hide-default-footer
-        class="elevation-1"
-    ></v-data-table>
-    
-  </div>
+    <div>
+        <table>
+            <tr v-for="(item, index) in myMovies" :key="index">
+                <td width="15%">                    
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-text-field
+                                :value="item.date ? item.date : today"
+                                v-bind="attrs"
+                                v-on="on"
+                                prepend-icon="mdi-calendar"
+                            ></v-text-field>
+                        </template>
+                        <v-date-picker
+                            v-model="item.date"
+                        ></v-date-picker>
+                    </v-menu>
+                </td>
+                <td width="60%">{{item.title}}</td>
+                <td width="15%">
+                    <star-rating 
+                        v-model="item.rating" 
+                        :increment="0.5" 
+                        :star-size="25"
+                        :show-rating="false"
+                    >
+                    </star-rating>
+                </td>
+                <td width="10%"><button @click="onclickDelete(item)">삭제</button></td>
+            </tr>
+        </table>
+    </div>
+  </v-app>
 </template>
 
 <script>
 import AllMovieService from '@/services/all-movie-service'
 import MyMovieService from '@/services/my-movie-service'
+import StarRating from 'vue-star-rating'
 export default {
     name: 'MovieList',
     props: {
     },
+    components: {
+        StarRating,
+    },
     data() {
         return {
+            today: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
             searchMovie: "",
             searchMovies: [],
-            myMovieHeaders: [
-                { text: 'Date', value: 'myInfo.date' },
-                { text: 'Title', value: 'movieInfo.title'},
-                // { text: 'Director', value: 'movieInfo.director' },
-                // { text: 'Actor', value: 'movieInfo.actor' },
-                // { text: 'UserRating', value: 'movieInfo.userRating' },
-                { text: 'MyRating', value: 'myInfo.myRating' },
-            ],
             myMovies: [],
         }
     },
@@ -59,6 +105,7 @@ export default {
             AllMovieService.getMovies(this.searchMovie)
                 .then((res) => {
                     this.searchMovies = res.data
+                    console.log(res.data)
                 })
         },
         getMyMovies() {
@@ -71,19 +118,15 @@ export default {
         replaceTitle(value) {
             return value.replace(/(<b>|<\/b>)/g, '')
         },
-        onclickMovie(value) {
+        onclickCreate(value) {
             let userId = 1 //나중에 변경
-            let movieInfo = {
+            let myMovie = {
                 title: this.replaceTitle(value.title)+'('+value.pubDate+')',
-                director: value.director,
-                actor: value.actor,
-                userRating: value.userRating,
+                date: value.date,
+                rating: value.rating,
             }
-            let myInfo = {
-                date: '2020-11-11',
-                myRating: 10,
-            }
-            MyMovieService.createMyMovie(userId, movieInfo, myInfo)
+            console.log(value.date)
+            MyMovieService.createMyMovie(userId, myMovie)
                 .then(() => {
                     this.getMyMovies()
                 })

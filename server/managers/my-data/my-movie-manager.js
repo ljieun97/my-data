@@ -6,8 +6,9 @@ function _getMyMovies(data) {
       .find(
         { "userId": data.userId },
         {
-          movieInfo: true, 
-          myInfo: true,
+          title: true, 
+          date: true,
+          rating: true,
         }
       )
       .exec()
@@ -20,14 +21,15 @@ function _getMyMovies(data) {
   })
 }
 
-
 function _createMyMovie(data) {
+  let myMovie = data.myMovie
   return new Promise((resolve, reject) => {
     MyMovieModel
-      .updateOne({ "movieInfo.title": data.movieInfo.title }, {
-        userId : data.userId,
-        movieInfo : data.movieInfo,
-        myInfo : data.myInfo,
+      .updateOne({ "title": myMovie.title }, {
+        userId: data.userId,
+        title: myMovie.title,
+        date: myMovie.date, 
+        rating: myMovie.rating,
       }, { upsert: true })
       .then(result => {
         console.log(result)

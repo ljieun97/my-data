@@ -38,6 +38,46 @@ class MyMovieService {
             })
         })
     }
+
+    updateMyMovie(movieId, value, type) {
+        return new Promise(function (resolve, reject) {
+            axios({
+                method: 'PUT',
+                url: API_URL + '/my-movie',
+                data: {
+                    movieId: movieId,
+                    value: value,
+                    type: type,
+                },
+            })
+            .then(function (res) {
+                console.log(res)
+                resolve(res)
+            })
+            .catch(function (err) {
+                reject(err)
+            })
+        })
+    }
+
+    deleteMyMovie(movieId) {
+        return new Promise(function (resolve, reject) {
+            axios({
+                method: 'DELETE',
+                url: API_URL + '/my-movie',
+                data: {
+                    movieId: movieId,
+                },
+            })
+            .then(function (res) {
+                console.log(res)
+                resolve(res)
+            })
+            .catch(function (err) {
+                reject(err)
+            })
+        })
+    }
 }
 
 export default new MyMovieService()

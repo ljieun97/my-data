@@ -1,8 +1,8 @@
 <template>
-  <div id="app">
+  <v-app id="app">
     <nav-bar/>
     <router-view/>
-  </div>
+  </v-app>
 </template>
 
 <script>
@@ -25,6 +25,5 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>

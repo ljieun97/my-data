@@ -1,11 +1,11 @@
 <template>
-  <div class="hello">
+  <div>
     <movie-list/>
   </div>
 </template>
 
 <script>
-import MovieList from '@/components/MovieList.vue'
+import MovieList from '@/components/movie/MovieList.vue'
 export default {
     name: 'MoviePage',
     components: { MovieList },

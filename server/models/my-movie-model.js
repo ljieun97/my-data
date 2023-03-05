@@ -6,7 +6,7 @@ const Schema = new mongoose.Schema({
   title: { type: mongoose.SchemaTypes.String, required: true },
   date: { type : mongoose.SchemaTypes.String, required: true },
   desc: { type: mongoose.SchemaTypes.String, default: null },
-  rating: { type : mongoose.SchemaTypes.Number, default: null },
+  rating: { type : mongoose.SchemaTypes.Number, default: 0 },
 })
 Schema.plugin(mongoose_timestamp)
 

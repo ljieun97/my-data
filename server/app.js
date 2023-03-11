@@ -16,11 +16,11 @@ app.use(express.urlencoded({ extended: false }))
 // routes
 const indexRouter = require('./routes/index')
 const userRouter = require('./routes/user')
-const allmovieRouter = require('./routes/all-movie-route')
+const apiDataRouter = require('./routes/api-data-route')
 const myMovieRouter = require('./routes/my-movie-route')
 app.use('/', indexRouter)
 app.use('/user', userRouter)
-app.use('/all-movie', allmovieRouter)
+app.use('/api-data', apiDataRouter)
 app.use('/my-movie', myMovieRouter)
 
 // connect to MongoDB

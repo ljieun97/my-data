@@ -43,39 +43,21 @@ function _createMyMovie(data) {
 }
 
 function _updateMyMovie(data) {
+  let myMovie = data.myMovie
   return new Promise((resolve, reject) => {
-    switch (data.type) {
-      case '날짜':
-        MyMovieModel
-          .findOneAndUpdate(
-            { _id: data.movieId }, 
-            { $set: { date: data.value } }
-          )
-          .then(result => {
-            console.log(result)
-            resolve(result)
-          })
-          .catch(err => {
-            console.log(err)
-            reject(err)
-          })
-        break
-      case '평점':
-        MyMovieModel
-          .findOneAndUpdate(
-            { _id: data.movieId }, 
-            { $set: { rating: data.value } }
-          ).exec()
-          .then(result => {
-            console.log(result)
-            resolve(result)
-          })
-          .catch(err => {
-            console.log(err)
-            reject(err)
-          })
-        break
-    }
+    MyMovieModel
+      .findOneAndUpdate(
+        { _id: data.movieId }, 
+        { $set: { date: myMovie.date, rating: myMovie.rating } }
+      )
+      .then(result => {
+        console.log(result)
+        resolve(result)
+      })
+      .catch(err => {
+        console.log(err)
+        reject(err)
+      })
   })
 }
 

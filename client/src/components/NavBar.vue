@@ -1,6 +1,5 @@
 <template>
-  <div class="hello">
-    <h2>My Data</h2>
+    <!-- <h2>My Data</h2>
     <ul>
         <li>
             <router-link id='nav_item' :to="{name: 'MainPage'}">
@@ -17,7 +16,13 @@
             웹툰
             </router-link>
         </li>
-     </ul>
+     </ul> -->
+
+  <div class="title-bar">
+    <div class="title-bar-text">My Data</div>
+    <div class="title-bar-controls">
+      <button aria-label="Close"></button>
+    </div>
   </div>
 </template>
 
@@ -32,18 +37,5 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
+
 </style>

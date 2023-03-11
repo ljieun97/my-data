@@ -1,19 +1,28 @@
 <template>
-  <div class="hello" style="padding: 0 120px">
+  <div class="hello" style="padding: 0 20px">
     <div style="display: flex">
-        <v-text-field
+        <input 
             v-model="searchMovie"
-            label="영화 제목"
+            type="text" 
             placeholder="영화 제목"
-            solo
             @keyup="getMovies()"
-        ></v-text-field>
+            style="width: 100%"
+        />
     </div>
     <div style="max-height: 400px; overflow-y: scroll">
         <movie-table :isCreate="1" :list="searchMovies" @onClickEvent="onClickCreate"/>
     </div>
 
     <h3>마이 리스트</h3>
+
+    <table width="100%" style="text-align: center">
+        <tr >
+            <td width="10%">날짜</td>
+            <td width="65%">제목</td>
+            <td width="15%">별점</td>
+            <td></td>
+        </tr>
+    </table>
     <div>
         <movie-table :isCreate="0" :list="myMovies" @onClickEvent="onClickDelete"/>
     </div>

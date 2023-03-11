@@ -39,15 +39,14 @@ class MyMovieService {
         })
     }
 
-    updateMyMovie(movieId, value, type) {
+    updateMyMovie(movieId, myMovie) {
         return new Promise(function (resolve, reject) {
             axios({
                 method: 'PUT',
                 url: API_URL + '/my-movie',
                 data: {
                     movieId: movieId,
-                    value: value,
-                    type: type,
+                    myMovie: myMovie,
                 },
             })
             .then(function (res) {

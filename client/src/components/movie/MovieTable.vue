@@ -1,30 +1,22 @@
 <template>
-    <table>
+    <table style="text-align: center">
         <tr v-for="(item, index) in list" :key="index">
-            <td width="15%">                    
-                <v-menu offset-y>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-text-field
-                            :value="item.date ? item.date : today"
-                            v-bind="attrs"
-                            v-on="on"
-                            prepend-icon="mdi-calendar"
-                        ></v-text-field>
-                    </template>
-                    <v-date-picker
-                        v-model="item.date"
-                        @click:date="onClickMyMovie(item._id, item.date, '날짜')"
-                    ></v-date-picker>
-                </v-menu>
+            <td width="10%">                    
+                <input 
+                    type="date"
+                    v-model="item.date"
+                    @change="onClickMyMovie(item._id, item.date, item.rating)"
+                    style="width: 100%;"
+                >
             </td>
-            <td width="60%">{{replaceTitle(item)}}</td>
+            <td width="65%">{{replaceTitle(item)}}</td>
             <td width="15%">
                 <star-rating 
                     v-model="item.rating" 
                     :increment="0.5" 
                     :star-size="25"
                     :show-rating="false"
-                    @rating-selected="onClickMyMovie(item._id, item.rating, '평점')"
+                    @rating-selected="onClickMyMovie(item._id, item.date, item.rating)"
                 >
                 </star-rating>
             </td>
@@ -56,9 +48,13 @@ export default {
     mounted() {
     },
     methods: {
-        onClickMyMovie(id, value, type) {
+        onClickMyMovie(id, date, rating) {
             if (!this.isCreate) {
-                MyMovieService.updateMyMovie(id, value, type)
+                let myMovie = {
+                    date: date,
+                    rating: rating,
+                }
+                MyMovieService.updateMyMovie(id, myMovie)
                     .then(() => {
                         console.log("수정완료")
                     })

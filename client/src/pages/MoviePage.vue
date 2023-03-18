@@ -1,17 +1,28 @@
 <template>
   <div style="width: 100%; ">
-    <movie-list/>
+    <my-movies/>
+    <movie-list @getMymovies="getMymovies"/>
   </div>
 </template>
 
 <script>
 import MovieList from '@/components/movie/MovieList.vue'
+import MyMovies from '../components/movie/MyMovies.vue'
 export default {
     name: 'MoviePage',
-    components: { MovieList },
+    components: { 
+      MovieList,
+      MyMovies 
+    },
     props: {
 
-    }
+    },
+    methods: {
+      getMymovies() {
+        
+        alert("//my movies의 getMymovies 호출")
+      }
+    },
 }
 </script>
 

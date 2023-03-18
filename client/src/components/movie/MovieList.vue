@@ -1,70 +1,70 @@
 <template>
-  <div class="hello" style="padding: 0 20px">
-    <div style="display: flex">
-        <input 
-            v-model="searchMovie"
-            type="text" 
-            placeholder="영화 제목"
-            @keyup="getMovies()"
-            style="width: 100%"
-        />
+    <div class="hello" style="padding: 0 20px">
+        <div style="display: flex">
+            <input 
+                type="text" 
+                placeholder="영화 제목"
+                @input="getMovies"
+                style="width: 100%"
+            />
+        </div>
+        <div style="max-height: 400px; overflow-y: scroll">
+            <table style="text-align: center; width: 100%">
+                <tr v-for="(item, index) in searchMovies" :key="index">
+                    <td width="10%">                    
+                        <input 
+                            type="date"
+                            v-model="item.date"
+                            style="width: 100%;"
+                        >
+                    </td>
+                    <td width="65%">
+                        {{replaceTitle(item.title)}}
+                        <img :src="item.image">
+                    </td>
+                    <td width="15%" >
+                        <star-rating 
+                            v-model="item.rating" 
+                            :increment="0.5" 
+                            :star-size="25"
+                            :show-rating="false"
+                            style="margin: 0 auto;"
+                        >
+                        </star-rating>
+                    </td>
+                    <td width="10%">
+                        <button @click="onClickCreate(item)">등록</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
-    <div style="max-height: 400px; overflow-y: scroll">
-        <movie-table :isCreate="1" :list="searchMovies" @onClickEvent="onClickCreate"/>
-    </div>
-
-    <h3>마이 리스트</h3>
-
-    <table width="100%" style="text-align: center">
-        <tr >
-            <td width="10%">날짜</td>
-            <td width="65%">제목</td>
-            <td width="15%">별점</td>
-            <td></td>
-        </tr>
-    </table>
-    <div>
-        <movie-table :isCreate="0" :list="myMovies" @onClickEvent="onClickDelete"/>
-    </div>
-  </div>
 </template>
 
 <script>
-import MovieTable from './MovieTable.vue'
 import AllMovieService from '@/services/all-movie-service'
 import MyMovieService from '@/services/my-movie-service'
+import StarRating from 'vue-star-rating'
 
 export default {
     name: 'MovieList',
     props: {
     },
     components: {
-        MovieTable,
+        StarRating,
     },
     data() {
         return {
             today: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
-            searchMovie: "",
             searchMovies: [],
-            myMovies: [],
         }
     },
-    mounted() {
-        this.getMyMovies()
-    },
     methods: {
-        getMovies() {
-            AllMovieService.getMovies(this.searchMovie)
+        getMovies(e) {
+            AllMovieService.getMovies(e.target.value)
                 .then((res) => {
                     this.searchMovies = res.data
                     console.log(res.data)
-                })
-        },
-        getMyMovies() {
-            let userId = 1 //나중에 변경
-            MyMovieService.getMyMovies(userId)
-                .then((res) => {
-                    this.myMovies = res.data
                 })
         },
         replaceTitle(value) {
@@ -80,26 +80,16 @@ export default {
             MyMovieService.createMyMovie(userId, myMovie)
                 .then(() => {
                     console.log("등록완료")
-                    this.getMyMovies()
+                    //mymovies의 목록 업데이트
+                    this.$emit('getMymovies')
                 })
         },
-        onClickDelete(value) {
-            console.log(value)
-            MyMovieService.deleteMyMovie(value)
-                .then(() => {
-                    console.log("삭제완료")
-                    this.getMyMovies()
-                })
-        }
     },
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
 ul {
   list-style-type: none;
   padding: 0;

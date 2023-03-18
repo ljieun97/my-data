@@ -17,6 +17,7 @@
             </router-link>
         </li>
      </ul> -->
+     <!-- 이거 트리뷰로 옮기기 누르면 보라색글씨도 적용하고 -->
 
   <div class="title-bar">
     <div class="title-bar-text">My Data</div>

@@ -1,5 +1,5 @@
 <template>
-    <table style="text-align: center">
+    <table style="text-align: center; width: 100%">
         <tr v-for="(item, index) in list" :key="index">
             <td width="10%">                    
                 <input 
@@ -9,14 +9,18 @@
                     style="width: 100%;"
                 >
             </td>
-            <td width="65%">{{replaceTitle(item)}}</td>
-            <td width="15%">
+            <td width="65%">
+                {{replaceTitle(item)}}
+                <img :src="item.image">
+            </td>
+            <td width="15%" >
                 <star-rating 
                     v-model="item.rating" 
                     :increment="0.5" 
                     :star-size="25"
                     :show-rating="false"
                     @rating-selected="onClickMyMovie(item._id, item.date, item.rating)"
+                    style="margin: 0 auto;"
                 >
                 </star-rating>
             </td>

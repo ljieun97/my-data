@@ -10,7 +10,7 @@ function _getMyMovies(data) {
           date: true,
           rating: true,
         }
-      )
+      ).sort({"date": -1})
       .exec()
       .then(result => {
         resolve(result);

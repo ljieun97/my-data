@@ -36,6 +36,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   background: #2f4f4f;
+  overflow: hidden;
 }
 .task-bar {
     position: fixed;

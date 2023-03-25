@@ -6,7 +6,8 @@ function _getMyMovies(data) {
       .find(
         { "userId": data.userId },
         {
-          title: true, 
+          title: true,
+          image: true, 
           date: true,
           rating: true,
         }
@@ -28,6 +29,7 @@ function _createMyMovie(data) {
       .updateOne({ "title": myMovie.title }, {
         userId: data.userId,
         title: myMovie.title,
+        image: myMovie.image,
         date: myMovie.date, 
         rating: myMovie.rating,
       }, { upsert: true })

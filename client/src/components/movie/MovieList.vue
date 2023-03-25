@@ -74,13 +74,13 @@ export default {
             let userId = 1 //나중에 변경
             let myMovie = {
                 title: this.replaceTitle(value.title)+'('+value.pubDate+')',
+                image: value.image,
                 date: value.date ? value.date : this.today,
                 rating: value.rating,
             }
             MyMovieService.createMyMovie(userId, myMovie)
                 .then(() => {
                     console.log("등록완료")
-                    //mymovies의 목록 업데이트
                     this.$emit('getMymovies')
                 })
         },

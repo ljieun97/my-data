@@ -1,18 +1,18 @@
 <template>
   <div style="width: 100%; ">
-    <my-movies :isChangeMymovies="isChangeMymovies"/>
+    <my-movie-list :isChangeMymovies="isChangeMymovies"/>
     <movie-list @getMymovies="getMymovies"/>
   </div>
 </template>
 
 <script>
 import MovieList from '@/components/movie/MovieList.vue'
-import MyMovies from '../components/movie/MyMovies.vue'
+import MyMovieList from '../components/movie/MyMovieList.vue'
 export default {
     name: 'MoviePage',
     components: { 
       MovieList,
-      MyMovies 
+      MyMovieList 
     },
     props: {
 

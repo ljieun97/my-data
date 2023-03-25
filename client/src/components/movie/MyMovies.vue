@@ -54,6 +54,7 @@ import StarRating from 'vue-star-rating'
 export default {
     name: 'MovieList',
     props: {
+        isChangeMymovies: {},
     },
     components: {
         StarRating,
@@ -68,12 +69,18 @@ export default {
     mounted() {
         this.getMyMovies()
     },
+    watch: {
+        isChangeMymovies() {
+            this.getMyMovies()
+            console.log(this.isChangeMymovies)
+        }
+    },
     methods: {
         getMyMovies() {
             let userId = 1 //나중에 변경
             MyMovieService.getMyMovies(userId)
                 .then((res) => {
-                    this.myMovies = res.data
+                    this.myMovies = res
                 })
         },
         onClickDelete(value) {
@@ -93,6 +100,7 @@ export default {
                 MyMovieService.updateMyMovie(id, myMovie)
                     .then(() => {
                         console.log("수정완료")
+                        this.getMyMovies()
                     })
             }
         },

@@ -12,7 +12,7 @@ class MyMovieService {
                 }
             })
             .then(function (res) {
-                resolve(res);
+                resolve(res.data);
             })
             .catch(function (err) {
                 reject(err);

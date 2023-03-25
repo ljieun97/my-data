@@ -1,6 +1,6 @@
 <template>
   <div style="width: 100%; ">
-    <my-movies/>
+    <my-movies :isChangeMymovies="isChangeMymovies"/>
     <movie-list @getMymovies="getMymovies"/>
   </div>
 </template>
@@ -17,10 +17,14 @@ export default {
     props: {
 
     },
+    data() {
+      return {
+        isChangeMymovies: false
+      }
+    },
     methods: {
       getMymovies() {
-        
-        alert("//my movies의 getMymovies 호출")
+        this.isChangeMymovies = !this.isChangeMymovies 
       }
     },
 }

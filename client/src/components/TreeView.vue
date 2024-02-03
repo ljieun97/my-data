@@ -1,7 +1,8 @@
 <template>
     <fieldset>
-        <li>Table of Contents</li>
-        <li>What is web development?</li>
+        <li>Intro</li>
+        <li><router-link to="/movie">Movie</router-link></li>
+        <li><router-link to="/webtoon">Webtoon</router-link></li>
         <li>
             CSS
             <ul>

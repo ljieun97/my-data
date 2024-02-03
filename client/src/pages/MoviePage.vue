@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%; ">
+  <div>
     <my-movie-list :isChangeMymovies="isChangeMymovies"/>
     <movie-list @getMymovies="getMymovies"/>
   </div>

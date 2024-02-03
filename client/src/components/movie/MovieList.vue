@@ -19,8 +19,8 @@
                         >
                     </td>
                     <td width="65%">
-                        {{replaceTitle(item.title)}}
-                        <img :src="item.image">
+                        {{item.title+'('+item.release_date.substr(0, 4)+')'}} <br/>
+                        <img v-if="item.poster_path" width="120" :src='`https://www.themoviedb.org/t/p/w1280/${item.poster_path}`'/>
                     </td>
                     <td width="15%" >
                         <star-rating 
@@ -42,7 +42,7 @@
 </template>
 
 <script>
-import AllMovieService from '@/services/all-movie-service'
+import ApiDateService from '@/services/api-data-service'
 import MyMovieService from '@/services/my-movie-service'
 import StarRating from 'vue-star-rating'
 
@@ -61,20 +61,16 @@ export default {
     },
     methods: {
         getMovies(e) {
-            AllMovieService.getMovies(e.target.value)
+            ApiDateService.getMovies(e.target.value)
                 .then((res) => {
                     this.searchMovies = res.data
-                    console.log(res.data)
                 })
-        },
-        replaceTitle(value) {
-            return value.replace(/(<b>|<\/b>|&amp;)/g, '')
         },
         onClickCreate(value) {
             let userId = 1 //나중에 변경
             let myMovie = {
-                title: this.replaceTitle(value.title)+'('+value.pubDate+')',
-                image: value.image,
+                title: value.title+'('+value.release_date.substr(0, 4)+')',
+                image: `https://www.themoviedb.org/t/p/w1280/${value.poster_path}`,
                 date: value.date ? value.date : this.today,
                 rating: value.rating,
             }

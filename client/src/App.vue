@@ -1,10 +1,10 @@
 <template>
   <v-app id="app">
     <div class="window" style="height: 100%; margin: 100px; background: #c0c0c0;">
-      <nav-bar style="height: 3%;"/>
-      <div style="display: flex; height: 97%;  padding: 10px;">
-        <tree-view/>
-        <router-view/>
+      <top-bar style="height: 3%;"/>
+      <div style="display: flex; height: 97%; padding: 10px;">
+        <tree-view style="width: 20%"/>
+        <router-view style="width: 80%"/>
       </div>
     </div>
     <task-bar class='task-bar'/>
@@ -12,18 +12,16 @@
 </template>
 
 <script>
-import NavBar from './components/NavBar.vue'
+import TopBar from './components/TopBar.vue'
 import TaskBar from './components/TaskBar.vue'
 import TreeView from './components/TreeView.vue'
-// import MainPage from './pages/MainPage.vue'
 
 export default {
   name: 'App',
   components: {
-    NavBar,
+    TopBar,
     TaskBar,
     TreeView,
-    // MainPage
   }
 }
 </script>

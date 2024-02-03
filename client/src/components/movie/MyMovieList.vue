@@ -1,7 +1,7 @@
 <template>
-    <div class="hello" style="padding: 0 20px">
+    <div style="padding: 0 20px">
         <div style="display: flex">
-            <h4>마이 리스트</h4>
+            <h4>내영화 리스트</h4>
             <button @click="viewType = true">목록형</button>
             <button @click="viewType = false">앨범형</button>
         </div>
@@ -59,7 +59,7 @@ import MyMovieService from '@/services/my-movie-service'
 import StarRating from 'vue-star-rating'
 
 export default {
-    name: 'MovieList',
+    name: 'MyMovieList',
     props: {
         isChangeMymovies: {},
     },

@@ -1,14 +1,12 @@
 <template>
   <div class="hello">
-    <header-view msg="안녕하세요"/>
   </div>
 </template>
 
 <script>
-import HeaderView from '../components/HeaderView.vue'
 export default {
     name: 'MainPage',
-    components: { HeaderView },
+    components: {  },
     props: {
     }
 }

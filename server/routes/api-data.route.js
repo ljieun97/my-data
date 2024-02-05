@@ -1,13 +1,17 @@
+const config = require('../config.json')
+
 const express = require('express')
 const router = express.Router()
 const axios = require('axios')
+
+const TM_ACCESSTOKEN = config.tmdb.accessToken
 
 //movie api
 //naver 2023.03.31 서비스 종료
 //kmdb 이미지 없음
 //tmdb 띄어쓰기 검색 안됨
+
 router.get('/movies', async(req, res) => {
-    const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4ZjkwNjhiYjlhYzEwM2UxZmVmODZiYmMzMmU0MjdjZiIsInN1YiI6IjYzZmIwYTQwMzQ0YThlMDBlNmNlMDk2OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.GyhHdVATnofwAdYZ0-yV1uX30FqrTU_QGBJH3mcQNqQ"
     const apiUrl = "https://api.themoviedb.org/3/search/movie"
     const {keword} = req.query
 
@@ -17,7 +21,7 @@ router.get('/movies', async(req, res) => {
             language: 'ko'
         },
         headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            "Authorization": `Bearer ${TM_ACCESSTOKEN}`,
         }
     })
     .then(result => {
@@ -55,8 +59,8 @@ router.get('/webtoons', async(req, res) => {
 
 // 네이버 movie
 // router.get('/movies', async(req, res) => {
-//     const id_key = "Iv6QgLvJvepxu6heSY5H"
-//     const secret_key = "ZT4gCL0phm"
+//     const id_key = ""
+//     const secret_key = ""
 //     const api_url = "https://openapi.naver.com/v1/search/movie.json"
 //     const title = req.query.searchMovie
 

@@ -1,4 +1,4 @@
-const MyMovieModel = require("../../models/my-movie-model")
+const MyMovieModel = require("../../models/my-movie.model")
 
 function _getMyMovies(data) {
   return new Promise((resolve, reject) => {

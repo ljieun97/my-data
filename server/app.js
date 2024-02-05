@@ -4,7 +4,7 @@ const mongo = require('./utils/mongodb')
 const app = express()
 
 // port
-app.set('port', process.env.PORT || 3000)
+app.set('port', process.env.PORT || 3001)
 
 // Access-Control-Allow-Origin
 app.use(cors())

@@ -4,7 +4,7 @@ const express = require('express')
 const router = express.Router()
 const axios = require('axios')
 
-const TM_ACCESSTOKEN = config.tmdb.accessToken
+const TM_ACCESSTOKEN = config.tmdb.access_token
 
 //movie api
 //naver 2023.03.31 서비스 종료

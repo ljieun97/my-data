@@ -1,6 +1,6 @@
 const MyMovieModel = require("../../models/my-movie.model")
 
-function _getMyMovies(data) {
+function getMyMovies(data) {
   return new Promise((resolve, reject) => {
     MyMovieModel
       .find(
@@ -22,7 +22,7 @@ function _getMyMovies(data) {
   })
 }
 
-function _createMyMovie(data) {
+function createMyMovie(data) {
   let myMovie = data.myMovie
   return new Promise((resolve, reject) => {
     MyMovieModel
@@ -44,7 +44,7 @@ function _createMyMovie(data) {
   })
 }
 
-function _updateMyMovie(data) {
+function updateMyMovie(data) {
   let myMovie = data.myMovie
   return new Promise((resolve, reject) => {
     MyMovieModel
@@ -63,7 +63,7 @@ function _updateMyMovie(data) {
   })
 }
 
-function _deleteMyMovie(data) {
+function deleteMyMovie(data) {
   return new Promise((resolve, reject) => {
     MyMovieModel
       .findOneAndDelete({ _id: data.movieId })
@@ -79,8 +79,8 @@ function _deleteMyMovie(data) {
 }
 
 module.exports = {
-  getMyMovies: _getMyMovies,
-  createMyMovie: _createMyMovie,
-  updateMyMovie: _updateMyMovie,
-  deleteMyMovie: _deleteMyMovie,
+  getMyMovies,
+  createMyMovie,
+  updateMyMovie,
+  deleteMyMovie,
 }

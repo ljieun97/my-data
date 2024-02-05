@@ -42,12 +42,12 @@
 </template>
 
 <script>
-import ApiDateService from '@/services/api-data-service'
-import MyMovieService from '@/services/my-movie-service'
+import ApiDateService from '@/services/api-data.service'
+import MyMovieService from '@/services/my-movie.service'
 import StarRating from 'vue-star-rating'
 
 export default {
-    name: 'MovieList',
+    name: 'SearchMovie',
     props: {
     },
     components: {

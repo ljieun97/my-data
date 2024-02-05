@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const MyMovieManager = require('../managers/my-data/my-movie-manager')
+const MyMovieManager = require('../managers/my-data/my-movie.manager')
 
 router.post('/movies', function(req, res){
     MyMovieManager.getMyMovies(req.body)

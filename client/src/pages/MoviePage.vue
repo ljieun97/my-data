@@ -1,17 +1,17 @@
 <template>
   <div>
     <my-movie-list :isChangeMymovies="isChangeMymovies"/>
-    <movie-list @getMymovies="getMymovies"/>
+    <search-movie @getMymovies="getMymovies"/>
   </div>
 </template>
 
 <script>
-import MovieList from '@/components/movie/MovieList.vue'
+import SearchMovie from '@/components/movie/SearchMovie.vue'
 import MyMovieList from '../components/movie/MyMovieList.vue'
 export default {
     name: 'MoviePage',
     components: { 
-      MovieList,
+      SearchMovie,
       MyMovieList 
     },
     props: {

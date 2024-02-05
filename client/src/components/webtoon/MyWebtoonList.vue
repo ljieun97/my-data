@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import MyMovieService from '@/services/my-movie-service'
+import MyMovieService from '@/services/my-movie.service'
 import StarRating from 'vue-star-rating'
 
 export default {

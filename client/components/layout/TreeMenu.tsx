@@ -1,4 +1,4 @@
-export default function TreeView() {
+export default function TreeMenu() {
   return (
     <fieldset>
         <li>Intro</li>

@@ -1,4 +1,12 @@
+import MyMovie from "@/components/movie/MyMovie";
+import SearchMovie from "@/components/movie/SearchMovie";
+
 export default function Movie() {
-    return <h1>Movie</h1>
+    return (
+      <>
+        <MyMovie />
+        <SearchMovie />
+      </>
+    )
   }
   

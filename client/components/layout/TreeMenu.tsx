@@ -1,9 +1,20 @@
+"use client"
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 export default function TreeMenu() {
+	const path = usePathname()
+	console.log(path)
   return (
     <fieldset>
         <li>Intro</li>
-        <li></li>
-        <li></li>
+        <li>
+            <Link href="/">Home</Link> {path === "/" ? "!" : ""}
+        </li>
+        <li>
+            <Link href="/movie">Movie</Link> {path === "/movie" ? "!" : ""}
+        </li>
         <li>
             CSS
             <ul>

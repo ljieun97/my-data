@@ -9,25 +9,24 @@ export default function MyMovie() {
             <button>앨범형</button>
         </div>
         <div>
-          <table>
+          <table style={{width: '100%', textAlign: 'center'}}>
             <tbody>
               <tr>
                   <td width="10%"><button>날짜</button></td>
                   <td width="65%"><button>제목</button></td>
                   <td width="15%"><button>별점</button></td>
                   <td width="10%"></td>
-                  <td></td>
               </tr>
             </tbody>
           </table>
-          <table>
+          <table style={{width: '100%', textAlign: 'center'}}>
             <tbody>
               <tr>
-                <td width="10%">                 
+                <td width="10%"><input type="date" style={{width: '100%'}}></input>                 
                 </td>
-                <td width="65%">
+                <td width="65%">영화이름
                 </td>
-                <td width="15%" >
+                <td width="15%" >별점
                 </td>
                 <td width="10%">
                     <button>삭제</button>

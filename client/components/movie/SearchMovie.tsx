@@ -9,10 +9,8 @@ export default function SearchMovie() {
             style={{width: '100%'}}
         />
       </div>
-      {/* <div style={{max-height: '400px', overflow-y: 'scroll'}}> */}
       <div>
-        {/* <table style={{text-align: 'center'; width: '100%'}}> */}
-        <table>
+        <table style={{backgroundColor: '', textAlign: 'center', width: '100%'}}>
           <tbody>
             <tr>
               <td width="10%">                    

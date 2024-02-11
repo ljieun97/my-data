@@ -8,6 +8,10 @@ import type { Metadata } from "next";
 import "98.css";
 
 export const metadata: Metadata = {
+  title: {
+    template: "%s | NABIC",
+    default: "NABIC"
+  },
   description: "서비스 설명",
 };
 

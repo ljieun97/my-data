@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 
 export default function TreeMenu() {
 	const path = usePathname()
-	console.log(path)
   return (
     <fieldset>
         <li>Intro</li>

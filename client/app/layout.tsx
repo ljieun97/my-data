@@ -1,8 +1,8 @@
-import TopBar from "@/components/layout/TopBar";
-import TreeMenu from "@/components/layout/TreeMenu";
-import TaskBar from "@/components/layout/TaskBar";
-import Style from "@/app/page.module.css"
-import "./globals.css";
+import TopBar from "@/components/layout/top-bar";
+import TreeMenu from "@/components/layout/tree-menu";
+import TaskBar from "@/components/layout/task-bar";
+import styles from "@/styles/layout.module.css"
+import "@/styles/global.css";
 
 import type { Metadata } from "next";
 import "98.css";
@@ -29,7 +29,7 @@ export default function Layout({
             <div style={{ width: '20%' }}><TreeMenu /></div>
             <div style={{ width: '80%' }}>{children}</div>
           </div>
-          <div className={Style.task_bar}>
+          <div className={styles.task_bar}>
             <TaskBar />
           </div>
         </div>

@@ -1,18 +1,18 @@
 "use client"
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
-
-//이 인풋을 헤더에 넣어야할듯
 
 export default function SearchInput() {
   const router = useRouter()
-  const [isClick, setIsClick] = useState(false)
+  const path = usePathname()
   const [keyword, setKeword] = useState("")
 
   useEffect(() => {
     if (keyword) {
       router.push(`/search?keyword=${keyword}`)
+    } else if (path === "/search") {
+      router.push(`/`)
     }
   }, [keyword])
 

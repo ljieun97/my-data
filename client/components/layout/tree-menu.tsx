@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import SearchInput from "../home/search-input";
+import SearchInput from "./search-input";
+
 
 export default function TreeMenu() {
 	const path = usePathname()
@@ -11,10 +12,10 @@ export default function TreeMenu() {
 			<SearchInput />
 			<li>Intro</li>
 			<li>
-				<Link href="/">Home</Link> {path === "/" ? "!" : ""}
+				<Link href="/">Home</Link> {path === "/" ? "<-" : ""}
 			</li>
 			<li>
-				<Link href="/movie">Movie</Link> {path === "/movie" ? "!" : ""}
+				<Link href="/mypage">MyPage</Link> {path === "/mypage" ? "<-" : ""}
 			</li>
 			<li>
 				CSS

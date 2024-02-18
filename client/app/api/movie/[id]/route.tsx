@@ -1,18 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import connectMongo from "@/lib/mongo/mongodb"
+import { ObjectId } from "mongodb";
 
-const API_URL = "https://api.themoviedb.org/3/search/movie"
-const key = ""
-
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-	console.log(params.id)
-	const response = await fetch(API_URL+'?query='+params.id+'&language=ko&page=1', {
-		method: "GET",
-		headers: {
-			accept: 'application/json',
-			"Authorization": `Bearer ${key}`
-		},
-	})
-	const json = await response.json()
-	console.log(json)
-	return NextResponse.json({ json });
+const DELETE = async (req: NextRequest, { params: { id } }: { params: { id: string } }) => {
+	try {
+		const db = await connectMongo()
+		await db
+			.collection("my-movies")
+			.findOneAndDelete({ _id: new ObjectId(id) })
+		return NextResponse.json({ message: "success /movie DELETE" })
+	} catch (e) {
+		console.log(e)
+		return NextResponse.json({ error: e })
+	}
 }
+
+export { DELETE }

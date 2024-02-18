@@ -1,11 +1,10 @@
 import Link from "next/link"
 import CreateMovie from "./create-movie"
 
-const API_URL = "https://api.themoviedb.org/3/search/movie"
-// const API_KEY = process.env.API_KEY_TMDB
-const API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4ZjkwNjhiYjlhYzEwM2UxZmVmODZiYmMzMmU0MjdjZiIsInN1YiI6IjYzZmIwYTQwMzQ0YThlMDBlNmNlMDk2OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.GyhHdVATnofwAdYZ0-yV1uX30FqrTU_QGBJH3mcQNqQ"
+const API_URL = "https://api.themoviedb.org/3/search/multi"
+const API_KEY = process.env.API_KEY_TMDB
 
-async function getMovies(id: string) {
+const getMovies = async (id: string) => {
   const response = await fetch(API_URL + '?query=' + id + '&language=ko&page=1', {
     method: "GET",
     headers: {
@@ -17,41 +16,21 @@ async function getMovies(id: string) {
   return json.results
 }
 
-async function createMovie(movie: { title: string, image: string }) {
-  await fetch('/movie', {
-    method: "POST",
-    body: JSON.stringify(movie),
-  })
-}
-
-export default async function SearchMovie({ id }: { id: string }) {
+const SearchMovie = async ({ id }: { id: string }) => {
   const movies = await getMovies(id)
-
   return (
-    <div>
-      <table style={{ backgroundColor: '', width: '100%' }}>
-        <tbody>
-          {movies.map((movie: { id: string, title: string, image: string }) => (
-            <tr key={movie.id}>
-              <td width="10%">
-                <input
-                  type="date"
-                />
-              </td>
-              <td>
-                <Link href={`/movie/${movie.id}`}>{movie.title}</Link>
-              </td>
-              <td width="15%" >
-                {movie.id}
-              </td>
-              <td width="10%">
-                {/* <button onClick={() => createMovie(movie)}>등록</button> */}
-                <CreateMovie movie={movie}/>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div style={{ display: 'flex', flexWrap: 'wrap', height: 'calc(100% - 36px)', overflowY: 'auto' }}>
+      {movies.map((movie: { id: string, title: string, name: string, image: string, poster_path: string, media_type: string }) => (
+        <div key={movie.id} style={{ width: '25%', height: '360px', padding: '5px' }}>
+          <Link href={`/movie/${movie.id}`}>{movie.title ? movie.title : movie.name}</Link>
+          <img src={`https://www.themoviedb.org/t/p/w1280/${movie.poster_path}`} style={{ width: '100%', height: '80%' }} />
+          <input type="date" />
+          {movie.media_type}
+          <CreateMovie movie={movie} />
+        </div>
+      ))}
     </div>
   )
 }
+
+export default SearchMovie

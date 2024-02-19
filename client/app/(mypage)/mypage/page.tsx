@@ -18,7 +18,7 @@ const MyPage = async () => {
       <div>
         <table style={{ backgroundColor: '', width: '100%' }}>
           <tbody>
-            {movies.map((movie: {_id: string, title: string, date: string, rating: number, info: {id: string, image: string, media_type: string}}) => (
+            {movies?.map((movie: {_id: string, title: string, date: string, rating: number, info: {id: string, image: string, media_type: string}}) => (
               <tr key={movie._id}>
                 <td width="10%">
                   <input

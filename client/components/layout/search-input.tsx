@@ -14,7 +14,7 @@ export default function SearchInput() {
     } else if (path === "/search") {
       router.push(`/`)
     }
-  }, [keyword])
+  }, [keyword, path, router])
 
   const handleKeyword = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setKeword(e.target.value)

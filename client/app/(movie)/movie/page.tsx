@@ -1,7 +1,4 @@
-import MyMovie from "@/components/movie/my-movie";
 import SearchMovies from "@/components/movie/search-movies";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 
 const Movie = () => {
 

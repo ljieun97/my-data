@@ -1,16 +1,11 @@
-"use client"
-
-import SearchMovies from "@/components/movie/search-movies";
-import { useSearchParams } from "next/navigation";
+import SearchResult from "@/components/movie/search-result";
+import { Suspense } from "react";
 
 const Search = () => {
-  const searchParams  = useSearchParams()
-  const keyword = searchParams.get('keyword') || ""
   return (
-    <>
-      <h4>"{keyword}" 검색결과</h4>
-      <SearchMovies id={keyword} />
-    </>
+    <Suspense fallback={<h1>Loading</h1>}>
+      <SearchResult />
+    </Suspense>
   )
 }
 

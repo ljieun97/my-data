@@ -1,24 +1,19 @@
 "use client"
 
-import DeleteMovie from "@/components/movie/delete-movie"
 import Link from "next/link"
-
-const getMyMovies = async () => {
-  const response = await fetch('http://localhost:3000/api/movie', {
-    method: "GET"
-  })
-  return await response.json()
-}
+import { getMovies, deleteMovie } from "@/lib/mongo/movie"
+import { useRouter } from "next/navigation"
 
 const MyMovies = async () => {
-  const movies = await getMyMovies()
+  const router = useRouter()
+  const movies = await getMovies()
   return (
     <>
       <h4>마이페이지</h4>
       <div>
         <table style={{ backgroundColor: '', width: '100%' }}>
           <tbody>
-            {movies?.map((movie: {_id: string, title: string, date: string, rating: number, info: {id: string, image: string, media_type: string}}) => (
+            {movies.map((movie: {_id: string, title: string, date: string, rating: number, info: {id: string, image: string, media_type: string}}) => (
               <tr key={movie._id}>
                 <td width="10%">
                   <input
@@ -33,7 +28,10 @@ const MyMovies = async () => {
                 {movie.rating}
                 </td>
                 <td width="10%">
-                  <DeleteMovie id={movie._id} />
+                  <button onClick={() => {
+                      deleteMovie({id: movie._id})
+                      router.refresh()
+                    }}>삭제</button>
                 </td>
               </tr>
             ))}

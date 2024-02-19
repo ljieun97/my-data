@@ -30,7 +30,6 @@ const MyMovies = async () => {
                 <td width="10%">
                   <button onClick={() => {
                       deleteMovie({id: movie._id})
-                      router.refresh()
                     }}>삭제</button>
                 </td>
               </tr>

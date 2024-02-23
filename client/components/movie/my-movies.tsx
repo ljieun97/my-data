@@ -2,10 +2,10 @@
 
 import Link from "next/link"
 import { getMovies, deleteMovie } from "@/lib/mongo/movie"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation"
 
 const MyMovies = async () => {
-  const router = useRouter()
+  // const router = useRouter()
   const movies = await getMovies()
   return (
     <>

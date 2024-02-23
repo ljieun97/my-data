@@ -34,7 +34,7 @@ const TodaySeries = async () => {
         {movies?.map((movie: { id: string, title: string, name: string, image: string, poster_path: string, media_type: string }) => (
           <div key={movie.id} style={{ width: '25%', height: '360px', padding: '5px' }}>
             <Link href={`/movie/${movie.id}`}>{movie.title ? movie.title : movie.name}</Link>
-            <Image width={1280} height={640} alt="poster" src={`https://www.themoviedb.org/t/p/w1280/${movie.poster_path}`} style={{ width: '100%', height: '80%' }} />
+            {/* <Image width={1280} height={640} alt="poster" src={`https://www.themoviedb.org/t/p/w1280/${movie.poster_path}`} style={{ width: '100%', height: '80%' }} /> */}
             <input type="date" />
             <CreateMovie movie={movie} />
           </div>

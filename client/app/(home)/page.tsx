@@ -1,6 +1,8 @@
 
 import TodaySeries from "@/components/movie/today-series";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Home"
 }

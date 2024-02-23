@@ -1,26 +1,10 @@
-
-
-// import MyMovies from "@/components/movie/my-movies"
-// import { Suspense } from "react"
-
 export const dynamic = 'force-dynamic'
 
 import Link from "next/link"
-import { getMovies, deleteMovie } from "@/lib/mongo/movie"
-
-
-const onClickDelete = (id: string) => {
-  deleteMovie({id: id})
-}
+import { getMovies } from "@/lib/mongo/movie"
+import DeleteMovie from "@/components/movie/delete-movie"
 
 const MyPage = async () => {
-  // return (
-  //   <Suspense fallback={<h1>Loading my page...</h1>}>
-  //     <MyMovies />
-  //   </Suspense>
-    
-  // )
-
   const movies = await getMovies()
   return (
     <>
@@ -43,9 +27,7 @@ const MyPage = async () => {
                 {movie.rating}
                 </td>
                 <td width="10%">
-                  <button onClick={() => {
-                      onClickDelete(movie._id)
-                    }}>삭제</button>
+                  <DeleteMovie id={movie._id} />
                 </td>
               </tr>
             ))}

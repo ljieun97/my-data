@@ -1,4 +1,4 @@
-
+"use client"
 
 import SearchMovies from "@/components/movie/search-movies";
 import { useSearchParams } from "next/navigation";

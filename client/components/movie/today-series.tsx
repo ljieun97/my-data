@@ -3,7 +3,7 @@ import CreateMovie from "./create-movie"
 import Image from "next/image"
 
 const API_URL = "https://api.themoviedb.org/3/discover/tv"
-const API_KEY = process.env.API_KEY_TMDB
+const API_KEY = process.env.TMDB_API_KEY
 
 const getToday = () => {
   const date = new Date()

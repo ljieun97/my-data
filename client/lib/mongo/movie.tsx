@@ -1,5 +1,5 @@
-// const URL = "http://localhost:3000"
-const URL = "http://3.37.79.44:3000"
+const URL = "http://localhost:3000"
+// const URL = "http://3.37.79.44/:3000"
 
 const getMovies = async () => {
   const response = await fetch(`${URL}/api/movie`, {

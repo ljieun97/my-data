@@ -1,4 +1,6 @@
 "use client"
+// Error: Event handlers cannot be passed to Client Component props.
+{/* <button onClick={function} children=...> */}
 
 import { deleteMovie } from "@/lib/mongo/movie"
 

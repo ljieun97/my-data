@@ -18,8 +18,7 @@ const GET = async () => {
 }
 
 const POST = async (req: NextRequest) => {
-	const data = await req.json()
-	const { movie } = data
+	const { movie, rating } = await req.json()
 	let title
   if(movie.title) {
 		title = `${movie.title} (${movie.release_date.split("-")[0]})`
@@ -37,7 +36,7 @@ const POST = async (req: NextRequest) => {
 				title,
 				info: {id: movie.id, image, genre_ids: movie.genre_ids, media_type: movie.media_type},
 				date: '2019-11-25',
-				rating: 5
+				rating
 			}}, { upsert: true })
 		return NextResponse.json({ message: "success /movie POST" })
 	} catch (e) {
@@ -46,17 +45,6 @@ const POST = async (req: NextRequest) => {
 	}
 }
 
-const DELETE = async () => {
-	try {
-		const db = await connectMongo()
-		await db
-			.collection("my-movies")
-			.DeleteOne({_id: "65d1b2cf1579e236924620a2"})
-		return NextResponse.json({ message: "success /movie DELETE" })
-	} catch (e) {
-		console.log(e)
-		return NextResponse.json({ error: e })
-	}
-}
+
  
-export { GET, POST, DELETE }
+export { GET, POST }

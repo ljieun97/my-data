@@ -16,7 +16,7 @@ const CreateMovie = (movie: any) => {
       variant="flat" color="default" radius="lg" size="sm"
       onClick={() => createMovie(movie)}
     >
-      등록
+     봤당
     </Button>
   )
 }

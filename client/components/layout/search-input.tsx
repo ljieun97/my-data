@@ -30,7 +30,7 @@ export default function SearchInput() {
           input: "text-small",
           inputWrapper: "h-full font-normal text-default-500 bg-default-400/20 dark:bg-default-500/20",
         }}
-        placeholder="Type to search..."
+        placeholder="제목"
         size="sm"
         // startContent={<SearchIcon size={18} />}
         value={keyword}

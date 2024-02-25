@@ -1,8 +1,19 @@
 "use client"
 
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, getKeyValue, Link } from "@nextui-org/react";
+import React, { useState } from "react"
+import ReactStars from 'react-stars'
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Link, Tooltip } from "@nextui-org/react"
+import { deleteMovie } from "@/lib/mongo/movie"
 
-const MyMovies = async ({ movies }: { movies: any }) => {
+const MyMovies = ({ movies }: { movies: any }) => {
+  const clickDelete = (id: any) => {
+    deleteMovie(id)
+  }
+  const handleRating = (rate: number) => {
+    // update movie
+    console.log(rate)
+  }
+  const [rows, setRows] = useState(movies)
   const columns = [
     {
       key: "date",
@@ -16,8 +27,37 @@ const MyMovies = async ({ movies }: { movies: any }) => {
       key: "rating",
       label: "RATING",
     },
-  ];
-  const rows = movies
+    {
+      key: "action",
+      label: "ACTION",
+    },
+  ]
+  const getKeyValue = React.useCallback((item: any, columnKey: any) => {
+    const cellValue = item[columnKey]
+    switch (columnKey) {
+      case "rating":
+        return (
+          <ReactStars
+            value={item.rating}
+            onChange={handleRating}
+            count={5}
+            size={16}
+            color2={'#ffd700'}
+          />
+        )
+      case "action":
+        return (
+          <Tooltip color="danger" content="Delete Contents">
+            <span onClick={() => clickDelete(item._id)} className="text-lg text-danger cursor-pointer active:opacity-50">
+              삭제
+            </span>
+          </Tooltip>
+        )
+      default:
+        return cellValue
+    }
+  }, [])
+
   return (
     <>
       <Table aria-label="Example table with dynamic content">

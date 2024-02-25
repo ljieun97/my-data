@@ -8,7 +8,7 @@ const getMovies = async () => {
   return await response.json()
 }
 
-const deleteMovie = async ({id}: {id: any}) => {
+const deleteMovie = async (id: any) => {
   await fetch(`${URL}/api/movie/${id}`, {
     method: "DELETE",
     headers: {

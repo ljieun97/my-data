@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic'
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, getKeyValue, Link } from "@nextui-org/react";
 
 import { getMovies } from "@/lib/mongo/movie"
-import DeleteMovie from "@/components/movie/delete-movie"
 import MyMovies from "@/components/movie/my-movies";
 import Title from "@/components/common/title";
 

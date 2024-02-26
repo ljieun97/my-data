@@ -3,12 +3,7 @@
 import CreateMovie from "./create-movie"
 import { Card, CardFooter, Image, Button, Link } from "@nextui-org/react";
 import { useCallback, useState } from "react";
-// import ReactStars from 'react-stars'
-// import { Rating, ThinRoundedStar } from '@smastrom/react-rating'
-// import '@smastrom/react-rating/style.css'
-// import ReactStars from 'react-stars'
-// import StarRatings from 'react-star-ratings'
-import { Rating } from 'react-simple-star-rating'
+import { Rating } from 'react-custom-rating-component'
 
 const MovieCard = ({ movie }: { movie: any }) => {
   const [rating, setRating] = useState(0)
@@ -33,36 +28,14 @@ const MovieCard = ({ movie }: { movie: any }) => {
           {/* <Link href={`/movie/${movie.id}`}>{movie.title ? movie.title : movie.name}</Link> */}
           {/* <input type="date" /> */}
           <div className="flex justify-between">
-            {/* <ReactStars
-              value={rating}
+            <Rating
+              defaultValue={rating}
+              precision={0.5}
+              size='20px'
+              spacing='4px'
+              activeColor='yellow'
               onChange={handleRating}
-              count={5}
-              size={24}
-              color2={'#ffd700'}
-            /> */}
-            {/* <Rating value={rating} onChange={handleRating} itemStyles={{
-              itemShapes: ThinRoundedStar,
-              activeFillColor: '#f59e0b',
-              inactiveFillColor: '#ffedd5',
-            }} /> */}
-            {/* <ReactStars
-              count={5}
-              onChange={handleRating}
-              size={24}
-              color2={'#ffd700'} />
-             */}
-            {/* <StarRatings
-              rating={rating}
-              changeRating={handleRating}
-              numberOfStars={5}
-              starDimension="20px"
-              starSpacing="2px"
-            /> */}
-<Rating
-        onClick={handleRating} initialValue={rating} transition={true}
-
-        /* Available Props */
-      />
+            />
             <CreateMovie movie={movie} rating={rating} />
           </div>
         </div>

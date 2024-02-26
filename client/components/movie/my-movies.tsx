@@ -1,19 +1,28 @@
 "use client"
 
 import React, { useState } from "react"
-import ReactStars from 'react-stars'
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Link, Tooltip } from "@nextui-org/react"
-import { deleteMovie } from "@/lib/mongo/movie"
+import { getMovies, deleteMovie } from "@/lib/mongo/movie"
+import { Rating } from 'react-custom-rating-component'
 
-const MyMovies = ({ movies }: { movies: any }) => {
+const MyMovies = () => {
+  let { movies, isError, isLoading } = getMovies()
+ 
+console.log(getMovies().movies)
   const clickDelete = (id: any) => {
-    deleteMovie(id)
+    // deleteMovie(id)
+    // setRows(getMovies().movies)
   }
   const handleRating = (rate: number) => {
     // update movie
+   
+
     console.log(rate)
   }
-  const [rows, setRows] = useState(movies)
+
+  
+
+
   const columns = [
     {
       key: "date",
@@ -37,12 +46,13 @@ const MyMovies = ({ movies }: { movies: any }) => {
     switch (columnKey) {
       case "rating":
         return (
-          <ReactStars
-            value={item.rating}
+          <Rating
+            defaultValue={item.rating}
+            precision={0.5}
+            size='20px'
+            spacing='4px'
+            activeColor='purple'
             onChange={handleRating}
-            count={5}
-            size={16}
-            color2={'#ffd700'}
           />
         )
       case "action":
@@ -58,13 +68,15 @@ const MyMovies = ({ movies }: { movies: any }) => {
     }
   }, [])
 
+  if (!movies) return <div>Loading...</div>
+
   return (
     <>
       <Table aria-label="Example table with dynamic content">
         <TableHeader columns={columns}>
           {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
         </TableHeader>
-        <TableBody items={rows}>
+        <TableBody items={movies}>
           {(item: { _id: string, title: string, date: string, rating: number, info: { id: string, image: string, media_type: string } }) => (
             <TableRow key={item._id}>
               {(columnKey) => <TableCell>{getKeyValue(item, columnKey)}</TableCell>}

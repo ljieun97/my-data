@@ -23,7 +23,7 @@ export default function Layout({
   return (
     <html lang="en">
       <body>
-        <UiProvider children={children} />
+        <UiProvider children={children}></UiProvider>
       </body>
     </html>
   );

@@ -2,13 +2,13 @@
 
 import React, { useState } from "react"
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Link, Tooltip } from "@nextui-org/react"
-import { getMovies, deleteMovie } from "@/lib/mongo/movie"
+import { GetMovies, deleteMovie } from "@/lib/mongo/movie"
 import { Rating } from 'react-custom-rating-component'
 
 const MyMovies = () => {
-  let { movies, isError, isLoading } = getMovies()
+  let { movies, isError, isLoading } = GetMovies()
  
-console.log(getMovies().movies)
+console.log(GetMovies().movies)
   const clickDelete = (id: any) => {
     // deleteMovie(id)
     // setRows(getMovies().movies)

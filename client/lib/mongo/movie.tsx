@@ -8,7 +8,7 @@ import fetch from 'unfetch'
  
 const fetcher = (url: any) => fetch(url).then((r: any) => r.json())
 
-const getMovies = () => {
+const GetMovies = () => {
   const { data, error, isLoading } = useSWR(`/api/movie`, fetcher)
   return {
     movies: data,
@@ -26,4 +26,4 @@ const deleteMovie = async (id: any) => {
   })
 }
 
-export { getMovies, deleteMovie }
+export { GetMovies, deleteMovie }

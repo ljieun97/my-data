@@ -3,7 +3,7 @@
 
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, getKeyValue, Link } from "@nextui-org/react";
 
-import { getMovies } from "@/lib/mongo/movie"
+import { GetMovies } from "@/lib/mongo/movie"
 import MyMovies from "@/components/movie/my-movies";
 import Title from "@/components/common/title";
 

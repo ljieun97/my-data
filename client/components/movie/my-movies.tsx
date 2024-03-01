@@ -1,28 +1,23 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Link, Tooltip } from "@nextui-org/react"
-import { GetMovies, deleteMovie } from "@/lib/mongo/movie"
+import { GetMovies, DeleteMovie } from "@/lib/mongo/movie"
 import { Rating } from 'react-custom-rating-component'
 
-const MyMovies = () => {
-  let { movies, isError, isLoading } = GetMovies()
- 
-console.log(GetMovies().movies)
+export default function MyMovies() {
+  const [movies, setMovies] = useState([])
+  useEffect(() => {
+    (async () => {
+      const response = await fetch('/api/movie')
+      setMovies(await response.json())
+    })()
+  }, [movies])
+
   const clickDelete = (id: any) => {
-    // deleteMovie(id)
-    // setRows(getMovies().movies)
+    DeleteMovie(id)
   }
-  const handleRating = (rate: number) => {
-    // update movie
-   
-
-    console.log(rate)
-  }
-
-  
-
-
+ 
   const columns = [
     {
       key: "date",
@@ -51,8 +46,7 @@ console.log(GetMovies().movies)
             precision={0.5}
             size='20px'
             spacing='4px'
-            activeColor='purple'
-            onChange={handleRating}
+            activeColor='yellow'
           />
         )
       case "action":
@@ -68,8 +62,6 @@ console.log(GetMovies().movies)
     }
   }, [])
 
-  if (!movies) return <div>Loading...</div>
-
   return (
     <>
       <Table aria-label="Example table with dynamic content">
@@ -84,35 +76,6 @@ console.log(GetMovies().movies)
           )}
         </TableBody>
       </Table>
-      {/* <table style={{ backgroundColor: '', width: '100%' }}>
-          <tbody>
-            {movies?.map((movie: {_id: string, title: string, date: string, rating: number, info: {id: string, image: string, media_type: string}}) => (
-              <tr key={movie._id}>
-                <td width="10%">
-                  <input
-                    type="date"
-                    defaultValue={movie.date}
-                  />
-                </td>
-                <td>
-                  <Link href={`/movie/${movie.info.id}`}>{movie.title}</Link>
-                </td>
-                <td width="15%" >
-                {movie.rating}
-                </td>
-                <td width="10%">
-                  <DeleteMovie id={movie._id} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table> */}
     </>
   )
 }
-
-export default MyMovies
-
-
-
-

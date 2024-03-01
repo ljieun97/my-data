@@ -45,6 +45,4 @@ const POST = async (req: NextRequest) => {
 	}
 }
 
-
- 
 export { GET, POST }

@@ -1,15 +1,18 @@
 "use client"
 
-const URL = "http://localhost:3000"
-// const URL = "http://3.37.79.44/:3000"
-
 import useSWR from 'swr'
 import fetch from 'unfetch'
- 
-const fetcher = (url: any) => fetch(url).then((r: any) => r.json())
+
+const options = {
+  headers: {
+    'Content-Type': 'application/json'
+  }
+}
+const fetcher = (url: any) => fetch(url, options).then((r: any) => r.json())
 
 const GetMovies = () => {
-  const { data, error, isLoading } = useSWR(`/api/movie`, fetcher)
+  const { data, error, isLoading } = useSWR(`/api/movie`, fetcher,
+  { revalidateOnFocus: false, revalidateOnReconnect: false })
   return {
     movies: data,
     isLoading,
@@ -17,8 +20,27 @@ const GetMovies = () => {
   }
 }
 
-const deleteMovie = async (id: any) => {
-  await fetch(`${URL}/api/movie/${id}`, {
+// const GetMovies = async () => {
+//   const response = await fetch(`http://localhost:3000/api/movie`, {
+//     method: "GET"
+//   })
+//   const result = await response.json()
+//   console.log(result)
+//   return result
+// }
+
+const UpdateMovie = async (movie: any, rating: number) => {
+  await fetch('/api/movie', {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ movie, rating })
+  })
+}
+
+const DeleteMovie = async (id: any) => {
+  await fetch(`/api/movie/${id}`, {
     method: "DELETE",
     headers: {
       'Content-Type': 'application/json'
@@ -26,4 +48,4 @@ const deleteMovie = async (id: any) => {
   })
 }
 
-export { GetMovies, deleteMovie }
+export { GetMovies, UpdateMovie, DeleteMovie }

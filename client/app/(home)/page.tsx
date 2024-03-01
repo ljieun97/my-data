@@ -2,7 +2,7 @@ import Title from "@/components/common/title";
 import TodaySeries from "@/components/movie/today-series";
 
 export const metadata = {
-  title: "Home"
+  title: "홈"
 }
 
 const Home = () => {

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react"
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Link, Tooltip } from "@nextui-org/react"
-import { GetMovies, DeleteMovie } from "@/lib/mongo/movie"
 import { Rating } from 'react-custom-rating-component'
 
 export default function MyMovies() {
@@ -12,12 +11,21 @@ export default function MyMovies() {
       const response = await fetch('/api/movie')
       setMovies(await response.json())
     })()
-  }, [movies])
+  }, [])
 
   const clickDelete = (id: any) => {
-    DeleteMovie(id)
+    (async () => {
+      await fetch(`/api/movie/${id}`, {
+        method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      })
+      const response = await fetch('/api/movie')
+      setMovies(await response.json())
+    })()
   }
- 
+
   const columns = [
     {
       key: "date",

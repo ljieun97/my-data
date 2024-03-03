@@ -5,7 +5,7 @@ const GET = async () => {
 	try {
 		const db = await connectMongo()
 		const movies = await db
-			.collection("my-movies")
+			.collection("my_movies")
 			.find({})
 			.sort({ date: -1 })
 			// .limit(10)
@@ -30,7 +30,7 @@ const POST = async (req: NextRequest) => {
 	try {
 		const db = await connectMongo()
 		await db
-			.collection("my-movies")
+			.collection("my_movies")
 			.updateOne({ title }, {$set: {
 				userId: 1,
 				title,

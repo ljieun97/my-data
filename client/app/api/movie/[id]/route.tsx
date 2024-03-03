@@ -6,7 +6,7 @@ const DELETE = async (req: NextRequest, { params: { id } }: { params: { id: stri
 	try {
 		const db = await connectMongo()
 		await db
-			.collection("my-movies")
+			.collection("my_movies")
 			.findOneAndDelete({ _id: new ObjectId(id) })
 		return NextResponse.json({ message: "success /movie DELETE" })
 	} catch (e) {

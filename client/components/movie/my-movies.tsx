@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react"
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Link, Tooltip } from "@nextui-org/react"
 import { Rating } from 'react-custom-rating-component'
+import { UpdateMovie } from "@/lib/mongo/movie"
 
 export default function MyMovies() {
   const [movies, setMovies] = useState([])
@@ -46,6 +47,9 @@ export default function MyMovies() {
   ]
   const getKeyValue = React.useCallback((item: any, columnKey: any) => {
     const cellValue = item[columnKey]
+    const handleRating = async (rating: number) => {
+      // UpdateMovie(item, rating)
+    }
     switch (columnKey) {
       case "rating":
         return (
@@ -55,6 +59,7 @@ export default function MyMovies() {
             size='20px'
             spacing='4px'
             activeColor='yellow'
+            onChange={handleRating}
           />
         )
       case "action":

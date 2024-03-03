@@ -6,6 +6,7 @@ import { useCallback, useState } from "react";
 import { Rating } from 'react-custom-rating-component'
 
 const MovieCard = ({ movie }: { movie: any }) => {
+  const rating = 0
   const handleRating = (rate: number) => {
     // setRating(rate)
   }
@@ -19,7 +20,9 @@ const MovieCard = ({ movie }: { movie: any }) => {
       <Image
         alt="poster"
         className="object-cover"
-        src={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`}
+        isZoomed
+        src={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`
+      }
       />
       <CardFooter className="before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10 
       group/edit invisible group-hover/item:visible">

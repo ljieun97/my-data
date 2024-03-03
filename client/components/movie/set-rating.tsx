@@ -1,11 +1,11 @@
 "use client"
 
 import { Rating } from 'react-custom-rating-component'
-import { UpdateMovie } from "@/lib/mongo/movie"
+import { CreateMovie } from "@/lib/mongo/movie"
 
 const SetRating = ({ movie }: { movie: any }) => {
   const handleRating = async (rating: number) => {
-    UpdateMovie(movie, rating)
+    CreateMovie(movie, rating)
   }
   return (
     <Rating

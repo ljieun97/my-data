@@ -29,9 +29,19 @@ const GetMovies = () => {
 //   return result
 // }
 
-const UpdateMovie = async (movie: any, rating: number) => {
+const CreateMovie = async (movie: any, rating: number) => {
   await fetch('/api/movie', {
     method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ movie, rating })
+  })
+}
+
+const UpdateMovie = async (movie: any, rating: number) => {
+  await fetch('/api/movie', {
+    method: "PUT",
     headers: {
       'Content-Type': 'application/json'
     },
@@ -48,4 +58,4 @@ const DeleteMovie = async (id: any) => {
   })
 }
 
-export { GetMovies, UpdateMovie, DeleteMovie }
+export { GetMovies, CreateMovie, UpdateMovie, DeleteMovie }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/lib/mongo/mongodb"
+import dayjs from 'dayjs'
 
 const GET = async () => {
 	try {
@@ -26,6 +27,7 @@ const POST = async (req: NextRequest) => {
 		title = `${movie.name} (${movie.first_air_date.split("-")[0]})`
 	}
 	const image = `https://www.themoviedb.org/t/p/w1280${movie.poster_path}`
+	const today = dayjs().format('YYYY-MM-DD')
 	
 	try {
 		const db = await connectMongo()
@@ -35,7 +37,7 @@ const POST = async (req: NextRequest) => {
 				userId: 1,
 				title,
 				info: {id: movie.id, image, genre_ids: movie.genre_ids, media_type: movie.media_type},
-				date: '2019-11-25',
+				date: today,
 				rating
 			}}, { upsert: true })
 		return NextResponse.json({ message: "success /movie POST" })

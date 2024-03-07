@@ -51,6 +51,8 @@ export default function MyMovies() {
       // UpdateMovie(item, rating)
     }
     switch (columnKey) {
+      case "date":
+        return item.date.substr(0, 10)
       case "rating":
         return (
           <Rating

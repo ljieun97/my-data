@@ -27,7 +27,7 @@ const POST = async (req: NextRequest) => {
 		title = `${movie.name} (${movie.first_air_date.split("-")[0]})`
 	}
 	const image = `https://www.themoviedb.org/t/p/w1280${movie.poster_path}`
-	const today = dayjs().format('YYYY-MM-DD')
+	const today = dayjs().format('YYYY-MM-DD HH:mm:ss')
 
 	try {
 		const db = await connectMongo()

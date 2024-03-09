@@ -8,9 +8,8 @@ const SearchMovie = ({ id }: { id: string }) => {
   useEffect(() => {
     (async () => {
       const response = await fetch(`/api/tm-search/${id}`)
-      const {results} = await response.json()
-      console.log(results)
-      setMovies(results)
+      const {results} = await response.json()      
+      setMovies(results.filter((e: any) => e.media_type!="person"))
     })()
   }, [id])
   return (

@@ -57,7 +57,7 @@ const MovieCard = ({ movie }: { movie: any }) => {
             <div key={flatrate.provider_id}>
               <Tooltip content={flatrate.provider_name}>
                 <Avatar
-                  radius="md"
+                  radius="sm"
                   src={`https://image.tmdb.org/t/p/w500/${flatrate.logo_path}`}
                 />
               </Tooltip>

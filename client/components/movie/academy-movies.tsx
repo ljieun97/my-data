@@ -1,6 +1,6 @@
 'use client'
 
-import MovieCard from "./movie-card";
+import { Banners } from "../layout/banners";
 import { useEffect, useState } from "react";
 
 export default function AcademyMovies() {
@@ -22,11 +22,7 @@ export default function AcademyMovies() {
 
   return (
     <>
-      <div className="gap-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {movies.map((movie: any) => (
-          <MovieCard key={movie.id} movie={movie} ></MovieCard>
-        ))}
-      </div>
+      <Banners list={movies}/>
     </>
   )
 }

@@ -11,7 +11,7 @@ export const metadata = {
 const Home = () => {
   return (
     <>
-      <Title title={'2024 아카데미 수상작'} />
+      {/* <Title title={'2024 아카데미 수상작'} /> */}
       <AcademyMovies />
       <Divider className="my-4" />
 

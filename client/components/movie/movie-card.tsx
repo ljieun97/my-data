@@ -14,9 +14,9 @@ const MovieCard = ({ movie }: { movie: any }) => {
   const [flatrates, setFlatrates] = useState([])
   useEffect(() => {
     (async () => {
-      if(movie.media_type=='movie') {
+      if(movie.title) {
         try {
-          const response = await fetch(`/api/tm-movie/${movie.id}`)
+          const response = await fetch(`/api/tm-movie/providers/${movie.id}`)
           const { results } = await response.json()
           setFlatrates(results.KR.flatrate)
         } catch {
@@ -24,7 +24,7 @@ const MovieCard = ({ movie }: { movie: any }) => {
         }
       } else {
         try {
-          const response = await fetch(`/api/tm-series/${movie.id}`)
+          const response = await fetch(`/api/tm-series/providers/${movie.id}`)
           const { results } = await response.json()
           setFlatrates(results.KR.flatrate)
         } catch {

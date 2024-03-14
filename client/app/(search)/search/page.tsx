@@ -1,4 +1,4 @@
-import SearchResult from "@/components/movie/search-result";
+import SearchMovies from "@/components/movie/search-movies";
 import { Spinner } from "@nextui-org/react";
 import { Suspense } from "react";
 
@@ -9,7 +9,7 @@ const Search = () => {
         <Spinner color="default" />
       </div>
     }>
-      <SearchResult />
+      <SearchMovies />
     </Suspense>
   )
 }

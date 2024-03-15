@@ -1,22 +1,24 @@
 "use client"
 
+import Flatrates from "./flatrates"
 import SetRating from "./set-rating"
-import { Card, CardFooter, Image, CardHeader } from "@nextui-org/react";
-import { useCallback, useEffect, useState } from "react";
-import { Rating } from 'react-custom-rating-component'
-import Flatrates from "./flatrates";
+import { Card, CardFooter, Image, CardHeader, CardBody, Button } from "@nextui-org/react";
+import { useEffect, useState } from "react"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faCirclePlus, faFaceLaughBeam, faFaceMeh, faFaceAngry } from "@fortawesome/free-solid-svg-icons"
 
 const MovieCard = ({ movie }: { movie: any }) => {
   // console.log(movie)
-  const rating = 0
-  const handleRating = (rate: number) => {
-    // setRating(rate)
-  }
+  // const rating = 0
+  // const handleRating = (rate: number) => {
+  //   // setRating(rate)
+  // }
 
+  const titleLength = movie.title ? movie.title.length : movie.name.length
   const [flatrates, setFlatrates] = useState([])
   useEffect(() => {
     (async () => {
-      if(movie.title) {
+      if (movie.title) {
         try {
           const response = await fetch(`/api/tm-movie/providers/${movie.id}`)
           const { results } = await response.json()
@@ -51,33 +53,54 @@ const MovieCard = ({ movie }: { movie: any }) => {
         alt="poster"
         className="object-cover"
         isZoomed
-        src={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`}
+        src={`https://image.tmdb.org/t/p/w500/${movie.backdrop_path}`}
       />
       <CardHeader className="overflow-hidden absolute w-[calc(100%_-_8px)] justify-end">
         <div className="flex gap-3">
-          <Flatrates list={flatrates}/>
+          <Flatrates list={flatrates} />
         </div>
       </CardHeader>
+      <CardBody className="absolute bottom-0 z-10">
+        {
+          titleLength < 6 &&
+          <h4 className="text-white text-lg font-bold tracking-tight text-center">
+            {movie.title ? movie.title : movie.name}
+          </h4>
+        }
+        {
+          titleLength > 5 && titleLength < 11 &&
+          <h4 className="text-white text-sm font-bold tracking-tight text-center">
+            {movie.title ? movie.title : movie.name}
+          </h4>
+        }
+        {
+          titleLength > 10 &&
+          <h4 className="text-white text-xs font-bold tracking-tight text-center">
+            {movie.title ? movie.title : movie.name}
+          </h4>
+        }
+      </CardBody>
       <CardFooter className="bg-black/70 overflow-hidden absolute bottom-0 z-10 group/edit invisible group-hover/item:visible">
         <div className="flex flex-col">
-          <p className="text-white font-medium text-tiny">{movie.title ? movie.title : movie.name}</p>
+          {/* <p className="text-white font-medium text-tiny">{movie.title ? movie.title : movie.name}</p> */}
           {/* <Link href={`/movie/${movie.id}`}>{movie.title ? movie.title : movie.name}</Link> */}
           {/* <input type="date" /> */}
-          <div className="flex justify-between">
-            {/* <Rating
-              defaultValue={0}
-              precision={0.5}
-              size='20px'
-              spacing='4px'
-              activeColor='yellow'
-              onChange={handleRating}
-            /> */}
-            {/* 가로이미지로 바꾸고 제목보이게, 호버시 별점말고 좋아요 싫어요 보고싶어요 세개만할까 보통까지 네개 */}
+          <div className="flex">
             {/* <SetRating movie={movie} /> */}
-            <div>좋아</div>
-            <div>보통</div>
-            <div>싫어</div>
-            <div>보관</div>
+            <div className="flex gap-4 items-center">
+              <Button isIconOnly>
+                <FontAwesomeIcon icon={faFaceLaughBeam} />
+              </Button>
+              <Button isIconOnly variant="faded">
+                <FontAwesomeIcon icon={faFaceMeh} />
+              </Button>
+              <Button isIconOnly variant="faded">
+                <FontAwesomeIcon icon={faFaceAngry} />
+              </Button>
+            </div>
+            <div className="flex items-center">
+              <FontAwesomeIcon icon={faCirclePlus} />
+            </div>
           </div>
         </div>
       </CardFooter>

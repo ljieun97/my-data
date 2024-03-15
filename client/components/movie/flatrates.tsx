@@ -9,6 +9,7 @@ export default function Flatrates({ list }: { list: any[] }) {
         <div key={flatrate.provider_id}>
           <Tooltip content={flatrate.provider_name}>
             <Avatar
+              size="sm"
               radius="sm"
               src={`https://image.tmdb.org/t/p/w500/${flatrate.logo_path}`}
             />

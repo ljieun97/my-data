@@ -1,11 +1,13 @@
 "use client"
 
 import SetRating from "./set-rating"
-import { Card, CardFooter, Image, Button, Link, CardHeader, Avatar, Tooltip } from "@nextui-org/react";
+import { Card, CardFooter, Image, CardHeader } from "@nextui-org/react";
 import { useCallback, useEffect, useState } from "react";
 import { Rating } from 'react-custom-rating-component'
+import Flatrates from "./flatrates";
 
 const MovieCard = ({ movie }: { movie: any }) => {
+  // console.log(movie)
   const rating = 0
   const handleRating = (rate: number) => {
     // setRating(rate)
@@ -51,18 +53,9 @@ const MovieCard = ({ movie }: { movie: any }) => {
         isZoomed
         src={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`}
       />
-      <CardHeader className="overflow-hidden absolute w-[calc(100%_-_8px)]">
-        <div className="flex gap-3 items-center">
-          {flatrates?.map((flatrate: any) => (
-            <div key={flatrate.provider_id}>
-              <Tooltip content={flatrate.provider_name}>
-                <Avatar
-                  radius="sm"
-                  src={`https://image.tmdb.org/t/p/w500/${flatrate.logo_path}`}
-                />
-              </Tooltip>
-            </div>
-          ))}
+      <CardHeader className="overflow-hidden absolute w-[calc(100%_-_8px)] justify-end">
+        <div className="flex gap-3">
+          <Flatrates list={flatrates}/>
         </div>
       </CardHeader>
       <CardFooter className="bg-black/70 overflow-hidden absolute bottom-0 z-10 group/edit invisible group-hover/item:visible">
@@ -79,7 +72,12 @@ const MovieCard = ({ movie }: { movie: any }) => {
               activeColor='yellow'
               onChange={handleRating}
             /> */}
-            <SetRating movie={movie} />
+            {/* 가로이미지로 바꾸고 제목보이게, 호버시 별점말고 좋아요 싫어요 보고싶어요 세개만할까 보통까지 네개 */}
+            {/* <SetRating movie={movie} /> */}
+            <div>좋아</div>
+            <div>보통</div>
+            <div>싫어</div>
+            <div>보관</div>
           </div>
         </div>
       </CardFooter>

@@ -9,6 +9,8 @@ export default function AcademyMovies() {
     (async () => {
       //오펜하이머 가여운것들 바비 그어살 추락의해부 
       const results = [
+        //test
+        // await (await fetch('/api/tm-movie/detail/568124')).json(),
         await (await fetch('/api/tm-movie/detail/872585')).json(),
         await (await fetch('/api/tm-movie/detail/792307')).json(),
         await (await fetch('/api/tm-movie/detail/346698')).json(),
@@ -22,7 +24,7 @@ export default function AcademyMovies() {
 
   return (
     <>
-      <Banners list={movies}/>
+      <Banners list={movies} />
     </>
   )
 }

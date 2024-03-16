@@ -15,7 +15,7 @@ export default function TodayMovies() {
 
   return (
     <>
-      <div className="gap-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="gap-3 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {movies?.map((movie: any) => (
           <MovieCard key={movie.id} movie={movie} ></MovieCard>
         ))}

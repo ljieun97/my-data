@@ -15,7 +15,7 @@ const Home = () => {
       <AcademyMovies />
       <Divider className="my-4" />
 
-      <Title title={'이번달 업데이트된 영화'} />
+      <Title title={'최신 업데이트된 영화'} />
       <TodayMovies />
       <Divider className="my-4" />
       

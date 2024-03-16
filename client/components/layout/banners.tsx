@@ -6,6 +6,7 @@ import 'react-alice-carousel/lib/alice-carousel.css';
 import Flatrates from '../movie/flatrates';
 
 export function Banners({ list }: { list: any[] }) {
+  console.log(list)
   const items = list.map(async (item) => {
     let flatrates = []
     try {
@@ -23,9 +24,10 @@ export function Banners({ list }: { list: any[] }) {
               <Flatrates list={flatrates} />
             </div>
           </CardHeader>
-          <CardBody className="absolute bottom-1/2 z-10">
+          <CardBody className="absolute bottom-0 z-10">
             <p className="text-tiny text-white/60 font-bold">2024 아카데미 수상작</p>
             <h4 className="text-3xl text-white font-bold">{item.title}</h4>
+            <p>{item.tagline}</p>
           </CardBody>
           <Image
             removeWrapper

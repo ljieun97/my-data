@@ -6,3 +6,47 @@
   background: black;
 }
 
+.slider {
+  margin: 0;
+  padding: 0 4%;
+  position: relative;
+  touch-action: pan-y;
+}
+
+.pagination-indicator li {
+  background-color: #4d4d4d;
+  display: inline-block;
+  height: 2px;
+  margin-left: 1px;
+  width: 12px;
+}
+
+.pagination-indicator .active {
+  background-color: #aaa;
+}
+
+.slider .sliderMask .sliderContent {
+  white-space: nowrap;
+}
+
+.custom-sliderContent {
+  -webkit-transform: translate3d(-150%, 0px, 0px);-ms-transform: translate3d(-150%, 0px, 0px);transform: translate3d(-150%, 0px, 0px)
+}
+
+.slider .sliderMask .sliderContent .slider-item:first-child {
+  padding-left: 0;
+}
+
+.rowContainer .rowContent .slider .row-with-x-columns .slider-item {
+    width: 33.333333%;
+}
+
+.slider .sliderMask .sliderContent .slider-item {
+  box-sizing: border-box;
+  display: inline-block;
+  padding: 0 0.2vw;
+  position: relative;
+  vertical-align: top;
+  white-space: normal;
+  z-index: 1;
+}

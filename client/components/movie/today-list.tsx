@@ -1,5 +1,6 @@
-import MovieCard from "./movie-card";
+import MovieCard from "./movie-card"
 import { getTodayMovies, getTodaySeries } from "@/lib/themoviedb/api"
+import ImagesSlider from "../layout/images-slider"
 
 export default async function TodayList(props: any) {
   let movies = []
@@ -11,11 +12,12 @@ export default async function TodayList(props: any) {
 
   return (
     <>
-      <div className="gap-3 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {/* <div className="gap-3 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {movies.map((movie: any) => (
           <MovieCard key={movie.id} movie={movie} ></MovieCard>
         ))}
-      </div>
+      </div> */}
+      <ImagesSlider movies={movies} />
     </>
   )
 }

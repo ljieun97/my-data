@@ -31,7 +31,7 @@ const MovieCard = ({ movie }: { movie: any }) => {
       radius="sm"
       //className="border-none group/item hover:bg-slate-100"
       // fullWidth
-      // className="w-80"
+
       isFooterBlurred
       isHoverable
       // onMouseEnter={() => onMouseEnterCard()}

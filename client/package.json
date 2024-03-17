@@ -21,6 +21,7 @@
     "react-alice-carousel": "^2.8.0",
     "react-custom-rating-component": "^0.1.6",
     "react-dom": "^18",
+    "react-slideshow-image": "^4.3.1",
     "swr": "^2.2.5",
     "unfetch": "^4.2.0"
   },

@@ -1,4 +1,4 @@
-import SearchMovies from "@/components/movie/search-movies";
+import SearchMovies from "@/components/movie/search-page";
 
 const Movie = () => {
 

@@ -1,11 +1,11 @@
-"use client"
-
 import { Avatar, Tooltip } from "@nextui-org/react";
+import { getProviders } from "@/lib/themoviedb/api";
 
-export default function Flatrates({ list }: { list: any[] }) {
+export default async function Flatrates(movie: any) {
+  const flatrates = await getProviders(movie.type, movie.id)
   return (
     <>
-      {list?.map((flatrate: any) => (
+      {flatrates?.map((flatrate: any) => (
         <div key={flatrate.provider_id}>
           <Tooltip content={flatrate.provider_name}>
             <Avatar

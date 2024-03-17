@@ -1,30 +1,19 @@
-'use client'
+import { Banners } from "../layout/banners"
+import { getMovieDetail } from "@/lib/themoviedb/api"
 
-import { Banners } from "../layout/banners";
-import { useEffect, useState } from "react";
-
-export default function AcademyMovies() {
-  const [movies, setMovies] = useState([])
-  useEffect(() => {
-    (async () => {
-      //오펜하이머 가여운것들 바비 그어살 추락의해부 
-      const results = [
-        //test
-        // await (await fetch('/api/tm-movie/detail/568124')).json(),
-        await (await fetch('/api/tm-movie/detail/872585')).json(),
-        await (await fetch('/api/tm-movie/detail/792307')).json(),
-        await (await fetch('/api/tm-movie/detail/346698')).json(),
-        await (await fetch('/api/tm-movie/detail/508883')).json(),
-        await (await fetch('/api/tm-movie/detail/840430')).json(),
-        await (await fetch('/api/tm-movie/detail/915935')).json(),
-      ]
-      setMovies(movies.concat(...results))
-    })()
-  }, [])
-
+export default async function AcademyMovies() {
+  const movies = [
+    //test
+    //await getMovieDetail(568124),
+    //오펜하이머 가여운것들 바비 그어살 추락의해부 
+    await getMovieDetail(872585),
+    await getMovieDetail(792307),
+    await getMovieDetail(346698),
+    await getMovieDetail(508883),
+    await getMovieDetail(840430),
+    await getMovieDetail(915935),
+  ]
   return (
-    <>
-      <Banners list={movies} />
-    </>
+    <Banners list={movies} />
   )
 }

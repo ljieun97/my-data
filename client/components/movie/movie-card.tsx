@@ -2,40 +2,17 @@
 
 import Flatrates from "./flatrates"
 import { Card, CardFooter, Image, CardHeader, CardBody, Button, Tooltip } from "@nextui-org/react";
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCirclePlus, faFaceLaughBeam, faFaceMeh, faFaceAngry, faCircleCheck } from "@fortawesome/free-solid-svg-icons"
 
 const MovieCard = ({ movie }: { movie: any }) => {
-  console.log(movie)
 
-  // const titleLength = movie.title ? movie.title.length : movie.name.length
-  const [flatrates, setFlatrates] = useState([])
+  //아이콘이랑 사진이랑 따로 로딩도게 (로딩빠른거 먼저 보여주기)
+
   const [isHoverableCard, setIsHoverableCard] = useState(false)
   const [isHoverableCheck, setIsHoverableCheck] = useState(false)
 
-
-  useEffect(() => {
-    (async () => {
-      if (movie.title) {
-        try {
-          const response = await fetch(`/api/tm-movie/providers/${movie.id}`)
-          const { results } = await response.json()
-          setFlatrates(results.KR.flatrate)
-        } catch {
-          setFlatrates([])
-        }
-      } else {
-        try {
-          const response = await fetch(`/api/tm-series/providers/${movie.id}`)
-          const { results } = await response.json()
-          setFlatrates(results.KR.flatrate)
-        } catch {
-          setFlatrates([])
-        }
-      }
-    })()
-  }, [])
   const onMouseEnterCard = () => {
     setIsHoverableCard(true)
   }
@@ -53,11 +30,12 @@ const MovieCard = ({ movie }: { movie: any }) => {
     <Card
       radius="sm"
       //className="border-none group/item hover:bg-slate-100"
-      fullWidth
+      // fullWidth
+      // className="w-80"
       isFooterBlurred
       isHoverable
-      onMouseEnter={() => onMouseEnterCard()}
-      onMouseLeave={() => onMouseLeaveCard()}
+      // onMouseEnter={() => onMouseEnterCard()}
+      // onMouseLeave={() => onMouseLeaveCard()}
     >
       <Image
         alt="poster"
@@ -66,7 +44,8 @@ const MovieCard = ({ movie }: { movie: any }) => {
       />
       <CardHeader className="absolute w-[calc(100%_-_8px)] justify-start">
         <div className="flex gap-3">
-          <Flatrates list={flatrates} />
+          {/* <Flatrates list={flatrates} /> */}
+          <Flatrates type={movie.title ? 'movie' : 'tv'} id={movie.id} />
         </div>
       </CardHeader>
       {!movie.backdrop_path &&
@@ -78,6 +57,7 @@ const MovieCard = ({ movie }: { movie: any }) => {
       }
       {isHoverableCard &&
         <CardFooter 
+
         //className="bg-black/70  absolute bottom-0 z-10 group/edit invisible group-hover/item:visible"
         >
           <div className="flex flex-col w-full" >

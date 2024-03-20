@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY_TMDB
+const API_KEY = process.env.API_KEY_TMDB
 const today = dayjs().format('YYYY-MM-DD')
 const month = dayjs().format('YYYY-MM-01')
 //3구글 8넷플릭스 9아마존 96네이버 97왓챠 337디즈니 350애플 356웨이브

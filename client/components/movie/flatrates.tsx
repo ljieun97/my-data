@@ -5,7 +5,7 @@ export default async function Flatrates(movie: any) {
   const flatrates = await getProviders(movie.type, movie.id)
   return (
     <>
-      {flatrates?.map((flatrate: any) => (
+      {flatrates && flatrates.map((flatrate: any) => (
         <div key={flatrate.provider_id}>
           <Tooltip content={flatrate.provider_name}>
             <Avatar

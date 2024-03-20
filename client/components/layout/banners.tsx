@@ -6,7 +6,7 @@ import 'react-alice-carousel/lib/alice-carousel.css';
 import Flatrates from '../movie/flatrates';
 
 export function Banners({ list }: { list: any[] }) {
-  const items = list.map(async (movie) => {
+  const items = list && list.map(async (movie) => {
     return (
       <>
         <Card radius="none">

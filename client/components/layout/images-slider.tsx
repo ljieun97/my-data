@@ -45,7 +45,7 @@ export default function ImagesSlider(props: any) {
 
   return (
     <Slide slidesToScroll={1} slidesToShow={1} indicators={true} autoplay={false} responsive={responsiveSettings} prevArrow={prevButton} nextArrow={nextButton}>
-      {props.movies.map((movie: any, index: number) => (
+      {props.movies && props.movies.map((movie: any, index: number) => (
         <MovieCard key={index} movie={movie} ></MovieCard>
       ))}
     </Slide>

@@ -12,11 +12,6 @@ export default async function TodayList(props: any) {
 
   return (
     <>
-      {/* <div className="gap-3 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {movies.map((movie: any) => (
-          <MovieCard key={movie.id} movie={movie} ></MovieCard>
-        ))}
-      </div> */}
       <ImagesSlider movies={movies} />
     </>
   )

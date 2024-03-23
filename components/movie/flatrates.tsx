@@ -1,8 +1,7 @@
 import { Avatar, Tooltip } from "@nextui-org/react";
-import { getProviders } from "@/lib/themoviedb/api";
 
-export default async function Flatrates(movie: any) {
-  const flatrates = await getProviders(movie.type, movie.id)
+export default async function Flatrates(props: any) {
+  const flatrates = props.providers
   return (
     <>
       {flatrates && flatrates.map((flatrate: any) => (

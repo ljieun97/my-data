@@ -8,13 +8,28 @@ export async function getSearchList(keyword: string) {
   const URL = `https://api.themoviedb.org/3/search/multi?query=${keyword}&language=ko&page=1&api_key=${API_KEY}`
   const response = await fetch(URL)
   const {results} = await response.json()
-  return results.filter((e: any) => e.media_type != "person")
+  
+
+  // results.forEach(async (e: any) => {
+  //   let type = e.title ? 'movie' : 'tv'
+  //   let providers = await getProviders(type, e.id)
+  //   e.providers = providers
+  // })
+
+  return results?.filter((e: any) => e.media_type != "person")
 }
 
 export async function getTodayMovies () {
   const URL = `https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=${month}&primary_release_date.lte=${today}&language=ko&watch_region=KR&with_watch_providers=8|9|96|97|337|350|356&sort_by=release_date.desc&api_key=${API_KEY}`
   const response = await fetch(URL)
   const {results} = await response.json()
+
+  results.forEach(async (e: any) => {
+    let type = e.title ? 'movie' : 'tv'
+    let providers = await getProviders(type, e.id)
+    e.providers = providers
+  })
+
   return results
 }
 
@@ -22,10 +37,17 @@ export async function getTodaySeries () {
   const URL = `https://api.themoviedb.org/3/discover/tv?air_date.gte=${today}&air_date.lte=${today}&language=ko&watch_region=KR&with_watch_providers=8|9|96|97|337|350|356&sort_by=release_date.desc&api_key=${API_KEY}`
   const response = await fetch(URL)
   const {results} = await response.json()
+
+  results.forEach(async (e: any) => {
+    let type = e.title ? 'movie' : 'tv'
+    let providers = await getProviders(type, e.id)
+    e.providers = providers
+  })
+
   return results
 }
 
-export async function getProviders (type: string, id: any) {
+async function getProviders (type: string, id: any) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/watch/providers?api_key=${API_KEY}`
   const response = await fetch(URL)
   const {results} = await response.json()

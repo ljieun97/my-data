@@ -44,8 +44,7 @@ const MovieCard = ({ movie }: { movie: any }) => {
       />
       <CardHeader className="absolute w-[calc(100%_-_8px)] justify-start">
         <div className="flex gap-3">
-          {/* <Flatrates list={flatrates} /> */}
-          <Flatrates type={movie.title ? 'movie' : 'tv'} id={movie.id} />
+          <Flatrates providers={movie.providers}/>
         </div>
       </CardHeader>
       {!movie.backdrop_path &&

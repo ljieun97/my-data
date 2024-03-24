@@ -7,7 +7,6 @@ import MovieCard from "../movie/movie-card"
 import { Slide } from 'react-slideshow-image';
 import 'react-slideshow-image/dist/styles.css';
 
-
 export default function ImagesSlider(props: any) {
   const responsiveSettings = [
     {
@@ -39,15 +38,20 @@ export default function ImagesSlider(props: any) {
       }
     }
   ]
-  
-  const prevButton = <FontAwesomeIcon icon={faAngleLeft} className="cursor-pointer" />
-  const nextButton = <FontAwesomeIcon icon={faAngleRight} className="cursor-pointer" /> 
+
+  const prevButton = <FontAwesomeIcon icon={faAngleLeft} size="sm" className="cursor-pointer" />
+  const nextButton = <FontAwesomeIcon icon={faAngleRight} size="sm" className="cursor-pointer" />
 
   return (
-    <Slide slidesToScroll={1} slidesToShow={1} indicators={true} autoplay={false} responsive={responsiveSettings} prevArrow={prevButton} nextArrow={nextButton}>
-      {props.movies && props.movies.map((movie: any, index: number) => (
-        <MovieCard key={index} movie={movie} ></MovieCard>
-      ))}
-    </Slide>
+    <>
+    {props.movies && 
+    <Slide slidesToScroll={1} slidesToShow={1} indicators={true} autoplay={false} responsive={responsiveSettings}>
+    {props.movies.map((movie: any, index: number) => (
+      <MovieCard key={index} movie={movie} ></MovieCard>
+    ))}
+  </Slide>
+    }
+
+    </>
   )
 }

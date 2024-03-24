@@ -34,17 +34,19 @@ const MovieCard = ({ movie }: { movie: any }) => {
 
       isFooterBlurred
       isHoverable
-      // onMouseEnter={() => onMouseEnterCard()}
-      // onMouseLeave={() => onMouseLeaveCard()}
+    // onMouseEnter={() => onMouseEnterCard()}
+    // onMouseLeave={() => onMouseLeaveCard()}
     >
       <Image
+        
         alt="poster"
         className="object-cover"
         src={movie.backdrop_path ? `https://image.tmdb.org/t/p/w500/${movie.backdrop_path}` : '/images/no-image.jpg'}
       />
       <CardHeader className="absolute w-[calc(100%_-_8px)] justify-start">
         <div className="flex gap-3">
-          <Flatrates providers={movie.providers}/>
+          {/* <Flatrates providers={movie.providers} /> */}
+          <Flatrates type={movie.title ? 'movie' : 'tv'} id={movie.id} />
         </div>
       </CardHeader>
       {!movie.backdrop_path &&
@@ -55,7 +57,7 @@ const MovieCard = ({ movie }: { movie: any }) => {
         </CardBody>
       }
       {isHoverableCard &&
-        <CardFooter 
+        <CardFooter
 
         //className="bg-black/70  absolute bottom-0 z-10 group/edit invisible group-hover/item:visible"
         >

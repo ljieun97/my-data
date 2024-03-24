@@ -12,7 +12,7 @@ export function Banners({ list }: { list: any[] }) {
         <Card radius="none">
           <CardHeader className="overflow-hidden absolute w-[calc(100%_-_8px)] justify-end">
             <div className="flex gap-3">
-            <Flatrates type={'movie'} id={movie.id} />
+              <Flatrates type={'movie'} id={movie.id} />
             </div>
           </CardHeader>
           <CardBody className="absolute bottom-0 z-10">

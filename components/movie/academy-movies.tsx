@@ -14,6 +14,11 @@ export default async function AcademyMovies() {
     await getMovieDetail(915935),
   ]
   return (
-    <Banners list={movies} />
+    <>
+
+
+        <Banners list={movies} />
+    
+    </>
   )
 }

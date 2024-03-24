@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-const API_KEY = process.env.API_KEY_TMDB
+const API_KEY = process.env.API_KEY_TMDB ? process.env.API_KEY_TMDB : process.env.NEXT_PUBLIC_API_KEY_TMDB
 const today = dayjs().format('YYYY-MM-DD')
 const month = dayjs().format('YYYY-MM-01')
 //3구글 8넷플릭스 9아마존 96네이버 97왓챠 337디즈니 350애플 356웨이브
@@ -10,7 +10,7 @@ export async function getSearchList(keyword: string) {
   const {results} = await response.json()
   
 
-  // results.forEach(async (e: any) => {
+  // results?.forEach(async (e: any) => {
   //   let type = e.title ? 'movie' : 'tv'
   //   let providers = await getProviders(type, e.id)
   //   e.providers = providers
@@ -24,11 +24,11 @@ export async function getTodayMovies () {
   const response = await fetch(URL)
   const {results} = await response.json()
 
-  results.forEach(async (e: any) => {
-    let type = e.title ? 'movie' : 'tv'
-    let providers = await getProviders(type, e.id)
-    e.providers = providers
-  })
+  // results.forEach(async (e: any) => {
+  //   let type = e.title ? 'movie' : 'tv'
+  //   let providers = await getProviders(type, e.id)
+  //   e.providers = providers
+  // })
 
   return results
 }
@@ -38,16 +38,16 @@ export async function getTodaySeries () {
   const response = await fetch(URL)
   const {results} = await response.json()
 
-  results.forEach(async (e: any) => {
-    let type = e.title ? 'movie' : 'tv'
-    let providers = await getProviders(type, e.id)
-    e.providers = providers
-  })
+  // results.forEach(async (e: any) => {
+  //   let type = e.title ? 'movie' : 'tv'
+  //   let providers = await getProviders(type, e.id)
+  //   e.providers = providers
+  // })
 
   return results
 }
 
-async function getProviders (type: string, id: any) {
+export async function getProviders (type: string, id: any) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/watch/providers?api_key=${API_KEY}`
   const response = await fetch(URL)
   const {results} = await response.json()

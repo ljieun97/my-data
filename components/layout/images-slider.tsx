@@ -10,13 +10,6 @@ import 'react-slideshow-image/dist/styles.css';
 export default function ImagesSlider(props: any) {
   const responsiveSettings = [
     {
-      breakpoint: 1000,
-      settings: {
-        slidesToShow: 5,
-        slidesToScroll: 5
-      }
-    },
-    {
       breakpoint: 800,
       settings: {
         slidesToShow: 4,
@@ -44,14 +37,13 @@ export default function ImagesSlider(props: any) {
 
   return (
     <>
-    {props.movies && 
-    <Slide slidesToScroll={1} slidesToShow={1} indicators={true} autoplay={false} responsive={responsiveSettings}>
-    {props.movies.map((movie: any, index: number) => (
-      <MovieCard key={index} movie={movie} ></MovieCard>
-    ))}
-  </Slide>
-    }
-
+      {props.movies &&
+        <Slide duration={300} slidesToScroll={1} slidesToShow={1} indicators={true} autoplay={false} responsive={responsiveSettings}>
+          {props.movies.map((movie: any, index: number) => (
+            <MovieCard key={index} movie={movie} ></MovieCard>
+          ))}
+        </Slide>
+      }
     </>
   )
 }

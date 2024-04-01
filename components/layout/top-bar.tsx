@@ -22,7 +22,12 @@ export default function TopBar() {
             </NavbarItem>
             <NavbarItem isActive={path === "/mypage"}>
               <Link href="/mypage" color="foreground">
-                마이페이지
+                시청기록
+              </Link>
+            </NavbarItem>
+            <NavbarItem isActive={path === "/like"}>
+              <Link href="/like" color="foreground">
+                찜
               </Link>
             </NavbarItem>
           </NavbarContent>

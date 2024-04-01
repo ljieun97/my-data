@@ -1,14 +1,19 @@
-import MovieCard from "./movie-card"
-import { getTodayMovies, getTodaySeries } from "@/lib/themoviedb/api"
+import { getMonthAnime, getTodayMovies, getTodaySeries } from "@/lib/themoviedb/api"
 import ImagesSlider from "../layout/images-slider"
 
 export default async function TodayList(props: any) {
   let movies = []
-  if(props.type=='movie') {
-    movies = await getTodayMovies()
-  } else if(props.type=='tv') {
-    movies = await getTodaySeries()
-  } 
+  switch (props.type) {
+    case 'movie':
+      movies = await getTodayMovies()
+      break
+    case 'tv':
+      movies = await getTodaySeries()
+      break
+    case 'anime':
+      movies = await getMonthAnime()
+      break
+  }
 
   return (
     <>

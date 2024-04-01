@@ -5,11 +5,10 @@ import { Card, CardFooter, Image, CardHeader, CardBody, Button, Tooltip } from "
 import { useState } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCirclePlus, faFaceLaughBeam, faFaceMeh, faFaceAngry, faCircleCheck } from "@fortawesome/free-solid-svg-icons"
+import { CreateMovie } from "@/lib/mongo/movie";
 
 const MovieCard = ({ movie }: { movie: any }) => {
-
   //아이콘이랑 사진이랑 따로 로딩도게 (로딩빠른거 먼저 보여주기)
-
   const [isHoverableCard, setIsHoverableCard] = useState(false)
   const [isHoverableCheck, setIsHoverableCheck] = useState(false)
 
@@ -26,26 +25,25 @@ const MovieCard = ({ movie }: { movie: any }) => {
     setIsHoverableCheck(false)
   }
 
+  const clickCreate = async (movie: any, rating: number) => {
+    await CreateMovie(movie, rating)
+  }
+
   return (
     <Card
+      style={{ margin: '5px' }}
       radius="sm"
-      //className="border-none group/item hover:bg-slate-100"
-      // fullWidth
-
+      className="border-none group/footer"
       isFooterBlurred
       isHoverable
-    // onMouseEnter={() => onMouseEnterCard()}
-    // onMouseLeave={() => onMouseLeaveCard()}
     >
       <Image
-        
         alt="poster"
         className="object-cover"
         src={movie.backdrop_path ? `https://image.tmdb.org/t/p/w500/${movie.backdrop_path}` : '/images/no-image.jpg'}
       />
       <CardHeader className="absolute w-[calc(100%_-_8px)] justify-start">
         <div className="flex gap-3">
-          {/* <Flatrates providers={movie.providers} /> */}
           <Flatrates type={movie.title ? 'movie' : 'tv'} id={movie.id} />
         </div>
       </CardHeader>
@@ -56,48 +54,45 @@ const MovieCard = ({ movie }: { movie: any }) => {
           </h4>
         </CardBody>
       }
-      {isHoverableCard &&
-        <CardFooter
-
-        //className="bg-black/70  absolute bottom-0 z-10 group/edit invisible group-hover/item:visible"
-        >
-          <div className="flex flex-col w-full" >
-            <h4 className="text-white font-bold tracking-tight">
-              {(movie.title ? movie.title : movie.name).split('-')[0]}
-            </h4>
-            {/* <p>{movie.tagline}</p> */}
-            <div className="flex justify-between">
-              <div className="flex gap-1 items-center">
-                <Tooltip content={"찜하기"}>
-                  <FontAwesomeIcon icon={faCirclePlus} className="cursor-pointer" />
-                </Tooltip>
-                <div className="flex gap-1" onMouseLeave={() => onMouseLeaveCheck()}>
-                  {!isHoverableCheck &&
-                    <FontAwesomeIcon icon={faCircleCheck} onMouseEnter={() => onMouseEnterCheck()}
-                    />
-                  }
-                  {isHoverableCheck &&
-                    <>
-                      <Tooltip content={"재밌어요"}>
-                        <FontAwesomeIcon icon={faFaceLaughBeam} className="cursor-pointer" />
-                      </Tooltip>
-                      <Tooltip content={"볼만해요"}>
-                        <FontAwesomeIcon icon={faFaceMeh} className="cursor-pointer" />
-                      </Tooltip>
-                      <Tooltip content={"화나요"}>
-                        <FontAwesomeIcon icon={faFaceAngry} className="cursor-pointer" />
-                      </Tooltip>
-                    </>
-                  }
-                </div>
-              </div>
-              <div className="flex items-center">
-                상세정보
+      {/* {isHoverableCard && */}
+      <CardFooter className="bg-black/70 absolute bottom-0 z-10 invisible group-hover/footer:visible">
+        <div className="flex flex-col w-full" >
+          <h4 className="text-white font-bold tracking-tight">
+            {(movie.title ? movie.title : movie.name).split('-')[0]}
+          </h4>
+          {/* <p>{movie.tagline}</p> */}
+          <div className="flex justify-between">
+            <div className="flex gap-1 items-center">
+              <Tooltip content={"찜하기"}>
+                <FontAwesomeIcon icon={faCirclePlus} className="cursor-pointer size-8" />
+              </Tooltip>
+              <div className="flex gap-1" onMouseLeave={() => onMouseLeaveCheck()}>
+                {!isHoverableCheck &&
+                  <FontAwesomeIcon icon={faCircleCheck} className="size-8" onMouseEnter={() => onMouseEnterCheck()}
+                  />
+                }
+                {isHoverableCheck &&
+                  <>
+                    <Tooltip content={"재밌어요"}>
+                      <FontAwesomeIcon icon={faFaceLaughBeam} className="cursor-pointer size-8" onClick={() => clickCreate(movie, 5)} />
+                    </Tooltip>
+                    <Tooltip content={"볼만해요"}>
+                      <FontAwesomeIcon icon={faFaceMeh} className="cursor-pointer size-8" onClick={() => clickCreate(movie, 3)} />
+                    </Tooltip>
+                    <Tooltip content={"화나요"}>
+                      <FontAwesomeIcon icon={faFaceAngry} className="cursor-pointer size-8" onClick={() => clickCreate(movie, 1)} />
+                    </Tooltip>
+                  </>
+                }
               </div>
             </div>
+            <div className="flex items-center">
+              상세정보
+            </div>
           </div>
-        </CardFooter>
-      }
+        </div>
+      </CardFooter>
+
     </Card>
   )
 }

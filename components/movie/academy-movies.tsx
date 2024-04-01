@@ -3,7 +3,6 @@ import { getMovieDetail } from "@/lib/themoviedb/api"
 
 export default async function AcademyMovies() {
   const movies = [
-    //test
     //await getMovieDetail(568124),
     //오펜하이머 가여운것들 바비 그어살 추락의해부 
     await getMovieDetail(872585),
@@ -15,10 +14,8 @@ export default async function AcademyMovies() {
   ]
   return (
     <>
-
-
-        <Banners list={movies} />
-    
+      {/* {JSON.stringify(movies)} */}
+      <Banners list={movies} />
     </>
   )
 }

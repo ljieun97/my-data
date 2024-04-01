@@ -3,28 +3,31 @@
 import React, { useEffect, useState } from "react"
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Link, Tooltip } from "@nextui-org/react"
 import { Rating } from 'react-custom-rating-component'
-import { UpdateMovie } from "@/lib/mongo/movie"
+import { GetMovies, DeleteMovie, UpdateMovie } from "@/lib/mongo/movie"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faCirclePlus, faFaceLaughBeam, faFaceMeh, faFaceAngry, faCircleCheck } from "@fortawesome/free-solid-svg-icons"
 
 export default function MyMovies() {
   const [movies, setMovies] = useState([])
+  console.log(movies)
   useEffect(() => {
     (async () => {
-      const response = await fetch('/api/movie')
-      setMovies(await response.json())
+      const movies = await GetMovies()
+      setMovies(movies)
     })()
   }, [])
+  
 
-  const clickDelete = (id: any) => {
-    (async () => {
-      await fetch(`/api/movie/${id}`, {
-        method: "DELETE",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      })
-      const response = await fetch('/api/movie')
-      setMovies(await response.json())
-    })()
+  const clickUpdate = (id: any) => async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await UpdateMovie(id, e.target.value)
+    const movies = await GetMovies()
+    setMovies(movies)
+  }
+
+  const clickDelete = async (id: any) => {
+    await DeleteMovie(id)
+    const movies = await GetMovies()
+    setMovies(movies)
   }
 
   const columns = [
@@ -47,22 +50,21 @@ export default function MyMovies() {
   ]
   const getKeyValue = React.useCallback((item: any, columnKey: any) => {
     const cellValue = item[columnKey]
-    const handleRating = async (rating: number) => {
-      // UpdateMovie(item, rating)
-    }
     switch (columnKey) {
       case "date":
-        return item.date.substr(0, 10)
-      case "rating":
+        // return item.my_date.substr(0, 10)
         return (
-          <Rating
-            defaultValue={item.rating}
-            precision={0.5}
-            size='20px'
-            spacing='4px'
-            activeColor='yellow'
-            onChange={handleRating}
-          />
+          <input type='date' value={item.my_date.substr(0, 10)} onChange={clickUpdate(item._id)} />
+        )
+      case "title":
+        return item.title ? item.title : item.name
+      case "rating":
+        let rating = item.my_rating
+        let icon = faFaceLaughBeam
+        if (rating == 3) icon = faFaceMeh
+        else if (rating == 1) icon = faFaceAngry
+        return (
+          <FontAwesomeIcon icon={icon} className="size-8" />
         )
       case "action":
         return (
@@ -79,6 +81,7 @@ export default function MyMovies() {
 
   return (
     <>
+      {/* {JSON.stringify(movies)} */}
       <Table aria-label="Example table with dynamic content">
         <TableHeader columns={columns}>
           {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}

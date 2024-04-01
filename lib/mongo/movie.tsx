@@ -1,4 +1,5 @@
-const base_url = 'http://localhost:3000'
+// const base_url = 'http://localhost:3000'
+const base_url = 'https://my-data-iota.vercel.app'
 
 const GetMovies = async () => {
   const response = await fetch(`${base_url}/api/movie`, {

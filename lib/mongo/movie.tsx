@@ -1,8 +1,7 @@
-// const base_url = 'http://localhost:3000'
-const base_url = 'https://my-data-iota.vercel.app'
+'use client'
 
 const GetMovies = async () => {
-  const response = await fetch(`${base_url}/api/movie`, {
+  const response = await fetch(`/api/movie`, {
     method: "GET"
   })
   const result = await response.json()
@@ -10,7 +9,7 @@ const GetMovies = async () => {
 }
 
 const CreateMovie = async (movie: any, rating: number) => {
-  await fetch(`${base_url}/api/movie`, {
+  await fetch(`/api/movie`, {
     method: "POST",
     headers: {
       'Content-Type': 'application/json'
@@ -20,7 +19,7 @@ const CreateMovie = async (movie: any, rating: number) => {
 }
 
 const UpdateMovie = async (id: any, date: string) => {
-  await fetch(`${base_url}/api/movie/${id}`, {
+  await fetch(`/api/movie/${id}`, {
     method: "PUT",
     headers: {
       'Content-Type': 'application/json'
@@ -30,7 +29,7 @@ const UpdateMovie = async (id: any, date: string) => {
 }
 
 const DeleteMovie = async (id: any) => {
-  await fetch(`${base_url}/api/movie/${id}`, {
+  await fetch(`/api/movie/${id}`, {
     method: "DELETE",
     headers: {
       'Content-Type': 'application/json'

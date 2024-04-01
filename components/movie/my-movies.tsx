@@ -9,7 +9,6 @@ import { faCirclePlus, faFaceLaughBeam, faFaceMeh, faFaceAngry, faCircleCheck } 
 
 export default function MyMovies() {
   const [movies, setMovies] = useState([])
-  console.log(movies)
   useEffect(() => {
     (async () => {
       const movies = await GetMovies()

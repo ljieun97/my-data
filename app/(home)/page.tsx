@@ -27,6 +27,7 @@ const Home = () => {
       <Suspense fallback={<h1>loading</h1>}>
         <TodayList type={'tv'} />
       </Suspense>
+      <Divider className="my-4" />
 
       <Title title={'최신 애니메이션'} />
       <Suspense fallback={<h1>loading</h1>}>

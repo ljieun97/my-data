@@ -12,6 +12,7 @@ export async function getSearchList(keyword: string) {
 }
 
 export async function getTodayMovies () {
+  console.log(today)
   //한달내 업데이트된 영화
   const URL = `https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=${month}&primary_release_date.lte=${today}&language=ko&watch_region=KR&with_watch_providers=8|9|96|97|337|350|356&without_watch_providers=1796&sort_by=release_date.desc&api_key=${API_KEY}`
   const response = await fetch(URL)
@@ -47,6 +48,13 @@ export async function getProviders (type: string, id: any) {
 
 export async function getMovieDetail (id: any) {
   const URL = `https://api.themoviedb.org/3/movie/${id}?language=ko&api_key=${API_KEY}`
+  const response = await fetch(URL)
+  const results = await response.json()
+  return results
+}
+
+export async function getSeriseDetail (id: any) {
+  const URL = `https://api.themoviedb.org/3/tv/${id}?language=ko&api_key=${API_KEY}`
   const response = await fetch(URL)
   const results = await response.json()
   return results

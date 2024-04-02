@@ -9,16 +9,16 @@ export function Banners({ list }: { list: any[] }) {
   const items = list && list.map(async (movie) => {
     return (
       <>
-        <Card radius="none">
+        <Card radius="none" style={{textShadow:'rgba(0, 0, 0, 0.7) 0px 0px 6px'}}>
           <CardHeader className="overflow-hidden absolute w-[calc(100%_-_8px)] justify-end">
             <div className="flex gap-3">
               <Flatrates type={'movie'} id={movie.id} />
             </div>
           </CardHeader>
           <CardBody className="absolute bottom-0 z-10">
-            <p className="text-tiny text-white/60 font-bold">2024 아카데미 수상작</p>
+            <p className="text-tiny text-white font-bold">2024 아카데미 수상작</p>
             <h4 className="text-3xl text-white font-bold">{movie.title}</h4>
-            <p>{movie.tagline}</p>
+            <p className="text-white">{movie.tagline}</p>
           </CardBody>
           <Image
             removeWrapper

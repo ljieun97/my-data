@@ -51,7 +51,6 @@ const MovieCard = ({ movie }: { movie: any }) => {
   return (
     <>
       <Card
-        style={{ margin: '5px' }}
         // radius="sm"
         className="border-none group/footer"
         isFooterBlurred
@@ -109,10 +108,40 @@ const MovieCard = ({ movie }: { movie: any }) => {
               <div className="flex items-center">
                 <Button onPress={onOpen} onClick={() => onClickInfo(movie.title ? 'movie' : 'tv', movie.id)}>상세정보</Button>
                 {/* {JSON.stringify(content)} */}
-                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-                  {/* <MovieInfo type={movie.title ? 'movie' : 'tv'} id={movie.id} /> */}
-                  <MovieInfo content={content} />
-                </Modal>
+                {content &&
+                  <Modal isOpen={isOpen} onOpenChange={onOpenChange}
+                    size='5xl'
+                    placement='center'
+                    classNames={{
+                      base: "bg-black text-white"
+                    }}
+                    motionProps={{
+                      variants: {
+                        enter: {
+                          y: 0,
+                          opacity: 1,
+                          transition: {
+                            duration: 0.3,
+                            ease: "easeOut",
+                          },
+                        },
+                        exit: {
+                          y: -20,
+                          opacity: 0,
+                          transition: {
+                            duration: 0.2,
+                            ease: "easeIn",
+                          },
+                        },
+                      }
+                    }}
+                  >
+                    <ModalContent>
+                      <MovieInfo content={content} />
+                    </ModalContent>
+
+                  </Modal>
+                }
               </div>
             </div>
           </div>

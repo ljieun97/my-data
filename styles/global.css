@@ -6,47 +6,42 @@
   background: black;
 }
 
-.slider {
-  margin: 0;
-  padding: 0 4%;
+.css-1ssrbtg-ScrollBarContainer {
   position: relative;
-  touch-action: pan-y;
+  transform: translate3d(0px, 0px, 0px);
+  margin: 0px -6px;
 }
 
-.pagination-indicator li {
-  background-color: #4d4d4d;
-  display: inline-block;
-  height: 2px;
-  margin-left: 1px;
-  width: 12px;
+.css-1djfuyp {
+  overflow: auto hidden;
+  scrollbar-width: none;
 }
 
-.pagination-indicator .active {
-  background-color: #aaa;
-}
-
-.slider .sliderMask .sliderContent {
+.css-izvkrl-StyledHorizontalUl {
+  list-style: none;
+  padding: 0px;
   white-space: nowrap;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-right: 0px !important;
+  margin-left: 0px !important;
 }
 
-.custom-sliderContent {
-  -webkit-transform: translate3d(-150%, 0px, 0px);-ms-transform: translate3d(-150%, 0px, 0px);transform: translate3d(-150%, 0px, 0px)
+.css-4kpflh-StyledUlParent {
+  overflow: scroll;
+  scrollbar-width: none;
 }
 
-.slider .sliderMask .sliderContent .slider-item:first-child {
-  padding-left: 0;
-}
-
-.rowContainer .rowContent .slider .row-with-x-columns .slider-item {
-    width: 33.333333%;
-}
-
-.slider .sliderMask .sliderContent .slider-item {
-  box-sizing: border-box;
-  display: inline-block;
-  padding: 0 0.2vw;
+.css-1psiqzq-StyledUl-gapFromBreakPoints-breakPointsToCss {
+  /* display: flex;
   position: relative;
-  vertical-align: top;
-  white-space: normal;
-  z-index: 1;
+  flex-wrap: nowrap;
+  overflow: visible;
+  gap: 16px; */
+}
+
+.css-1uyzw27-StyledContainer-StyledListSection {
+  display: block;
+  position: relative;
+  max-width: 1320px;
 }

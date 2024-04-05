@@ -12,10 +12,11 @@ export default async function AcademyMovies() {
     await getMovieDetail(840430),
     await getMovieDetail(915935),
   ]
+  const movie = await getMovieDetail(872585)
   return (
     <>
       {/* {JSON.stringify(movies)} */}
-      <Banners list={movies} />
+      <Banners movie={movie} />
     </>
   )
 }

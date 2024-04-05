@@ -36,7 +36,7 @@ export default function MovieInfo({ content }: { content: any }) {
               {content.adult && '(19)'}
               <br />
               {content.release_date &&
-                <span>등록일 {content.release_date}</span>
+                <span>개봉일 {content.release_date}</span>
               }
               {!content.release_date &&
                 <span>첫방송 {content.first_air_date}</span>
@@ -66,8 +66,6 @@ export default function MovieInfo({ content }: { content: any }) {
                 <InfiniteImages movies={similars} />
               </div>
             }
-
-
           </ModalBody>
           {/* <ModalFooter>
 

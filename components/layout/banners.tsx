@@ -5,8 +5,8 @@ import AliceCarousel from 'react-alice-carousel';
 import 'react-alice-carousel/lib/alice-carousel.css';
 import Flatrates from '../movie/flatrates';
 
-export function Banners({ list }: { list: any[] }) {
-  const items = list && list.map(async (movie) => {
+export function Banners({ movie }: { movie: any }) {
+  // const items = list && list.map(async (movie) => {
     return (
       <>
         <Card radius="none" style={{textShadow:'rgba(0, 0, 0, 0.7) 0px 0px 6px'}}>
@@ -30,19 +30,19 @@ export function Banners({ list }: { list: any[] }) {
         </Card>
       </>
     )
-  })
+  // })
 
-  return (
-    <>
-      <AliceCarousel
-        infinite
-        autoPlay
-        autoPlayInterval={3000}
-        animationDuration={1000}
-        disableDotsControls
-        disableButtonsControls
-        items={items}
-      />
-    </>
-  )
+  // return (
+  //   <>
+  //     <AliceCarousel
+  //       infinite
+  //       autoPlay
+  //       autoPlayInterval={3000}
+  //       animationDuration={1000}
+  //       disableDotsControls
+  //       disableButtonsControls
+  //       items={items}
+  //     />
+  //   </>
+  // )
 }

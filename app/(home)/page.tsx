@@ -1,7 +1,7 @@
 import Title from "@/components/common/title"
 import AcademyMovies from "@/components/movie/academy-movies"
 import TodayList from "@/components/movie/today-list"
-import { Divider } from "@nextui-org/react"
+import { Divider, Link } from "@nextui-org/react"
 import { Suspense } from "react"
 
 export const metadata = {
@@ -11,6 +11,8 @@ export const metadata = {
 const Home = () => {
   return (
     <>
+
+
       {/* 로딩이 나중에 보임 */}
       <Suspense fallback={<h1>loading</h1>}>
         <AcademyMovies />

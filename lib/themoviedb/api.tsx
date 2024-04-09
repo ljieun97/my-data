@@ -69,7 +69,15 @@ export async function getCasts(type: string, id: string) {
   return results.cast
 }
 
-export async function getSimilar(type: string, id: string) {
+export async function getSimilars(type: string, id: string) {
+  const URL = `https://api.themoviedb.org/3/${type}/${id}/similar?language=ko&watch_region=KR&api_key=${API_KEY}`
+  const response = await fetch(URL)
+  let { results } = await response.json()
+  results = results.filter((content: any) => content.backdrop_path && content.overview)
+  return results
+}
+
+export async function getRecommendations(type: string, id: string) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/recommendations?language=ko&watch_region=KR&api_key=${API_KEY}`
   const response = await fetch(URL)
   let { results } = await response.json()

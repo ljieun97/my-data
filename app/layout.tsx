@@ -1,11 +1,6 @@
-import TopBar from "@/components/layout/top-bar";
-import styles from "@/styles/layout.module.css"
 import "@/styles/global.css";
-
 import type { Metadata } from "next";
 import { UiProvider } from "@/components/layout/ui-provider";
-
-// import "98.css";
 
 export const metadata: Metadata = {
   title: {
@@ -16,14 +11,15 @@ export const metadata: Metadata = {
 };
 
 export default function Layout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+  children, auth
+}: {
+  children: React.ReactNode; auth: React.ReactNode
+}) {
+
   return (
-    <html lang="en">
+    <html lang="ko">
       <body>
-        <UiProvider>{children}</UiProvider>
+        <UiProvider children={children} auth={auth}></UiProvider>
       </body>
     </html>
   );

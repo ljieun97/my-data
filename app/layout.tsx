@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default function Layout({
-  children
+  children, auth
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode; auth: React.ReactNode
 }) {
 
   return (

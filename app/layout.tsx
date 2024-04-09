@@ -11,15 +11,15 @@ export const metadata: Metadata = {
 };
 
 export default function Layout({
-  children, auth
+  children
 }: {
-  children: React.ReactNode; auth: React.ReactNode
+  children: React.ReactNode;
 }) {
 
   return (
     <html lang="ko">
       <body>
-        <UiProvider children={children} auth={auth}></UiProvider>
+        <UiProvider>{children}</UiProvider>
       </body>
     </html>
   );

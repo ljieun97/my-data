@@ -4,9 +4,9 @@ import { NextUIProvider } from "@nextui-org/react";
 import TopBar from "./top-bar";
 
 export function UiProvider({
-  children, auth
+  children
 }: {
-  children: React.ReactNode; auth: React.ReactNode
+  children: React.ReactNode;
 }) {
 
   return (
@@ -15,7 +15,6 @@ export function UiProvider({
         <div className="dark px-8 text-foreground bg-background mx-auto max-w-7xl flex-grow">
           <TopBar />
           <div className="py-8">{children}</div>
-          <div>{auth}</div>
         </div>
 
       </main>

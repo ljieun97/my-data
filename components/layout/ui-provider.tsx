@@ -6,7 +6,7 @@ import TopBar from "./top-bar";
 export function UiProvider({
   children
 }: {
-  children: React.ReactNode;
+  children: any
 }) {
 
   return (
@@ -16,7 +16,6 @@ export function UiProvider({
           <TopBar />
           <div className="py-8">{children}</div>
         </div>
-
       </main>
     </NextUIProvider>
   );

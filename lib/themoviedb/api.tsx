@@ -3,6 +3,7 @@ const API_KEY = process.env.API_KEY_TMDB ? process.env.API_KEY_TMDB : process.en
 const today = dayjs().format('YYYY-MM-DD')
 const month = dayjs().subtract(1, "month").format('YYYY-MM-DD')
 //3구글 8넷플릭스 119아마존 96네이버 97왓챠 337디즈니 350애플 356웨이브
+//라프텔 쿠팡 없음
 
 export async function getSearchList(keyword: string) {
   const URL = `https://api.themoviedb.org/3/search/multi?query=${keyword}&language=ko&page=1&api_key=${API_KEY}`

@@ -12,7 +12,7 @@ export default function MovieInfo({ content }: { content: any }) {
       setCasts(await getCasts(type, content.id))
       const sim = await getSimilars(type, content.id)
       const rcm = await getRecommendations(type, content.id)
-      setSimilars(rcm.length>0 ? rcm : sim)
+      setSimilars(rcm.length > 0 ? rcm : sim)
     })()
   }, [])
 

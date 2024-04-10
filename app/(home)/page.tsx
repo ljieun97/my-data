@@ -14,10 +14,10 @@ const Home = () => {
 
 
       {/* 로딩이 나중에 보임 */}
-      <Suspense fallback={<h1>loading</h1>}>
+      {/* <Suspense fallback={<h1>loading</h1>}>
         <AcademyMovies />
       </Suspense>
-      <Divider className="my-4" />
+      <Divider className="my-4" /> */}
 
       <Title title={'최신 등록 영화'} />
       <Suspense fallback={<h1>loading</h1>}>

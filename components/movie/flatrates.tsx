@@ -1,20 +1,22 @@
 'use client'
 
-import { getProviders, getSearchList } from "@/lib/themoviedb/api";
 import { Avatar, Tooltip } from "@nextui-org/react";
-import { useEffect, useState } from "react";
 
-export default function Flatrates(props: any) {
-  const [flatrates, setflatrates] = useState([])
-  useEffect(() => {
-    (async () => {
-      const list = await getProviders(props.type, props.id)
-      setflatrates(list)
-    })()
-  }, [])
+export default function Flatrates({ type, providers }: { type: string, providers: any }) {
   return (
     <>
-      {flatrates && flatrates.map((flatrate: any) => (
+      {type == 'webtoon' &&
+        <div>
+            <Tooltip content={providers}>
+              <Avatar
+                size="sm"
+                radius="sm"
+                src={`/images/webtoon_${providers}.png`}
+              />
+            </Tooltip>
+        </div>
+      }
+      {(type == 'movie' || type == 'tv') && providers && providers.map((flatrate: any) => (
         <div key={flatrate.provider_id}>
           {flatrate.provider_id != 1796 &&
             <Tooltip content={flatrate.provider_name}>

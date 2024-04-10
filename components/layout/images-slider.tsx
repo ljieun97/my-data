@@ -54,9 +54,10 @@ export default function ImagesSlider(props: any) {
       <div className="flex overflow-x-scroll gap-3">
 
         {props.movies.map((movie: any, index: number) => (
-          <div key={index} className="shrink">
-            <div className="w-40 sm:w-40 md:w-60 lg:w-80">
-           
+          <div key={index}>
+            <div className="w-[150px]">
+            {/* <div className="w-40 sm:w-40 md:w-60 lg:w-80"> */}
+            {/* <div className="h-40 sm:h-40 md:h-60 lg:h-80"> */}
             <MovieCard movie={movie}></MovieCard>
             </div>
           </div>

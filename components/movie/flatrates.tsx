@@ -1,22 +1,19 @@
 'use client'
 
+import { getProviders } from "@/lib/themoviedb/api";
 import { Avatar, Tooltip } from "@nextui-org/react";
+import { useEffect, useState } from "react";
 
-export default function Flatrates({ type, providers }: { type: string, providers: any }) {
+export default function Flatrates({ type, provider }: { type: string, provider: any }) {
+  const [flatrates, setFlatrates] = useState([])
+  useEffect(() => {
+    (async () => {
+      if(type == 'movie' || type == 'tv') setFlatrates(await getProviders(type, provider))
+    })()
+  }, [provider])
   return (
     <>
-      {type == 'webtoon' &&
-        <div>
-            <Tooltip content={providers}>
-              <Avatar
-                size="sm"
-                radius="sm"
-                src={`/images/webtoon_${providers}.png`}
-              />
-            </Tooltip>
-        </div>
-      }
-      {(type == 'movie' || type == 'tv') && providers && providers.map((flatrate: any) => (
+      {(type == 'movie' || type == 'tv') && flatrates && flatrates.map((flatrate: any) => (
         <div key={flatrate.provider_id}>
           {flatrate.provider_id != 1796 &&
             <Tooltip content={flatrate.provider_name}>
@@ -29,6 +26,17 @@ export default function Flatrates({ type, providers }: { type: string, providers
           }
         </div>
       ))}
+      {type == 'webtoon' &&
+        <div>
+          <Tooltip content={provider}>
+            <Avatar
+              size="sm"
+              radius="sm"
+              src={`/images/webtoon_${provider}.png`}
+            />
+          </Tooltip>
+        </div>
+      }
     </>
   )
 }

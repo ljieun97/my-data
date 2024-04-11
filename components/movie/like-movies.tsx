@@ -16,7 +16,7 @@ export default function LikeMovies() {
   return (
     <>
       {/* {JSON.stringify(movies)} */}
-      <InfiniteImages movies={movies} />
+      <InfiniteImages contents={movies} />
     </>
   )
 }

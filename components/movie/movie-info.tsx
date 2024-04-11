@@ -80,7 +80,7 @@ export default function MovieInfo({ content }: { content: any }) {
             {similars.length > 0 &&
               <div>
                 <h4 className="pb-4">추천 콘텐츠</h4>
-                <InfiniteImages movies={similars} />
+                <InfiniteImages contents={similars} />
               </div>
             }
           </ModalBody>

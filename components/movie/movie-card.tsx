@@ -16,31 +16,22 @@ const MovieCard = ({ movie }: { movie: any }) => {
   const [content, setContent] = useState()
   const [isHoverableCard, setIsHoverableCard] = useState(false)
   const [isHoverableCheck, setIsHoverableCheck] = useState(false)
-  const [providers, setProviders] = useState([])
-  const [type, setType] = useState('')
-  const [img, setImg] = useState('')
 
-  useEffect(() => {
-    (async () => {
-      if (movie.webtoonId) { //웹툰엔 title도 있음
-        setType('webtoon')
-        setImg(movie.img)
-        setProviders(movie.service)
-      } else if (movie.title) {
-        setType('movie')
-        if (movie.poster_path) setImg(`https://image.tmdb.org/t/p/w500/${movie.poster_path}`)
-        const list = await getProviders('movie', movie.id)
-        setProviders(list)
-      } else if (movie.name) {
-        setType('tv')
-        if (movie.poster_path) setImg(`https://image.tmdb.org/t/p/w500/${movie.poster_path}`)
-        const list = await getProviders('tv', movie.id)
-        setProviders(list)
-      }
-    })()
-  }, [])
+  let type = ''
+  let img = ''
 
-  
+  if (movie.webtoonId) {
+    type = 'webtoon' //웹툰엔 title도 있음
+    img = movie.img
+  } else if (movie.isbn) {
+    type = 'book'
+    img = movie.image
+  } else if (movie.title) {
+    type = 'movie'
+  } else if (movie.name) {
+    type = 'tv'
+  }
+  if (movie.poster_path) img = `https://image.tmdb.org/t/p/w500/${movie.poster_path}`
 
   const onMouseEnterCard = () => {
     setIsHoverableCard(true)
@@ -67,8 +58,6 @@ const MovieCard = ({ movie }: { movie: any }) => {
       case 'tv':
         setContent(await getSeriseDetail(id))
         break
-      default:
-        break
     }
   }
 
@@ -89,7 +78,12 @@ const MovieCard = ({ movie }: { movie: any }) => {
         />
         <CardHeader className="absolute w-[calc(100%_-_8px)] justify-start">
           <div className="flex gap-3">
-            <Flatrates type={type} providers={providers} />
+            {(type == 'movie' || type == 'tv') &&
+              <Flatrates type={type} provider={movie.id} />
+            }
+            {type == 'webtoon' &&
+              <Flatrates type={type} provider={movie.service} />
+            }
           </div>
         </CardHeader>
         {!img &&

@@ -1,8 +1,7 @@
-"use client"
-
 import MovieCard from "../movie/movie-card"
 
 export default function InfiniteImages(props: any) {
+  console.log(props)
   return (
     <>
       <div className="gap-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">

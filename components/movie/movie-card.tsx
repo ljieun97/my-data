@@ -16,35 +16,29 @@ const MovieCard = ({ movie }: { movie: any }) => {
   const [content, setContent] = useState()
   const [isHoverableCard, setIsHoverableCard] = useState(false)
   const [isHoverableCheck, setIsHoverableCheck] = useState(false)
-
-  let type = ''
-  let img = ''
   const [providers, setProviders] = useState([])
+  const [type, setType] = useState('')
+  const [img, setImg] = useState('')
 
-  if (movie.webtoonId) {
-    type = 'webtoon' //웹툰엔 title도 있음
-    img = movie.img
-    useEffect(() => {
-      setProviders(movie.service)
-    }, [])
-  } else if (movie.title) {
-    type = 'movie'
-    useEffect(() => {
-      (async () => {
+  useEffect(() => {
+    (async () => {
+      if (movie.webtoonId) {
+        setType('webtoon') //웹툰엔 title도 있음
+        setImg(movie.img)
+        setProviders(movie.service)
+      } else if (movie.title) {
+        setType('movie')
         const list = await getProviders(type, movie.id)
         setProviders(list)
-      })()
-    }, [])
-  } else if (movie.name) {
-    type = 'tv'
-    useEffect(() => {
-      (async () => {
+      } else if (movie.name) {
+        setType('tv')
         const list = await getProviders(type, movie.id)
         setProviders(list)
-      })()
-    }, [])
-  }
-  if (movie.poster_path) img = `https://image.tmdb.org/t/p/w500/${movie.poster_path}`
+      }
+    })()
+  }, [])
+
+  if (movie.poster_path) setImg(`https://image.tmdb.org/t/p/w500/${movie.poster_path}`)
 
   const onMouseEnterCard = () => {
     setIsHoverableCard(true)

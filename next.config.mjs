@@ -10,6 +10,10 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: "/api/naver/:path*",
+        destination: "https://openapi.naver.com/:path*",
+      },
+      {
         source: "/api/tm-movie/detail/:id",
         destination: `https://api.themoviedb.org/3/movie/:id?language=ko&api_key=${API_KEY}`
       }

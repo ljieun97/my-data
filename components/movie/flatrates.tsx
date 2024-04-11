@@ -11,6 +11,7 @@ export default function Flatrates({ type, provider }: { type: string, provider: 
       if(type == 'movie' || type == 'tv') setFlatrates(await getProviders(type, provider))
     })()
   }, [provider])
+  
   return (
     <>
       {(type == 'movie' || type == 'tv') && flatrates && flatrates.map((flatrate: any) => (

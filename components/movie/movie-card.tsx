@@ -22,23 +22,25 @@ const MovieCard = ({ movie }: { movie: any }) => {
 
   useEffect(() => {
     (async () => {
-      if (movie.webtoonId) {
-        setType('webtoon') //웹툰엔 title도 있음
+      if (movie.webtoonId) { //웹툰엔 title도 있음
+        setType('webtoon')
         setImg(movie.img)
         setProviders(movie.service)
       } else if (movie.title) {
         setType('movie')
-        const list = await getProviders(type, movie.id)
+        if (movie.poster_path) setImg(`https://image.tmdb.org/t/p/w500/${movie.poster_path}`)
+        const list = await getProviders('movie', movie.id)
         setProviders(list)
       } else if (movie.name) {
         setType('tv')
-        const list = await getProviders(type, movie.id)
+        if (movie.poster_path) setImg(`https://image.tmdb.org/t/p/w500/${movie.poster_path}`)
+        const list = await getProviders('tv', movie.id)
         setProviders(list)
       }
     })()
   }, [])
 
-  if (movie.poster_path) setImg(`https://image.tmdb.org/t/p/w500/${movie.poster_path}`)
+  
 
   const onMouseEnterCard = () => {
     setIsHoverableCard(true)
@@ -64,6 +66,8 @@ const MovieCard = ({ movie }: { movie: any }) => {
         break
       case 'tv':
         setContent(await getSeriseDetail(id))
+        break
+      default:
         break
     }
   }

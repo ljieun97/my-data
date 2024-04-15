@@ -19,19 +19,19 @@ const Home = () => {
       </Suspense>
       <Divider className="my-4" /> */}
 
-      <Title title={'최신 등록 영화'} />
+      <Title title={'영화'} />
       <Suspense fallback={<h1>loading</h1>}>
         <TodayList type={'movie'} />
       </Suspense>
       <Divider className="my-4" />
 
-      <Title title={'최신 등록 시리즈'} />
+      <Title title={'TV'} />
       <Suspense fallback={<h1>loading</h1>}>
         <TodayList type={'tv'} />
       </Suspense>
       <Divider className="my-4" />
 
-      <Title title={'최신 애니메이션'} />
+      <Title title={'애니메이션'} />
       <Suspense fallback={<h1>loading</h1>}>
         <TodayList type={'anime'} />
       </Suspense>

@@ -6,9 +6,9 @@ const GET = async () => {
 	try {
 		const db = await connectMongo()
 		const movies = await db
-			.collection("my_movies")
+			.collection("contents")
 			.find({})
-			.sort({ my_date: -1 })
+			.sort({ user_date: -1 })
 			// .limit(10)
 			.toArray()
 		return NextResponse.json(movies)
@@ -19,21 +19,78 @@ const GET = async () => {
 }
 
 const POST = async (req: NextRequest) => {
-	const { movie, rating } = await req.json()
-	// const today = dayjs().format('YYYY-MM-DD HH:mm:ss')
-	const today = movie.release_date ? movie.release_date : movie.first_air_date
-	movie.my_rating = rating
+	const { content, rating } = await req.json()
+	// content.my_rating = rating
+
+	const today = dayjs().format('YYYY-MM-DD HH:mm:ss')
+	let date = ''
+	let object = {} as any
+
+	if (content.original_language) {
+		if(content.title) {
+			date = content.release_date
+			object = {
+				type: '영화',
+				title: content.title,
+				id: content.id,
+				poster_path: content.poster_path,
+				genre_ids: content.genre_ids
+			}
+		} else {
+			date = content.first_air_date
+			object = {
+				type: 'TV',
+				name: content.name,
+				id: content.id,
+				poster_path: content.poster_path,
+				genre_ids: content.genre_ids
+			}
+		}
+	} else if (content.webtoonId) {
+		date = today
+		object = {
+			type: '웹툰',
+			webtoonId: true,
+			title: content.title,
+			service: content.service,
+			id: content.webtoonId,
+			img: content.img,
+		}
+	} else if (content.isbn) {
+		date = today
+		object = {
+			type: '도서',
+			isbn: true,
+			title: content.title,
+			id: Number(content.isbn),
+			image: content.image,
+			// backdrop_path: content.backdrop_path,
+			// genres: content.genre_ids
+		}
+	}
+
+	object.user_id = 1
+	object.user_rating = rating
+	object.user_isLike = false
 
 	try {
 		const db = await connectMongo()
 		await db
-			.collection("my_movies")
-			.updateOne({ id: movie.id },
+			.collection("contents")
+			.updateOne(
 				{
-					$set: movie,
-					$setOnInsert: { my_date: today }
+					user_id: object.user_id,
+					type: object.type,
+					id: object.id
+				},
+				{
+					// $set: content,
+					$set: object,
+					$setOnInsert: { user_date: date }
 				}, { upsert: true })
-		return NextResponse.json({ message: "success /movie POST" })
+		//title type source sourceId age my_date my_rating my_isLike poster_path backdrop_path genres userId
+		//식별자 userId + type + sourceId
+		return NextResponse.json({ message: "success /content POST" })
 	} catch (e) {
 		console.log(e)
 		return NextResponse.json({ error: e })

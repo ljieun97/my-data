@@ -7,7 +7,7 @@ const PUT = async (req: NextRequest, { params: { id } }: { params: { id: string 
   try {
     const db = await connectMongo()
     await db
-      .collection("my_movies")
+      .collection("contents")
       .updateOne({ _id: new ObjectId(id) },
         {
           $set: { my_date: date },
@@ -23,7 +23,7 @@ const DELETE = async (req: NextRequest, { params: { id } }: { params: { id: stri
   try {
     const db = await connectMongo()
     await db
-      .collection("my_movies")
+      .collection("contents")
       .findOneAndDelete({ _id: new ObjectId(id) })
     return NextResponse.json({ message: "success /movie DELETE" })
   } catch (e) {

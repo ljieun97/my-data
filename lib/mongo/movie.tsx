@@ -14,7 +14,7 @@ const CreateMovie = async (movie: any, rating: number) => {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ movie, rating })
+    body: JSON.stringify({ content: movie, rating })
   })
 }
 
@@ -37,4 +37,12 @@ const DeleteMovie = async (id: any) => {
   })
 }
 
-export { GetMovies, CreateMovie, UpdateMovie, DeleteMovie }
+const GetMovieCount = async () => {
+  const response = await fetch(`/api/movies`, {
+    method: "GET"
+  })
+  const result = await response.json()
+  return result
+}
+
+export { GetMovies, CreateMovie, UpdateMovie, DeleteMovie, GetMovieCount }

@@ -10,7 +10,7 @@ const GET = async () => {
 			.aggregate([
 				{
 					$group: {
-						_id: '$media_type',
+						_id: { $substr: ["$user_date", 0, 4] },
 						count: { $count: {} },
 					}
 				},

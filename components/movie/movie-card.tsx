@@ -119,7 +119,7 @@ const MovieCard = ({ movie }: { movie: any }) => {
                       <Tooltip content={"볼만해요"}>
                         <FontAwesomeIcon icon={faFaceMeh} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(movie, 3)} />
                       </Tooltip>
-                      <Tooltip content={"화나요"}>
+                      <Tooltip content={"별로예요"}>
                         <FontAwesomeIcon icon={faFaceAngry} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(movie, 1)} />
                       </Tooltip>
                     </>

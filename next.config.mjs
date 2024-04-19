@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const API_KEY = process.env.API_KEY_TMDB
+
 const nextConfig = {
   reactStrictMode: false,
   images: {
@@ -10,13 +11,25 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: "/api/naver/:path*",
+        source: "/naver/:path*",
         destination: "https://openapi.naver.com/:path*",
       },
-      {
-        source: "/api/tm-movie/detail/:id",
-        destination: `https://api.themoviedb.org/3/movie/:id?language=ko&api_key=${API_KEY}`
-      }
+      // {
+      //   source: "/tmdb/:path*",
+      //   has: [
+      //     {
+      //       type: 'header',
+      //       key: 'accept',
+      //       value: 'application/json',
+      //     },
+      //     {
+      //       type: 'header',
+      //       key: 'Authorization',
+      //       value: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4ZjkwNjhiYjlhYzEwM2UxZmVmODZiYmMzMmU0MjdjZiIsInN1YiI6IjYzZmIwYTQwMzQ0YThlMDBlNmNlMDk2OSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.GyhHdVATnofwAdYZ0-yV1uX30FqrTU_QGBJH3mcQNqQ`,
+      //     },
+      //   ],
+      //   destination: "https://api.themoviedb.org/3/:path*",
+      // }
     ]
   }
 };

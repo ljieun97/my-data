@@ -1,20 +1,19 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Link, Tooltip, User, Spinner, Card, CardHeader, Avatar, CardBody, CardFooter, Divider, Input } from "@nextui-org/react"
-import { Rating } from 'react-custom-rating-component'
+import { useEffect, useState, useCallback } from "react"
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input } from "@nextui-org/react"
 import { GetMovies, DeleteMovie, UpdateMovie, GetMovieCount } from "@/lib/mongo/movie"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCirclePlus, faFaceLaughBeam, faFaceMeh, faFaceAngry, faCircleCheck, faTrashCan } from "@fortawesome/free-solid-svg-icons"
+import { faFaceLaughBeam, faFaceMeh, faFaceAngry, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 
-export default function MyMovies() {
-  const [movies, setMovies] = useState([])
-  const [movieCounts, setMovieCounts] = useState([])
+export default function MyContents() {
+  const [contents, setContents] = useState([])
+  const [contentCounts, setContentCounts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   useEffect(() => {
     (async () => {
-      setMovies(await GetMovies())
-      setMovieCounts(await GetMovieCount())
+      setContents(await GetMovies())
+      setContentCounts(await GetMovieCount())
       setIsLoading(false)
     })()
   }, [])
@@ -22,14 +21,14 @@ export default function MyMovies() {
 
   const clickUpdate = (id: any) => async (e: React.ChangeEvent<HTMLInputElement>) => {
     await UpdateMovie(id, e.target.value)
-    const movies = await GetMovies()
-    setMovies(movies)
+    const contents = await GetMovies()
+    setContents(contents)
   }
 
   const clickDelete = async (id: any) => {
     await DeleteMovie(id)
-    const movies = await GetMovies()
-    setMovies(movies)
+    const contents = await GetMovies()
+    setContents(contents)
   }
 
   const columns = [
@@ -50,7 +49,7 @@ export default function MyMovies() {
       label: "ACTION",
     },
   ]
-  const getKeyValue = React.useCallback((item: any, columnKey: any) => {
+  const getKeyValue = useCallback((item: any, columnKey: any) => {
     const cellValue = item[columnKey]
     switch (columnKey) {
       case "title":
@@ -106,10 +105,10 @@ export default function MyMovies() {
       <Card>
         <CardBody>
           <div className="flex gap-3 items-center" >
-            {movieCounts?.map((movieCount: any, index: number) => (
+            {contentCounts?.map((contentCount: any, index: number) => (
               <div className="flex gap-1" key={index}>
-                <p className="text-small">{movieCount._id}</p>
-                <p className="font-semibold text-small">{movieCount.count}</p>
+                <p className="text-small">{contentCount._id}</p>
+                <p className="font-semibold text-small">{contentCount.count}</p>
               </div>
             ))}
           </div>
@@ -129,7 +128,7 @@ export default function MyMovies() {
           {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
         </TableHeader>
         <TableBody
-          items={movies}
+          items={contents}
           isLoading={isLoading}
           loadingContent={<Spinner label="Loading..." />}
         >

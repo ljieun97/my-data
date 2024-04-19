@@ -5,13 +5,13 @@ import dayjs from 'dayjs'
 const GET = async () => {
 	try {
 		const db = await connectMongo()
-		const movies = await db
+		const results = await db
 			.collection("contents")
 			.find({})
 			.sort({ user_date: -1 })
 			// .limit(10)
 			.toArray()
-		return NextResponse.json(movies)
+		return NextResponse.json(results)
 	} catch (e) {
 		console.log(e)
 		return NextResponse.json({ error: e })

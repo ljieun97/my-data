@@ -8,13 +8,13 @@ const GetMovies = async () => {
   return result
 }
 
-const CreateMovie = async (movie: any, rating: number) => {
+const CreateMovie = async (content: any, rating: number) => {
   await fetch(`/api/movie`, {
     method: "POST",
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ content: movie, rating })
+    body: JSON.stringify({ content, rating })
   })
 }
 

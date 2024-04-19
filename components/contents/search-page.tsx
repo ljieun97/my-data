@@ -6,7 +6,7 @@ import SearchList from "./search-list"
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
-  const keyword = searchParams.get('keyword') || " "
+  const keyword = searchParams.get('keyword')
 
   return (
     <>

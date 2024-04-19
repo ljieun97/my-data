@@ -10,28 +10,31 @@ import MovieInfo from "./movie-info";
 import { getMovieDetail, getProviders, getSeriseDetail } from "@/lib/themoviedb/api";
 import { useRouter } from "next/navigation";
 
-const MovieCard = ({ movie }: { movie: any }) => {
+const MovieCard = ({ content }: { content: any }) => {
   const router = useRouter()
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
-  const [content, setContent] = useState()
+  const [contentDetail, setContentDetail] = useState()
   const [isHoverableCard, setIsHoverableCard] = useState(false)
   const [isHoverableCheck, setIsHoverableCheck] = useState(false)
 
   let type = ''
   let img = ''
+  let adult = false
 
-  if (movie.webtoonId) {
+  if (content.webtoonId) {
     type = 'webtoon' //웹툰엔 title도 있음
-    img = movie.img
-  } else if (movie.isbn) {
+    img = content.img
+  } else if (content.isbn) {
     type = 'book'
-    img = movie.image
-  } else if (movie.title) {
+    img = content.image
+  } else if (content.title) {
     type = 'movie'
-  } else if (movie.name) {
+    adult = content.adult
+  } else if (content.name) {
     type = 'tv'
+    adult = content.adult
   }
-  if (movie.poster_path) img = `https://image.tmdb.org/t/p/w500/${movie.poster_path}`
+  if (content.poster_path) img = `https://image.tmdb.org/t/p/w500/${content.poster_path}`
 
   const onMouseEnterCard = () => {
     setIsHoverableCard(true)
@@ -46,17 +49,17 @@ const MovieCard = ({ movie }: { movie: any }) => {
     setIsHoverableCheck(false)
   }
 
-  const clickCreate = async (movie: any, rating: number) => {
-    await CreateMovie(movie, rating)
+  const clickCreate = async (content: any, rating: number) => {
+    await CreateMovie(content, rating)
   }
 
   const onClickInfo = async (id: string) => {
     switch (type) {
       case 'movie':
-        setContent(await getMovieDetail(id))
+        setContentDetail(await getMovieDetail(id))
         break
       case 'tv':
-        setContent(await getSeriseDetail(id))
+        setContentDetail(await getSeriseDetail(id))
         break
     }
   }
@@ -69,27 +72,37 @@ const MovieCard = ({ movie }: { movie: any }) => {
         isFooterBlurred
         isHoverable
       >
-        <Image
-          alt="poster"
-          className="object-cover h-[240px]"
-          width="100%"
-          // height="100%"
-          src={img}
-        />
+        {adult ? (
+          <Image
+            alt="poster"
+            className="object-cover h-[240px] blur-md"
+            width="100%"
+            // height="100%"
+            src={img}
+          />
+        ) : (
+          <Image
+            alt="poster"
+            className="object-cover h-[240px]"
+            width="100%"
+            // height="100%"
+            src={img}
+          />
+        )}
         <CardHeader className="absolute w-[calc(100%_-_8px)] justify-start">
           <div className="flex gap-3">
             {(type == 'movie' || type == 'tv') &&
-              <Flatrates type={type} provider={movie.id} />
+              <Flatrates type={type} provider={content.id} />
             }
             {type == 'webtoon' &&
-              <Flatrates type={type} provider={movie.service} />
+              <Flatrates type={type} provider={content.service} />
             }
           </div>
         </CardHeader>
         {!img &&
           <CardBody className="absolute bottom-1/3 z-10">
             <h4 className="text-white text-lg font-bold tracking-tight text-center">
-              {movie.title ? movie.title : movie.name}
+              {content.title ? content.title : content.name}
             </h4>
           </CardBody>
         }
@@ -97,8 +110,7 @@ const MovieCard = ({ movie }: { movie: any }) => {
         <CardFooter className="bg-black/70 absolute bottom-0 z-10 invisible group-hover/footer:visible">
           <div className="flex flex-col w-full" >
             <h4 className="text-white font-bold tracking-tight">
-              {/* {(movie.title ? movie.title : movie.name).split('-')[0]} */}
-              {movie.title ? movie.title : movie.name}
+              {content.title ? content.title : content.name}
             </h4>
             {/* <p>{movie.tagline}</p> */}
             <div className="flex justify-between">
@@ -114,13 +126,13 @@ const MovieCard = ({ movie }: { movie: any }) => {
                   {isHoverableCheck &&
                     <>
                       <Tooltip content={"재밌어요"}>
-                        <FontAwesomeIcon icon={faFaceLaughBeam} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(movie, 5)} />
+                        <FontAwesomeIcon icon={faFaceLaughBeam} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(content, 5)} />
                       </Tooltip>
                       <Tooltip content={"볼만해요"}>
-                        <FontAwesomeIcon icon={faFaceMeh} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(movie, 3)} />
+                        <FontAwesomeIcon icon={faFaceMeh} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(content, 3)} />
                       </Tooltip>
                       <Tooltip content={"별로예요"}>
-                        <FontAwesomeIcon icon={faFaceAngry} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(movie, 1)} />
+                        <FontAwesomeIcon icon={faFaceAngry} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(content, 1)} />
                       </Tooltip>
                     </>
                   }
@@ -128,11 +140,11 @@ const MovieCard = ({ movie }: { movie: any }) => {
               </div>
               <div className="flex items-center">
                 {(type == 'movie' || type == 'tv') &&
-                  <Button onPress={onOpen} onClick={() => onClickInfo(movie.id)}>상세정보</Button>
+                  <Button onPress={onOpen} onClick={() => onClickInfo(content.id)}>상세정보</Button>
                 }
                 {/* <Button onClick={()=>router.push(`/info`)}>상세정보</Button> */}
                 {/* {JSON.stringify(content)} */}
-                {content &&
+                {contentDetail &&
                   <Modal isOpen={isOpen} onOpenChange={onOpenChange}
                     size='4xl'
                     scrollBehavior="inside"
@@ -162,7 +174,7 @@ const MovieCard = ({ movie }: { movie: any }) => {
                     }}
                   >
                     <ModalContent>
-                      <MovieInfo content={content} />
+                      <MovieInfo content={contentDetail} />
                     </ModalContent>
                   </Modal>
                 }

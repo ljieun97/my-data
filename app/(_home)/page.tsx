@@ -1,8 +1,6 @@
 import Title from "@/components/common/title"
 import AcademyMovies from "@/components/movie/academy-movies"
 import TodayList from "@/components/movie/today-list"
-import { Divider, Link } from "@nextui-org/react"
-import { Suspense } from "react"
 
 export const metadata = {
   title: "홈"
@@ -20,21 +18,21 @@ const Home = () => {
       <Divider className="my-4" /> */}
 
       <Title title={'영화'} />
-      <Suspense fallback={<h1>loading</h1>}>
+      {/* <Suspense fallback={<h1>loading</h1>}> */}
         <TodayList type={'movie'} />
-      </Suspense>
-      <Divider className="my-4" />
+      {/* </Suspense> */}
+
 
       <Title title={'TV'} />
-      <Suspense fallback={<h1>loading</h1>}>
+      {/* <Suspense fallback={<h1>loading</h1>}> */}
         <TodayList type={'tv'} />
-      </Suspense>
-      <Divider className="my-4" />
+      {/* </Suspense> */}
+
 
       <Title title={'애니메이션'} />
-      <Suspense fallback={<h1>loading</h1>}>
+      {/* <Suspense fallback={<h1>loading</h1>}> */}
         <TodayList type={'anime'} />
-      </Suspense>
+      {/* </Suspense> */}
     </>
   )
 }

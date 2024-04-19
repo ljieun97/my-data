@@ -20,6 +20,11 @@ export default function TopBar() {
                 홈
               </Link>
             </NavbarItem>
+            <NavbarItem isActive={path === "/movie"}>
+              <Link href="/movie" color="foreground">
+                영화
+              </Link>
+            </NavbarItem>
             <NavbarItem isActive={path === "/mypage"}>
               <Link href="/mypage" color="foreground">
                 마이페이지

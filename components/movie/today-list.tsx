@@ -2,22 +2,22 @@ import { getMonthAnime, getTodayMovies, getTodaySeries } from "@/lib/themoviedb/
 import ImagesSlider from "../layout/images-slider"
 
 export default async function TodayList(props: any) {
-  let movies = []
+  let contents = []
   switch (props.type) {
     case 'movie':
-      movies = await getTodayMovies()
+      contents = await getTodayMovies()
       break
     case 'tv':
-      movies = await getTodaySeries()
+      contents = await getTodaySeries()
       break
     case 'anime':
-      movies = await getMonthAnime()
+      contents = await getMonthAnime()
       break
   }
 
   return (
     <>
-      <ImagesSlider movies={movies} />
+      <ImagesSlider contents={contents} />
     </>
   )
 }

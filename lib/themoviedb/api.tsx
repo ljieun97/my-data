@@ -94,17 +94,20 @@ export async function getRecommendations(type: string, id: string) {
   return results
 }
 
-//영화페이지
-export async function getFilterMovies(country: any, providers: any, date: any, genres: any, pageNum: any) {
+//영화 및 시리즈 페이지
+export async function getFilterMovies(type: string, country: any, providers: any, date: any, genres: any, pageNum: any) {
   // providers = Array.from(providers).join("|")
+  let dateQueryByType = (type == 'movie') ? 
+  '&primary_release_year=2024' : 
+  `&air_date.gte=${date}-01-01&air_date.lte=${date}-12-31`
   const qeury = {
     country: country ? `&with_origin_country=${country}` : '',
     provider: providers ? `&with_watch_providers=${providers}` : '',
-    date: date ? `&primary_release_year=${date}` : '',
+    date: date ? `${dateQueryByType}` : '',
     genre: genres ? `&with_genres=${genres}` : ''
   }
 
-  const URL = 'https://api.themoviedb.org/3/discover/movie'
+  const URL = `https://api.themoviedb.org/3/discover/${type}`
     + `?language=ko&watch_region=KR&api_key=${API_KEY}`
     + `&without_watch_providers=1796`
     + qeury.provider
@@ -113,8 +116,10 @@ export async function getFilterMovies(country: any, providers: any, date: any, g
     + qeury.country
     // + `&primary_release_date.gte=${date.start.toString()}&primary_release_date.lte=${date.end.toString()}`
     + `&page=${pageNum}`
+
   const response = await fetch(URL)
   let {results, page, total_pages} = await response.json()
+  console.log(page, total_pages)
   // results = results.filter((content: any) => content.poster_path && content.overview)
   return {results, page, total_pages}
 }

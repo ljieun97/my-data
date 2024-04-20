@@ -10,7 +10,7 @@ export default function Page () {
     <>
       <Title title={'영화'} />
       {/* <Suspense fallback={<h1>loading</h1>}> */}
-        <MovieList />
+        <MovieList type={'movie'}/>
       {/* </Suspense> */}
     </>
   )

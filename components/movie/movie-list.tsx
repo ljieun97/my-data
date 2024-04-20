@@ -9,7 +9,7 @@ import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
 import MovieCard from "./movie-card"
 
-export default function MovieList(props: any) {
+export default function MovieList({type}: {type: string}) {
   const [country, setCountries] = useState('')
   // const [flatforms, setFlatforms] = useState(new Set([]))
   const [flatforms, setFlatforms] = useState('')
@@ -23,7 +23,7 @@ export default function MovieList(props: any) {
   const [hasMore, setHasMore] = useState(false)
   let list = useAsyncList({
     async load({ signal, cursor }) {
-      const { results, page, total_pages } = cursor ? await getFilterMovies(country, flatforms, date, genres, cursor) : await getFilterMovies(country, flatforms, date, genres, 1)
+      const { results, page, total_pages } = cursor ? await getFilterMovies(type, country, flatforms, date, genres, cursor) : await getFilterMovies(type, country, flatforms, date, genres, 1)
       setHasMore(page < total_pages)
       return {
         items: results,

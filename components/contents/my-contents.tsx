@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react"
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input } from "@nextui-org/react"
 import { GetMovies, DeleteMovie, UpdateMovie, GetMovieCount } from "@/lib/mongo/movie"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faFaceLaughBeam, faFaceMeh, faFaceAngry, faTrashCan } from "@fortawesome/free-solid-svg-icons"
+import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 
 export default function MyContents() {
   const [contents, setContents] = useState([])
@@ -80,9 +80,9 @@ export default function MyContents() {
         )
       case "rating":
         let rating = item.user_rating
-        let icon = faFaceLaughBeam
-        if (rating == 3) icon = faFaceMeh
-        else if (rating == 1) icon = faFaceAngry
+        let icon = faFaceLaughSquint
+        if (rating == 3) icon = faFaceSmileBeam
+        else if (rating == 1) icon = faFaceFrownOpen
         return (
           <FontAwesomeIcon icon={icon} className="size-7" />
         )

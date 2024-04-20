@@ -1,10 +1,10 @@
 "use client"
 
 import Flatrates from "./flatrates"
-import { Card, CardFooter, Image, CardHeader, CardBody, Button, Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Link } from "@nextui-org/react";
+import { Card, CardFooter, Image, CardHeader, CardBody, Button, Tooltip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Link, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@nextui-org/react";
 import { useEffect, useState } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCirclePlus, faFaceLaughBeam, faFaceMeh, faFaceAngry, faCircleCheck } from "@fortawesome/free-solid-svg-icons"
+import { faPlus, faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faCircleCheck, faEllipsisVertical, faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons"
 import { CreateMovie } from "@/lib/mongo/movie";
 import MovieInfo from "./movie-info";
 import { getMovieDetail, getProviders, getSeriseDetail } from "@/lib/themoviedb/api";
@@ -107,79 +107,121 @@ const MovieCard = ({ content }: { content: any }) => {
           </CardBody>
         }
         {/* {isHoverableCard && */}
-        <CardFooter className="bg-black/70 absolute bottom-0 z-10 invisible group-hover/footer:visible">
-          <div className="flex flex-col w-full" >
-            <h4 className="text-white font-bold tracking-tight">
-              {content.title ? content.title : content.name}
-            </h4>
-            {/* <p>{movie.tagline}</p> */}
-            <div className="flex justify-between">
+        {/* <CardFooter className="bg-black/70 absolute bottom-0 z-10 invisible group-hover/footer:visible"> */}
+        <CardFooter className="invisible group-hover/footer:visible justify-between bg-black/50 border-white/50 border-1 py-1 absolute rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
+          {/* <div className="flex w-full" > */}
+          <h4 className="text-white text-sm font-bold ">
+            {content.title ? content.title : content.name}
+          </h4>
+          {/* <p>{movie.tagline}</p> */}
+          {/* <div className="flex justify-between">
               <div className="flex gap-1 items-center">
                 <Tooltip content={"찜하기"}>
                   <FontAwesomeIcon icon={faCirclePlus} style={{ color: 'white' }} className="cursor-pointer size-8" />
                 </Tooltip>
                 <div className="flex gap-1" onMouseLeave={() => onMouseLeaveCheck()}>
-                  {!isHoverableCheck &&
-                    <FontAwesomeIcon icon={faCircleCheck} style={{ color: 'white' }} className="size-8" onMouseEnter={() => onMouseEnterCheck()}
-                    />
-                  }
-                  {isHoverableCheck &&
+                  {isHoverableCheck ?
                     <>
                       <Tooltip content={"재밌어요"}>
-                        <FontAwesomeIcon icon={faFaceLaughBeam} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(content, 5)} />
+                        <FontAwesomeIcon icon={faFaceLaughSquint} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(content, 5)} />
                       </Tooltip>
                       <Tooltip content={"볼만해요"}>
-                        <FontAwesomeIcon icon={faFaceMeh} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(content, 3)} />
+                        <FontAwesomeIcon icon={faFaceSmileBeam} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(content, 3)} />
                       </Tooltip>
                       <Tooltip content={"별로예요"}>
                         <FontAwesomeIcon icon={faFaceAngry} style={{ color: 'white' }} className="cursor-pointer size-8" onClick={() => clickCreate(content, 1)} />
                       </Tooltip>
-                    </>
+                    </> :
+                    <FontAwesomeIcon icon={faCircleCheck} style={{ color: 'white' }} className="size-8" onMouseEnter={() => onMouseEnterCheck()}
+                    />
                   }
                 </div>
-              </div>
-              <div className="flex items-center">
-                {(type == 'movie' || type == 'tv') &&
-                  <Button onPress={onOpen} onClick={() => onClickInfo(content.id)}>상세정보</Button>
-                }
-                {/* <Button onClick={()=>router.push(`/info`)}>상세정보</Button> */}
-                {/* {JSON.stringify(content)} */}
-                {contentDetail &&
-                  <Modal isOpen={isOpen} onOpenChange={onOpenChange}
-                    size='4xl'
-                    scrollBehavior="inside"
-                    placement='center'
-                    classNames={{
-                      base: "bg-black text-white"
-                    }}
-                    motionProps={{
-                      variants: {
-                        enter: {
-                          // y: 0,
-                          // opacity: 1,
-                          // transition: {
-                          //   duration: 0.3,
-                          //   ease: "easeOut",
-                          // },
-                        },
-                        // exit: {
-                        //   y: -20,
-                        //   opacity: 0,
-                        //   transition: {
-                        //     duration: 0.2,
-                        //     ease: "easeIn",
-                        //   },
-                        // },
-                      }
-                    }}
+              </div> */}
+          <div className="flex items-center">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  isIconOnly
+                  variant="light"
+                >
+                  <FontAwesomeIcon icon={faEllipsisVertical} />
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu aria-label="Static Actions" disabledKeys={["ing", "like"]}>
+                <DropdownSection title={content.title ? content.title : content.name} showDivider>
+                  <DropdownItem
+                    key="great"
+                    onClick={() => clickCreate(content, 5)}
+                    startContent={<FontAwesomeIcon icon={faFaceLaughSquint} />}
                   >
-                    <ModalContent>
-                      <MovieInfo content={contentDetail} />
-                    </ModalContent>
-                  </Modal>
-                }
-              </div>
-            </div>
+                    최고다 최고
+                  </DropdownItem>
+                  <DropdownItem
+                    key="good"
+                    onClick={() => clickCreate(content, 3)}
+                    startContent={<FontAwesomeIcon icon={faFaceSmileBeam} />}
+                  >
+                    볼만해요
+                  </DropdownItem>
+                  <DropdownItem
+                    key="bad"
+                    onClick={() => clickCreate(content, 1)}
+                    startContent={<FontAwesomeIcon icon={faFaceFrownOpen} />}
+                  >
+                    별로예요
+                  </DropdownItem>
+                </DropdownSection>
+                <DropdownItem key="ing">보는중</DropdownItem>
+                <DropdownItem key="like">찜하기</DropdownItem>
+                <DropdownItem
+                  key="info"
+                  onPress={onOpen} 
+                  onClick={() => onClickInfo(content.id)}
+                  endContent={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
+                >
+                  상세정보
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+
+            {/* <Button onClick={()=>router.push(`/info`)}>상세정보</Button> */}
+            {/* {JSON.stringify(content)} */}
+            {contentDetail &&
+              <Modal isOpen={isOpen} onOpenChange={onOpenChange}
+                size='4xl'
+                scrollBehavior="inside"
+                placement='center'
+                classNames={{
+                  base: "bg-black text-white"
+                }}
+                motionProps={{
+                  variants: {
+                    enter: {
+                      // y: 0,
+                      // opacity: 1,
+                      // transition: {
+                      //   duration: 0.3,
+                      //   ease: "easeOut",
+                      // },
+                    },
+                    // exit: {
+                    //   y: -20,
+                    //   opacity: 0,
+                    //   transition: {
+                    //     duration: 0.2,
+                    //     ease: "easeIn",
+                    //   },
+                    // },
+                  }
+                }}
+              >
+                <ModalContent>
+                  <MovieInfo content={contentDetail} />
+                </ModalContent>
+              </Modal>
+            }
+            {/* </div> */}
+            {/* </div> */}
           </div>
         </CardFooter>
       </Card>

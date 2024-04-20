@@ -189,6 +189,17 @@ export default function MovieList({type}: {type: string}) {
             {(item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>}
           </Select>
           <Select
+            items={flatformDatas}
+            label="제공사"
+            placeholder="전체"
+            className="max-w-xs"
+            // selectionMode="multiple"
+            onChange={handleSelectionChange}
+            showScrollIndicators={false}
+          >
+            {(item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>}
+          </Select>
+          <Select
             items={countryDatas}
             label="국가"
             placeholder="전체"
@@ -204,17 +215,6 @@ export default function MovieList({type}: {type: string}) {
             placeholder="전체"
             className="max-w-xs"
             onChange={handleGenreChange}
-            showScrollIndicators={false}
-          >
-            {(item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>}
-          </Select>
-          <Select
-            items={flatformDatas}
-            label="제공사"
-            placeholder="전체"
-            className="max-w-xs"
-            // selectionMode="multiple"
-            onChange={handleSelectionChange}
             showScrollIndicators={false}
           >
             {(item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>}

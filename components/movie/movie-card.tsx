@@ -108,7 +108,7 @@ const MovieCard = ({ content }: { content: any }) => {
         }
         {/* {isHoverableCard && */}
         {/* <CardFooter className="bg-black/70 absolute bottom-0 z-10 invisible group-hover/footer:visible"> */}
-        <CardFooter className="invisible group-hover/footer:visible justify-between bg-black/50 border-white/50 border-1 py-1 absolute rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
+        <CardFooter className="invisible absolute group-hover/footer:visible justify-between bg-black/50 border-white/50 border-1 py-1 ml-1 rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small z-10">
           {/* <div className="flex w-full" > */}
           <h4 className="text-white text-sm font-bold ">
             {content.title ? content.title : content.name}
@@ -137,7 +137,7 @@ const MovieCard = ({ content }: { content: any }) => {
                   }
                 </div>
               </div> */}
-          <div className="flex items-center">
+
             <Dropdown>
               <DropdownTrigger>
                 <Button
@@ -175,7 +175,7 @@ const MovieCard = ({ content }: { content: any }) => {
                 <DropdownItem key="like">찜하기</DropdownItem>
                 <DropdownItem
                   key="info"
-                  onPress={onOpen} 
+                  onPress={onOpen}
                   onClick={() => onClickInfo(content.id)}
                   endContent={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
                 >
@@ -186,45 +186,46 @@ const MovieCard = ({ content }: { content: any }) => {
 
             {/* <Button onClick={()=>router.push(`/info`)}>상세정보</Button> */}
             {/* {JSON.stringify(content)} */}
-            {contentDetail &&
-              <Modal isOpen={isOpen} onOpenChange={onOpenChange}
-                size='4xl'
-                scrollBehavior="inside"
-                placement='center'
-                classNames={{
-                  base: "bg-black text-white"
-                }}
-                motionProps={{
-                  variants: {
-                    enter: {
-                      // y: 0,
-                      // opacity: 1,
-                      // transition: {
-                      //   duration: 0.3,
-                      //   ease: "easeOut",
-                      // },
-                    },
-                    // exit: {
-                    //   y: -20,
-                    //   opacity: 0,
-                    //   transition: {
-                    //     duration: 0.2,
-                    //     ease: "easeIn",
-                    //   },
-                    // },
-                  }
-                }}
-              >
-                <ModalContent>
-                  <MovieInfo content={contentDetail} />
-                </ModalContent>
-              </Modal>
-            }
+
             {/* </div> */}
             {/* </div> */}
-          </div>
+
         </CardFooter>
       </Card>
+      {contentDetail &&
+        <Modal isOpen={isOpen} onOpenChange={onOpenChange}
+          size='4xl'
+          scrollBehavior="inside"
+          placement='center'
+          classNames={{
+            base: "bg-black text-white"
+          }}
+          motionProps={{
+            variants: {
+              enter: {
+                // y: 0,
+                // opacity: 1,
+                // transition: {
+                //   duration: 0.3,
+                //   ease: "easeOut",
+                // },
+              },
+              // exit: {
+              //   y: -20,
+              //   opacity: 0,
+              //   transition: {
+              //     duration: 0.2,
+              //     ease: "easeIn",
+              //   },
+              // },
+            }
+          }}
+        >
+          <ModalContent>
+            <MovieInfo content={contentDetail} />
+          </ModalContent>
+        </Modal>
+      }
     </>
   )
 }

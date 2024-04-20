@@ -5,7 +5,7 @@ import MovieCard from "../movie/movie-card"
 export default function ImagesSlider(props: any) {
   return (
     <>
-      <div className="flex overflow-x-scroll gap-3">
+      <div className="flex overflow-x-scroll gap-3 pb-6">
         {props.contents.map((content: any, index: number) => (
           <div key={index}>
             <div className="w-[150px]">

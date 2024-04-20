@@ -26,7 +26,7 @@ const POST = async (req: NextRequest) => {
 	let date = ''
 	let object = {} as any
 
-	if (content.original_language) {
+	if (content.genre_ids) {
 		if(content.title) {
 			date = content.release_date
 			object = {
@@ -72,7 +72,7 @@ const POST = async (req: NextRequest) => {
 	object.user_id = 1
 	object.user_rating = rating
 	object.user_isLike = false
-
+console.log(object)
 	try {
 		const db = await connectMongo()
 		await db

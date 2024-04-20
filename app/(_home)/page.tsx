@@ -19,19 +19,19 @@ const Home = () => {
 
       <Title title={'영화'} />
       {/* <Suspense fallback={<h1>loading</h1>}> */}
-        <TodayList type={'movie'} />
+      <TodayList type={'movie'} />
       {/* </Suspense> */}
 
 
       <Title title={'TV'} />
       {/* <Suspense fallback={<h1>loading</h1>}> */}
-        <TodayList type={'tv'} />
+      <TodayList type={'tv'} />
       {/* </Suspense> */}
 
 
       <Title title={'애니메이션'} />
       {/* <Suspense fallback={<h1>loading</h1>}> */}
-        <TodayList type={'anime'} />
+      <TodayList type={'anime'} />
       {/* </Suspense> */}
     </>
   )

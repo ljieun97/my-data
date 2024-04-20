@@ -16,7 +16,9 @@ export default function MyLikes() {
   return (
     <>
       {/* {JSON.stringify(movies)} */}
-      <InfiniteImages contents={contents} />
+      <div className="max-h-[600px] overflow-scroll" >
+        <InfiniteImages contents={contents} />
+      </div >
     </>
   )
 }

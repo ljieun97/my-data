@@ -107,8 +107,8 @@ const MovieCard = ({ content }: { content: any }) => {
           </CardBody>
         }
         {/* {isHoverableCard && */}
-        <CardFooter className="bg-black/70 absolute bottom-0 z-10 invisible group-hover/footer:visible">
-        {/* <CardFooter className="invisible absolute group-hover/footer:visible justify-between bg-black/50 border-white/50 border-1 py-1 ml-1 rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small z-10"> */}
+        {/* <CardFooter className="bg-black/70 absolute bottom-0 z-10 invisible group-hover/footer:visible"> */}
+        <CardFooter className="invisible absolute group-hover/footer:visible justify-between bg-black/50 border-white/50 border-1 py-1 ml-1 rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small z-10">
           {/* <div className="flex w-full" > */}
           <h4 className="text-white text-sm font-bold ">
             {content.title ? content.title : content.name}

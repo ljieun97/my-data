@@ -8,12 +8,11 @@ import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faTrashCan } from 
 
 export default function MyContents() {
   const [contents, setContents] = useState([])
-  const [contentCounts, setContentCounts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+
   useEffect(() => {
     (async () => {
       setContents(await GetMovies())
-      setContentCounts(await GetMovieCount())
       setIsLoading(false)
     })()
   }, [])
@@ -102,26 +101,13 @@ export default function MyContents() {
   return (
     <>
       {/* {JSON.stringify(movieCount)} */}
-      <Card>
-        <CardBody>
-          <div className="flex gap-3 items-center" >
-            {contentCounts?.map((contentCount: any, index: number) => (
-              <div className="flex gap-1" key={index}>
-                <p className="text-small">{contentCount._id}</p>
-                <p className="font-semibold text-small">{contentCount.count}</p>
-              </div>
-            ))}
-          </div>
-        </CardBody>
-      </Card>
-
       <Table
         removeWrapper
         hideHeader
         aria-label="Example table with dynamic content"
         classNames={{
-          base: "max-h-[700px] overflow-scroll",
-          table: "max-h-[700px]",
+          base: "max-h-[600px] overflow-scroll",
+          table: "max-h-[600px]",
         }}
       >
         <TableHeader columns={columns}>

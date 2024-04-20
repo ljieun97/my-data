@@ -70,7 +70,7 @@ const MovieCard = ({ content }: { content: any }) => {
         // radius="sm"
         className="border-none group/footer"
         isFooterBlurred
-        isHoverable
+
       >
         {adult ? (
           <Image
@@ -147,7 +147,7 @@ const MovieCard = ({ content }: { content: any }) => {
                   <FontAwesomeIcon icon={faEllipsisVertical} />
                 </Button>
               </DropdownTrigger>
-              <DropdownMenu aria-label="Static Actions" disabledKeys={["ing", "like"]}>
+              <DropdownMenu aria-labelledby="Static Actions" disabledKeys={["ing", "like"]}>
                 <DropdownSection title={content.title ? content.title : content.name} showDivider>
                   <DropdownItem
                     key="great"

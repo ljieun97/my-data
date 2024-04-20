@@ -12,7 +12,7 @@ export function UiProvider({
   return (
     <NextUIProvider>
       <main>
-        <div className=" px-8 dark text-foreground bg-background mx-auto max-w-7xl flex-grow">
+        <div className="dark px-8 text-foreground bg-background mx-auto max-w-7xl flex-grow">
           <TopBar />
           <div className="py-8">{children}</div>
         </div>

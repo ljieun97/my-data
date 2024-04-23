@@ -2,7 +2,7 @@
 
 const Title = ({title}: {title: string}) => {
   return (
-    <h3 className="pb-4 font-bold text-large">{title}</h3>
+    <h3 className="font-bold text-large">{title}</h3>
   )
 }
 

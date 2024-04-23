@@ -57,15 +57,8 @@ export async function getProviders(type: string, id: any) {
   return results?.KR?.flatrate
 }
 
-export async function getMovieDetail(id: any) {
-  const URL = `https://api.themoviedb.org/3/movie/${id}?language=ko&api_key=${API_KEY}`
-  const response = await fetch(URL)
-  const results = await response.json()
-  return results
-}
-
-export async function getSeriseDetail(id: any) {
-  const URL = `https://api.themoviedb.org/3/tv/${id}?language=ko&api_key=${API_KEY}`
+export async function getDetail(type: string, id: any) {
+  const URL = `https://api.themoviedb.org/3/${type}/${id}?language=ko&api_key=${API_KEY}`
   const response = await fetch(URL)
   const results = await response.json()
   return results

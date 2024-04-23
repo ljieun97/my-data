@@ -1,59 +1,55 @@
-import { getCasts, getMovieDetail, getRecommendations, getSeriseDetail, getSimilars } from "@/lib/themoviedb/api";
-import { Button, ModalContent, ModalHeader, ModalBody, ModalFooter, Image, Avatar, Tooltip, Chip, AvatarGroup } from "@nextui-org/react";
-import { useEffect, useState } from "react";
-import InfiniteImages from "../common/infinite-images";
+'use client'
 
-export default function MovieInfo({ content }: { content: any }) {
-  const type = content.title ? 'movie' : 'tv'
-  const [casts, setCasts] = useState([])
-  const [similars, setSimilars] = useState([])
-  useEffect(() => {
-    (async () => {
-      setCasts(await getCasts(type, content.id))
-      const sim = await getSimilars(type, content.id)
-      const rcm = await getRecommendations(type, content.id)
-      setSimilars(rcm.length > 0 ? rcm : sim)
-    })()
-  }, [])
+import InfiniteImages from "../common/infinite-images"
+import { Avatar, Chip, Tooltip, Image, Button, Card, CardHeader, CardBody, CardFooter } from "@nextui-org/react"
+import Title from "../common/title"
+import { useRouter } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons"
+
+export default function MovieInfo(props: any) {
+  const { content, casts, sim } = props
+  const router = useRouter()
 
   return (
     <>
-      {content &&
-
-        <>
-          <ModalHeader className="flex flex-col gap-1"></ModalHeader>
-          <ModalBody>
-            <div>
-              <Image
-                isBlurred
-                removeWrapper
-                radius="none"
-                alt="Card background"
-                className="z-0 w-full h-full object-cover"
-                src={`https://image.tmdb.org/t/p/original/${content.backdrop_path}`}
-              />
-            </div>
-            <h2 className="font-bold text-large">{content.title ? content.title : content.name}</h2>
-            <div className="flex">
-              <div className="basis-3/5">
+      <Card className="max-h-[800px]">
+        <CardHeader className="p-2">
+          <Button onClick={() => router.back()} isIconOnly variant="light">
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </Button>
+          <Title title={content.title ? content.title : content.name} />
+        </CardHeader>
+        <CardBody className="px-6 py-0">
+          <Image
+            removeWrapper
+            radius="sm"
+            alt="Card background"
+            // className="w-full h-full object-cover"
+            src={content.backdrop_path ? `https://image.tmdb.org/t/p/original/${content.backdrop_path}` : ''}
+          />
+          <div className="flex py-4">
+            <div className="basis-3/5 ">
+              <p>
                 {content.adult && '(19)'}
                 {content.release_date &&
-                  <span>개봉일 {content.release_date}</span>
+                  <span> {content.release_date}</span>
                 }
                 {!content.release_date &&
-                  <span>첫방송 {content.first_air_date}</span>
+                  <span> {content.first_air_date}</span>
                 }
-                <p className="pr-8">
-                  {content.overview}
-                </p>
-              </div>
+              </p>
+              <p className="pr-8">
+                {content.overview}
+                {content.about}
+              </p>
+            </div>
 
-              <div className="basis-2/5">
+            <div className="basis-2/5">
+              {casts &&
                 <div className="flex break-keep pb-4">
                   <div className="pr-2">출연</div>
                   <div className="flex flex-wrap">
-
-                    {/* <AvatarGroup max={7}> */}
                     {casts.map((cast: any) => (
                       <Tooltip key={cast.credit_id} content={cast.name}>
                         <Avatar
@@ -63,34 +59,48 @@ export default function MovieInfo({ content }: { content: any }) {
                         />
                       </Tooltip>
                     ))}
-                    {/* </AvatarGroup> */}
                   </div>
                 </div>
-                <div className="flex break-keep">
-                  <div className="pr-2">장르</div>
-                  <div className="flex flex-wrap gap-1">
-                    {content.genres.map((genre: any) => (
-                      <Chip key={genre.id} color="success" variant="bordered">{genre.name}</Chip>
-                    ))}
-                  </div>
+              }
+
+              <div className="flex break-keep">
+                <div className="pr-2">장르</div>
+                <div className="flex flex-wrap gap-1">
+                  {content.genres?.map((item: any) => (
+                    <Chip key={item.id} color="success" variant="bordered">{item.name}</Chip>
+                  ))}
+                  {content.genre}
+                  {/* {content.genre?.split(', ').length < 2 ?
+                    <Chip color="success" variant="bordered">{content.genre}</Chip>
+                    :
+                    content.genre?.split(', ').map((item: any) => (
+                      <Chip key={item.id} color="success" variant="bordered">{item.name}</Chip>
+                    ))
+                  } */}
                 </div>
               </div>
             </div>
+          </div>
 
-            {similars.length > 0 &&
-              <div>
-                <h4 className="pb-4">추천 콘텐츠</h4>
-                <InfiniteImages contents={similars} />
-              </div>
-            }
-          </ModalBody>
-          {/* <ModalFooter>
-
-              </ModalFooter> */}
-        </>
-
-
-      }
+          {
+            sim?.length > 0 &&
+            <div>
+              <h4 className="pb-4">추천 콘텐츠</h4>
+              <InfiniteImages contents={sim} />
+            </div>
+          }
+        </CardBody>
+        <CardFooter className="gap-3">
+          <div className="flex gap-1">
+            <p className="font-semibold text-default-400 text-small">4</p>
+            <p className=" text-default-400 text-small">Following</p>
+          </div>
+          <div className="flex gap-1">
+            <p className="font-semibold text-default-400 text-small">97.1K</p>
+            <p className="text-default-400 text-small">Followers</p>
+          </div>
+        </CardFooter>
+      </Card>
     </>
   )
 }

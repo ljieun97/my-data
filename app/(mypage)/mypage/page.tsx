@@ -8,10 +8,10 @@ export const metadata = {
 
 const Page = () => {
   return (
-    <>
+    <div className="px-8 py-4">
       <Title title={'마이페이지'} />
       <MyPage />
-    </>
+    </div>
   )
 }
 

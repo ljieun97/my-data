@@ -8,7 +8,7 @@ export default function TopBar() {
   const path = usePathname()
   return (
     <>
-      <Navbar isBordered maxWidth="full" classNames={{ wrapper: "px-0" }}>
+      <Navbar isBordered maxWidth="full">
         <NavbarContent justify="start">
           <NavbarBrand className="mr-4">
             {/* <AcmeLogo /> */}

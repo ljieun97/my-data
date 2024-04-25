@@ -7,7 +7,7 @@ import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical
 import { CreateMovie } from "@/lib/mongo/movie";
 import { useRouter } from "next/navigation";
 
-export default function CardThumb ({ content }: { content: any }) {
+export default function CardThumb({ content }: { content: any }) {
   const router = useRouter()
 
   let type = ''
@@ -40,12 +40,12 @@ export default function CardThumb ({ content }: { content: any }) {
   }
 
   const goDetailpage = () => {
-    switch(type) {
+    switch (type) {
       case 'movie':
       case 'tv':
         router.push(`/${type}/${id}`)
       case 'webtoon':
-        if(content.service!='naver') return
+        if (content.service != 'naver') return
         router.push(`/${type}/${id}`)
     }
   }
@@ -56,22 +56,17 @@ export default function CardThumb ({ content }: { content: any }) {
         // radius="sm"
         className="border-none group/footer"
         isFooterBlurred
-
       >
         {adult ? (
           <Image
             alt="poster"
-            className="object-cover h-[240px] blur-md"
-            width="100%"
-            // height="100%"
+            className="blur-md"
             src={img}
           />
         ) : (
           <Image
+            radius="none"
             alt="poster"
-            className="object-cover h-[240px]"
-            width="100%"
-            // height="100%"
             src={img}
           />
         )}
@@ -135,7 +130,7 @@ export default function CardThumb ({ content }: { content: any }) {
                 key="info"
                 // onClick={() => router.push(`/${type}/${id}`)}
                 onClick={() => goDetailpage()}
-                endContent={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
+              // endContent={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
               >
                 상세정보
               </DropdownItem>

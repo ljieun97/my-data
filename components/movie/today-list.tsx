@@ -1,5 +1,6 @@
 import { getMonthAnime, getTodayMovies, getTodaySeries } from "@/lib/themoviedb/api"
 import ImagesSlider from "../layout/images-slider"
+import InfiniteImages from "../common/infinite-images"
 
 export default async function TodayList(props: any) {
   let contents = []
@@ -17,7 +18,8 @@ export default async function TodayList(props: any) {
 
   return (
     <>
-      <ImagesSlider contents={contents} />
+      <InfiniteImages contents={contents} />
+      {/* <ImagesSlider contents={contents} /> */}
     </>
   )
 }

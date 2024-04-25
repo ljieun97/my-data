@@ -10,8 +10,8 @@ export default async function Page({ params }: { params: { id: string } }) {
   const content = await getWebtoonDetail(id)
 
   return (
-    <>
+    <div className="px-8 py-4">
       <CardInfo content={content} casts={null} sim={null} />
-    </>
+    </div>
   )
 }

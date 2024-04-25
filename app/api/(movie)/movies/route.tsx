@@ -10,12 +10,13 @@ const GET = async () => {
 			.aggregate([
 				{
 					$group: {
-						_id: { $substr: ["$user_date", 0, 4] },
+						// _id: { $substr: ["$user_date", 0, 4] },
+						_id: "$type",
 						count: { $count: {} },
 					}
 				},
 			])
-			.sort({ _id: -1 })
+			.sort({ count: -1 })
 			.toArray()
 		return NextResponse.json(results)
 	} catch (e) {

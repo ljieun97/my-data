@@ -9,7 +9,7 @@ const GET = async () => {
 			.collection("contents")
 			.find({})
 			.sort({ user_date: -1 })
-			// .limit(10)
+			.limit(12)
 			.toArray()
 		return NextResponse.json(results)
 	} catch (e) {
@@ -27,7 +27,7 @@ const POST = async (req: NextRequest) => {
 	let object = {} as any
 
 	if (content.genre_ids) {
-		if(content.title) {
+		if (content.title) {
 			date = content.release_date
 			object = {
 				type: '영화',
@@ -72,7 +72,8 @@ const POST = async (req: NextRequest) => {
 	object.user_id = 1
 	object.user_rating = rating
 	object.user_isLike = false
-console.log(object)
+	console.log(object)
+
 	try {
 		const db = await connectMongo()
 		await db

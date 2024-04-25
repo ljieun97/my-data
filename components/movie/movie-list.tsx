@@ -7,7 +7,7 @@ import { RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { getLocalTimeZone, today } from "@internationalized/date";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
-import MovieCard from "./movie-card"
+import CardThumb from "../contents/card-thumb"
 
 export default function MovieList({type}: {type: string}) {
   const [country, setCountries] = useState('')

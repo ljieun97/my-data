@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons"
 
-export default function MovieInfo(props: any) {
+export default function CardInfo(props: any) {
   const { content, casts, sim } = props
   const router = useRouter()
 
@@ -21,13 +21,23 @@ export default function MovieInfo(props: any) {
           <Title title={content.title ? content.title : content.name} />
         </CardHeader>
         <CardBody className="px-6 py-0">
-          <Image
-            removeWrapper
-            radius="sm"
-            alt="Card background"
-            // className="w-full h-full object-cover"
-            src={content.backdrop_path ? `https://image.tmdb.org/t/p/original/${content.backdrop_path}` : ''}
-          />
+          {content.backdrop_path &&
+            <Image
+              removeWrapper={true}
+              radius="sm"
+              alt="Card background"
+              className="w-full h-full object-cover"
+              src={content.backdrop_path ? `https://image.tmdb.org/t/p/original/${content.backdrop_path}` : ''}
+            />
+          }
+          {/* {content.thumb &&
+            <Image
+              removeWrapper={true}
+              radius="sm"
+              alt="Card background"
+              src={content.thumb}
+            />
+          } */}
           <div className="flex py-4">
             <div className="basis-3/5 ">
               <p>

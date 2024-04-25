@@ -1,4 +1,4 @@
-import MovieInfo from "@/components/movie/movie-info"
+import CardInfo from "@/components/contents/card-info"
 import { getCasts, getDetail, getRecommendations, getSimilars } from "@/lib/themoviedb/api"
 
 export const metadata = {
@@ -15,7 +15,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <>
-      <MovieInfo content={content} casts={casts} sim={sim} />
+      <CardInfo content={content} casts={casts} sim={sim} />
     </>
   )
 }

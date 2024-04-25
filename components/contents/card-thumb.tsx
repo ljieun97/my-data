@@ -1,13 +1,13 @@
 "use client"
 
-import Flatrates from "./flatrates"
+import Flatrates from "../movie/flatrates"
 import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons"
 import { CreateMovie } from "@/lib/mongo/movie";
 import { useRouter } from "next/navigation";
 
-const MovieCard = ({ content }: { content: any }) => {
+export default function CardThumb ({ content }: { content: any }) {
   const router = useRouter()
 
   let type = ''
@@ -19,7 +19,7 @@ const MovieCard = ({ content }: { content: any }) => {
     type = 'webtoon' //웹툰엔 title도 있음
     img = content.img
     id = img.split('/')[4]
-    console.log(id)
+    console.log(content)
   } else if (content.isbn) {
     type = 'book'
     img = content.image
@@ -37,6 +37,17 @@ const MovieCard = ({ content }: { content: any }) => {
 
   const clickCreate = async (content: any, rating: number) => {
     await CreateMovie(content, rating)
+  }
+
+  const goDetailpage = () => {
+    switch(type) {
+      case 'movie':
+      case 'tv':
+        router.push(`/${type}/${id}`)
+      case 'webtoon':
+        if(content.service!='naver') return
+        router.push(`/${type}/${id}`)
+    }
   }
 
   return (
@@ -122,7 +133,8 @@ const MovieCard = ({ content }: { content: any }) => {
               <DropdownItem key="like">찜하기</DropdownItem>
               <DropdownItem
                 key="info"
-                onClick={() => router.push(`/${type}/${id}`)}
+                // onClick={() => router.push(`/${type}/${id}`)}
+                onClick={() => goDetailpage()}
                 endContent={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
               >
                 상세정보
@@ -134,5 +146,3 @@ const MovieCard = ({ content }: { content: any }) => {
     </>
   )
 }
-
-export default MovieCard

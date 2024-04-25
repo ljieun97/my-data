@@ -1,4 +1,4 @@
-import MovieInfo from "@/components/movie/movie-info"
+import CardInfo from "@/components/contents/card-info"
 import { getWebtoonDetail } from "@/lib/themoviedb/webtoon"
 
 export const metadata = {
@@ -11,7 +11,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <>
-      <MovieInfo content={content} casts={null} sim={null} />
+      <CardInfo content={content} casts={null} sim={null} />
     </>
   )
 }

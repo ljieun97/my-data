@@ -1,6 +1,7 @@
 import CardInfo from "@/components/contents/card-info"
 import { getWebtoonDetail } from "@/lib/themoviedb/webtoon"
 
+export const dynamic = "force-dynamic"
 export const metadata = {
   title: "웹툰"
 }

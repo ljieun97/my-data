@@ -6,6 +6,7 @@ const Headers = {
   'X-Naver-Client-Secret': NAVER_CLIENT_SECRET || ''
 }
 
+export const dynamic = "force-dynamic"
 export async function getSearchBooks(keyword: string) {
   const URL = `/naver/v1/search/book.json?query=${keyword}`
   const response = await fetch(URL, {

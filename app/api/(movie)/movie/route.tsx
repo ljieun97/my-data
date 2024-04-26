@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/lib/mongo/mongodb"
 import dayjs from 'dayjs'
 
+export const dynamic = "force-dynamic"
 const GET = async () => {
 	try {
 		const db = await connectMongo()
@@ -9,7 +10,7 @@ const GET = async () => {
 			.collection("contents")
 			.find({})
 			.sort({ user_date: -1 })
-			.limit(12)
+			.limit(18)
 			.toArray()
 		return NextResponse.json(results)
 	} catch (e) {

@@ -7,6 +7,8 @@ const month = dayjs().subtract(1, "month").format('YYYY-MM-DD')
 //장르 10762키즈 16애니
 //정렬 인기순이 기본값
 
+export const dynamic = "force-dynamic"
+
 export async function getSearchList(keyword: string) {
   //client에서 호출하는거랑 server에서 호출하는거랑 rewrite 적용 달라짐 
   const URL = `https://api.themoviedb.org/3/search/multi?query=${keyword}&language=ko&page=1&api_key=${API_KEY}`

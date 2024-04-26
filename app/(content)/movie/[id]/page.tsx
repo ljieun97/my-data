@@ -1,6 +1,7 @@
 import CardInfo from "@/components/contents/card-info"
 import { getCasts, getDetail, getRecommendations, getSimilars } from "@/lib/themoviedb/api"
 
+export const dynamic = "force-dynamic"
 export const metadata = {
   title: "영화"
 }

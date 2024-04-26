@@ -12,7 +12,11 @@ export default function TopBar() {
         <NavbarContent justify="start">
           <NavbarBrand className="mr-4">
             {/* <AcmeLogo /> */}
-            <p className="hidden sm:block font-bold text-inherit">오늘 뭐 볼까</p>
+            <p className="hidden sm:block font-bold text-inherit">
+              <Link href="/" color="foreground" >
+                오늘 뭐 볼까
+              </Link>
+            </p>
           </NavbarBrand>
           <NavbarContent className="hidden sm:flex gap-3">
             <NavbarItem isActive={path === "/"}>

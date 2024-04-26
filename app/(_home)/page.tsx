@@ -4,6 +4,7 @@ import TodayList from "@/components/movie/today-list"
 import { getDetail } from "@/lib/themoviedb/api";
 import { Link } from "@nextui-org/react";
 
+export const dynamic = "force-dynamic";
 export const metadata = {
   title: "홈"
 }

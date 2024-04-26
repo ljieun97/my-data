@@ -13,8 +13,10 @@ export function UiProvider({
     <NextUIProvider>
       <main>
         <div className="dark text-foreground bg-background mx-auto max-w-7xl flex-grow">
-          <TopBar />
-          {children}
+          <div className="px-4">
+            <TopBar />
+            {children}
+          </div>
         </div>
       </main>
     </NextUIProvider>

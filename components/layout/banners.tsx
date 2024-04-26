@@ -23,7 +23,7 @@ export function Banners({ movie }: { movie: any }) {
               <Flatrates type={'movie'} id={movie.id} />
             </div>
           </CardHeader> */}
-        <CardBody className="absolute flex flex-col gap-1 left-4 bottom-4 z-10">
+        <CardBody className="absolute flex flex-col gap-1 left-2 bottom-2 z-10">
           <p className="text-tiny text-white font-bold">2024 아카데미 수상작</p>
           <p className="text-3xl text-white font-bold">{movie.title}</p>
           <p className="text-white">{movie.tagline}</p>

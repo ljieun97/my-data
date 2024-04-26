@@ -54,22 +54,15 @@ export default function CardThumb({ content }: { content: any }) {
     <>
       <Card
         // radius="sm"
-        className="border-none group/footer"
+        className="border-none group/footer col-span-2 sm:col-span-1"
         isFooterBlurred
       >
-        {adult ? (
-          <Image
-            alt="poster"
-            className="blur-md"
-            src={img}
-          />
-        ) : (
-          <Image
-            radius="none"
-            alt="poster"
-            src={img}
-          />
-        )}
+        <Image
+          alt="poster"
+          src={img}
+          className="z-0 w-[200px] h-[240px] object-fill"
+        />
+
         <CardHeader className="absolute w-[calc(100%_-_8px)] justify-start">
           <div className="flex gap-3">
             {(type == 'movie' || type == 'tv') &&

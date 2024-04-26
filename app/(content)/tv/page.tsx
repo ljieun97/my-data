@@ -8,9 +8,9 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <div className="px-8 py-4">
+    <>
       <Title title={'시리즈'} />
       <MovieList type={'tv'} />
-    </div>
+    </>
   )
 }

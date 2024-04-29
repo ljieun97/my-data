@@ -91,7 +91,7 @@ export default function SearchList(props: any) {
     <>
       <Accordion
         variant="splitted"
-        defaultExpandedKeys={["1", "2"]}
+        defaultExpandedKeys={["1"]}
         onSelectionChange={() => {
           movies.reload()
           series.reload()

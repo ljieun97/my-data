@@ -8,16 +8,13 @@ import { getLocalTimeZone, today } from "@internationalized/date";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
 import CardThumb from "../contents/card-thumb"
+import SelectFilter from "../common/select-filter"
 
-export default function MovieList({type}: {type: string}) {
+export default function MovieList({ type }: { type: string }) {
   const [country, setCountries] = useState('')
   // const [flatforms, setFlatforms] = useState(new Set([]))
   const [flatforms, setFlatforms] = useState('')
   const [genres, setGenres] = useState('')
-  // const [date, setDate] = useState({
-  //   start: today(getLocalTimeZone()).subtract({ years: 1 }),
-  //   end: today(getLocalTimeZone()),
-  // })
   const [date, setDate] = useState('')
 
   const [hasMore, setHasMore] = useState(false)
@@ -151,74 +148,31 @@ export default function MovieList({type}: {type: string}) {
     yearDatas.push({ label: `${i}`, value: i })
   }
 
-  const handleCountryChange = (e: any) => {
-    setCountries(e.target.value)
-  }
-
-  const handleSelectionChange = (e: any) => {
-    // setFlatforms(new Set(e.target.value.split(",")))
-    setFlatforms(e.target.value)
-  }
-
-  const handleGenreChange = (e: any) => {
-    setGenres(e.target.value)
-  }
-
-  const handleYearChange = (e: any) => {
-    setDate(e.target.value)
+  const onChangeSelect = (e: any, type: string) => {
+    switch (type) {
+      case '연도':
+        setDate(e.target.value)
+        break
+      case '국가':
+        setCountries(e.target.value)
+        break
+      case '제공사':
+        setFlatforms(e.target.value)
+        break
+      case '장르':
+        setGenres(e.target.value)
+        break
+    }
   }
 
   return (
     <>
       <div className="h-[720px] overflow-auto" ref={scrollerRef}>
-        <div className="flex flex-row gap-2 pb-4">
-          {/* <DateRangePicker
-            aria-label="date"
-            label="날짜"
-            value={date}
-            onChange={setDate}
-          /> */}
-          <Select
-            items={yearDatas}
-            label="연도"
-            placeholder="전체"
-            className="max-w-xs"
-            onChange={handleYearChange}
-            showScrollIndicators={false}
-          >
-            {(item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>}
-          </Select>
-          <Select
-            items={flatformDatas}
-            label="제공사"
-            placeholder="전체"
-            className="max-w-xs"
-            // selectionMode="multiple"
-            onChange={handleSelectionChange}
-            showScrollIndicators={false}
-          >
-            {(item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>}
-          </Select>
-          <Select
-            items={countryDatas}
-            label="국가"
-            placeholder="전체"
-            className="max-w-xs"
-            onChange={handleCountryChange}
-            showScrollIndicators={false}
-          >
-            {(item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>}
-          </Select>
-          <Select
-            items={genreDatas}
-            label="장르"
-            placeholder="전체"
-            className="max-w-xs"
-            onChange={handleGenreChange}
-            showScrollIndicators={false}
-          >
-            {(item) => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>}
-          </Select>
+        <div className="flex flex-row gap-2 py-2">
+          <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
+          <SelectFilter type={'제공사'} items={flatformDatas} onChangeSelect={onChangeSelect} />
+          <SelectFilter type={'국가'} items={countryDatas} onChangeSelect={onChangeSelect} />
+          <SelectFilter type={'장르'} items={genreDatas} onChangeSelect={onChangeSelect} />
         </div>
 
         <InfiniteImages contents={list.items} />

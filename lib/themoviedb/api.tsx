@@ -93,7 +93,7 @@ export async function getRecommendations(type: string, id: string) {
 export async function getFilterMovies(type: string, country: any, providers: any, date: any, genres: any, pageNum: any) {
   // providers = Array.from(providers).join("|")
   let dateQueryByType = (type == 'movie') ? 
-  '&primary_release_year=2024' : 
+  `&primary_release_year=${date}` : 
   `&air_date.gte=${date}-01-01&air_date.lte=${date}-12-31`
   const qeury = {
     country: country ? `&with_origin_country=${country}` : '',

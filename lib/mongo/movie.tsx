@@ -1,11 +1,11 @@
 'use client'
 
-const GetMovies = async () => {
-  const response = await fetch(`/api/movie`, {
-    method: "GET"
+const GetMovies = async (page: number, date: string, type: string, rating: string) => {
+  const response = await fetch(`/api/movie?page=${page}&date=${date}&type=${type}&rating=${rating}`, {
+    method: "GET",
   })
-  const result = await response.json()
-  return result
+  // const {result, total_page} = await response.json()
+  return response
 }
 
 const CreateMovie = async (content: any, rating: number) => {

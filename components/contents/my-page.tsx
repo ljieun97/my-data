@@ -1,47 +1,25 @@
 'use client'
 
-import MyContents from "@/components/contents/my-contents"
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter } from "@nextui-org/react"
 import MyLikes from "./my-likes"
-import { useCallback, useEffect, useState } from "react"
+import { RefObject, useCallback, useEffect, useState } from "react"
 import { GetMovies, DeleteMovie, UpdateMovie, GetMovieCount } from "@/lib/mongo/movie"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faList, faBorderAll, faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faTrashCan } from "@fortawesome/free-solid-svg-icons"
 import InfiniteImages from "../common/infinite-images"
+import SelectFilter from "../common/select-filter"
+import { useAsyncList } from "@react-stately/data"
+import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll"
 
 const MyPage = () => {
   const [contentCounts, setContentCounts] = useState([])
   const [totalCount, setTotalCount] = useState(0)
   const [contents, setContents] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    (async () => {
-      const getContentCounts = await GetMovieCount()
-      setContentCounts(getContentCounts)
-      setTotalCount(() => {
-        let total = 0
-        getContentCounts.forEach((item: any) => {
-          total += item.count
-        })
-        return total
-      })
-      setContents(await GetMovies())
-      setIsLoading(false)
-    })()
-  }, [])
-
-  const clickUpdate = (id: any) => async (e: React.ChangeEvent<HTMLInputElement>) => {
-    await UpdateMovie(id, e.target.value)
-    const contents = await GetMovies()
-    setContents(contents)
-  }
-
-  const clickDelete = async (id: any) => {
-    await DeleteMovie(id)
-    const contents = await GetMovies()
-    setContents(contents)
-  }
+  const [type, setType] = useState('')
+  const [rating, setRating] = useState('')
+  const [date, setDate] = useState('')
+  // const [nextId, setNextId] = useState('')
 
   const columns = [
     {
@@ -61,6 +39,103 @@ const MyPage = () => {
       label: "ACTION",
     },
   ]
+
+  const typeDatas = [
+    { label: '영화', value: '영화' },
+    { label: 'TV', value: 'TV' },
+    { label: '웹툰', value: '웹툰' },
+    { label: '도서', value: '도서' },
+  ]
+
+  const ratingDatas = [
+    { label: '최고다 최고', value: 5 },
+    { label: '볼만해요', value: 3 },
+    { label: '별로예요', value: 1 },
+  ]
+
+  const yearDatas = []
+  for (let i = 2024; i >= 1980; i--) {
+    yearDatas.push({ label: `${i}`, value: i })
+  }
+
+  const [hasMore, setHasMore] = useState(false)
+  let list = useAsyncList({
+    async load({ signal, cursor }) {
+      const response = cursor ?
+        await GetMovies(Number(cursor), date, type, rating) :
+        await GetMovies(0, date, type, rating)
+      const { results, total_page } = await response.json()
+      console.log(Number(cursor), total_page)
+      setHasMore(Number(cursor) + 1 <= total_page)
+
+      return {
+        items: results,
+        cursor: `${Number(cursor) + 1}`,
+      }
+    }
+  })
+  const [loaderRef, scrollerRef] = useInfiniteScroll({ hasMore, onLoadMore: list.loadMore }) as RefObject<HTMLDivElement>[]
+
+  useEffect(() => {
+    (async () => {
+      await updateMypage()
+    })()
+  }, [])
+
+  useEffect(() => {
+    list.reload()
+  }, [date])
+
+  useEffect(() => {
+    list.reload()
+  }, [type])
+
+  useEffect(() => {
+    list.reload()
+  }, [rating])
+
+  const updateMypage = async () => {
+    const getContentCounts = await GetMovieCount()
+    setContentCounts(getContentCounts)
+    setTotalCount(() => {
+      let total = 0
+      getContentCounts.forEach((item: any) => {
+        total += item.count
+      })
+      return total
+    })
+    const response = await GetMovies(0, date, type, rating)
+    const { results } = await response.json()
+    setContents(results)
+  }
+
+  const clickUpdate = (id: any) => async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await UpdateMovie(id, e.target.value)
+    list.reload()
+    // const response = await GetMovies(0, date, type, rating)
+    // const { results } = await response.json()
+    // setContents(results)
+  }
+
+  const clickDelete = async (id: any) => {
+    await DeleteMovie(id)
+    list.reload()
+  }
+
+  const onChangeSelect = (e: any, type: string) => {
+    switch (type) {
+      case '연도':
+        setDate(e.target.value)
+        break
+      case '유형':
+        setType(e.target.value)
+        break
+      case '평가':
+        setRating(e.target.value)
+        break
+    }
+  }
+
   const getKeyValue = useCallback((item: any, columnKey: any) => {
     const cellValue = item[columnKey]
     switch (columnKey) {
@@ -128,7 +203,13 @@ const MyPage = () => {
         </CardFooter>
       </Card>
 
-      <Tabs aria-label="Tabs" className="pt-4 justify-right">
+      <div className="flex flex-row gap-2 py-2">
+        <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={'유형'} items={typeDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={'평가'} items={ratingDatas} onChangeSelect={onChangeSelect} />
+      </div>
+
+      {/* <Tabs aria-label="Tabs" className="py-2 justify-right">
         <Tab
           key="rating"
           title={
@@ -137,24 +218,30 @@ const MyPage = () => {
               <span>리스트</span>
             </div>
           }
-        >
-          {/* <MyContents contents={contents}/> */}
+        > */}
           <Table
-            removeWrapper
-            hideHeader
+            // removeWrapper
+            // hideHeader
+            // isHeaderSticky
             aria-label="Example table with dynamic content"
             classNames={{
-              base: "max-h-[600px] overflow-scroll",
-              table: "max-h-[600px]",
+              base: "max-h-[540px] overflow-scroll",
+              table: "max-h-[540px]",
             }}
+            baseRef={scrollerRef}
+            bottomContent={
+              hasMore ? (
+                <div className="flex w-full justify-center">
+                  <Spinner ref={loaderRef} color="white" />
+                </div>
+              ) : null
+            }
           >
             <TableHeader columns={columns}>
               {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
             </TableHeader>
             <TableBody
-              items={contents}
-              isLoading={isLoading}
-              loadingContent={<Spinner label="Loading..." />}
+              items={list.items}
             >
               {(item: any) => (
                 <TableRow key={item._id}>
@@ -163,7 +250,7 @@ const MyPage = () => {
               )}
             </TableBody>
           </Table>
-        </Tab>
+        {/* </Tab>
         <Tab
           key="like"
           title={
@@ -173,12 +260,11 @@ const MyPage = () => {
             </div>
           }
         >
-          {/* <MyLikes contents={contents}/> */}
-          <div className="max-h-[600px] overflow-scroll" >
-            <InfiniteImages contents={contents} />
+          <div className="max-h-[540px] overflow-scroll">
+            <InfiniteImages contents={list.items} />
           </div >
         </Tab>
-      </Tabs>
+      </Tabs> */}
     </>
   )
 }

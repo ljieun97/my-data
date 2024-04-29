@@ -3,16 +3,45 @@ import connectMongo from "@/lib/mongo/mongodb"
 import dayjs from 'dayjs'
 
 export const dynamic = "force-dynamic"
-const GET = async () => {
+
+const GET = async (request: NextRequest) => {
+	const limit = 18
+	const searchParams = request.nextUrl.searchParams
+
+	// const nextId = searchParams.get('nextId')
+	// const nextQuery = nextId ? { _id: { $gt: nextId } } : {}
+	const page = searchParams.get('page')
+	const type = searchParams.get('type')
+	const typeQuery = type ? { "type": type } : {}
+	const date = searchParams.get('date')
+	const dateQuery = date ? { "user_date": { '$regex': `^${date}` } } : {}
+	const rating = searchParams.get('rating')
+	const ratingQuery = rating ? { "user_rating": Number(rating) } : {}
+
 	try {
 		const db = await connectMongo()
 		const results = await db
 			.collection("contents")
-			.find({})
+			.find({
+				$and: [
+					typeQuery, dateQuery, ratingQuery
+				]
+			})
 			.sort({ user_date: -1 })
-			.limit(18)
+			.skip(limit * Number(page))
+			.limit(limit)
 			.toArray()
-		return NextResponse.json(results)
+
+		const count = await db
+			.collection("contents")
+			.count({
+				$and: [
+					typeQuery, dateQuery, ratingQuery
+				]
+			})
+
+		const total_page = Math.ceil(count / limit) as ResponseInit
+		return NextResponse.json({results: results, total_page: total_page})
 	} catch (e) {
 		console.log(e)
 		return NextResponse.json({ error: e })

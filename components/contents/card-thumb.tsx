@@ -19,7 +19,6 @@ export default function CardThumb({ content }: { content: any }) {
     type = 'webtoon' //웹툰엔 title도 있음
     img = content.img
     id = img.split('/')[4]
-    console.log(content)
   } else if (content.isbn) {
     type = 'book'
     img = content.image
@@ -53,14 +52,17 @@ export default function CardThumb({ content }: { content: any }) {
   return (
     <>
       <Card
-        // radius="sm"
-        className="border-none group/footer col-span-2 sm:col-span-1"
+        radius="sm"
+        // className="border-none group/footer col-span-4 lg:col-span-2  md:col-span-3 sm:col-span-3"
+        className="border-none group/footer items-center"
         isFooterBlurred
+        isBlurred
       >
         <Image
+          radius="none"
           alt="poster"
           src={img}
-          className="z-0 w-[200px] h-[240px] object-fill"
+          className="w-[240px] h-[260px] object-fill"
         />
 
         <CardHeader className="absolute w-[calc(100%_-_8px)] justify-start">
@@ -80,7 +82,7 @@ export default function CardThumb({ content }: { content: any }) {
             </h4>
           </CardBody>
         }
-        <CardFooter className="invisible absolute group-hover/footer:visible justify-between bg-black/50 border-white/50 border-1 py-1 ml-1 rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small z-10">
+        <CardFooter className="invisible absolute group-hover/footer:visible justify-between bg-black/50 border-white/50 border-1 py-1 mx-1 rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small z-10">
           <h4 className="text-white text-sm font-bold ">
             {content.title ? content.title : content.name}
           </h4>

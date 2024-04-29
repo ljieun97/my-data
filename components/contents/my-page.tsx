@@ -112,16 +112,13 @@ const MyPage = () => {
   }
 
   const clickUpdate = (id: any) => async (e: React.ChangeEvent<HTMLInputElement>) => {
-    await UpdateMovie(id, e.target.value)
+    // await UpdateMovie(id, e.target.value)
     list.reload()
-    // const response = await GetMovies(0, date, type, rating)
-    // const { results } = await response.json()
-    // setContents(results)
   }
 
   const clickDelete = async (id: any) => {
     await DeleteMovie(id)
-    list.reload()
+    await updateMypage()
   }
 
   const onChangeSelect = (e: any, type: string) => {
@@ -165,7 +162,7 @@ const MyPage = () => {
       case "date":
         // return item.my_date.substr(0, 10)
         return (
-          <Input type='date' size={'sm'} variant={'bordered'} value={item.user_date.substr(0, 10)} onChange={clickUpdate(item._id)} />
+          <Input isReadOnly type='date' size={'sm'} variant={'bordered'} value={item.user_date.substr(0, 10)}  />
         )
       case "rating":
         let rating = item.user_rating

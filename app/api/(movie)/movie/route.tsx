@@ -41,7 +41,7 @@ const GET = async (request: NextRequest) => {
 			})
 
 		const total_page = Math.ceil(count / limit) as ResponseInit
-		return NextResponse.json({results: results, total_page: total_page})
+		return NextResponse.json({ results: results, total: count, total_page: total_page })
 	} catch (e) {
 		console.log(e)
 		return NextResponse.json({ error: e })

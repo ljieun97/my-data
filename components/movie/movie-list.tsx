@@ -9,8 +9,10 @@ import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
 import CardThumb from "../contents/card-thumb"
 import SelectFilter from "../common/select-filter"
+import Title from "../common/title"
 
 export default function MovieList({ type }: { type: string }) {
+  const [totalContents, setTotalContents] = useState(0)
   const [country, setCountries] = useState('')
   // const [flatforms, setFlatforms] = useState(new Set([]))
   const [flatforms, setFlatforms] = useState('')
@@ -20,7 +22,8 @@ export default function MovieList({ type }: { type: string }) {
   const [hasMore, setHasMore] = useState(false)
   let list = useAsyncList({
     async load({ signal, cursor }) {
-      const { results, page, total_pages } = cursor ? await getFilterMovies(type, country, flatforms, date, genres, cursor) : await getFilterMovies(type, country, flatforms, date, genres, 1)
+      const { results, page, total_pages, total_results } = cursor ? await getFilterMovies(type, country, flatforms, date, genres, cursor) : await getFilterMovies(type, country, flatforms, date, genres, 1)
+      setTotalContents(total_results)
       setHasMore(page < total_pages)
       return {
         items: results,
@@ -28,7 +31,10 @@ export default function MovieList({ type }: { type: string }) {
       }
     }
   })
-  const [loaderRef, scrollerRef] = useInfiniteScroll({ hasMore, onLoadMore: list.loadMore }) as RefObject<HTMLDivElement>[]
+  const [loaderRef, scrollerRef] = useInfiniteScroll({
+    hasMore,
+    onLoadMore: list.loadMore
+  }) as RefObject<HTMLDivElement>[]
 
   useEffect(() => {
     list.reload()
@@ -167,6 +173,7 @@ export default function MovieList({ type }: { type: string }) {
 
   return (
     <>
+      <div>검색결과 {totalContents}건</div>
       <div className="h-[720px] overflow-auto" ref={scrollerRef}>
         <div className="flex flex-row gap-2 py-2">
           <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />

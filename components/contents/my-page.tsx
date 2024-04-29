@@ -14,7 +14,7 @@ import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll"
 const MyPage = () => {
   const [contentCounts, setContentCounts] = useState([])
   const [totalCount, setTotalCount] = useState(0)
-  const [contents, setContents] = useState([])
+  const [totalSearch, setTotalSearch] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [type, setType] = useState('')
   const [rating, setRating] = useState('')
@@ -64,9 +64,10 @@ const MyPage = () => {
       const response = cursor ?
         await GetMovies(Number(cursor), date, type, rating) :
         await GetMovies(0, date, type, rating)
-      const { results, total_page } = await response.json()
+      const { results, total, total_page } = await response.json()
       console.log(Number(cursor), total_page)
-      setHasMore(Number(cursor) + 1 <= total_page)
+      setTotalSearch(total)
+      setHasMore(Number(cursor) + 1 < total_page)
 
       return {
         items: results,
@@ -74,7 +75,10 @@ const MyPage = () => {
       }
     }
   })
-  const [loaderRef, scrollerRef] = useInfiniteScroll({ hasMore, onLoadMore: list.loadMore }) as RefObject<HTMLDivElement>[]
+  const [loaderRef, scrollerRef] = useInfiniteScroll({
+    hasMore,
+    onLoadMore: list.loadMore
+  }) as RefObject<HTMLDivElement>[]
 
   useEffect(() => {
     (async () => {
@@ -104,9 +108,7 @@ const MyPage = () => {
       })
       return total
     })
-    const response = await GetMovies(0, date, type, rating)
-    const { results } = await response.json()
-    setContents(results)
+    list.reload()
   }
 
   const clickUpdate = (id: any) => async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,7 +211,14 @@ const MyPage = () => {
         <SelectFilter type={'평가'} items={ratingDatas} onChangeSelect={onChangeSelect} />
       </div>
 
-      {/* <Tabs aria-label="Tabs" className="py-2 justify-right">
+      <div>검색결과 {totalSearch}건</div>
+
+      <Tabs
+        aria-label="Tabs"
+        className="py-2 justify-right"
+        onSelectionChange={() => {
+          list.reload()
+        }}>
         <Tab
           key="rating"
           title={
@@ -218,7 +227,7 @@ const MyPage = () => {
               <span>리스트</span>
             </div>
           }
-        > */}
+        >
           <Table
             // removeWrapper
             // hideHeader
@@ -250,7 +259,7 @@ const MyPage = () => {
               )}
             </TableBody>
           </Table>
-        {/* </Tab>
+        </Tab>
         <Tab
           key="like"
           title={
@@ -260,11 +269,16 @@ const MyPage = () => {
             </div>
           }
         >
-          <div className="max-h-[540px] overflow-scroll">
+          <div className="max-h-[540px] overflow-scroll" ref={scrollerRef}>
             <InfiniteImages contents={list.items} />
+            {hasMore ? (
+              <div className="flex w-full justify-center">
+                <Spinner ref={loaderRef} color="white" />
+              </div>
+            ) : null}
           </div >
         </Tab>
-      </Tabs> */}
+      </Tabs>
     </>
   )
 }

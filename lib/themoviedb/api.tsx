@@ -9,12 +9,21 @@ const month = dayjs().subtract(1, "month").format('YYYY-MM-DD')
 
 export const dynamic = "force-dynamic"
 
-export async function getSearchList(keyword: string) {
-  //client에서 호출하는거랑 server에서 호출하는거랑 rewrite 적용 달라짐 
-  const URL = `https://api.themoviedb.org/3/search/multi?query=${keyword}&language=ko&page=1&api_key=${API_KEY}`
+export async function getSearchMovies(keyword: string, pageNum: number) {
+  const URL = `https://api.themoviedb.org/3/search/movie?query=${keyword}&language=ko&api_key=${API_KEY}`
+    + `&page=${pageNum}`
   const response = await fetch(URL)
-  const { results } = await response.json()
-  return results?.filter((e: any) => e.media_type != "person")
+  const results = await response.json()
+  return results
+}
+
+export async function getSearchSeries(keyword: string, pageNum: number) {
+  //client에서 호출하는거랑 server에서 호출하는거랑 rewrite 적용 달라짐 
+  const URL = `https://api.themoviedb.org/3/search/tv?query=${keyword}&language=ko&api_key=${API_KEY}`
+    + `&page=${pageNum}`
+  const response = await fetch(URL)
+  const results = await response.json()
+  return results
 }
 
 export async function getTodayMovies() {
@@ -92,9 +101,9 @@ export async function getRecommendations(type: string, id: string) {
 //영화 및 시리즈 페이지
 export async function getFilterMovies(type: string, country: any, providers: any, date: any, genres: any, pageNum: any) {
   // providers = Array.from(providers).join("|")
-  let dateQueryByType = (type == 'movie') ? 
-  `&primary_release_year=${date}` : 
-  `&air_date.gte=${date}-01-01&air_date.lte=${date}-12-31`
+  let dateQueryByType = (type == 'movie') ?
+    `&primary_release_year=${date}` :
+    `&air_date.gte=${date}-01-01&air_date.lte=${date}-12-31`
   const qeury = {
     country: country ? `&with_origin_country=${country}` : '',
     provider: providers ? `&with_watch_providers=${providers}` : '',
@@ -113,8 +122,7 @@ export async function getFilterMovies(type: string, country: any, providers: any
     + `&page=${pageNum}`
 
   const response = await fetch(URL)
-  let {results, page, total_pages} = await response.json()
-  console.log(page, total_pages)
+  const results = await response.json()
   // results = results.filter((content: any) => content.poster_path && content.overview)
-  return {results, page, total_pages}
+  return results
 }

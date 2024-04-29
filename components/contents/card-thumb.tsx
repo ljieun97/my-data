@@ -62,11 +62,11 @@ export default function CardThumb({ content }: { content: any }) {
           radius="none"
           alt="poster"
           src={img}
-          className="w-[240px] h-[260px] object-fill"
+          className="w-[240px] h-[280px] object-fill"
         />
 
-        <CardHeader className="absolute w-[calc(100%_-_8px)] justify-start">
-          <div className="flex gap-3">
+        <CardHeader className="absolute justify-end">
+          <div className="flex gap-2">
             {(type == 'movie' || type == 'tv') &&
               <Flatrates type={type} provider={content.id} />
             }

@@ -7,11 +7,16 @@ const Headers = {
 }
 
 export const dynamic = "force-dynamic"
-export async function getSearchBooks(keyword: string) {
+export async function getSearchBooks(keyword: string, page: number) {
+  const limit = 21
   const URL = `/naver/v1/search/book.json?query=${keyword}`
+  +`&display=${limit}`
+  +`&start=${limit*page+1}`
   const response = await fetch(URL, {
     headers: Headers
   })
-  const { items } = await response.json()
-  return items
+  const {items, total} = await response.json()
+  const total_pages = Math.ceil(total/limit)
+  console.log(page, total_pages)
+  return {items, total, total_pages}
 }

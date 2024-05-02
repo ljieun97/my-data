@@ -22,9 +22,12 @@ export default function MovieList({ type }: { type: string }) {
   const [hasMore, setHasMore] = useState(false)
   let list = useAsyncList({
     async load({ signal, cursor }) {
-      const { results, page, total_pages, total_results } = cursor ? await getFilterMovies(type, country, flatforms, date, genres, cursor) : await getFilterMovies(type, country, flatforms, date, genres, 1)
+
+      const { results, page, total_pages, total_results } = await getFilterMovies(type, country, flatforms, date, genres, cursor ? cursor : 1)
       setTotalContents(total_results)
-      setHasMore(page < total_pages)
+      // setHasMore(page < total_pages)
+      setHasMore(true)
+
       return {
         items: results,
         cursor: page + 1,

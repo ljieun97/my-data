@@ -19,6 +19,8 @@ const MyPage = () => {
   const [type, setType] = useState('')
   const [rating, setRating] = useState('')
   const [date, setDate] = useState('')
+  const [sort, setSort] = useState('user_date')
+  const [asc, setAsc] = useState(-1)
   // const [nextId, setNextId] = useState('')
 
   const columns = [
@@ -27,11 +29,11 @@ const MyPage = () => {
       label: "TITLE",
     },
     {
-      key: "date",
+      key: "user_date",
       label: "DATE",
     },
     {
-      key: "rating",
+      key: "user_rating",
       label: "RATING",
     },
     {
@@ -61,36 +63,41 @@ const MyPage = () => {
   const [hasMore, setHasMore] = useState(false)
   let list = useAsyncList({
     async load({ signal, cursor }) {
-      const response = cursor ?
-        await GetMovies(Number(cursor), date, type, rating) :
-        await GetMovies(0, date, type, rating)
+      const page = cursor ? Number(cursor) : 0
+      //정렬 userdate는 되는데 rating은 중복뜸
+      const response = await GetMovies(page, date, type, rating, sort, asc)
       const { results, total, total_page } = await response.json()
-      console.log(Number(cursor), total_page)
+      console.log(page, total_page)
+
       setTotalSearch(total)
-      setHasMore(Number(cursor) + 1 < total_page)
+      // setHasMore(page+1 < total_page)
+      setHasMore(true)
 
       return {
         items: results,
-        cursor: `${Number(cursor) + 1}`,
+        cursor: `${page + 1}`,
       }
     }
   })
   const [loaderRef, scrollerRef] = useInfiniteScroll({
     hasMore,
     onLoadMore: list.loadMore
-  }) as RefObject<HTMLDivElement>[]
+  }) as RefObject<HTMLDivElement>[] as any
 
   useEffect(() => {
     (async () => {
-      await updateMypage()
+      await setCount()
     })()
   }, [])
 
   useEffect(() => {
+
     list.reload()
+
   }, [date])
 
   useEffect(() => {
+
     list.reload()
   }, [type])
 
@@ -98,7 +105,11 @@ const MyPage = () => {
     list.reload()
   }, [rating])
 
-  const updateMypage = async () => {
+  useEffect(() => {
+    list.reload()
+  }, [asc])
+
+  const setCount = async () => {
     const getContentCounts = await GetMovieCount()
     setContentCounts(getContentCounts)
     setTotalCount(() => {
@@ -108,17 +119,19 @@ const MyPage = () => {
       })
       return total
     })
-    list.reload()
   }
 
   const clickUpdate = (id: any) => async (e: React.ChangeEvent<HTMLInputElement>) => {
     // await UpdateMovie(id, e.target.value)
+
     list.reload()
   }
 
   const clickDelete = async (id: any) => {
     await DeleteMovie(id)
-    await updateMypage()
+    await setCount()
+
+    list.reload()
   }
 
   const onChangeSelect = (e: any, type: string) => {
@@ -135,20 +148,22 @@ const MyPage = () => {
     }
   }
 
+  const onChangeSort = (e: any) => {
+    console.log(e)
+    setSort(e.column)
+    setAsc(asc * (-1))
+  }
+
   const getKeyValue = useCallback((item: any, columnKey: any) => {
     const cellValue = item[columnKey]
     switch (columnKey) {
       case "title":
-        let title = ''
         let img = ''
         if (item.webtoonId) {
-          title = item.title
           img = item.img
         } else if (item.isbn) {
-          title = item.title
           img = item.image
         } else {
-          title = item.title ? item.title : item.name
           img = `https://image.tmdb.org/t/p/w500/${item.poster_path}`
         }
 
@@ -156,15 +171,15 @@ const MyPage = () => {
           <User
             avatarProps={{ radius: "lg", src: img }}
             description={item.type}
-            name={title}
+            name={item.title}
           />
         )
-      case "date":
+      case "user_date":
         // return item.my_date.substr(0, 10)
         return (
-          <Input isReadOnly type='date' size={'sm'} variant={'bordered'} value={item.user_date.substr(0, 10)}  />
+          <Input isReadOnly type='date' size={'sm'} variant={'bordered'} value={item.user_date.substr(0, 10)} />
         )
-      case "rating":
+      case "user_rating":
         let rating = item.user_rating
         let icon = faFaceLaughSquint
         if (rating == 3) icon = faFaceSmileBeam
@@ -229,6 +244,9 @@ const MyPage = () => {
             // removeWrapper
             // hideHeader
             // isHeaderSticky
+
+            sortDescriptor={list.sortDescriptor}
+            onSortChange={onChangeSort}
             aria-label="Example table with dynamic content"
             classNames={{
               base: "max-h-[540px] overflow-scroll",
@@ -243,8 +261,25 @@ const MyPage = () => {
               ) : null
             }
           >
-            <TableHeader columns={columns}>
-              {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
+            {/* <TableHeader columns={columns}>
+              {(column) =>
+                <TableColumn key={column.key} allowsSorting>
+                  {column.label}
+                </TableColumn>}
+            </TableHeader> */}
+            <TableHeader>
+              <TableColumn key="title" allowsSorting>
+                TITLE
+              </TableColumn>
+              <TableColumn key="user_date" allowsSorting>
+                DATE
+              </TableColumn>
+              <TableColumn key="user_rating">
+                {null}
+              </TableColumn>
+              <TableColumn key="action">
+                {null}
+              </TableColumn>
             </TableHeader>
             <TableBody
               items={list.items}

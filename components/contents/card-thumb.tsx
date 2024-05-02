@@ -56,7 +56,7 @@ export default function CardThumb({ content }: { content: any }) {
         // className="border-none group/footer col-span-4 lg:col-span-2  md:col-span-3 sm:col-span-3"
         className="border-none group/footer items-center"
         isFooterBlurred
-        isBlurred
+        // isBlurred
       >
         <Image
           radius="none"

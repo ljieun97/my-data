@@ -11,6 +11,9 @@ const GET = async (request: NextRequest) => {
 	// const nextId = searchParams.get('nextId')
 	// const nextQuery = nextId ? { _id: { $gt: nextId } } : {}
 	const page = searchParams.get('page')
+	const sort = searchParams.get('sort')
+	const asc = searchParams.get('asc')
+
 	const type = searchParams.get('type')
 	const typeQuery = type ? { "type": type } : {}
 	const date = searchParams.get('date')
@@ -27,8 +30,8 @@ const GET = async (request: NextRequest) => {
 					typeQuery, dateQuery, ratingQuery
 				]
 			})
-			.sort({ user_date: -1 })
-			.skip(limit * Number(page))
+			.sort(sort, asc)
+			.skip(limit * (Number(page)))
 			.limit(limit)
 			.toArray()
 
@@ -70,7 +73,7 @@ const POST = async (req: NextRequest) => {
 			date = content.first_air_date
 			object = {
 				type: 'TV',
-				name: content.name,
+				title: content.name,
 				id: content.id,
 				poster_path: content.poster_path,
 				genre_ids: content.genre_ids

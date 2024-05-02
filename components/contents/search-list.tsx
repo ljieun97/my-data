@@ -106,8 +106,8 @@ export default function SearchList(props: any) {
           <div className="max-h-[540px] overflow-scroll" ref={scrollerRefMovies}>
             <InfiniteImages contents={movies.items} />
             {hasMoreMovies ? (
-              <div className="flex w-full justify-center">
-                <Spinner ref={loaderRefMovies} color="white" />
+              <div className="flex w-full justify-center" ref={loaderRefMovies}>
+                {/* <Spinner ref={loaderRefMovies} color="white" /> */}
               </div>
             ) : null}
           </div>
@@ -120,8 +120,8 @@ export default function SearchList(props: any) {
           <div className="max-h-[540px] overflow-scroll" ref={scrollerRefSeries}>
             <InfiniteImages contents={series.items} />
             {hasMoreSeries ? (
-              <div className="flex w-full justify-center">
-                <Spinner ref={loaderRefSeries} color="white" />
+              <div className="flex w-full justify-center" ref={loaderRefSeries}>
+                {/* <Spinner color="white" /> */}
               </div>
             ) : null}
           </div>
@@ -143,8 +143,8 @@ export default function SearchList(props: any) {
           <div className="max-h-[540px] overflow-scroll" ref={scrollerRefBooks}>
             <InfiniteImages contents={books.items} />
             {hasMoreBooks ? (
-              <div className="flex w-full justify-center">
-                <Spinner ref={loaderRefBooks} color="white" />
+              <div className="flex w-full justify-center" ref={loaderRefBooks}>
+                {/* <Spinner ref={loaderRefBooks} color="white" /> */}
               </div>
             ) : null}
           </div>

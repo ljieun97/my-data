@@ -1,8 +1,11 @@
 "use client"
 
-const Title = ({title}: {title: string}) => {
+const Title = (props :any) => {
   return (
-    <div className="font-bold text-xl px-2 py-6">{title}</div>
+    <div className="p-2 gab-1">
+      <span className="font-bold text-2xl">{props.title}</span>
+      <span className="text-default-400 pl-1">{props.sub}</span>
+    </div>
   )
 }
 

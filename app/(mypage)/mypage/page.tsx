@@ -1,5 +1,4 @@
 
-import Title from "@/components/common/title";
 import MyPage from "@/components/contents/my-page";
 
 export const dynamic = "force-dynamic"
@@ -10,7 +9,6 @@ export const metadata = {
 const Page = () => {
   return (
     <>
-      <Title title={'마이페이지'} />
       <MyPage />
     </>
   )

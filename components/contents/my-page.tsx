@@ -1,6 +1,6 @@
 'use client'
 
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter } from "@nextui-org/react"
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio } from "@nextui-org/react"
 import MyLikes from "./my-likes"
 import { RefObject, useCallback, useEffect, useState } from "react"
 import { GetMovies, DeleteMovie, UpdateMovie, GetMovieCount } from "@/lib/mongo/movie"
@@ -10,17 +10,19 @@ import InfiniteImages from "../common/infinite-images"
 import SelectFilter from "../common/select-filter"
 import { useAsyncList } from "@react-stately/data"
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll"
+import Title from "../common/title"
 
 const MyPage = () => {
   const [contentCounts, setContentCounts] = useState([])
   const [totalCount, setTotalCount] = useState(0)
-  const [totalSearch, setTotalSearch] = useState(0)
+  const [totalSearch, setTotalSearch] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [type, setType] = useState('')
   const [rating, setRating] = useState('')
   const [date, setDate] = useState('')
   const [sort, setSort] = useState('user_date')
   const [asc, setAsc] = useState(-1)
+  const [viewType, setViewType] = useState('list')
   // const [nextId, setNextId] = useState('')
 
   const columns = [
@@ -149,7 +151,6 @@ const MyPage = () => {
   }
 
   const onChangeSort = (e: any) => {
-    console.log(e)
     setSort(e.column)
     setAsc(asc * (-1))
   }
@@ -202,6 +203,27 @@ const MyPage = () => {
 
   return (
     <>
+      <div className="flex items-center pt-8 pb-4 justify-between">
+        <Title
+          title={"마이페이지"}
+          sub={
+            <>
+              <span className="pr-1">검색결과</span>
+              {totalSearch ? Number(totalSearch).toLocaleString() : <Spinner size="sm" color="success" />}
+              건
+            </>
+          }
+        />
+        <RadioGroup
+          orientation="horizontal"
+          value={viewType}
+          onValueChange={setViewType}
+        >
+          <Radio value="list">리스트</Radio>
+          <Radio value="gallery">갤러리</Radio>
+        </RadioGroup>
+      </div>
+
       <Card>
         <CardFooter className="justify-center gap-5">
           <div className="flex gap-1">
@@ -217,100 +239,69 @@ const MyPage = () => {
         </CardFooter>
       </Card>
 
-      <div className="flex flex-row gap-2 py-2">
-        <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
+      <div className="flex gap-2 py-2">
         <SelectFilter type={'유형'} items={typeDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
         <SelectFilter type={'평가'} items={ratingDatas} onChangeSelect={onChangeSelect} />
       </div>
 
-      <div>검색결과 {totalSearch}건</div>
-
-      <Tabs
-        aria-label="Tabs"
-        className="py-2 justify-right"
-        onSelectionChange={() => {
-          list.reload()
-        }}>
-        <Tab
-          key="rating"
-          title={
-            <div className="flex items-center space-x-2">
-              <FontAwesomeIcon icon={faList} />
-              <span>리스트</span>
-            </div>
-          }
-        >
-          <Table
-            // removeWrapper
-            // hideHeader
-            // isHeaderSticky
-
-            sortDescriptor={list.sortDescriptor}
-            onSortChange={onChangeSort}
-            aria-label="Example table with dynamic content"
-            classNames={{
-              base: "max-h-[540px] overflow-scroll",
-              table: "max-h-[540px]",
-            }}
-            baseRef={scrollerRef}
-            bottomContent={
-              hasMore ? (
-                <div className="flex w-full justify-center">
-                  <Spinner ref={loaderRef} color="white" />
-                </div>
-              ) : null
-            }
-          >
-            {/* <TableHeader columns={columns}>
-              {(column) =>
-                <TableColumn key={column.key} allowsSorting>
-                  {column.label}
-                </TableColumn>}
-            </TableHeader> */}
-            <TableHeader>
-              <TableColumn key="title" allowsSorting>
-                TITLE
-              </TableColumn>
-              <TableColumn key="user_date" allowsSorting>
-                DATE
-              </TableColumn>
-              <TableColumn key="user_rating">
-                {null}
-              </TableColumn>
-              <TableColumn key="action">
-                {null}
-              </TableColumn>
-            </TableHeader>
-            <TableBody
-              items={list.items}
-            >
-              {(item: any) => (
-                <TableRow key={item._id}>
-                  {(columnKey) => <TableCell>{getKeyValue(item, columnKey)}</TableCell>}
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Tab>
-        <Tab
-          key="like"
-          title={
-            <div className="flex items-center space-x-2">
-              <FontAwesomeIcon icon={faBorderAll} />
-              <span>갤러리</span>
-            </div>
-          }
-        >
-          <div className="max-h-[540px] overflow-scroll" ref={scrollerRef}>
-            <InfiniteImages contents={list.items} />
-            {hasMore ? (
-              <div className="flex w-full justify-center">
-                <Spinner ref={loaderRef} color="white" />
+      {viewType == 'list' &&
+        <Table
+          // removeWrapper
+          // hideHeader
+          // isHeaderSticky
+          sortDescriptor={list.sortDescriptor}
+          onSortChange={onChangeSort}
+          aria-label="Example table with dynamic content"
+          classNames={{
+            base: "max-h-[720px] overflow-scroll",
+            table: "max-h-[720px]",
+          }}
+          baseRef={scrollerRef}
+          bottomContent={
+            hasMore ? (
+              <div className="flex w-full justify-center" ref={loaderRef}>
+                {/* <Spinner ref={loaderRef} color="white" /> */}
               </div>
-            ) : null}
-          </div >
-        </Tab>
-      </Tabs>
+            ) : null
+          }
+        >
+          <TableHeader>
+            <TableColumn key="title" className="w-1/2" allowsSorting>
+              TITLE
+            </TableColumn>
+            <TableColumn key="user_date" allowsSorting>
+              DATE
+            </TableColumn>
+            <TableColumn key="user_rating">
+              {null}
+            </TableColumn>
+            <TableColumn key="action">
+              {null}
+            </TableColumn>
+          </TableHeader>
+          <TableBody
+            items={list.items}
+          >
+            {(item: any) => (
+              <TableRow key={item._id}>
+                {(columnKey) => <TableCell>{getKeyValue(item, columnKey)}</TableCell>}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      }
+
+      {viewType == 'gallery' &&
+        <div className="max-h-[720px] overflow-scroll" ref={scrollerRef}>
+          <InfiniteImages contents={list.items} />
+          {hasMore ? (
+            <div className="flex w-full justify-center" ref={loaderRef}>
+              {/* <Spinner ref={loaderRef} color="white" /> */}
+            </div>
+          ) : null}
+        </div >
+      }
     </>
   )
 }

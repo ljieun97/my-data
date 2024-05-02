@@ -12,7 +12,7 @@ export const metadata = {
 const Home = async () => {
   const movies = [
     //await getMovieDetail(568124),
-    //오펜하이머 가여운것들 바비 그어살 추락의해부 
+    //2024 아카데미 - 오펜하이머 가여운것들 바비 그어살 추락의해부 
     await getDetail('movie', 872585),
     await getDetail('movie', 792307),
     await getDetail('movie', 346698),
@@ -21,12 +21,12 @@ const Home = async () => {
     await getDetail('movie', 915935),
   ]
   const random = Math.floor(Math.random() * movies.length)
-  const movie = movies[0]
+  const movie = movies[random]
   return (
     <>
       <Banners movie={movie} />
 
-      <div className="flex justify-between pt-12">
+      <div className="flex justify-between pt-8 pb-4">
         <Title title={'영화'} />
         <Link href="/movie" color="success">더보기</Link>
       </div>
@@ -34,7 +34,7 @@ const Home = async () => {
       <TodayList type={'movie'} />
       {/* </Suspense> */}
 
-      <div className="flex justify-between pt-12">
+      <div className="flex justify-between pt-8 pb-4">
         <Title title={'TV'} />
         <Link href="/tv" color="success">더보기</Link>
       </div>
@@ -42,7 +42,7 @@ const Home = async () => {
       <TodayList type={'tv'} />
       {/* </Suspense> */}
 
-      <div className="flex justify-between pt-12">
+      <div className="flex justify-between pt-8 pb-4">
         <Title title={'애니메이션'} />
         <Link href="/tv" color="success">더보기</Link>
       </div>

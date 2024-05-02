@@ -17,9 +17,9 @@ export default async function TodayList(props: any) {
   }
 
   return (
-    <>
-      <InfiniteImages contents={contents} />
+    <div className="pb-4">
+      <InfiniteImages contents={contents}/>
       {/* <ImagesSlider contents={contents} /> */}
-    </>
+    </div>
   )
 }

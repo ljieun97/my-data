@@ -1,5 +1,6 @@
 import Title from "@/components/common/title"
 import { Banners } from "@/components/layout/banners";
+import { BannersSkel } from "@/components/layout/banners-skel";
 import TodayList from "@/components/movie/today-list"
 import { getDetail } from "@/lib/themoviedb/api";
 import { Link } from "@nextui-org/react";
@@ -24,7 +25,12 @@ const Home = async () => {
   const movie = movies[random]
   return (
     <>
-      <Banners movie={movie} />
+      {movie ?
+        <Banners movie={movie} />
+        :
+        <BannersSkel />
+      }
+              {/* <BannersSkel /> */}
 
       <div className="flex justify-between pt-8 pb-4">
         <Title title={'영화'} />

@@ -15,7 +15,7 @@ export function Banners({ movie }: { movie: any }) {
         <Image
           radius="none"
           alt="Card background"
-          className="object-cover bg-gradient-to-r to-black-500"
+          className="w-full aspect-video object-cover"
           src={`https://image.tmdb.org/t/p/original/${movie.backdrop_path}`}
         />
 
@@ -24,7 +24,7 @@ export function Banners({ movie }: { movie: any }) {
               <Flatrates type={'movie'} id={movie.id} />
             </div>
           </CardHeader> */}
-        <CardBody className="absolute z-10 w-full h-full bg-black/10"></CardBody>
+        <CardBody className="absolute z-10 w-full h-full bg-gradient-to-b from-black/0 to-black/25"></CardBody>
         <CardFooter className="absolute z-10 pl-6 sm:bottom-4 md:bottom-7 lg:bottom-10">
           <div className="flex flex-col gap-2">
             <div>

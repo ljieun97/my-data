@@ -62,7 +62,7 @@ export default function CardThumb({ content }: { content: any }) {
           radius="none"
           alt="poster"
           src={img}
-          className="w-[240px] h-[200px] sm:h-[280px] md:h-[280px] lg:h-[280px] object-cover"
+          className="w-[210px] h-[250px] sm:h-[270px] md:h-[290px] lg:h-[290px] object-cover"
         />
 
         <CardHeader className="absolute justify-end">

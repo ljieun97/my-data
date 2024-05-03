@@ -2,11 +2,17 @@
 
 배포주소: [https://my-data-iota.vercel.app/](https://my-data-iota.vercel.app/)
 
+<br/>
+<br/>
+
 ## 프로젝트 소개
 
 - 보고싶은 작품이 어느 OTT에 있는지 한눈에 볼 수 있는 웹사이트입니다.
 - 영화, 시리즈 외 웹툰, 도서를 검색할 수 있습니다.
 - 본 작품들은 마이페이지에 등록하여 통계정보를 확인할 수 있습니다.
+
+<br/>
+<br/>
 
 ## 스택
 
@@ -21,6 +27,9 @@
 <img src="https://img.shields.io/badge/NextUI-000000?logo=nextui&logoColor=white"/>&nbsp;
 <img src="https://img.shields.io/badge/Tailwind CSS-06B6D4?logo=tailwindcss&logoColor=white"/>&nbsp;
 <img src="https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white"/>&nbsp;
+
+<br/>
+<br/>
 
 ## 기능 소개
   - 메인페이지

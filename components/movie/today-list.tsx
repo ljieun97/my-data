@@ -1,5 +1,5 @@
 import { getMonthAnime, getTodayMovies, getTodaySeries } from "@/lib/themoviedb/api"
-import ImagesSlider from "../layout/images-slider"
+import ImagesSlider from "../common/images-slider"
 import InfiniteImages from "../common/infinite-images"
 
 export default async function TodayList(props: any) {
@@ -18,8 +18,8 @@ export default async function TodayList(props: any) {
 
   return (
     <div className="pb-4">
-      <InfiniteImages contents={contents}/>
-      {/* <ImagesSlider contents={contents} /> */}
+      {/* <InfiniteImages contents={contents}/> */}
+      <ImagesSlider contents={contents} />
     </div>
   )
 }

@@ -3,7 +3,7 @@ import { Banners } from "@/components/layout/banners";
 import { BannersSkel } from "@/components/layout/banners-skel";
 import TodayList from "@/components/movie/today-list"
 import { getDetail } from "@/lib/themoviedb/api";
-import { Link } from "@nextui-org/react";
+import { Link, Spacer } from "@nextui-org/react";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -25,36 +25,39 @@ const Home = async () => {
   const movie = movies[random]
   return (
     <>
-      {movie ?
-        <Banners movie={movie} />
-        :
-        <BannersSkel />
-      }
-              {/* <BannersSkel /> */}
+      <div className="">
+        {movie ?
+          <Banners movie={movie} />
+          :
+          <BannersSkel />
+        }
 
-      <div className="flex justify-between pt-8 pb-4">
-        <Title title={'영화'} />
-        <Link href="/movie" color="success">더보기</Link>
-      </div>
-      {/* <Suspense fallback={<h1>loading</h1>}> */}
-      <TodayList type={'movie'} />
-      {/* </Suspense> */}
+        <div className="px-4">
+          <div className="flex justify-between pt-8 pb-4">
+            <Title title={'영화'} />
+            <Link href="/movie" color="success">더보기</Link>
+          </div>
+          <TodayList type={'movie'} />
 
-      <div className="flex justify-between pt-8 pb-4">
-        <Title title={'TV'} />
-        <Link href="/tv" color="success">더보기</Link>
-      </div>
-      {/* <Suspense fallback={<h1>loading</h1>}> */}
-      <TodayList type={'tv'} />
-      {/* </Suspense> */}
+          <div className="flex justify-between pt-8 pb-4">
+            <Title title={'TV'} />
+            <Link href="/tv" color="success">더보기</Link>
+          </div>
+          <TodayList type={'tv'} />
 
-      <div className="flex justify-between pt-8 pb-4">
-        <Title title={'애니메이션'} />
-        <Link href="/tv" color="success">더보기</Link>
+          <div className="flex justify-between pt-8 pb-4">
+            <Title title={'애니메이션'} />
+            <Link href="/tv" color="success">더보기</Link>
+          </div>
+          {/* <Suspense fallback={<h1>loading</h1>}> */}
+          <TodayList type={'anime'} />
+          {/* </Suspense> */}
+        </div>
+
       </div>
-      {/* <Suspense fallback={<h1>loading</h1>}> */}
-      <TodayList type={'anime'} />
-      {/* </Suspense> */}
+
+
+
     </>
   )
 }

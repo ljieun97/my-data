@@ -6,9 +6,13 @@ import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Input, DropdownIt
 
 export default function TopBar() {
   const path = usePathname()
+  const onChangeScroll = () => {
+    //여기
+  }
   return (
     <>
-      <Navbar isBordered maxWidth="full" classNames={{ wrapper: "px-2" }}>
+      <Navbar isBlurred={false} maxWidth="full" className="fixed bg-opacity px-0 drop-shadow" 
+      onScrollPositionChange={()=>onChangeScroll()}>
         <NavbarContent justify="start">
           <NavbarBrand className="mr-4">
             {/* <AcmeLogo /> */}

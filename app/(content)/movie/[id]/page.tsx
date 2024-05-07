@@ -13,9 +13,10 @@ export default async function Page({ params }: { params: { id: string } }) {
   const video = await getVideo(type, id)
   const casts = await getCasts(type, id)
   const rcm = await getRecommendations(type, id)
-  const sim = (rcm.length > 0 ? rcm : await getSimilars(type, id))
+  console.log(rcm)
+  const sim = (rcm?.length > 0 ? rcm : await getSimilars(type, id))
 
   return (
-    <CardInfo content={content} casts={casts} sim={sim} videoKey={video.key} />
+    <CardInfo content={content} casts={casts} sim={sim} videoKey={video?.key} />
   )
 }

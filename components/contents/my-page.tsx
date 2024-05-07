@@ -1,6 +1,6 @@
 'use client'
 
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio } from "@nextui-org/react"
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer } from "@nextui-org/react"
 import MyLikes from "./my-likes"
 import { RefObject, useCallback, useEffect, useState } from "react"
 import { GetMovies, DeleteMovie, UpdateMovie, GetMovieCount } from "@/lib/mongo/movie"
@@ -203,6 +203,7 @@ const MyPage = () => {
 
   return (
     <>
+        <Spacer y={16}/>
       <div className="flex items-center pt-8 pb-4 justify-between">
         <Title
           title={"마이페이지"}

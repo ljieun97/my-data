@@ -1,7 +1,7 @@
 'use client'
 
 import InfiniteImages from "../common/infinite-images"
-import { Avatar, Chip, Tooltip, Image, Button, Card, CardHeader, CardBody, CardFooter } from "@nextui-org/react"
+import { Avatar, Chip, Tooltip, Image, Button, Card, CardHeader, CardBody, CardFooter, AvatarGroup, Spacer } from "@nextui-org/react"
 import Title from "../common/title"
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -11,13 +11,17 @@ import ReactPlayer from "react-player/lazy";
 
 export default function CardInfo(props: any) {
   const { content, casts, sim, videoKey } = props
+  const cutCasts = casts?.slice(0, 8)
   const videoPath = `https://www.youtube.com/watch?v=${videoKey}`
   const router = useRouter()
   const [isMute, setIsMute] = useState(true)
+  const [isMore, setIsMore] = useState(true)
 
+  console.log(casts)
   return (
     <>
-      <Card className=" max-h-[820px]" radius="none" isBlurred>
+    <Spacer y={16}/>
+      <Card className="max-h-[820px]" radius="none" isBlurred>
         {/* <CardHeader className="p-0">
         </CardHeader> */}
         <CardBody className="p-0">
@@ -49,9 +53,9 @@ export default function CardInfo(props: any) {
                   width="100%"
                   height="100%"
                   url={videoPath}
-                  playing={true}
+                  // playing={true}
                   muted={isMute}
-                  loop={true}
+                // loop={true}
                 />
                 :
                 <>
@@ -92,68 +96,93 @@ export default function CardInfo(props: any) {
                 </>
               }
             />
-            <div className="md:flex lg:flex gap-4 px-2">
-              <div className="md:basis-3/5 lg:basis-3/5 pb-4">
-                <p className="text-default-600">
-                  {content.overview}
-                  {content.about} 
-                </p>
-              </div>
-
-              <div className="md:basis-2/5 lg:basis-2/5">
-                {casts &&
-                  <div className="flex break-keep pb-4">
-                    <div className="pr-2">출연</div>
-                    <div className="flex flex-wrap">
-                      {casts.map((cast: any) => (
-                        <Tooltip key={cast.credit_id} content={cast.name}>
-                          <Avatar
-                            isBordered
-                            size="md"
-                            src={cast.profile_path ? `https://image.tmdb.org/t/p/w500/${cast.profile_path}` : '/images/no-image.jpg'}
-                          />
-                        </Tooltip>
-                      ))}
-                    </div>
-                  </div>
-                }
-
-                <div className="flex break-keep">
-                  <div className="pr-2">장르</div>
-                  <div className="flex flex-wrap gap-1">
-                    {content.genres?.map((item: any) => (
-                      <Chip key={item.id} color="success" variant="bordered">{item.name}</Chip>
-                    ))}
-                    {content.genre}
-                    {/* {content.genre?.split(', ').length < 2 ?
-                    <Chip color="success" variant="bordered">{content.genre}</Chip>
-                    :
-                    content.genre?.split(', ').map((item: any) => (
-                      <Chip key={item.id} color="success" variant="bordered">{item.name}</Chip>
-                    ))
-                  } */}
-                  </div>
+            <div className="px-2">
+              <div className="flex">
+                <div className="md:basis-4/5 lg:basis-3/5 pb-4">
+                  <p className="text-default-600">
+                    {content.overview}
+                    {content.about}
+                  </p>
                 </div>
               </div>
+
+              {casts &&
+                <div className="pt-10">
+                  <h4 className="pb-4 font-bold text-lg">출연</h4>
+                  <div className="gap-3 lg:gap-2 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8">
+                    {cutCasts?.map((item: any, index: number) => (
+                      <Card shadow="sm" radius="sm" key={index} isBlurred>
+                        <CardBody className="overflow-visible p-0">
+                          <Image
+                            shadow="sm"
+                            radius="sm"
+                            width="100%"
+                            alt={item.name}
+                            className="w-full object-cover max-h-[160px] lg:max-h-[120px]"
+                            src={item.profile_path ? `https://image.tmdb.org/t/p/w500/${item.profile_path}` : '/images/no-image.jpg'}
+                          />
+                        </CardBody>
+                        <CardFooter className="px-0">
+                          <div className="w-full text-center">
+                            <p className="text-small">{item.name}</p>
+                            <p className="text-tiny italic text-default-500">{item.character}</p>
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    ))}
+
+                  </div>
+                  {/* {casts.length > 8 &&
+                    <Button onClick={() => { setIsMore(!isMore) }}>더보기</Button>
+                  } */}
+                </div>
+              }
+
+              {/* {casts &&
+                <div className="pt-10">
+                  <h4 className="pb-4">출연</h4>
+                  <div className="flex flex-wrap gap-4">
+                    {casts.map((item: any) => (
+                      <Tooltip key={item.credit_id} content={item.name}>
+                        <Avatar
+                          radius="sm"
+                          className="w-20 h-20 text-large"
+                          src={item.profile_path ? `https://image.tmdb.org/t/p/w500/${item.profile_path}` : '/images/no-image.jpg'}
+                        />
+                      </Tooltip>
+                    ))}
+                  </div>
+                </div>
+              } */}
+
+              {sim?.length > 0 &&
+                <div className="pt-10">
+                  <h4 className="pb-4 font-bold text-lg">추천 콘텐츠</h4>
+                  <InfiniteImages contents={sim} />
+                </div>
+              }
+
+              {casts &&
+                <div className="pt-10">
+                  <h4 className="pb-4 font-bold text-lg">세부정보</h4>
+                  {casts.map((item: any, index: number) => (
+                    <span className="text-default-500" key={index}>{item.original_name}({item.character}), </span>
+                  ))}
+                </div>
+              }
             </div>
           </div>
 
-          {
-            sim?.length > 0 &&
-            <div className="p-4 pt-10">
-              <h4 className="pb-4">추천 콘텐츠</h4>
-              <InfiniteImages contents={sim} />
-            </div>
-          }
+
         </CardBody>
-        <CardFooter className="gap-3 px-4 py-6">
+        <CardFooter className="gap-3 px-6 py-6">
           <div className="flex gap-1">
             <p className="font-semibold text-default-400 text-small">4</p>
             <p className=" text-default-400 text-small">Following</p>
           </div>
           <div className="flex gap-1">
             <p className="font-semibold text-default-400 text-small">97.1K</p>
-            <p className="text-default-400 text-small">Followers</p>
+            <p className="text-default-400 text-small">Followers 준비중인 서비스</p>
           </div>
         </CardFooter>
       </Card >

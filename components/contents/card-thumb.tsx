@@ -23,6 +23,10 @@ export default function CardThumb({ content }: { content: any }) {
     type = 'book'
     img = content.image
     id = content.isbn
+  } else if (content.type) { //db
+    type = content.type == "영화" ? 'movie' : 'tv'
+    adult = content.adult
+    id = content.id
   } else if (content.title) {
     type = 'movie'
     adult = content.adult
@@ -56,7 +60,7 @@ export default function CardThumb({ content }: { content: any }) {
         // className="border-none group/footer col-span-4 lg:col-span-2  md:col-span-3 sm:col-span-3"
         className="border-none group/footer items-center"
         isFooterBlurred
-        // isBlurred
+      // isBlurred
       >
         <Image
           radius="none"

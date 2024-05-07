@@ -87,23 +87,21 @@ export async function getSimilars(type: string, id: string) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/similar?language=ko&watch_region=KR&api_key=${API_KEY}`
   const response = await fetch(URL)
   let { results } = await response.json()
-  results = results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
-  return results
+  return results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
 }
 
 export async function getRecommendations(type: string, id: string) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/recommendations?language=ko&watch_region=KR&api_key=${API_KEY}`
   const response = await fetch(URL)
   let { results } = await response.json()
-  results = results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
-  return results
+  return results = results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
 }
 
 export async function getVideo(type: string, id: string) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/videos?language=ko&api_key=${API_KEY}`
   const response = await fetch(URL)
   let { results } = await response.json()
-  return results.filter((content: any) => content.site == "youtube" || "Youtube")[0]
+  return results?.filter((content: any) => content.site == "youtube" || "Youtube")[0]
 }
 
 //영화 및 시리즈 페이지

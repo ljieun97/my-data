@@ -2,7 +2,7 @@
 
 import { getFilterMovies } from "@/lib/themoviedb/api"
 import InfiniteImages from "../common/infinite-images"
-import { Spinner } from "@nextui-org/react"
+import { Spacer, Spinner } from "@nextui-org/react"
 import { RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { getLocalTimeZone, today } from "@internationalized/date";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
@@ -177,6 +177,7 @@ export default function MovieList({ type }: { type: string }) {
 
   return (
     <>
+        <Spacer y={16}/>
       <div className="flex items-center pt-8 pb-4">
         <Title
           title={type === "movie" ? "영화" : "시리즈"}

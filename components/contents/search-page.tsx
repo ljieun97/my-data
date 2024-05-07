@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation"
 import Title from "../common/title"
 import SearchList from "./search-list"
+import { Spacer } from "@nextui-org/react"
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
@@ -10,6 +11,7 @@ export default function SearchPage() {
 
   return (
     <>
+        <Spacer y={16}/>
       <div className="flex items-center pt-8 pb-4">
         <Title
           title={`[${keyword}] 검색결과`}

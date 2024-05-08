@@ -10,7 +10,7 @@ export function Banners({ movie }: { movie: any }) {
     <>
       <Card
         radius="none"
-        className="border-none"
+        className="border-none w-full items-center"
       >
         <Image
           radius="none"
@@ -24,8 +24,8 @@ export function Banners({ movie }: { movie: any }) {
               <Flatrates type={'movie'} id={movie.id} />
             </div>
           </CardHeader> */}
-        <CardBody className="absolute z-10 w-full h-full bg-gradient-to-b from-black/10 to-black/75"></CardBody>
-        <CardFooter className="absolute z-10 pl-6 bottom-4">
+        <CardBody className="absolute z-10 w-full h-full bg-gradient-to-b from-black/10 to-black/25"></CardBody>
+        <CardFooter className="absolute z-10 bottom-2 lg:bottom-16 pl-6 max-w-7xl">
           <div className="flex flex-col gap-2">
             <div>
               <p className="text-tiny text-white font-bold drop-shadow">2024 아카데미 수상작</p>
@@ -34,8 +34,6 @@ export function Banners({ movie }: { movie: any }) {
             <p className="text-white w-2/3 sm:w-2/3 md:w-1/2 lg:w-1/2 line-clamp-3 drop-shadow">{movie.overview}</p>
             <Button
               className='w-fit'
-              color="success"
-              variant="ghost"
               onClick={() => router.push(`/${'movie'}/${movie.id}`)}
             >상세정보</Button>
           </div>

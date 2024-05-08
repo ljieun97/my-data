@@ -66,7 +66,7 @@ export async function getProviders(type: string, id: any) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/watch/providers?api_key=${API_KEY}`
   const response = await fetch(URL)
   const { results } = await response.json()
-  return results?.KR?.flatrate
+  return results?.KR
 }
 
 export async function getDetail(type: string, id: any) {

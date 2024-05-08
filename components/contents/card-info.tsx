@@ -6,25 +6,27 @@ import Title from "../common/title"
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft, faVolumeHigh, faVolumeXmark } from "@fortawesome/free-solid-svg-icons"
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ReactPlayer from "react-player/lazy";
 
 export default function CardInfo(props: any) {
-  const { content, casts, sim, videoKey } = props
+  const { content, casts, sim, providers, videoKey } = props
   const cutCasts = casts?.slice(0, 8)
   const videoPath = `https://www.youtube.com/watch?v=${videoKey}`
   const router = useRouter()
   const [isMute, setIsMute] = useState(true)
-  const [isMore, setIsMore] = useState(true)
+  const castsRef = useRef<HTMLDivElement>(null)
+  const goCasts = () => {
+    castsRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
-  console.log(casts)
   return (
     <>
-    <Spacer y={16}/>
-      <Card className="max-h-[820px]" radius="none" isBlurred>
+      <Spacer y={16} />
+      <Card className="mx-auto max-w-7xl max-h-[840px]" radius="none" isBlurred>
         {/* <CardHeader className="p-0">
         </CardHeader> */}
-        <CardBody className="p-0">
+        <CardBody className="px-6 py-0">
           <div className="relative">
             <div className="flex left-2 bottom-2 gap-2 absolute z-10">
               <Button
@@ -53,9 +55,9 @@ export default function CardInfo(props: any) {
                   width="100%"
                   height="100%"
                   url={videoPath}
-                  // playing={true}
+                  playing={true}
                   muted={isMute}
-                // loop={true}
+                loop={true}
                 />
                 :
                 <>
@@ -63,7 +65,7 @@ export default function CardInfo(props: any) {
                     content.backdrop_path &&
                     <Image
                       removeWrapper={true}
-                      radius="sm"
+                      radius="none"
                       alt="Card background"
                       className="w-full aspect-video object-cover"
                       src={content.backdrop_path ? `https://image.tmdb.org/t/p/original/${content.backdrop_path}` : ''}
@@ -85,7 +87,7 @@ export default function CardInfo(props: any) {
 
 
 
-          <div className="p-4">
+          <div className="pt-6"> {/* 영상 외 */}
             <Title
               title={content.title ? content.title : content.name}
               // sub={`${content.adult ? '(19)' : ''}`}
@@ -96,49 +98,99 @@ export default function CardInfo(props: any) {
                 </>
               }
             />
-            <div className="px-2">
-              <div className="flex">
-                <div className="md:basis-4/5 lg:basis-3/5 pb-4">
-                  <p className="text-default-600">
-                    {content.overview}
-                    {content.about}
-                  </p>
-                </div>
+
+            <div className="pt-2 pb-6 md:flex text-default-500">
+              <div className="md:basis-3/5 pb-4">
+                <p>
+                  {content.overview}
+                  {content.about}
+                </p>
               </div>
-
-              {casts &&
-                <div className="pt-10">
-                  <h4 className="pb-4 font-bold text-lg">출연</h4>
-                  <div className="gap-3 lg:gap-2 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8">
-                    {cutCasts?.map((item: any, index: number) => (
-                      <Card shadow="sm" radius="sm" key={index} isBlurred>
-                        <CardBody className="overflow-visible p-0">
-                          <Image
-                            shadow="sm"
-                            radius="sm"
-                            width="100%"
-                            alt={item.name}
-                            className="w-full object-cover max-h-[160px] lg:max-h-[120px]"
-                            src={item.profile_path ? `https://image.tmdb.org/t/p/w500/${item.profile_path}` : '/images/no-image.jpg'}
-                          />
-                        </CardBody>
-                        <CardFooter className="px-0">
-                          <div className="w-full text-center">
-                            <p className="text-small">{item.name}</p>
-                            <p className="text-tiny italic text-default-500">{item.character}</p>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    ))}
-
-                  </div>
-                  {/* {casts.length > 8 &&
-                    <Button onClick={() => { setIsMore(!isMore) }}>더보기</Button>
-                  } */}
+              {providers &&
+                <div className="flex gap-2 md:basis-2/5 md:pl-10">
+                  {providers.flatrate &&
+                    <>
+                      <div className="flex gap-2">고정 요금
+                        {providers.flatrate.map((item: any, index: number) => (
+                          <span key={index}>
+                            {item.provider_id != 1796 &&
+                              <Tooltip content={item.provider_name}>
+                                <Avatar
+                                  size="sm"
+                                  radius="sm"
+                                  src={`https://image.tmdb.org/t/p/w500/${item.logo_path}`}
+                                />
+                              </Tooltip>
+                            }
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  }
+                  {providers.buy &&
+                    <>
+                      <div className="flex gap-2">개별 구매
+                        {providers.buy.map((item: any, index: number) => (
+                          <span key={index}>
+                            {item.provider_id != 1796 &&
+                              <Tooltip content={item.provider_name}>
+                                <Avatar
+                                  size="sm"
+                                  radius="sm"
+                                  src={`https://image.tmdb.org/t/p/w500/${item.logo_path}`}
+                                />
+                              </Tooltip>
+                            }
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  }
                 </div>
               }
+            </div>
 
-              {/* {casts &&
+            {casts &&
+              <div className="pt-12 pb-6">
+                <h4 className="pb-4 font-bold text-lg">출연</h4>
+                <div className="gap-3 lg:gap-2 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-8">
+                  {cutCasts?.map((item: any, index: number) => (
+                    <Card shadow="sm" radius="sm" key={index} isBlurred>
+                      <CardBody className="overflow-visible p-0">
+                        <Image
+                          shadow="sm"
+                          radius="sm"
+                          width="100%"
+                          alt={item.name}
+                          className="w-full object-cover max-h-[160px] lg:max-h-[120px]"
+                          src={item.profile_path ? `https://image.tmdb.org/t/p/w500/${item.profile_path}` : '/images/no-image.jpg'}
+                        />
+                      </CardBody>
+                      <CardFooter className="px-0">
+                        <div className="w-full text-center">
+                          <p className="text-small">{item.name}</p>
+                          <p className="text-tiny italic text-default-500">{item.character}</p>
+                        </div>
+                      </CardFooter>
+                    </Card>
+                  ))}
+
+                </div>
+              </div>
+            }
+
+            {casts.length > 8 &&
+              <div className="flex justify-center">
+                <Button
+                  variant="bordered"
+                  onClick={() => { goCasts() }}
+                >더보기
+                </Button>
+              </div>
+            }
+
+
+            {/* {casts &&
                 <div className="pt-10">
                   <h4 className="pb-4">출연</h4>
                   <div className="flex flex-wrap gap-4">
@@ -155,27 +207,43 @@ export default function CardInfo(props: any) {
                 </div>
               } */}
 
-              {sim?.length > 0 &&
-                <div className="pt-10">
-                  <h4 className="pb-4 font-bold text-lg">추천 콘텐츠</h4>
-                  <InfiniteImages contents={sim} />
+            {sim?.length > 0 &&
+              <div className="pt-12 pb-6">
+                <h4 className="pb-4 font-bold text-lg">추천 콘텐츠</h4>
+                <InfiniteImages contents={sim} />
+              </div>
+            }
+
+
+            <div className="pt-12">
+              <h4 className="pb-4 font-bold text-lg">세부정보</h4>
+              {content.genres &&
+                <div>
+                  <span>장르 </span>
+                  {content.genres.map((item: any, index: number) => (
+                    <span className="text-default-500" key={index}>
+                      {item.name}
+                      {content.genres[index + 1] ? ', ' : ''}
+                    </span>
+                  ))}
                 </div>
               }
-
               {casts &&
-                <div className="pt-10">
-                  <h4 className="pb-4 font-bold text-lg">세부정보</h4>
+                <div>
+                  <span ref={castsRef}>출연 </span>
                   {casts.map((item: any, index: number) => (
-                    <span className="text-default-500" key={index}>{item.original_name}({item.character}), </span>
+                    <span className="text-default-500" key={index}>
+                      {item.original_name}({item.character})
+                      {casts[index + 1] ? ', ' : ''}
+                    </span>
                   ))}
                 </div>
               }
             </div>
           </div>
-
-
         </CardBody>
-        <CardFooter className="gap-3 px-6 py-6">
+
+        <CardFooter className="gap-3 p-6">
           <div className="flex gap-1">
             <p className="font-semibold text-default-400 text-small">4</p>
             <p className=" text-default-400 text-small">Following</p>

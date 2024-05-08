@@ -13,26 +13,26 @@ export const metadata = {
 const Home = async () => {
   const movies = [
     //await getMovieDetail(568124),
-    //2024 아카데미 - 오펜하이머 가여운것들 바비 그어살 추락의해부 
+    //2024 아카데미 - 오펜하이머 가여운것들 바비 그어살 바튼 추락의해부 
     await getDetail('movie', 872585),
     await getDetail('movie', 792307),
     await getDetail('movie', 346698),
     await getDetail('movie', 508883),
-    await getDetail('movie', 840430),
+    // await getDetail('movie', 840430), 흰색배경
     await getDetail('movie', 915935),
   ]
   const random = Math.floor(Math.random() * movies.length)
   const movie = movies[random]
   return (
     <>
-      <div className="">
+      <div className="absolute top-0 left-0 w-full h-full">
         {movie ?
           <Banners movie={movie} />
           :
           <BannersSkel />
         }
 
-        <div className="px-4">
+        <div className="p-6 mx-auto max-w-7xl">
           <div className="flex justify-between pt-8 pb-4">
             <Title title={'영화'} />
             <Link href="/movie" color="success">더보기</Link>

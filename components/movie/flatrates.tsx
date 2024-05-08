@@ -8,13 +8,16 @@ export default function Flatrates({ type, provider }: { type: string, provider: 
   const [flatrates, setFlatrates] = useState([])
   useEffect(() => {
     (async () => {
-      if(type == 'movie' || type == 'tv') setFlatrates(await getProviders(type, provider))
+      if (type == 'movie' || type == 'tv') {
+        const results = await getProviders(type, provider)
+        setFlatrates(results?.flatrate)
+      }
     })()
   }, [provider])
-  
+
   return (
     <>
-      {(type == 'movie' || type == 'tv') && flatrates && flatrates.map((flatrate: any) => (
+      {(type == 'movie' || type == 'tv') && flatrates?.map((flatrate: any) => (
         <div key={flatrate.provider_id}>
           {flatrate.provider_id != 1796 &&
             <Tooltip content={flatrate.provider_name}>

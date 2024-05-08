@@ -202,8 +202,8 @@ const MyPage = () => {
   }, [])
 
   return (
-    <>
-        <Spacer y={16}/>
+    <div className="p-6 mx-auto max-w-7xl">
+      <Spacer y={16} />
       <div className="flex items-center pt-8 pb-4 justify-between">
         <Title
           title={"마이페이지"}
@@ -255,8 +255,8 @@ const MyPage = () => {
           onSortChange={onChangeSort}
           aria-label="Example table with dynamic content"
           classNames={{
-            base: "max-h-[720px] overflow-scroll",
-            table: "max-h-[720px]",
+            base: "max-h-[620px] overflow-scroll",
+            table: "max-h-[620px]",
           }}
           baseRef={scrollerRef}
           bottomContent={
@@ -294,7 +294,7 @@ const MyPage = () => {
       }
 
       {viewType == 'gallery' &&
-        <div className="max-h-[720px] overflow-scroll" ref={scrollerRef}>
+        <div className="max-h-[620px] overflow-scroll" ref={scrollerRef}>
           <InfiniteImages contents={list.items} />
           {hasMore ? (
             <div className="flex w-full justify-center" ref={loaderRef}>
@@ -303,7 +303,7 @@ const MyPage = () => {
           ) : null}
         </div >
       }
-    </>
+    </div>
   )
 }
 

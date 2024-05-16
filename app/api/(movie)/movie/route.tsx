@@ -59,6 +59,7 @@ const POST = async (req: NextRequest) => {
 	let date = ''
 	let object = {} as any
 
+	//제목 정렬때문에 title로 통합
 	if (content.genre_ids) {
 		if (content.title) {
 			date = content.release_date

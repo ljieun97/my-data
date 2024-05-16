@@ -85,8 +85,6 @@ export default function CardInfo(props: any) {
             </div>
           </div>
 
-
-
           <div className="pt-6"> {/* 영상 외 */}
             <Title
               title={content.title ? content.title : content.name}

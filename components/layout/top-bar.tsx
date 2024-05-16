@@ -2,15 +2,53 @@
 
 import { usePathname } from "next/navigation";
 import SearchInput from "./search-input";
-import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Input, DropdownItem, DropdownTrigger, Dropdown, DropdownMenu, Avatar } from "@nextui-org/react";
+import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Input, DropdownItem, DropdownTrigger, Dropdown, DropdownMenu, Avatar, NavbarMenuToggle, NavbarMenu } from "@nextui-org/react";
+import { useState } from "react";
 
 export default function TopBar() {
   const path = usePathname()
+  const [isScroll, setIsScroll] = useState(false)
+  const onChangeScroll = () => {
+    if (window.scrollY < 30) setIsScroll(false)
+    else setIsScroll(true)
+  }
   return (
     <>
-      <Navbar isBordered maxWidth="full" classNames={{ wrapper: "px-2" }}>
+      <Navbar
+        isBlurred={isScroll}
+        classNames={{
+          base: `${isScroll ? "fixed drop-shadow" : "fixed bg-opacity drop-shadow"}`,
+          wrapper: "max-w-7xl"
+        }}
+        onScrollPositionChange={() => onChangeScroll()}
+      >
         <NavbarContent justify="start">
-          <NavbarBrand className="mr-4">
+          <NavbarMenuToggle
+            className="sm:hidden"
+          />
+          <NavbarMenu className="bg-white/50">
+            <NavbarItem isActive={path === "/"}>
+              <Link href="/" color="foreground" >
+                홈
+              </Link>
+            </NavbarItem>
+            <NavbarItem isActive={path === "/movie"}>
+              <Link href="/movie" color="foreground">
+                영화
+              </Link>
+            </NavbarItem>
+            <NavbarItem isActive={path === "/tv"}>
+              <Link href="/tv" color="foreground">
+                시리즈
+              </Link>
+            </NavbarItem>
+            <NavbarItem isActive={path === "/mypage"}>
+              <Link href="/mypage" color="foreground">
+                마이페이지
+              </Link>
+            </NavbarItem>
+          </NavbarMenu>
+          <NavbarBrand>
             {/* <AcmeLogo /> */}
             <p className="hidden sm:block font-bold text-inherit">
               <Link href="/" color="foreground" >
@@ -45,7 +83,7 @@ export default function TopBar() {
         <NavbarContent as="div" className="items-center" justify="end">
           <SearchInput></SearchInput>
 
-          <Dropdown placement="bottom-end">
+          {/* <Dropdown placement="bottom-end">
             <DropdownTrigger>
               <Avatar
                 isBordered
@@ -72,7 +110,7 @@ export default function TopBar() {
                 Log Out
               </DropdownItem>
             </DropdownMenu>
-          </Dropdown>
+          </Dropdown> */}
         </NavbarContent>
       </Navbar>
     </>

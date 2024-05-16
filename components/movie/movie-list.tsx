@@ -2,17 +2,18 @@
 
 import { getFilterMovies } from "@/lib/themoviedb/api"
 import InfiniteImages from "../common/infinite-images"
-import { DateRangePicker, Select, SelectItem, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User, getKeyValue } from "@nextui-org/react"
+import { Spacer, Spinner } from "@nextui-org/react"
 import { RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { getLocalTimeZone, today } from "@internationalized/date";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
-import CardThumb from "../contents/card-thumb"
+
 import SelectFilter from "../common/select-filter"
 import Title from "../common/title"
+import InfiniteImagesSkel from "../common/infinite-images-skel"
 
 export default function MovieList({ type }: { type: string }) {
-  const [totalContents, setTotalContents] = useState(0)
+  const [totalContents, setTotalContents] = useState('')
   const [country, setCountries] = useState('')
   // const [flatforms, setFlatforms] = useState(new Set([]))
   const [flatforms, setFlatforms] = useState('')
@@ -22,9 +23,12 @@ export default function MovieList({ type }: { type: string }) {
   const [hasMore, setHasMore] = useState(false)
   let list = useAsyncList({
     async load({ signal, cursor }) {
-      const { results, page, total_pages, total_results } = cursor ? await getFilterMovies(type, country, flatforms, date, genres, cursor) : await getFilterMovies(type, country, flatforms, date, genres, 1)
+
+      const { results, page, total_pages, total_results } = await getFilterMovies(type, country, flatforms, date, genres, cursor ? cursor : 1)
       setTotalContents(total_results)
-      setHasMore(page < total_pages)
+      // setHasMore(page < total_pages)
+      setHasMore(true)
+
       return {
         items: results,
         cursor: page + 1,
@@ -172,24 +176,38 @@ export default function MovieList({ type }: { type: string }) {
   }
 
   return (
-    <>
-      <div>검색결과 {totalContents}건</div>
-      <div className="h-[720px] overflow-auto" ref={scrollerRef}>
-        <div className="flex flex-row gap-2 py-2">
-          <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
-          <SelectFilter type={'제공사'} items={flatformDatas} onChangeSelect={onChangeSelect} />
-          <SelectFilter type={'국가'} items={countryDatas} onChangeSelect={onChangeSelect} />
-          <SelectFilter type={'장르'} items={genreDatas} onChangeSelect={onChangeSelect} />
-        </div>
+    <div className="px-6 mx-auto max-w-7xl">
+      <Spacer y={16} />
+      <div className="flex items-center pt-8 pb-4">
+        <Title
+          title={type === "movie" ? "영화" : "시리즈"}
+          sub={
+            <>
+              <span className="pr-1">검색결과</span>
+              {totalContents ? Number(totalContents).toLocaleString() : <Spinner size="sm" color="success" />}
+              건
+            </>
+          }
+        />
+      </div>
 
-        <InfiniteImages contents={list.items} />
+      <div className="flex flex-row gap-2 py-2">
+        <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={'제공사'} items={flatformDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={'국가'} items={countryDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={'장르'} items={genreDatas} onChangeSelect={onChangeSelect} />
+      </div>
+      <div className="h-[690px] overflow-auto" ref={scrollerRef}>
+        {totalContents ?
+          <InfiniteImages contents={list.items} /> : <InfiniteImagesSkel />
+        }
         {hasMore ? (
-          <div className="flex w-full justify-center">
-            <Spinner ref={loaderRef} color="white" />
+          <div className="flex w-full justify-center" ref={loaderRef}>
+            {/* <Spinner ref={loaderRef} color="white" /> */}
           </div>
         ) : null}
       </div>
-    </>
+    </div>
   )
 }
 

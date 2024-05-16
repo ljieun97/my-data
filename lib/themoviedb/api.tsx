@@ -34,7 +34,8 @@ export async function getTodayMovies() {
   const URL = `https://api.themoviedb.org/3/discover/movie?release_date.gte=${month}&release_date.lte=${today}&language=ko&watch_region=KR&with_watch_monetization_types=flatrate&with_watch_providers=8|119|96|97|337|350|356&without_watch_providers=1796&sort_by=release_date.desc&api_key=${API_KEY}`
   const response = await fetch(URL)
   let { results } = await response.json()
-  results = results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
+  results = results.filter((content: any) => content.poster_path && content.overview)
+
   // results = results.filter((content: any) => content.poster_path)
   return results
 }
@@ -47,7 +48,7 @@ export async function getTodaySeries() {
   const URL = `https://api.themoviedb.org/3/discover/tv?air_date.gte=${month}&language=ko&watch_region=KR&with_watch_monetization_types=flatrate&without_watch_providers=1796&without_genres=16&sort_by=first_air_date.desc&api_key=${API_KEY}`
   const response = await fetch(URL)
   let { results } = await response.json()
-  results = results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
+  results = results.filter((content: any) => content.poster_path && content.overview)
   // results = results.filter((content: any) => content.poster_path)
   return results
 }
@@ -57,7 +58,7 @@ export async function getMonthAnime() {
   const URL = `https://api.themoviedb.org/3/discover/tv?air_date.gte=${month}&air_date.lte=${today}&language=ko&watch_region=KR&with_watch_monetization_types=flatrate&without_watch_providers=1796&with_genres=16&sort_by=first_air_date.desc&api_key=${API_KEY}`
   const response = await fetch(URL)
   let { results } = await response.json()
-  results = results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
+  results = results.filter((content: any) => content.poster_path && content.overview)
   return results
 }
 
@@ -65,7 +66,7 @@ export async function getProviders(type: string, id: any) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/watch/providers?api_key=${API_KEY}`
   const response = await fetch(URL)
   const { results } = await response.json()
-  return results?.KR?.flatrate
+  return results?.KR
 }
 
 export async function getDetail(type: string, id: any) {
@@ -86,16 +87,21 @@ export async function getSimilars(type: string, id: string) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/similar?language=ko&watch_region=KR&api_key=${API_KEY}`
   const response = await fetch(URL)
   let { results } = await response.json()
-  results = results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
-  return results
+  return results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
 }
 
 export async function getRecommendations(type: string, id: string) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/recommendations?language=ko&watch_region=KR&api_key=${API_KEY}`
   const response = await fetch(URL)
   let { results } = await response.json()
-  results = results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
-  return results
+  return results = results.filter((content: any) => content.poster_path && content.overview).slice(0, 12)
+}
+
+export async function getVideo(type: string, id: string) {
+  const URL = `https://api.themoviedb.org/3/${type}/${id}/videos?language=ko&api_key=${API_KEY}`
+  const response = await fetch(URL)
+  let { results } = await response.json()
+  return results?.filter((content: any) => content.site == "youtube" || "Youtube")[0]
 }
 
 //영화 및 시리즈 페이지

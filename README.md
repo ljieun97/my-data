@@ -1,6 +1,9 @@
 # OTT 검색 플랫폼 [오늘 뭐 볼까?]
 
-배포주소: [my-data-iota.vercel.app](my-data-iota.vercel.app)
+배포주소: [https://my-data-iota.vercel.app/](https://my-data-iota.vercel.app/)
+
+<br/>
+<br/>
 
 ## 프로젝트 소개
 
@@ -8,23 +11,22 @@
 - 영화, 시리즈 외 웹툰, 도서를 검색할 수 있습니다.
 - 본 작품들은 마이페이지에 등록하여 통계정보를 확인할 수 있습니다.
 
+<br/>
+<br/>
+
 ## 스택
 
-### 환경
-<img src="https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white"/>&nbsp;
-<img src="https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white"/>&nbsp;
-<img src="https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white"/>&nbsp;
-<img src="https://img.shields.io/badge/Visual Studio Code-007ACC?logo=visualstudiocode&logoColor=white"/>&nbsp;
-
-
-### 개발 
 <img src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=white"/>&nbsp;
 <img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white"/>&nbsp;
+<img src="https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white"/>&nbsp;
+<img src="https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white"/>&nbsp;
 <img src="https://img.shields.io/badge/NextUI-000000?logo=nextui&logoColor=white"/>&nbsp;
 <img src="https://img.shields.io/badge/Tailwind CSS-06B6D4?logo=tailwindcss&logoColor=white"/>&nbsp;
-<img src="https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white"/>&nbsp;
 
-## 기능 소개
+<br/>
+<br/>
+
+## 화면 설명
   - 메인페이지
     - 최신 영화, 시리즈, 애니메이션 목록 확인
     - 썸네일 상단 오른쪽에서 해당 작품을 볼 수 있는 OTT 목록 확인

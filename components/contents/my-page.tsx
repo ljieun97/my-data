@@ -1,6 +1,6 @@
 'use client'
 
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter } from "@nextui-org/react"
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer } from "@nextui-org/react"
 import MyLikes from "./my-likes"
 import { RefObject, useCallback, useEffect, useState } from "react"
 import { GetMovies, DeleteMovie, UpdateMovie, GetMovieCount } from "@/lib/mongo/movie"
@@ -10,15 +10,19 @@ import InfiniteImages from "../common/infinite-images"
 import SelectFilter from "../common/select-filter"
 import { useAsyncList } from "@react-stately/data"
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll"
+import Title from "../common/title"
 
 const MyPage = () => {
   const [contentCounts, setContentCounts] = useState([])
   const [totalCount, setTotalCount] = useState(0)
-  const [totalSearch, setTotalSearch] = useState(0)
+  const [totalSearch, setTotalSearch] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [type, setType] = useState('')
   const [rating, setRating] = useState('')
   const [date, setDate] = useState('')
+  const [sort, setSort] = useState('user_date')
+  const [asc, setAsc] = useState(-1)
+  const [viewType, setViewType] = useState('list')
   // const [nextId, setNextId] = useState('')
 
   const columns = [
@@ -27,11 +31,11 @@ const MyPage = () => {
       label: "TITLE",
     },
     {
-      key: "date",
+      key: "user_date",
       label: "DATE",
     },
     {
-      key: "rating",
+      key: "user_rating",
       label: "RATING",
     },
     {
@@ -61,36 +65,41 @@ const MyPage = () => {
   const [hasMore, setHasMore] = useState(false)
   let list = useAsyncList({
     async load({ signal, cursor }) {
-      const response = cursor ?
-        await GetMovies(Number(cursor), date, type, rating) :
-        await GetMovies(0, date, type, rating)
+      const page = cursor ? Number(cursor) : 0
+      //정렬 userdate는 되는데 rating은 중복뜸
+      const response = await GetMovies(page, date, type, rating, sort, asc)
       const { results, total, total_page } = await response.json()
-      console.log(Number(cursor), total_page)
+      console.log(page, total_page)
+
       setTotalSearch(total)
-      setHasMore(Number(cursor) + 1 < total_page)
+      // setHasMore(page+1 < total_page)
+      setHasMore(true)
 
       return {
         items: results,
-        cursor: `${Number(cursor) + 1}`,
+        cursor: `${page + 1}`,
       }
     }
   })
   const [loaderRef, scrollerRef] = useInfiniteScroll({
     hasMore,
     onLoadMore: list.loadMore
-  }) as RefObject<HTMLDivElement>[]
+  }) as RefObject<HTMLDivElement>[] as any
 
   useEffect(() => {
     (async () => {
-      await updateMypage()
+      await setCount()
     })()
   }, [])
 
   useEffect(() => {
+
     list.reload()
+
   }, [date])
 
   useEffect(() => {
+
     list.reload()
   }, [type])
 
@@ -98,7 +107,11 @@ const MyPage = () => {
     list.reload()
   }, [rating])
 
-  const updateMypage = async () => {
+  useEffect(() => {
+    list.reload()
+  }, [asc])
+
+  const setCount = async () => {
     const getContentCounts = await GetMovieCount()
     setContentCounts(getContentCounts)
     setTotalCount(() => {
@@ -108,17 +121,19 @@ const MyPage = () => {
       })
       return total
     })
-    list.reload()
   }
 
   const clickUpdate = (id: any) => async (e: React.ChangeEvent<HTMLInputElement>) => {
     // await UpdateMovie(id, e.target.value)
+
     list.reload()
   }
 
   const clickDelete = async (id: any) => {
     await DeleteMovie(id)
-    await updateMypage()
+    await setCount()
+
+    list.reload()
   }
 
   const onChangeSelect = (e: any, type: string) => {
@@ -135,20 +150,21 @@ const MyPage = () => {
     }
   }
 
+  const onChangeSort = (e: any) => {
+    setSort(e.column)
+    setAsc(asc * (-1))
+  }
+
   const getKeyValue = useCallback((item: any, columnKey: any) => {
     const cellValue = item[columnKey]
     switch (columnKey) {
       case "title":
-        let title = ''
         let img = ''
         if (item.webtoonId) {
-          title = item.title
           img = item.img
         } else if (item.isbn) {
-          title = item.title
           img = item.image
         } else {
-          title = item.title ? item.title : item.name
           img = `https://image.tmdb.org/t/p/w500/${item.poster_path}`
         }
 
@@ -156,15 +172,15 @@ const MyPage = () => {
           <User
             avatarProps={{ radius: "lg", src: img }}
             description={item.type}
-            name={title}
+            name={item.title}
           />
         )
-      case "date":
+      case "user_date":
         // return item.my_date.substr(0, 10)
         return (
-          <Input isReadOnly type='date' size={'sm'} variant={'bordered'} value={item.user_date.substr(0, 10)}  />
+          <Input isReadOnly type='date' size={'sm'} variant={'bordered'} value={item.user_date.substr(0, 10)} />
         )
-      case "rating":
+      case "user_rating":
         let rating = item.user_rating
         let icon = faFaceLaughSquint
         if (rating == 3) icon = faFaceSmileBeam
@@ -186,7 +202,29 @@ const MyPage = () => {
   }, [])
 
   return (
-    <>
+    <div className="p-6 mx-auto max-w-7xl">
+      <Spacer y={16} />
+      <div className="flex items-center pt-8 pb-4 justify-between">
+        <Title
+          title={"마이페이지"}
+          sub={
+            <>
+              <span className="pr-1">검색결과</span>
+              {totalSearch ? Number(totalSearch).toLocaleString() : <Spinner size="sm" color="success" />}
+              건
+            </>
+          }
+        />
+        <RadioGroup
+          orientation="horizontal"
+          value={viewType}
+          onValueChange={setViewType}
+        >
+          <Radio value="list">리스트</Radio>
+          <Radio value="gallery">갤러리</Radio>
+        </RadioGroup>
+      </div>
+
       <Card>
         <CardFooter className="justify-center gap-5">
           <div className="flex gap-1">
@@ -202,81 +240,70 @@ const MyPage = () => {
         </CardFooter>
       </Card>
 
-      <div className="flex flex-row gap-2 py-2">
-        <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
+      <div className="flex gap-2 py-2">
         <SelectFilter type={'유형'} items={typeDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
         <SelectFilter type={'평가'} items={ratingDatas} onChangeSelect={onChangeSelect} />
       </div>
 
-      <div>검색결과 {totalSearch}건</div>
-
-      <Tabs
-        aria-label="Tabs"
-        className="py-2 justify-right"
-        onSelectionChange={() => {
-          list.reload()
-        }}>
-        <Tab
-          key="rating"
-          title={
-            <div className="flex items-center space-x-2">
-              <FontAwesomeIcon icon={faList} />
-              <span>리스트</span>
-            </div>
-          }
-        >
-          <Table
-            // removeWrapper
-            // hideHeader
-            // isHeaderSticky
-            aria-label="Example table with dynamic content"
-            classNames={{
-              base: "max-h-[540px] overflow-scroll",
-              table: "max-h-[540px]",
-            }}
-            baseRef={scrollerRef}
-            bottomContent={
-              hasMore ? (
-                <div className="flex w-full justify-center">
-                  <Spinner ref={loaderRef} color="white" />
-                </div>
-              ) : null
-            }
-          >
-            <TableHeader columns={columns}>
-              {(column) => <TableColumn key={column.key}>{column.label}</TableColumn>}
-            </TableHeader>
-            <TableBody
-              items={list.items}
-            >
-              {(item: any) => (
-                <TableRow key={item._id}>
-                  {(columnKey) => <TableCell>{getKeyValue(item, columnKey)}</TableCell>}
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Tab>
-        <Tab
-          key="like"
-          title={
-            <div className="flex items-center space-x-2">
-              <FontAwesomeIcon icon={faBorderAll} />
-              <span>갤러리</span>
-            </div>
-          }
-        >
-          <div className="max-h-[540px] overflow-scroll" ref={scrollerRef}>
-            <InfiniteImages contents={list.items} />
-            {hasMore ? (
-              <div className="flex w-full justify-center">
-                <Spinner ref={loaderRef} color="white" />
+      {viewType == 'list' &&
+        <Table
+          // removeWrapper
+          // hideHeader
+          // isHeaderSticky
+          sortDescriptor={list.sortDescriptor}
+          onSortChange={onChangeSort}
+          aria-label="Example table with dynamic content"
+          classNames={{
+            base: "max-h-[620px] overflow-scroll",
+            table: "max-h-[620px]",
+          }}
+          baseRef={scrollerRef}
+          bottomContent={
+            hasMore ? (
+              <div className="flex w-full justify-center" ref={loaderRef}>
+                {/* <Spinner ref={loaderRef} color="white" /> */}
               </div>
-            ) : null}
-          </div >
-        </Tab>
-      </Tabs>
-    </>
+            ) : null
+          }
+        >
+          <TableHeader>
+            <TableColumn key="title" className="w-1/2" allowsSorting>
+              TITLE
+            </TableColumn>
+            <TableColumn key="user_date" allowsSorting>
+              DATE
+            </TableColumn>
+            <TableColumn key="user_rating">
+              {null}
+            </TableColumn>
+            <TableColumn key="action">
+              {null}
+            </TableColumn>
+          </TableHeader>
+          <TableBody
+            items={list.items}
+          >
+            {(item: any) => (
+              <TableRow key={item._id}>
+                {(columnKey) => <TableCell>{getKeyValue(item, columnKey)}</TableCell>}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      }
+
+      {viewType == 'gallery' &&
+        <div className="max-h-[620px] overflow-scroll" ref={scrollerRef}>
+          <InfiniteImages contents={list.items} />
+          {hasMore ? (
+            <div className="flex w-full justify-center" ref={loaderRef}>
+              {/* <Spinner ref={loaderRef} color="white" /> */}
+            </div>
+          ) : null}
+        </div >
+      }
+    </div>
   )
 }
 

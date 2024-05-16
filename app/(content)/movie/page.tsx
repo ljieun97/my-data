@@ -9,7 +9,6 @@ export const metadata = {
 export default function Page() {
   return (
     <>
-      <Title title={'영화'} />
       {/* <Suspense fallback={<h1>loading</h1>}> */}
       <MovieList type={'movie'} />
       {/* </Suspense> */}

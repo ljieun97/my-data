@@ -23,6 +23,10 @@ export default function CardThumb({ content }: { content: any }) {
     type = 'book'
     img = content.image
     id = content.isbn
+  } else if (content.type) { //db
+    type = content.type == "영화" ? 'movie' : 'tv'
+    adult = content.adult
+    id = content.id
   } else if (content.title) {
     type = 'movie'
     adult = content.adult
@@ -52,17 +56,17 @@ export default function CardThumb({ content }: { content: any }) {
   return (
     <>
       <Card
-        radius="sm"
+        radius="none"
         // className="border-none group/footer col-span-4 lg:col-span-2  md:col-span-3 sm:col-span-3"
         className="border-none group/footer items-center"
         isFooterBlurred
         isBlurred
       >
         <Image
-          radius="none"
+          radius="sm"
           alt="poster"
           src={img}
-          className="w-[240px] h-[280px] object-contain"
+          className="w-[210px] h-[250px] sm:h-[270px] md:h-[290px] lg:h-[290px] object-cover"
         />
 
         <CardHeader className="absolute justify-end">

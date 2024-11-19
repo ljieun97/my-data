@@ -26,7 +26,7 @@ export default function TopBar() {
           <NavbarMenuToggle
             className="sm:hidden"
           />
-          <NavbarMenu className="bg-white/50">
+          <NavbarMenu className="bg-white/80">
             <NavbarItem isActive={path === "/"}>
               <Link href="/" color="foreground" >
                 홈

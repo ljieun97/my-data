@@ -58,7 +58,7 @@ export default function CardThumb({ content }: { content: any }) {
       <Card
         radius="none"
         // className="border-none group/footer col-span-4 lg:col-span-2  md:col-span-3 sm:col-span-3"
-        className="border-none group/footer items-center"
+        className="border-none group/footer items-center h-fill"
         isFooterBlurred
         isBlurred
       >
@@ -66,7 +66,8 @@ export default function CardThumb({ content }: { content: any }) {
           radius="sm"
           alt="poster"
           src={img}
-          className="w-[210px] h-[250px] sm:h-[270px] md:h-[290px] lg:h-[290px] object-cover"
+          // className="w-[210px] h-[250px] sm:h-[270px] md:h-[290px] lg:h-[290px] object-cover"
+          className="object-cover"
         />
 
         <CardHeader className="absolute justify-end">

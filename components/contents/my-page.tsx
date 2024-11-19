@@ -20,6 +20,7 @@ const MyPage = () => {
   const [type, setType] = useState('')
   const [rating, setRating] = useState('')
   const [date, setDate] = useState('')
+  const [openDate, setOpenDate] = useState('')
   const [sort, setSort] = useState('user_date')
   const [asc, setAsc] = useState(-1)
   const [viewType, setViewType] = useState('list')
@@ -92,14 +93,15 @@ const MyPage = () => {
     })()
   }, [])
 
+  // useEffect(() => {
+  //   list.reload()
+  // }, [openDate])
+
   useEffect(() => {
-
     list.reload()
-
   }, [date])
 
   useEffect(() => {
-
     list.reload()
   }, [type])
 
@@ -138,7 +140,10 @@ const MyPage = () => {
 
   const onChangeSelect = (e: any, type: string) => {
     switch (type) {
-      case '연도':
+      case '개봉년도':
+        setOpenDate(e.target.value)
+        break
+      case '시청년도':
         setDate(e.target.value)
         break
       case '유형':
@@ -173,6 +178,9 @@ const MyPage = () => {
             avatarProps={{ radius: "lg", src: img }}
             description={item.type}
             name={item.title}
+            classNames={{
+              // name: "text-clip",
+            }}
           />
         )
       case "user_date":
@@ -242,7 +250,8 @@ const MyPage = () => {
 
       <div className="flex gap-2 py-2">
         <SelectFilter type={'유형'} items={typeDatas} onChangeSelect={onChangeSelect} />
-        <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={'개봉년도'} items={yearDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={'시청년도'} items={yearDatas} onChangeSelect={onChangeSelect} />
         <SelectFilter type={'평가'} items={ratingDatas} onChangeSelect={onChangeSelect} />
       </div>
 
@@ -286,7 +295,9 @@ const MyPage = () => {
           >
             {(item: any) => (
               <TableRow key={item._id}>
-                {(columnKey) => <TableCell>{getKeyValue(item, columnKey)}</TableCell>}
+                {(columnKey) => <TableCell>
+                  {getKeyValue(item, columnKey)}
+                </TableCell>}
               </TableRow>
             )}
           </TableBody>

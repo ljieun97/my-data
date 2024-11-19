@@ -28,12 +28,12 @@ export function Banners({ movie }: { movie: any }) {
         <CardFooter className="absolute z-10 bottom-2 lg:bottom-16 pl-6 max-w-7xl">
           <div className="flex flex-col gap-2">
             <div>
-              <p className="text-tiny text-white font-bold drop-shadow">2024 아카데미 수상작</p>
+              <p className="text-tiny text-white font-bold drop-shadow">2024 아카데미 노미네이트</p>
               <p className="text-3xl text-white font-bold drop-shadow pb-2">{movie.title}</p>
             </div>
             <p className="text-white w-2/3 sm:w-2/3 md:w-1/2 lg:w-1/2 line-clamp-3 drop-shadow">{movie.overview}</p>
             <Button
-              className='w-fit'
+              className='w-fit bg-white text-black'
               onClick={() => router.push(`/${'movie'}/${movie.id}`)}
             >상세정보</Button>
           </div>

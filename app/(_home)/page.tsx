@@ -33,19 +33,19 @@ const Home = async () => {
         }
 
         <div className="p-6 mx-auto max-w-7xl">
-          <div className="flex justify-between pt-8 pb-4">
+          <div className="flex justify-between pt-8 pb-2">
             <Title title={'영화'} />
             <Link href="/movie" color="success">더보기</Link>
           </div>
           <TodayList type={'movie'} />
 
-          <div className="flex justify-between pt-8 pb-4">
+          <div className="flex justify-between pt-8 pb-2">
             <Title title={'TV'} />
             <Link href="/tv" color="success">더보기</Link>
           </div>
           <TodayList type={'tv'} />
 
-          <div className="flex justify-between pt-8 pb-4">
+          <div className="flex justify-between pt-8 pb-2">
             <Title title={'애니메이션'} />
             <Link href="/tv" color="success">더보기</Link>
           </div>

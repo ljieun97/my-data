@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 export const dynamic = "force-dynamic"
 
 const GET = async (request: NextRequest) => {
-	const limit = 32
+	const limit = 18
 	const searchParams = request.nextUrl.searchParams
 
 	// const nextId = searchParams.get('nextId')

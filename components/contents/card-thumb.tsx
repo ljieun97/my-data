@@ -54,16 +54,16 @@ export default function CardThumb({ content }: { content: any }) {
   }
 
   return (
-    <>
+    <div>
       <Card
         radius="none"
         // className="border-none group/footer col-span-4 lg:col-span-2  md:col-span-3 sm:col-span-3"
-        className="border-none group/footer items-center h-fill"
+        className="border-none group/footer items-center h-full"
         isFooterBlurred
         isBlurred
       >
         <Image
-          radius="sm"
+          // radius="sm"
           alt="poster"
           src={img}
           // className="w-[210px] h-[250px] sm:h-[270px] md:h-[290px] lg:h-[290px] object-cover"
@@ -138,6 +138,6 @@ export default function CardThumb({ content }: { content: any }) {
           </Dropdown>
         </CardFooter>
       </Card>
-    </>
+    </div>
   )
 }

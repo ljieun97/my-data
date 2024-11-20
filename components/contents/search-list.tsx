@@ -81,9 +81,9 @@ export default function SearchList(props: any) {
       movies.reload()
       series.reload()
       books.reload()
-      const results = await getSearchWebtoons(props?.keyword)
-      setWebtoons(results)
-      setTotalWebtoon(results.length)
+      // const results = await getSearchWebtoons(props?.keyword)
+      // setWebtoons(results)
+      // setTotalWebtoon(results.length)
     })()
   }, [props])
 
@@ -126,7 +126,7 @@ export default function SearchList(props: any) {
             ) : null}
           </div>
         </AccordionItem>
-        <AccordionItem
+        {/* <AccordionItem
           key="3"
           aria-label="Accordion 3"
           title={`웹툰 ${totalWebtoon}건`}
@@ -134,7 +134,7 @@ export default function SearchList(props: any) {
           <div className="max-h-[540px] overflow-scroll">
             <InfiniteImages contents={webtoons} />
           </div>
-        </AccordionItem>
+        </AccordionItem> */}
         <AccordionItem
           key="4"
           aria-label="Accordion 4"

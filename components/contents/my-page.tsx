@@ -1,6 +1,6 @@
 'use client'
 
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer } from "@nextui-org/react"
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer, Button } from "@nextui-org/react"
 import MyLikes from "./my-likes"
 import { RefObject, useCallback, useEffect, useState } from "react"
 import { GetMovies, DeleteMovie, UpdateMovie, GetMovieCount } from "@/lib/mongo/movie"
@@ -24,6 +24,7 @@ const MyPage = () => {
   const [sort, setSort] = useState('user_date')
   const [asc, setAsc] = useState(-1)
   const [viewType, setViewType] = useState('list')
+  const [isFilter, setIsFilter] = useState(false)
   // const [nextId, setNextId] = useState('')
 
   const columns = [
@@ -183,11 +184,10 @@ const MyPage = () => {
             }}
           />
         )
-      case "user_date":
-        // return item.my_date.substr(0, 10)
-        return (
-          <Input isReadOnly type='date' size={'sm'} variant={'bordered'} value={item.user_date.substr(0, 10)} />
-        )
+      // case "user_date":
+      //   return (
+      //     <Input isReadOnly type='date' size={'sm'} variant={'bordered'} value={item.user_date.substr(0, 10)} />
+      //   )
       case "user_rating":
         let rating = item.user_rating
         let icon = faFaceLaughSquint
@@ -245,20 +245,23 @@ const MyPage = () => {
               <p className="font-semibold">{contentCount.count}</p>
             </div>
           ))}
+          {/* <Button onClick={()=>setIsFilter(!isFilter)}>필터</Button> */}
         </CardFooter>
       </Card>
-
-      <div className="flex gap-2 py-2">
-        <SelectFilter type={'유형'} items={typeDatas} onChangeSelect={onChangeSelect} />
-        <SelectFilter type={'개봉년도'} items={yearDatas} onChangeSelect={onChangeSelect} />
-        <SelectFilter type={'시청년도'} items={yearDatas} onChangeSelect={onChangeSelect} />
-        <SelectFilter type={'평가'} items={ratingDatas} onChangeSelect={onChangeSelect} />
-      </div>
+      {/* <Spacer y={2}/> */}
+      {/* {isFilter && */}
+        <div className="flex gap-2 py-2">
+          <SelectFilter type={'유형'} items={typeDatas} onChangeSelect={onChangeSelect} />
+          <SelectFilter type={'개봉년도'} items={yearDatas} onChangeSelect={onChangeSelect} />
+          <SelectFilter type={'시청년도'} items={yearDatas} onChangeSelect={onChangeSelect} />
+          <SelectFilter type={'평가'} items={ratingDatas} onChangeSelect={onChangeSelect} />
+        </div>
+      {/* } */}
 
       {viewType == 'list' &&
         <Table
           // removeWrapper
-          // hideHeader
+          hideHeader
           // isHeaderSticky
           sortDescriptor={list.sortDescriptor}
           onSortChange={onChangeSort}
@@ -277,12 +280,12 @@ const MyPage = () => {
           }
         >
           <TableHeader>
-            <TableColumn key="title" className="w-1/2" allowsSorting>
+            <TableColumn key="title" className="w-5/6" allowsSorting>
               TITLE
             </TableColumn>
-            <TableColumn key="user_date" allowsSorting>
+            {/* <TableColumn key="user_date" allowsSorting>
               DATE
-            </TableColumn>
+            </TableColumn> */}
             <TableColumn key="user_rating">
               {null}
             </TableColumn>
@@ -290,6 +293,7 @@ const MyPage = () => {
               {null}
             </TableColumn>
           </TableHeader>
+
           <TableBody
             items={list.items}
           >

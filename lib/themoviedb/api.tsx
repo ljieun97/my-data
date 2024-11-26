@@ -62,6 +62,22 @@ export async function getMonthAnime() {
   return results
 }
 
+export async function getRecommendMovies(genre: String) {
+  const URL = `https://api.themoviedb.org/3/discover/movie?language=ko&watch_region=KR&with_watch_monetization_types=flatrate&with_watch_providers=8|119|96|97|337|350|356&without_watch_providers=1796&with_genres=${genre}&api_key=${API_KEY}`
+  const response = await fetch(URL)
+  let { results } = await response.json()
+  results = results.filter((content: any) => content.poster_path && content.overview)
+  return results
+}
+
+export async function getRecommendSeries(genre: String) {
+  const URL =`https://api.themoviedb.org/3/discover/tv?language=ko&watch_region=KR&with_watch_monetization_types=flatrate&without_watch_providers=1796&with_geners=${genre}&without_genres=16&api_key=${API_KEY}`
+  const response = await fetch(URL)
+  let { results } = await response.json()
+  results = results.filter((content: any) => content.poster_path && content.overview)
+  return results
+}
+
 export async function getProviders(type: string, id: any) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/watch/providers?api_key=${API_KEY}`
   const response = await fetch(URL)

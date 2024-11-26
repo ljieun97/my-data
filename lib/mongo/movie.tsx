@@ -45,4 +45,13 @@ const GetMovieCount = async () => {
   return result
 }
 
-export { GetMovies, CreateMovie, UpdateMovie, DeleteMovie, GetMovieCount }
+const GetGenreCount = async () => {
+  const response = await fetch(`/api/genre`, {
+    method: "GET"
+  })
+  const result = await response.json()
+  console.log(result)
+  return result
+}
+
+export { GetMovies, CreateMovie, UpdateMovie, DeleteMovie, GetMovieCount, GetGenreCount }

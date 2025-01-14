@@ -1,14 +1,21 @@
 
-import MyPage from "@/components/contents/my-page";
+import Title from "@/components/common/title";
+import MyPage from "@/page/my-page";
+import { Button, Link } from "@nextui-org/react";
 
 export const dynamic = "force-dynamic"
 export const metadata = {
-  title: "시청 목록"
+  title: "보관함"
 }
 
 const Page = () => {
+
   return (
     <>
+      <Title
+        title={"보관함"}
+      />
+
       <MyPage />
     </>
   )

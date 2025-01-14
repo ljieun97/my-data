@@ -38,7 +38,7 @@ export default function MovieList({ type }: { type: string }) {
   const [loaderRef, scrollerRef] = useInfiniteScroll({
     hasMore,
     onLoadMore: list.loadMore
-  }) as RefObject<HTMLDivElement>[]
+  }) as unknown as RefObject<HTMLDivElement>[]
 
   useEffect(() => {
     list.reload()
@@ -58,9 +58,9 @@ export default function MovieList({ type }: { type: string }) {
 
   const countryDatas = [
     { label: '한국', value: 'KR' },
-    { label: '일본', value: 'JP' },
     { label: '미국', value: 'US' },
     { label: '영국', value: 'GB' },
+    { label: '일본', value: 'JP' },
   ]
 
   const flatformDatas = [
@@ -154,7 +154,7 @@ export default function MovieList({ type }: { type: string }) {
   ]
 
   const yearDatas = []
-  for (let i = 2024; i >= 1980; i--) {
+  for (let i = 2025; i >= 1980; i--) {
     yearDatas.push({ label: `${i}`, value: i })
   }
 
@@ -176,9 +176,8 @@ export default function MovieList({ type }: { type: string }) {
   }
 
   return (
-    <div className="px-6 mx-auto max-w-7xl">
-      <Spacer y={16} />
-      <div className="flex items-center pt-8 pb-4">
+    <div className="">
+      {/* <div className="flex items-center pt-8 pb-4">
         <Title
           title={type === "movie" ? "영화" : "시리즈"}
           sub={
@@ -189,18 +188,19 @@ export default function MovieList({ type }: { type: string }) {
             </>
           }
         />
-      </div>
+      </div> */}
 
-      <div className="flex flex-row gap-2 py-2">
+      <div className="flex flex-row gap-2 py-4">
         <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
         <SelectFilter type={'제공사'} items={flatformDatas} onChangeSelect={onChangeSelect} />
         <SelectFilter type={'국가'} items={countryDatas} onChangeSelect={onChangeSelect} />
         <SelectFilter type={'장르'} items={genreDatas} onChangeSelect={onChangeSelect} />
       </div>
-      <div className="h-[690px] overflow-auto" ref={scrollerRef}>
-        {totalContents ?
-          <InfiniteImages contents={list.items} /> : <InfiniteImagesSkel />
-        }
+      <div className="max-h-[650px] overflow-scroll" ref={scrollerRef}>
+        {/* {totalContents ?
+          <InfiniteImages type="info" contents={list.items} /> : <InfiniteImagesSkel />
+        } */}
+          <InfiniteImages type="info" contents={list.items} />
         {hasMore ? (
           <div className="flex w-full justify-center" ref={loaderRef}>
             {/* <Spinner ref={loaderRef} color="white" /> */}

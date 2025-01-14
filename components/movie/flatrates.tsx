@@ -1,7 +1,7 @@
 'use client'
 
 import { getProviders } from "@/lib/themoviedb/api";
-import { Avatar, Tooltip } from "@nextui-org/react";
+import { Avatar, AvatarGroup, Tooltip } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 
 export default function Flatrates({ type, provider }: { type: string, provider: any }) {
@@ -17,19 +17,22 @@ export default function Flatrates({ type, provider }: { type: string, provider: 
 
   return (
     <>
-      {(type == 'movie' || type == 'tv') && flatrates?.map((flatrate: any) => (
-        <div key={flatrate.provider_id}>
-          {flatrate.provider_id != 1796 &&
-            <Tooltip content={flatrate.provider_name}>
-              <Avatar
-                size="sm"
-                radius="sm"
-                src={`https://image.tmdb.org/t/p/w500/${flatrate.logo_path}`}
-              />
-            </Tooltip>
-          }
-        </div>
-      ))}
+      <Tooltip content={flatrates?.map((e: any, index: number) => { return (<div key={index}>{e.provider_name}</div>) })}>
+        <AvatarGroup max={3}>
+          {(type == 'movie' || type == 'tv') && flatrates?.map((flatrate: any) => (
+            // <>
+            // {flatrate.provider_id != 1796 &&
+            < Avatar
+              key={flatrate.provider_id}
+              size="sm"
+              // radius="sm"
+              src={`https://image.tmdb.org/t/p/w500/${flatrate.logo_path}`}
+            />
+            // }
+            // </>
+          ))}
+        </AvatarGroup>
+      </Tooltip>
       {type == 'webtoon' &&
         <div>
           <Tooltip content={provider}>

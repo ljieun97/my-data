@@ -14,7 +14,7 @@ export function UiProvider({
       <main>
         <div className="dark text-foreground bg-background flex-grow">
           <TopBar />
-          {children}
+          <div className="px-6 py-14 max-w-7xl mx-auto">{children}</div>
         </div>
       </main>
     </NextUIProvider>

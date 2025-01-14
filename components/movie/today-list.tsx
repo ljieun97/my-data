@@ -1,7 +1,5 @@
 import { getMonthAnime, getRecommendMovies, getRecommendSeries, getTodayMovies, getTodaySeries } from "@/lib/themoviedb/api"
 import ImagesSlider from "../common/images-slider"
-import InfiniteImages from "../common/infinite-images"
-import { GetGenreCount, GetMovieCount } from "@/lib/mongo/movie"
 
 
 export default async function TodayList(props: any) {

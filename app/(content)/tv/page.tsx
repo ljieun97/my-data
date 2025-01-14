@@ -9,6 +9,7 @@ export const metadata = {
 export default function Page() {
   return (
     <>
+      <Title title={"시리즈"} />
       <MovieList type={'tv'} />
     </>
   )

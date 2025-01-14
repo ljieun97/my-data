@@ -44,7 +44,7 @@ export default function TopBar() {
             </NavbarItem>
             <NavbarItem isActive={path === "/mypage"}>
               <Link href="/mypage" color="foreground">
-                마이페이지
+                보관함
               </Link>
             </NavbarItem>
           </NavbarMenu>
@@ -73,8 +73,8 @@ export default function TopBar() {
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/mypage"}>
-              <Link href="/mypage" color="foreground">
-                마이페이지
+              <Link href="/mypage?type=movie" color="foreground">
+                보관함
               </Link>
             </NavbarItem>
           </NavbarContent>

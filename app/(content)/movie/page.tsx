@@ -9,9 +9,8 @@ export const metadata = {
 export default function Page() {
   return (
     <>
-      {/* <Suspense fallback={<h1>loading</h1>}> */}
+      <Title title={"영화"} />
       <MovieList type={'movie'} />
-      {/* </Suspense> */}
     </>
   )
 }

@@ -9,6 +9,14 @@ const month = dayjs().subtract(1, "month").format('YYYY-MM-DD')
 
 export const dynamic = "force-dynamic"
 
+export async function getSearchMulti(keyword: string, pageNum: number) {
+  const URL = `https://api.themoviedb.org/3/search/multi?query=${keyword}&language=ko&api_key=${API_KEY}`
+    + `&page=${pageNum}`
+  const response = await fetch(URL)
+  const results = await response.json()
+  return results
+}
+
 export async function getSearchMovies(keyword: string, pageNum: number) {
   const URL = `https://api.themoviedb.org/3/search/movie?query=${keyword}&language=ko&api_key=${API_KEY}`
     + `&page=${pageNum}`
@@ -125,7 +133,7 @@ export async function getFilterMovies(type: string, country: any, providers: any
   // providers = Array.from(providers).join("|")
   let dateQueryByType = (type == 'movie') ?
     `&primary_release_year=${date}` :
-    `&air_date.gte=${date}-01-01&air_date.lte=${date}-12-31`
+    `&first_air_date.gte=${date}-01-01&first_air_date.lte=${date}-12-31`
   const qeury = {
     country: country ? `&with_origin_country=${country}` : '',
     provider: providers ? `&with_watch_providers=${providers}` : '',
@@ -134,7 +142,7 @@ export async function getFilterMovies(type: string, country: any, providers: any
   }
 
   const URL = `https://api.themoviedb.org/3/discover/${type}`
-    + `?language=ko&watch_region=KR&api_key=${API_KEY}`
+    + `?language=ko&api_key=${API_KEY}`
     + `&without_watch_providers=1796`
     + qeury.provider
     + qeury.date

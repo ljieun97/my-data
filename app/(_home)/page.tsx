@@ -14,11 +14,11 @@ const Home = async () => {
   const movies = [
     //await getMovieDetail(568124),
     //2024 아카데미 - 오펜하이머 가여운것들 바비 그어살 바튼 추락의해부 
-    await getDetail('movie', 872585),
+    // await getDetail('movie', 872585),
     await getDetail('movie', 792307),
-    await getDetail('movie', 346698),
-    await getDetail('movie', 508883),
-    // await getDetail('movie', 840430), 흰색배경
+    // await getDetail('movie', 346698),
+    // await getDetail('movie', 508883),
+    await getDetail('movie', 840430), //흰색배경
     await getDetail('movie', 915935),
   ]
   const random = Math.floor(Math.random() * movies.length)
@@ -45,13 +45,11 @@ const Home = async () => {
           </div>
           <TodayList type={'tv'} />
 
-          <div className="flex justify-between pt-8 pb-2">
+          {/* <div className="flex justify-between pt-8 pb-2">
             <Title title={'최신 애니메이션'} />
             <Link href="/tv" color="success">더보기</Link>
           </div>
-          {/* <Suspense fallback={<h1>loading</h1>}> */}
-          <TodayList type={'anime'} />
-          {/* </Suspense> */}
+          <TodayList type={'anime'} /> */}
 
           <div className="flex justify-between pt-8 pb-2">
             <Title title={'추천 영화'} />

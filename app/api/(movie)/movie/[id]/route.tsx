@@ -3,7 +3,7 @@ import connectMongo from "@/lib/mongo/mongodb"
 import { ObjectId } from "mongodb";
 
 export const dynamic = "force-dynamic"
-const PUT = async (req: NextRequest, { params: { id } }: { params: { id: string } }) => {
+const PUT = async (req: NextRequest, { params: { id } }: { params: any }) => {
   const { date } = await req.json()
   try {
     const db = await connectMongo()
@@ -20,7 +20,7 @@ const PUT = async (req: NextRequest, { params: { id } }: { params: { id: string 
   }
 }
 
-const DELETE = async (req: NextRequest, { params: { id } }: { params: { id: string } }) => {
+const DELETE = async (req: NextRequest, { params: { id } }: { params: any }) => {
   try {
     const db = await connectMongo()
     await db

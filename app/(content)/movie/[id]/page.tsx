@@ -6,8 +6,12 @@ export const metadata = {
   title: "영화"
 }
 
-export default async function Page({ params }: { params: { id: any } }) {
-  const { id } = await params
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const id = (await params).id
   const type = 'movie'
   const content = await getDetail(type, id)
   const video = await getVideo(type, id)

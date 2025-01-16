@@ -7,12 +7,13 @@ import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft, faVolumeHigh, faVolumeXmark } from "@fortawesome/free-solid-svg-icons"
 import { useRef, useState } from "react";
-import ReactPlayer from "react-player/lazy";
+import dynamic from 'next/dynamic';
+const ReactPlayer = dynamic(() => import('react-player/lazy'), { ssr: false });
 
 export default function DetailPage(props: any) {
   const { content, casts, sim, providers, videoKey } = props
   const cutCasts = casts?.slice(0, 8)
-  const videoPath = `https://www.youtube.com/watch?v=${videoKey}`
+  const videoPath = videoKey ? `https://www.youtube.com/watch?v=${videoKey}` : ''
   const router = useRouter()
   const [isMute, setIsMute] = useState(true)
   const castsRef = useRef<HTMLDivElement>(null)
@@ -33,7 +34,7 @@ export default function DetailPage(props: any) {
                 isIconOnly
                 variant="ghost"
                 color="success"
-                onClick={() => router.back()}
+                onPress={() => router.back()}
               >
                 <FontAwesomeIcon icon={faArrowLeft} />
               </Button>
@@ -41,7 +42,7 @@ export default function DetailPage(props: any) {
                 isIconOnly
                 variant="ghost"
                 color="success"
-                onClick={() => {
+                onPress={() => {
                   setIsMute(!isMute)
                 }}
               >
@@ -50,14 +51,14 @@ export default function DetailPage(props: any) {
             </div>
             <div className="aspect-video">
               <div className="absolute z-5 w-full h-full bg-gradient-to-b from-black/0 to-black/25"></div>
-              {videoKey ?
+              {videoPath ?
                 <ReactPlayer
                   width="100%"
                   height="100%"
                   url={videoPath}
                   playing={true}
                   muted={isMute}
-                loop={true}
+                  loop={true}
                 />
                 :
                 <>
@@ -87,12 +88,12 @@ export default function DetailPage(props: any) {
 
           <div className="pt-6"> {/* 영상 외 */}
             <Title
-              title={content.title ? content.title : content.name}
+              title={content.title || content.name || ''}
               // sub={`${content.adult ? '(19)' : ''}`}
               sub={
                 <>
-                  {content.release_date?.substr(0, 4)}
-                  {content.first_air_date?.substr(0, 4)}
+                  {content.release_date ? content.release_date.substr(0, 4) : ''}
+                  {content.first_air_date ? content.first_air_date.substr(0, 4) : ''}
                 </>
               }
             />
@@ -181,7 +182,7 @@ export default function DetailPage(props: any) {
               <div className="flex justify-center">
                 <Button
                   variant="bordered"
-                  onClick={() => { goCasts() }}
+                  onPress={() => { goCasts() }}
                 >더보기
                 </Button>
               </div>

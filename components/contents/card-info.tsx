@@ -13,7 +13,6 @@ export default function CardInfo({ content }: { content: any }) {
   let id = ''
   let img = ''
   let adult = false
-  console.log(content)
 
   if (content.title) {
     type = 'movie'

@@ -1,12 +1,13 @@
 import DetailPage from "@/page/detail-page"
 import { getCasts, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/themoviedb/api"
 
+export const dynamic = "force-dynamic"
 export const metadata = {
   title: "영화"
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const { id } = params
+export default async function Page({ params }: { params: { id: any } }) {
+  const { id } = await params
   const type = 'movie'
   const content = await getDetail(type, id)
   const video = await getVideo(type, id)

@@ -5,7 +5,7 @@ export const metadata = {
   title: "시리즈"
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({ params }: { params: any }) {
   const { id } = await params
   const type = 'tv'
   const [content, video, casts, rcm, providers] = await Promise.all([

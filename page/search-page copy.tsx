@@ -2,7 +2,7 @@
 
 import { getSearchMovies, getSearchSeries } from "@/lib/themoviedb/api";
 import { getSearchWebtoons } from "@/lib/themoviedb/webtoon";
-import InfiniteImages from "../common/infinite-images"
+import InfiniteImages from "../components/common/infinite-images"
 import { getSearchBooks } from "@/lib/themoviedb/naver_book";
 import { Accordion, AccordionItem, Divider, Spinner } from "@nextui-org/react";
 import { RefObject, useEffect, useState } from "react";

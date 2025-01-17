@@ -1,7 +1,6 @@
 'use client'
 
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer, Button } from "@nextui-org/react"
-import MyLikes from "../components/contents/my-likes"
 import { RefObject, useCallback, useEffect, useState } from "react"
 import { GetMovies, DeleteMovie, UpdateMovie, GetMovieCount } from "@/lib/mongo/movie"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"

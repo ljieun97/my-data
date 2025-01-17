@@ -7,11 +7,10 @@ export default function InfiniteImagesSkel() {
         {[...Array(18)].map((item: any, index: number) => (
           <Card radius="sm" key={index}>
             <Skeleton >
-              <div className="h-[250px] sm:h-[250px] md:h-[270px] lg:h-[290px]  bg-default-300"></div>
-              {/* <div className="w-[210px] h-[250px] bg-default-300"></div> */}
+              <div className="w-[160px] sm:w-[160px] md:w-[180px] lg:w-[200px] bg-default-300"></div>
             </Skeleton>
           </Card>
-         ))} 
+        ))}
       </div>
     </>
   )

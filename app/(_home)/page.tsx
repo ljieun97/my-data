@@ -1,8 +1,8 @@
+import ImagesSlider from "@/components/common/images-slider";
 import Title from "@/components/common/title"
 import { Banners } from "@/components/layout/banners";
 import { BannersSkel } from "@/components/layout/banners-skel";
-import TodayList from "@/components/movie/today-list"
-import { getDetail } from "@/lib/themoviedb/api";
+import { getDetail, getRecommendMovies, getRecommendSeries, getTodayMovies, getTodaySeries } from "@/lib/themoviedb/api";
 import { Link, Spacer } from "@nextui-org/react";
 
 export const dynamic = "force-dynamic";
@@ -11,18 +11,17 @@ export const metadata = {
 }
 
 const Home = async () => {
-  const movies = [
-    //await getMovieDetail(568124),
-    //2024 아카데미 - 오펜하이머 가여운것들 바비 그어살 바튼 추락의해부 
-    // await getDetail('movie', 872585),
-    await getDetail('movie', 792307),
-    // await getDetail('movie', 346698),
-    // await getDetail('movie', 508883),
-    await getDetail('movie', 840430), //흰색배경
-    await getDetail('movie', 915935),
-  ]
-  const random = Math.floor(Math.random() * movies.length)
-  const movie = movies[random]
+  const banners = await Promise.all([
+    getDetail('movie', 872585), //오펜
+    getDetail('movie', 346698), //바비
+    getDetail('movie', 872585), //가여운것들
+    getDetail('movie', 840430), //바튼
+    getDetail('movie', 915935), //추락의해부
+    getDetail('movie', 508883), //그어살
+  ])
+
+  const random = Math.floor(Math.random() * banners.length)
+  const movie = banners[random]
   return (
     <>
       <div className="absolute top-0 left-0 w-full h-full">
@@ -34,38 +33,28 @@ const Home = async () => {
 
         <div className="p-6 mx-auto max-w-7xl">
           <div className="flex justify-between pt-8 pb-2">
-            <Title title={'최신 영화'} />
+            <span className="text-lg font-bold">최신 영화</span>
             <Link href="/movie" color="success">더보기</Link>
           </div>
-          <TodayList type={'movie'} />
+          <ImagesSlider contents={await getTodayMovies()} />
 
           <div className="flex justify-between pt-8 pb-2">
-            <Title title={'최신 시리즈'} />
+            <span className="text-lg font-bold">최신 시리즈</span>
             <Link href="/tv" color="success">더보기</Link>
           </div>
-          <TodayList type={'tv'} />
+          <ImagesSlider contents={await getTodaySeries()} />
 
           {/* <div className="flex justify-between pt-8 pb-2">
-            <Title title={'최신 애니메이션'} />
-            <Link href="/tv" color="success">더보기</Link>
+            <span className="text-lg font-bold">추천 영화</span>
           </div>
-          <TodayList type={'anime'} /> */}
+          <ImagesSlider contents={await getRecommendMovies('12')} />
 
           <div className="flex justify-between pt-8 pb-2">
-            <Title title={'추천 영화'} />
+            <span className="text-lg font-bold">추천 시리즈</span>
           </div>
-          <TodayList type={'removie'} />
-
-          <div className="flex justify-between pt-8 pb-2">
-            <Title title={'추천 시리즈'} />
-          </div>
-          <TodayList type={'retv'} />
+          <ImagesSlider contents={await getRecommendSeries('12')} /> */}
         </div>
-
       </div>
-
-
-
     </>
   )
 }

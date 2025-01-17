@@ -1,5 +1,5 @@
 import Title from "@/components/common/title"
-import MovieList from "@/components/movie/movie-list"
+import FilterPage from "@/page/filter-page"
 
 export const dynamic = "force-dynamic"
 export const metadata = {
@@ -10,7 +10,7 @@ export default function Page() {
   return (
     <>
       <Title title={"영화"} />
-      <MovieList type={'movie'} />
+      <FilterPage type={'movie'} />
     </>
   )
 }

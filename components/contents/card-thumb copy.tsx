@@ -1,9 +1,9 @@
 "use client"
 
-import Flatrates from "../movie/flatrates"
+import Flatrates from "./flatrates"
 import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons"
+import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo } from "@fortawesome/free-solid-svg-icons"
 import { CreateMovie } from "@/lib/mongo/movie";
 import { useRouter } from "next/navigation";
 
@@ -105,21 +105,21 @@ export default function CardThumb({ content }: { content: any }) {
               <DropdownSection title={content.title ? content.title : content.name} showDivider>
                 <DropdownItem
                   key="great"
-                  onClick={() => clickCreate(content, 5)}
+                  onPress={() => clickCreate(content, 5)}
                   startContent={<FontAwesomeIcon icon={faFaceLaughSquint} />}
                 >
                   최고다 최고
                 </DropdownItem>
                 <DropdownItem
                   key="good"
-                  onClick={() => clickCreate(content, 3)}
+                  onPress={() => clickCreate(content, 3)}
                   startContent={<FontAwesomeIcon icon={faFaceSmileBeam} />}
                 >
                   볼만해요
                 </DropdownItem>
                 <DropdownItem
                   key="bad"
-                  onClick={() => clickCreate(content, 1)}
+                  onPress={() => clickCreate(content, 1)}
                   startContent={<FontAwesomeIcon icon={faFaceFrownOpen} />}
                 >
                   별로예요
@@ -129,9 +129,9 @@ export default function CardThumb({ content }: { content: any }) {
               <DropdownItem key="like">찜하기</DropdownItem>
               <DropdownItem
                 key="detail"
-                // onClick={() => router.push(`/${type}/${id}`)}
-                onClick={() => goDetailpage()}
-              // endContent={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
+                // onPress={() => router.push(`/${type}/${id}`)}
+                onPress={() => goDetailpage()}
+              // endContent={<FontAwesomeIcon icon={faCircleInfo} />}
               >
                 상세정보
               </DropdownItem>

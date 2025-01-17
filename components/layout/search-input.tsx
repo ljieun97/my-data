@@ -3,6 +3,8 @@
 import { Input } from "@nextui-org/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons"
 
 export default function SearchInput() {
   const router = useRouter()
@@ -34,7 +36,7 @@ export default function SearchInput() {
         placeholder="검색"
         size="sm"
         // variant="bordered"
-        // startContent={<SearchIcon size={18} />}
+        startContent={<FontAwesomeIcon icon={faMagnifyingGlass} />}
         value={keyword}
         onChange={handleInput}
         type="search"

@@ -1,9 +1,9 @@
 "use client"
 
-import Flatrates from "../movie/flatrates"
+import Flatrates from "./flatrates"
 import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faArrowUpRightFromSquare, faPlus, faEye } from "@fortawesome/free-solid-svg-icons"
+import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus, faEye } from "@fortawesome/free-solid-svg-icons"
 import { useRouter } from "next/navigation";
 
 export default function CardInfo({ content }: { content: any }) {
@@ -54,7 +54,7 @@ export default function CardInfo({ content }: { content: any }) {
         className="group/footer"
       // shadow="sm"
       >
-        <CardHeader className="absolute justify-end">
+        <CardHeader className="absolute justify-end z-20">
           <div className="flex gap-2">
             <Flatrates type={type} provider={content.id} />
           </div>
@@ -83,7 +83,7 @@ export default function CardInfo({ content }: { content: any }) {
         <CardFooter className="gap-2 justify-end items-end invisible absolute group-hover/footer:visible bg-black/50 border-white/50 border-1 rounded-large shadow-small z-10 h-full">
           {/* TODO 추가 시 알림 추가하기 */}
           <Button isIconOnly size="lg" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>
-          <Button isIconOnly size="lg" variant="faded" onPress={() => goDetailpage()}><FontAwesomeIcon icon={faArrowUpRightFromSquare} /></Button>
+          <Button isIconOnly size="lg" variant="faded" onPress={() => goDetailpage()}><FontAwesomeIcon icon={faCircleInfo} /></Button>
         </CardFooter>
       </Card>
     </>

@@ -54,7 +54,7 @@ export default function DetailPage(props: any) {
               {videoPath ?
                 <ReactPlayer
                   width="100%"
-                  height="100%"
+                  // height="100%"
                   url={videoPath}
                   playing={true}
                   muted={isMute}

@@ -1,18 +1,18 @@
 "use client"
 
 import { getFilterMovies } from "@/lib/themoviedb/api"
-import InfiniteImages from "../common/infinite-images"
+import InfiniteImages from "../components/common/infinite-images"
 import { Spacer, Spinner } from "@nextui-org/react"
 import { RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { getLocalTimeZone, today } from "@internationalized/date";
 import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
 
-import SelectFilter from "../common/select-filter"
-import Title from "../common/title"
-import InfiniteImagesSkel from "../common/infinite-images-skel"
+import SelectFilter from "../components/common/select-filter"
+import Title from "../components/common/title"
+import InfiniteImagesSkel from "../components/common/infinite-images-skel"
 
-export default function MovieList({ type }: { type: string }) {
+export default function FilterPage({ type }: { type: string }) {
   const [totalContents, setTotalContents] = useState('')
   const [country, setCountries] = useState('')
   // const [flatforms, setFlatforms] = useState(new Set([]))

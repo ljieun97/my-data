@@ -17,8 +17,11 @@ export default function TopBar() {
       <Navbar
         isBlurred={isScroll}
         classNames={{
-          base: `${isScroll ? "fixed drop-shadow" : "fixed bg-opacity drop-shadow"}`,
+          base: `${isScroll ? "fixed drop-shadow" : "fixed bg-opacity drop-shadow"} bg-blue`,
           wrapper: "max-w-7xl"
+        }}
+        style={{
+          background: "linear-gradient(#0000004d 0%, #0000 100%)",
         }}
         onScrollPositionChange={() => onChangeScroll()}
       >
@@ -56,7 +59,7 @@ export default function TopBar() {
               </Link>
             </p>
           </NavbarBrand>
-          <NavbarContent className="hidden sm:flex gap-3">
+          <NavbarContent className="hidden sm:flex gap-5">
             <NavbarItem isActive={path === "/"}>
               <Link href="/" color="foreground" >
                 홈

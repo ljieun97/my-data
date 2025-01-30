@@ -18,7 +18,7 @@ export default function Layout({
   return (
     <html lang="ko">
       <body>
-        <UiProvider children={children} modal={modal}></UiProvider>
+        <UiProvider modal={modal}>{children}</UiProvider>
       </body>
     </html>
   );

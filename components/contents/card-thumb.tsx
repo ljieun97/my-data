@@ -4,7 +4,7 @@ import Flatrates from "./flatrates"
 import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons"
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function CardThumb({ content }: { content: any }) {
   const router = useRouter()
@@ -50,13 +50,13 @@ export default function CardThumb({ content }: { content: any }) {
   return (
     <>
       <Card
-        radius="none"
+        radius="sm"
         className="group/footer"
         isFooterBlurred
         isBlurred
       >
         <Image
-          radius="lg"
+          radius="sm"
           alt="poster"
           src={img}
           className="w-full h-full object-cover"
@@ -73,7 +73,7 @@ export default function CardThumb({ content }: { content: any }) {
             </h4>
           </CardBody>
         } */}
-        <CardFooter className="justify-between items-end invisible absolute group-hover/footer:visible bg-black/25 border-white/50 border-1 rounded-large shadow-small z-10 h-full w-full">
+        <CardFooter className="justify-between items-end invisible absolute group-hover/footer:visible bg-black/25 border-white/50 border-1 rounded-small shadow-small z-10 h-full w-full">
           {/* TODO 추가 시 알림 추가하기 */}
           <div className="text-white text-sm font-bold text-pretty line-clamp-3">
             {content.title ? content.title : content.name}

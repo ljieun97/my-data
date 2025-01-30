@@ -36,7 +36,7 @@ export default function SearchInput() {
         placeholder="검색"
         size="sm"
         // variant="bordered"
-        startContent={<FontAwesomeIcon icon={faMagnifyingGlass} />}
+        // startContent={<FontAwesomeIcon icon={faMagnifyingGlass} />}
         value={keyword}
         onChange={handleInput}
         type="search"

@@ -4,7 +4,7 @@ import Flatrates from "./flatrates"
 import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@nextui-org/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus, faEye } from "@fortawesome/free-solid-svg-icons"
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function CardInfo({ content }: { content: any }) {
   const router = useRouter()
@@ -44,6 +44,7 @@ export default function CardInfo({ content }: { content: any }) {
   }
 
   const goDetailpage = () => {
+    // 이미 모달창이면 내용만 바꾸기
     router.push(`/${type}/${id}`)
   }
 

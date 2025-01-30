@@ -50,29 +50,29 @@ export default function CardCol({ content }: { content: any }) {
   return (
     <>
       <Card
-        radius="none"
-        className="group/footer"
+        radius="sm"
+        className="group/footer w-full aspect-[26/37]"
         isFooterBlurred
         isBlurred
       >
         <Image
-          radius="lg"
+          radius="sm"
           alt="poster"
           src={img}
-          className="h-full object-cover"
+          className="w-full h-full object-cover"
         />
         <CardHeader className="absolute justify-end z-20">
           <div className="flex gap-2">
             <Flatrates type={type} provider={content.id} />
           </div>
         </CardHeader>
-        {!content.poster_path &&
+        {/* {!content.poster_path &&
           <CardBody className="absolute z-20">
             <h4 className="text-white text-lg font-bold tracking-tight">
               {content.title ? content.title : content.name}
             </h4>
           </CardBody>
-        }
+        } */}
       </Card>
     </>
   )

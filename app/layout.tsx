@@ -4,22 +4,21 @@ import { UiProvider } from "@/components/layout/ui-provider";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | NABIC",
-    default: "NABIC"
+    template: "%s | TOVIE",
+    default: "TOVIE"
   },
   description: "서비스 설명",
 };
 
 export default function Layout({
-  children, auth
+  children, modal
 }: {
-  children: React.ReactNode; auth: React.ReactNode
+  children: React.ReactNode; modal: React.ReactNode
 }) {
-
   return (
     <html lang="ko">
       <body>
-        <UiProvider>{children}</UiProvider>
+        <UiProvider children={children} modal={modal}></UiProvider>
       </body>
     </html>
   );

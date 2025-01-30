@@ -1,4 +1,4 @@
-import DetailPage from "@/page/detail-page"
+import DetailModal from "@/page/detail-modal"
 import { getCasts, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/themoviedb/api"
 
 export const metadata = {
@@ -18,7 +18,7 @@ export default async function Page({ params }: { params: any }) {
   const sim = (rcm?.length > 0 ? rcm : await getSimilars(type, id))
 
   return (
-    <DetailPage
+    <DetailModal
       content={content}
       casts={casts}
       sim={sim}

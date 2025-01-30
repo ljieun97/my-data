@@ -4,10 +4,11 @@ import { NextUIProvider } from "@nextui-org/react";
 import TopBar from "./top-bar";
 
 export function UiProvider({
-  children
+  children, modal
 }: {
-  children: any
+  children: any, modal: any
 }) {
+
 
   return (
     <NextUIProvider>
@@ -17,6 +18,7 @@ export function UiProvider({
           <div className="px-6 py-14 max-w-7xl mx-auto">{children}</div>
         </div>
       </main>
+      {modal}
     </NextUIProvider>
   );
 }

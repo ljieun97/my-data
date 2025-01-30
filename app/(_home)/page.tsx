@@ -13,11 +13,11 @@ export const metadata = {
 const Home = async () => {
   const banners = await Promise.all([
     getDetail('movie', 872585), //오펜
-    getDetail('movie', 346698), //바비
-    getDetail('movie', 872585), //가여운것들
+    // getDetail('movie', 346698), //바비
+    getDetail('movie', 792307), //가여운것들
     getDetail('movie', 840430), //바튼
     getDetail('movie', 915935), //추락의해부
-    getDetail('movie', 508883), //그어살
+    // getDetail('movie', 508883), //그어살
   ])
 
   const random = Math.floor(Math.random() * banners.length)

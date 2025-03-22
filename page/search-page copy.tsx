@@ -4,10 +4,10 @@ import { getSearchMovies, getSearchSeries } from "@/lib/themoviedb/api";
 import { getSearchWebtoons } from "@/lib/themoviedb/webtoon";
 import InfiniteImages from "../components/common/infinite-images"
 import { getSearchBooks } from "@/lib/themoviedb/naver_book";
-import { Accordion, AccordionItem, Divider, Spinner } from "@nextui-org/react";
+import { Accordion, AccordionItem, Divider, Spinner } from "@heroui/react";
 import { RefObject, useEffect, useState } from "react";
 import { useAsyncList } from "@react-stately/data";
-import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
+import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 
 export default function SearchList(props: any) {
   const [webtoons, setWebtoons] = useState([])

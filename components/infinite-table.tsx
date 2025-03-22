@@ -9,16 +9,14 @@ import {
   TableCell,
   User,
   Button,
-  Image,
   Popover,
   PopoverTrigger,
   PopoverContent,
   Tooltip
 } from "@heroui/react"
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import { TooltipDetail } from "./tooltip-detail";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export const InfiniteTable = ({ columns, rows }: { columns: any[], rows: any[] }) => {
   const router = useRouter()
@@ -43,40 +41,11 @@ export const InfiniteTable = ({ columns, rows }: { columns: any[], rows: any[] }
         );
       case "movie":
         return (
-          <>
-            <Popover placement="right" classNames={{
-              content: [
-                // "flex-row gap-2"
-                "cursor-pointer"
-              ]
-            }}>
-              <PopoverTrigger>
-                <Button variant="flat" isDisabled={!likedMovies.length}>{likedMovies?.length}</Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                {likedMovies.map((e: any) => (
-                  <div key={e.id} className="w-full">
-                    <Tooltip placement="right-start" closeDelay={100} className="p-2 w-[308px]" content={<TooltipDetail id={e.id} />}>
-                      {/* <Image
-                        alt="Poster Image"
-                        src={e.src}
-                        width={50}
-                      /> */}
-                      <div onClick={() => {
-                        router.push(`/${"movie"}/${e.id}`)
-                      }}>{e.title}</div>
-                    </Tooltip>
-                  </div>
-                ))}
-              </PopoverContent>
-            </Popover >
-          </>
+          PopoverByType("movie", likedMovies)
         );
       case "tv":
         return (
-          <>
-            {likedSeries?.length}
-          </>
+          PopoverByType("tv", likedSeries)
         );
       case "contents":
         return (
@@ -88,6 +57,31 @@ export const InfiniteTable = ({ columns, rows }: { columns: any[], rows: any[] }
         return cellValue;
     }
   }, []);
+
+  const PopoverByType = (type: string, list: []) => {
+    return (
+      <>
+        <Popover placement="right" classNames={{
+          content: ["cursor-pointer"]
+        }}>
+          <PopoverTrigger>
+            <Button variant="flat" isDisabled={!list.length}>{list?.length}</Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            {list.map((e: any) => (
+              <div key={e.id} className="w-full">
+                <Tooltip placement="right-start" closeDelay={100} className="p-2 w-[308px]" content={<TooltipDetail id={e.id} type={type} />}>
+                  <div onClick={() => {
+                    router.push(`/${type}/${e.id}`)
+                  }}>{e.title}</div>
+                </Tooltip>
+              </div>
+            ))}
+          </PopoverContent>
+        </Popover >
+      </>
+    )
+  }
 
   return (
     <>

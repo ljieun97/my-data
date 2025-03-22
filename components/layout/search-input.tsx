@@ -1,6 +1,6 @@
 "use client"
 
-import { Input } from "@nextui-org/react";
+import { Input } from "@heroui/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"

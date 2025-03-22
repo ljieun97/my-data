@@ -1,7 +1,7 @@
 'use client'
 
 import { getProviders } from "@/lib/themoviedb/api";
-import { Avatar, AvatarGroup, Tooltip } from "@nextui-org/react";
+import { Avatar, AvatarGroup, Tooltip } from "@heroui/react";
 import { useEffect, useState } from "react";
 
 export default function Flatrates({ type, provider }: { type: string, provider: any }) {

@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import SearchInput from "./search-input";
-import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Input, DropdownItem, DropdownTrigger, Dropdown, DropdownMenu, Avatar, NavbarMenuToggle, NavbarMenu } from "@nextui-org/react";
+import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Input, DropdownItem, DropdownTrigger, Dropdown, DropdownMenu, Avatar, NavbarMenuToggle, NavbarMenu } from "@heroui/react";
 import { useState } from "react";
 
 export default function TopBar() {
@@ -73,6 +73,11 @@ export default function TopBar() {
             <NavbarItem isActive={path === "/tv"}>
               <Link href="/tv" color="foreground">
                 시리즈
+              </Link>
+            </NavbarItem>
+            <NavbarItem isActive={path === "/user"}>
+              <Link href="/user" color="foreground">
+                유저
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/mypage"}>

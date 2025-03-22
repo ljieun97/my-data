@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer, Button } from "@nextui-org/react"
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer, Button } from "@heroui/react"
 import { getDetail } from "@/lib/themoviedb/api"
 import InfiniteImages from "../components/common/infinite-images"
 import Title from "../components/common/title"

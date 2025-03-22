@@ -2,10 +2,10 @@
 
 import { getFilterMovies } from "@/lib/themoviedb/api"
 import InfiniteImages from "../components/common/infinite-images"
-import { Spacer, Spinner } from "@nextui-org/react"
+import { Spacer, Spinner } from "@heroui/react"
 import { RefObject, useCallback, useEffect, useRef, useState } from "react"
 import { getLocalTimeZone, today } from "@internationalized/date";
-import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
+import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
 
 import SelectFilter from "../components/common/select-filter"

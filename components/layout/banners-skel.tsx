@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, Skeleton } from '@nextui-org/react';
+import { Card, Skeleton } from '@heroui/react';
 
 export function BannersSkel() {
   return (

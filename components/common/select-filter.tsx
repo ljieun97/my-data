@@ -1,6 +1,6 @@
 "use client"
 
-import { Select, SelectItem } from "@nextui-org/react"
+import { Select, SelectItem } from "@heroui/react"
 
 export default function SelectFilter(props: any) {
   const { items, type, onChangeSelect } = props
@@ -14,7 +14,7 @@ export default function SelectFilter(props: any) {
       showScrollIndicators={false}
     >
       {(item: any) =>
-        <SelectItem key={item.value} value={item.value}>
+        <SelectItem key={item.value}>
           {item.label}
         </SelectItem>
       }

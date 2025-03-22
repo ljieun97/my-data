@@ -9,7 +9,7 @@ export const metadata = {
 export default function Page() {
   return (
     <>
-      <Title title={"영화"} />
+      <Title title={"영화"} sub=""/>
       <FilterPage type={'movie'} />
     </>
   )

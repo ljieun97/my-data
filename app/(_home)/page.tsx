@@ -3,7 +3,7 @@ import Title from "@/components/common/title"
 import { Banners } from "@/components/layout/banners";
 import { BannersSkel } from "@/components/layout/banners-skel";
 import { getDetail, getRecommendMovies, getRecommendSeries, getTodayMovies, getTodaySeries } from "@/lib/themoviedb/api";
-import { Link, Spacer } from "@nextui-org/react";
+import { Link, Spacer } from "@heroui/react";
 
 export const dynamic = "force-dynamic";
 export const metadata = {

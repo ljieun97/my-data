@@ -1,6 +1,6 @@
 'use client'
 
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer, Button } from "@nextui-org/react"
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer, Button } from "@heroui/react"
 import { RefObject, useCallback, useEffect, useState } from "react"
 import { GetMovies, DeleteMovie, UpdateMovie, GetMovieCount } from "@/lib/mongo/movie"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -8,7 +8,7 @@ import { faList, faBorderAll, faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBea
 import InfiniteImages from "../components/common/infinite-images"
 import SelectFilter from "../components/common/select-filter"
 import { useAsyncList } from "@react-stately/data"
-import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll"
+import { useInfiniteScroll } from "@heroui/use-infinite-scroll"
 import Title from "../components/common/title"
 
 const MyPage = () => {

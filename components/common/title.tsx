@@ -1,13 +1,13 @@
 "use client"
 
-import { Spacer } from "@nextui-org/react"
+import { Spacer } from "@heroui/react"
 
-const Title = (props: any) => {
+const Title = ({title, sub} : {title: string, sub: any}) => {
   return (
     <div className="">
       <Spacer y={12} />
-      <span className="font-bold text-xl">{props.title}</span>
-      <span className="text-default-400 pl-2">{props.sub}</span>
+      <span className="font-bold text-xl">{title}</span>
+      <span className="text-default-400 pl-2">{sub}</span>
       {/* <Spacer y={4} /> */}
     </div>
   )

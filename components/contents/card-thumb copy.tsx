@@ -1,7 +1,7 @@
 "use client"
 
 import Flatrates from "./flatrates"
-import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@nextui-org/react";
+import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo } from "@fortawesome/free-solid-svg-icons"
 import { CreateMovie } from "@/lib/mongo/movie";

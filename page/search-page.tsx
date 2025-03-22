@@ -2,11 +2,11 @@
 
 import { useSearchParams } from "next/navigation"
 import Title from "../components/common/title"
-import { Spacer, Accordion, AccordionItem, Divider, Spinner  } from "@nextui-org/react"
+import { Spacer, Accordion, AccordionItem, Divider, Spinner  } from "@heroui/react"
 import { getSearchMovies, getSearchSeries, getSearchMulti } from "@/lib/themoviedb/api";
 import { RefObject, useEffect, useState } from "react";
 import { useAsyncList } from "@react-stately/data";
-import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
+import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import InfiniteImages from "@/components/common/infinite-images";
 
 export default function SearchPage() {

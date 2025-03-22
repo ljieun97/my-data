@@ -1,7 +1,7 @@
 'use client'
 
 import InfiniteImages from "../components/common/infinite-images"
-import { Avatar, Chip, Tooltip, Image, Button, Card, CardHeader, CardBody, CardFooter, AvatarGroup, Spacer, Modal, ModalBody, ModalHeader, ModalFooter, ModalContent } from "@nextui-org/react"
+import { Avatar, Chip, Tooltip, Image, Button, Card, CardHeader, CardBody, CardFooter, AvatarGroup, Spacer, Modal, ModalBody, ModalHeader, ModalFooter, ModalContent } from "@heroui/react"
 import Title from "../components/common/title"
 import { useRouter, useSearchParams } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -91,7 +91,7 @@ export default function DetailModal(props: any) {
                           removeWrapper={true}
                           radius="none"
                           alt="Card background"
-                          className="w-full aspect-video object-cover"
+                          className="w-full aspect-video object-cover brightness-125"
                           src={content.backdrop_path ? `https://image.tmdb.org/t/p/original/${content.backdrop_path}` : ''}
                         />
                       }

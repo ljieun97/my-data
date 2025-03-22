@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, Card, CardBody, CardFooter, CardHeader, Image, Link } from '@nextui-org/react';
+import { Button, Card, CardBody, CardFooter, CardHeader, Image, Link } from '@heroui/react';
 import { useRouter } from "next/navigation";
 import Flatrates from '../contents/flatrates';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

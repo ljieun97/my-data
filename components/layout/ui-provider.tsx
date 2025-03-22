@@ -1,6 +1,6 @@
 'use client'
 
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/react";
 import TopBar from "./top-bar";
 
 export function UiProvider({
@@ -11,7 +11,7 @@ export function UiProvider({
 
 
   return (
-    <NextUIProvider>
+    <HeroUIProvider>
       <main>
         <div className="dark text-foreground bg-background flex-grow">
           <TopBar />
@@ -19,6 +19,6 @@ export function UiProvider({
         </div>
       </main>
       {modal}
-    </NextUIProvider>
+    </HeroUIProvider>
   );
 }

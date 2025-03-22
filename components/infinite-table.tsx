@@ -8,18 +8,12 @@ import {
   TableRow,
   TableCell,
   User,
-  Button,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  Tooltip
 } from "@heroui/react"
 import { useCallback } from "react";
-import { TooltipDetail } from "./tooltip-detail";
-import { useRouter } from "next/navigation";
+import { PopupList } from "./popup-list";
 
 export const InfiniteTable = ({ columns, rows }: { columns: any[], rows: any[] }) => {
-  const router = useRouter()
+
   const renderCell = useCallback((user: any, columnKey: any) => {
     const cellValue = user[columnKey];
     const { likedMovies, likedSeries } = (user.contents ?? []).reduce((acc: any, content: any) => {
@@ -41,11 +35,11 @@ export const InfiniteTable = ({ columns, rows }: { columns: any[], rows: any[] }
         );
       case "movie":
         return (
-          PopoverByType("movie", likedMovies)
+          <PopupList type="movie" list={likedMovies}/>
         );
       case "tv":
         return (
-          PopoverByType("tv", likedSeries)
+          <PopupList type="tv" list={likedSeries}/>
         );
       case "contents":
         return (
@@ -58,30 +52,6 @@ export const InfiniteTable = ({ columns, rows }: { columns: any[], rows: any[] }
     }
   }, []);
 
-  const PopoverByType = (type: string, list: []) => {
-    return (
-      <>
-        <Popover placement="right" classNames={{
-          content: ["cursor-pointer"]
-        }}>
-          <PopoverTrigger>
-            <Button variant="flat" isDisabled={!list.length}>{list?.length}</Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            {list.map((e: any) => (
-              <div key={e.id} className="w-full">
-                <Tooltip placement="right-start" closeDelay={100} className="p-2 w-[308px]" content={<TooltipDetail id={e.id} type={type} />}>
-                  <div onClick={() => {
-                    router.push(`/${type}/${e.id}`)
-                  }}>{e.title}</div>
-                </Tooltip>
-              </div>
-            ))}
-          </PopoverContent>
-        </Popover >
-      </>
-    )
-  }
 
   return (
     <>

@@ -44,6 +44,12 @@ const Home = async () => {
           </div>
           <ImagesSlider contents={await getTodaySeries()} />
 
+          <div className="flex justify-between pt-8 pb-2">
+            <span className="text-lg font-bold">최신 영화</span>
+            <Link href="/movie" color="success">더보기</Link>
+          </div>
+          <ImagesSlider contents={await getTodayMovies()} />
+
           {/* <div className="flex justify-between pt-8 pb-2">
             <span className="text-lg font-bold">추천 영화</span>
           </div>

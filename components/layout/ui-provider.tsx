@@ -13,7 +13,7 @@ export function UiProvider({
   return (
     <HeroUIProvider>
       <main>
-        <div className="dark text-foreground bg-background flex-grow">
+        <div className="text-foreground bg-background flex-grow">
           <TopBar />
           <div className="px-6 py-14 max-w-7xl mx-auto">{children}</div>
         </div>

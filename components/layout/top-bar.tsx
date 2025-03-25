@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import SearchInput from "./search-input";
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Input, DropdownItem, DropdownTrigger, Dropdown, DropdownMenu, Avatar, NavbarMenuToggle, NavbarMenu } from "@heroui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function TopBar() {
   const path = usePathname()
@@ -12,18 +12,16 @@ export default function TopBar() {
     if (window.scrollY < 30) setIsScroll(false)
     else setIsScroll(true)
   }
+
   return (
     <>
       <Navbar
-        isBlurred={isScroll}
+        isBlurred={false}
         classNames={{
-          base: `${isScroll ? "fixed drop-shadow" : "fixed bg-opacity drop-shadow"} bg-blue`,
+          base: `fixed ${isScroll ? "bg-opacity-100" : "bg-opacity-0"}`,
           wrapper: "max-w-7xl"
         }}
-        style={{
-          background: "linear-gradient(#0000004d 0%, #0000 100%)",
-        }}
-        onScrollPositionChange={() => onChangeScroll()}
+        onScrollPositionChange={() => { if (path === "/") onChangeScroll() }}
       >
         <NavbarContent justify="start">
           <NavbarMenuToggle
@@ -45,6 +43,11 @@ export default function TopBar() {
                 시리즈
               </Link>
             </NavbarItem>
+            <NavbarItem isActive={path === "/user"}>
+              <Link href="/user" color="foreground">
+                유저
+              </Link>
+            </NavbarItem>
             <NavbarItem isActive={path === "/mypage"}>
               <Link href="/mypage" color="foreground">
                 보관함
@@ -54,34 +57,34 @@ export default function TopBar() {
           <NavbarBrand>
             {/* <AcmeLogo /> */}
             <p className="hidden sm:block font-bold text-inherit">
-              <Link href="/" color="foreground" >
-                오늘 뭐 볼까
+              <Link href="/" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
+                TOVIE
               </Link>
             </p>
           </NavbarBrand>
           <NavbarContent className="hidden sm:flex gap-5">
             <NavbarItem isActive={path === "/"}>
-              <Link href="/" color="foreground" >
+              <Link href="/" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
                 홈
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/movie"}>
-              <Link href="/movie" color="foreground">
+              <Link href="/movie" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
                 영화
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/tv"}>
-              <Link href="/tv" color="foreground">
+              <Link href="/tv" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
                 시리즈
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/user"}>
-              <Link href="/user" color="foreground">
+              <Link href="/user" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
                 유저
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/mypage"}>
-              <Link href="/mypage?type=movie" color="foreground">
+              <Link href="/mypage?type=movie" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
                 보관함
               </Link>
             </NavbarItem>

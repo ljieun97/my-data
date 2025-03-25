@@ -29,11 +29,11 @@ export default function SearchInput() {
         classNames={{
           base: "max-w-full sm:max-w-[10rem] h-10",
           mainWrapper: "h-full",
-          input: "placeholder:text-white text-small bg-transparent",
+          input: "placeholder:text-gray text-small bg-transparent",
           // innerWrapper: "bg-white",
           inputWrapper: "h-full bg-default-200/25",
         }}
-        placeholder="검색"
+        placeholder="제목 검색"
         size="sm"
         // variant="bordered"
         // startContent={<FontAwesomeIcon icon={faMagnifyingGlass} />}

@@ -201,7 +201,7 @@ export default function FilterPage({ type }: { type: string }) {
 
 
 
-        <div className="h-[600px] overflow-auto" ref={scrollerRef}>
+        <div className="h-[600px] overflow-auto p-2" ref={scrollerRef}>
 
           <InfiniteImages type="info" contents={list.items} />
           {hasMore ? (

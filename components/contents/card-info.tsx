@@ -51,7 +51,7 @@ export default function CardInfo({ content }: { content: any }) {
   return (
     <>
       <Card
-        // isBlurred
+        isBlurred={false}
         className="group/footer"
       // shadow="sm"
       >

@@ -27,11 +27,13 @@ export default function SearchInput() {
     <>
       <Input
         classNames={{
-          base: "max-w-full sm:max-w-[10rem] h-10",
-          mainWrapper: "h-full",
-          input: "placeholder:text-gray text-small bg-transparent",
+          base: "w-[10rem] h-10",
+          mainWrapper: "h-full ",
+          // input: "placeholder:text-gray text-small bg-transparent",
+          input: "bg-transparent",
           // innerWrapper: "bg-white",
           inputWrapper: "h-full bg-default-200/25",
+          // inputWrapper: "h-full",
         }}
         placeholder="제목 검색"
         size="sm"

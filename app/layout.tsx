@@ -1,6 +1,7 @@
 import "@/styles/global.css";
 import type { Metadata } from "next";
 import { UiProvider } from "@/components/layout/ui-provider";
+import { CookiesProvider } from 'next-client-cookies/server';
 
 export const metadata: Metadata = {
   title: {
@@ -18,7 +19,9 @@ export default function Layout({
   return (
     <html lang="ko">
       <body>
-        <UiProvider modal={modal}>{children}</UiProvider>
+        <CookiesProvider>
+          <UiProvider modal={modal}>{children}</UiProvider>
+        </CookiesProvider>
       </body>
     </html>
   );

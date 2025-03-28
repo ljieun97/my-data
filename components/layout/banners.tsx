@@ -25,7 +25,7 @@ export function Banners({ movie }: { movie: any }) {
           <div
             className="absolute z-10 w-full h-full"
             style={{
-              background: "linear-gradient(#0003 0%, #0002 15%, #0001 32.47%, #0009 67.36%, #000c 100%)",
+              background: "linear-gradient(#0004 0%, #0002 15%, #0001 32.47%, #0009 87.36%, #000c 100%)",
             }}
           ></div>
         }

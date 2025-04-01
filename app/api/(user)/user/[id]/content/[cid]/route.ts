@@ -2,56 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/lib/mongo/mongodb"
 import dayjs from 'dayjs'
 
-export const dynamic = "force-dynamic"
-
-const GET = async (request: NextRequest) => {
-	const limit = 18
-	const searchParams = request.nextUrl.searchParams
-
-	// const nextId = searchParams.get('nextId')
-	// const nextQuery = nextId ? { _id: { $gt: nextId } } : {}
-	const page = searchParams.get('page')
-	const sort = searchParams.get('sort')
-	const asc = searchParams.get('asc')
-
-	const type = searchParams.get('type')
-	const typeQuery = type ? { "type": type } : {}
-	const date = searchParams.get('date')
-	const dateQuery = date ? { "user_date": { '$regex': `^${date}` } } : {}
-	const rating = searchParams.get('rating')
-	const ratingQuery = rating ? { "user_rating": Number(rating) } : {}
-
-	try {
-		const db = await connectMongo()
-		const results = await db
-			.collection("contents")
-			.find({
-				$and: [
-					typeQuery, dateQuery, ratingQuery
-				]
-			})
-			.sort(sort, asc)
-			.skip(limit * (Number(page)))
-			.limit(limit)
-			.toArray()
-
-		const count = await db
-			.collection("contents")
-			.count({
-				$and: [
-					typeQuery, dateQuery, ratingQuery
-				]
-			})
-
-		const total_page = Math.ceil(count / limit) as ResponseInit
-		return NextResponse.json({ results: results, total: count, total_page: total_page })
-	} catch (e) {
-		console.log(e)
-		return NextResponse.json({ error: e })
-	}
-}
-
-const POST = async (req: NextRequest) => {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
 	const { content, rating } = await req.json()
 	// content.my_rating = rating
 
@@ -105,7 +56,7 @@ const POST = async (req: NextRequest) => {
 
 
 	//TODO id 파라미터
-	object.user_id = "k4002503248"
+	object.user_id = params.id
 	object.user_rating = rating
 	object.user_isLike = false
 	console.log(object)
@@ -133,5 +84,3 @@ const POST = async (req: NextRequest) => {
 		return NextResponse.json({ error: e })
 	}
 }
-
-export { GET, POST }

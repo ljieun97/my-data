@@ -28,8 +28,8 @@ export const InfiniteTable = ({ columns, rows }: { columns: any[], rows: any[] }
         return (
           <User
             avatarProps={{ radius: "lg", src: user.avatar }}
-            description={`${cellValue} | ${user.year}`}
-            name={user.id}
+            description={`${user.gender} | ${user.year}`}
+            name={cellValue}
           >
           </User>
         );

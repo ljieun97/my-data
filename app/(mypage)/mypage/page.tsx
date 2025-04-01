@@ -16,7 +16,7 @@ const Page = () => {
         sub=""
       />
 
-      <MyPage />
+      {/* <MyPage /> */}
     </>
   )
 }

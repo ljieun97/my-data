@@ -5,8 +5,11 @@ import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, Dropdo
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus, faEye } from "@fortawesome/free-solid-svg-icons"
 import { useRouter, useSearchParams } from "next/navigation";
+import { CreateMovie } from "@/lib/mongo/movie";
+import { useUser } from "@/context/UserContext";
 
 export default function CardInfo({ content }: { content: any }) {
+  const {userId} = useUser()
   const router = useRouter()
 
   let type = ''
@@ -30,17 +33,25 @@ export default function CardInfo({ content }: { content: any }) {
 
   const clickCreate = async (content: any, rating: number) => {
     //영화 시리즈 구분하기
-    if (type == "movie") {
-      let listStr = localStorage.getItem("m_list")
-      let listArr = listStr ? JSON.parse(listStr) : []
-      listArr.push(content.id)
-      localStorage.setItem("m_list", JSON.stringify(listArr))
-    } else {
-      let listStr = localStorage.getItem("s_list")
-      let listArr = listStr ? JSON.parse(listStr) : []
-      listArr.push(content.id)
-      localStorage.setItem("s_list", JSON.stringify(listArr))
-    }
+    // if (type == "movie") {
+    //   let listStr = localStorage.getItem("m_list")
+    //   let listArr = listStr ? JSON.parse(listStr) : []
+    //   listArr.push(content.id)
+    //   localStorage.setItem("m_list", JSON.stringify(listArr))
+    // } else {
+    //   let listStr = localStorage.getItem("s_list")
+    //   let listArr = listStr ? JSON.parse(listStr) : []
+    //   listArr.push(content.id)
+    //   localStorage.setItem("s_list", JSON.stringify(listArr))
+    // }
+    // await CreateMovie(content, rating)
+    await fetch(`/api/user/${userId}/content/${id}`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ content, rating })
+    })
   }
 
   const goDetailpage = () => {

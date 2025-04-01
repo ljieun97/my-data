@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from "jsonwebtoken"
+import connectMongo from '@/lib/mongo/mongodb'
 
 export async function GET(req: NextRequest) {
   const REST_API_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY!
@@ -37,8 +38,23 @@ export async function GET(req: NextRequest) {
   })
 
   const userInfo = await userRes.json()
+  const kakaoId = userInfo.id
+  const nickname = userInfo.properties?.nickname
+
+  // MongoDB에서 유저 찾기
+  const db = await connectMongo()
+  let user = await db
+    .collection("users")
+    .findOne({ oauth: `k${kakaoId}` })
+
+  if (!user) {
+    await db
+      .collection("users")
+      .insertOne({ oauth: `k${kakaoId}`, nickname })
+  }
+
   const jwtToken = jwt.sign(
-    { id: userInfo.id, nickname: userInfo.properties?.nickname },
+    { id: `k${kakaoId}`, nickname },
     process.env.NEXT_PUBLIC_JWT_SECRET!,
     { expiresIn: '7d' }
   )

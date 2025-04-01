@@ -14,42 +14,24 @@ import {
   useDisclosure,
   Checkbox
 } from "@heroui/react";
-import { useState, useEffect } from "react"
-import { useCookies } from "next-client-cookies"
+import { useState } from "react"
+import { useUser } from "@/context/UserContext";
 
 export default function TopBar() {
-  const router = useRouter()
+  const { userId } = useUser()
   const path = usePathname()
-  const [isLogin, setIsLogin] = useState(false)
   const [isScroll, setIsScroll] = useState(false)
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
-
-  useEffect(() => {
-    const checkToken = async () => {
-      const response = await fetch('/api/user/isvaild', {
-        method: 'GET',
-        credentials: 'include', // 쿠키 포함하여 요청
-      })
-      if (response.ok) {
-        console.log('Token is valid');
-        setIsLogin(true)
-      } else {
-        console.log('Token is expired or invalid');
-        setIsLogin(false)
-      }
-    }
-    checkToken()
-  }, [])
 
   const onChangeScroll = () => {
     if (window.scrollY < 30) setIsScroll(false)
     else setIsScroll(true)
   }
   const clickKakaoLogin = () => {
-    window.location.href = "/api/user/login"
+    window.location.href = "/api/oauth/login"
   }
   const clickLogout = async () => {
-    const response = await fetch('/api/user/logout', {
+    const response = await fetch('/api/oauth/logout', {
       method: 'POST',
       credentials: 'include',  // 쿠키 포함
     })
@@ -97,11 +79,11 @@ export default function TopBar() {
                 유저
               </Link>
             </NavbarItem>
-            <NavbarItem isActive={path === "/mypage"}>
+            {/* <NavbarItem isActive={path === "/mypage"}>
               <Link href="/mypage" color="foreground">
                 보관함
               </Link>
-            </NavbarItem>
+            </NavbarItem> */}
           </NavbarMenu>
           <NavbarBrand>
             {/* <AcmeLogo /> */}
@@ -132,17 +114,12 @@ export default function TopBar() {
                 유저
               </Link>
             </NavbarItem>
-            <NavbarItem isActive={path === "/mypage"}>
-              <Link href="/mypage?type=movie" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
-                보관함
-              </Link>
-            </NavbarItem>
           </NavbarContent>
         </NavbarContent>
 
         <NavbarContent as="div" className="items-center" justify="end">
           <SearchInput></SearchInput>
-          {!isLogin ?
+          {!userId ?
             <Button
               onPress={onOpen}
               radius="sm" variant="bordered"
@@ -154,24 +131,18 @@ export default function TopBar() {
               <DropdownTrigger>
                 <Avatar
                   isBordered
+                  size="sm"
                   as="button"
                   className="transition-transform"
                   src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
                 />
               </DropdownTrigger>
               <DropdownMenu aria-label="Profile Actions" variant="flat">
-                <DropdownItem key="profile" className="h-14 gap-2">
-                  <p className="font-semibold">Signed in as</p>
-                  <p className="font-semibold">zoey@example.com</p>
+                <DropdownItem key="mypage" href={`/mypage/${userId}`}>
+                 마이페이지
                 </DropdownItem>
-                <DropdownItem key="settings">My Settings</DropdownItem>
-                <DropdownItem key="team_settings">Team Settings</DropdownItem>
-                <DropdownItem key="analytics">Analytics</DropdownItem>
-                <DropdownItem key="system">System</DropdownItem>
-                <DropdownItem key="configurations">Configurations</DropdownItem>
-                <DropdownItem key="help_and_feedback">Help & Feedback</DropdownItem>
                 <DropdownItem key="logout" color="danger" onPress={() => clickLogout()}>
-                  Log Out
+                  로그아웃
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>

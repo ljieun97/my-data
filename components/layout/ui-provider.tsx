@@ -2,6 +2,7 @@
 
 import { HeroUIProvider } from "@heroui/react";
 import TopBar from "./top-bar";
+import React from "react";
 
 export function UiProvider({
   children, modal
@@ -15,7 +16,9 @@ export function UiProvider({
       <main>
         <div className="text-foreground bg-background flex-grow">
           <TopBar />
-          <div className="px-6 py-14 max-w-7xl mx-auto">{children}</div>
+          <div className="px-6 py-14 max-w-7xl mx-auto">
+            {children}
+          </div>
         </div>
       </main>
       {modal}

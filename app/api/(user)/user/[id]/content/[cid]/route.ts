@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/lib/mongo/mongodb"
 import dayjs from 'dayjs'
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: any}) {
 	const { content, rating } = await req.json()
 	// content.my_rating = rating
 
@@ -56,7 +56,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
 
 	//TODO id 파라미터
-	object.user_id = params.id
+	const { id } = await params
+	object.user_id = id
 	object.user_rating = rating
 	object.user_isLike = false
 	console.log(object)

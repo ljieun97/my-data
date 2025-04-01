@@ -74,11 +74,11 @@ export default function TopBar() {
                 시리즈
               </Link>
             </NavbarItem>
-            <NavbarItem isActive={path === "/user"}>
+            {/* <NavbarItem isActive={path === "/user"}>
               <Link href="/user" color="foreground">
                 유저
               </Link>
-            </NavbarItem>
+            </NavbarItem> */}
             {/* <NavbarItem isActive={path === "/mypage"}>
               <Link href="/mypage" color="foreground">
                 보관함
@@ -109,11 +109,11 @@ export default function TopBar() {
                 시리즈
               </Link>
             </NavbarItem>
-            <NavbarItem isActive={path === "/user"}>
+            {/* <NavbarItem isActive={path === "/user"}>
               <Link href="/user" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
                 유저
               </Link>
-            </NavbarItem>
+            </NavbarItem> */}
           </NavbarContent>
         </NavbarContent>
 

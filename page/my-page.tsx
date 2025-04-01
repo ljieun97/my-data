@@ -33,6 +33,7 @@ export default function MyPage({ data }: { data: any }) {
 
   return (
     <>
+      <Spacer y={16} />
       <div className="gap-4 grid grid-cols-48 sm:grid-cols-8 md:grid-cols-8 lg:grid-cols-8">
         {data.results.map((content: any, index: number) => (
           <CardCol key={index} content={content}></CardCol>

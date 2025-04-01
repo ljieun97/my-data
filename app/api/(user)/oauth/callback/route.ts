@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
   )
 
 
-  const res = NextResponse.redirect("https://today-movie.vercel.app")
+  const res = NextResponse.redirect("http://localhost:3000")
 
   res.cookies.set({
     name: "access_token",

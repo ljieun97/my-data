@@ -15,8 +15,7 @@ import InfiniteImagesSkel from "../components/common/infinite-images-skel"
 export default function FilterPage({ type }: { type: string }) {
   const [totalContents, setTotalContents] = useState('')
   const [country, setCountries] = useState('')
-  // const [flatforms, setFlatforms] = useState(new Set([]))
-  const [flatforms, setFlatforms] = useState('')
+  const [providers, setProviders] = useState('')
   const [genres, setGenres] = useState('')
   const [date, setDate] = useState('')
 
@@ -24,7 +23,7 @@ export default function FilterPage({ type }: { type: string }) {
   let list = useAsyncList({
     async load({ signal, cursor }) {
 
-      const { results, page, total_pages, total_results } = await getFilterMovies(type, country, flatforms, date, genres, cursor ? cursor : 1)
+      const { results, page, total_pages, total_results } = await getFilterMovies(type, country, providers, date, genres, cursor ? cursor : 1)
       setTotalContents(total_results)
       // setHasMore(page < total_pages)
       setHasMore(true)
@@ -50,7 +49,7 @@ export default function FilterPage({ type }: { type: string }) {
 
   useEffect(() => {
     list.reload()
-  }, [flatforms])
+  }, [providers])
 
   useEffect(() => {
     list.reload()
@@ -167,7 +166,7 @@ export default function FilterPage({ type }: { type: string }) {
         setCountries(e.target.value)
         break
       case '제공사':
-        setFlatforms(e.target.value)
+        setProviders(e.target.value)
         break
       case '장르':
         setGenres(e.target.value)

@@ -129,9 +129,10 @@ export async function getVideo(type: string, id: string) {
 }
 
 //영화 및 시리즈 페이지
+//with_watch_providers, watch_region 같이사용
 export async function getFilterMovies(type: string, country: any, providers: any, date: any, genres: any, pageNum: any) {
   // providers = Array.from(providers).join("|")
-  let dateQueryByType = (type == 'movie') ?
+  let dateQueryByType = (type == 'movie') ? 
     `&primary_release_year=${date}` :
     `&first_air_date.gte=${date}-01-01&first_air_date.lte=${date}-12-31`
   const qeury = {
@@ -144,6 +145,7 @@ export async function getFilterMovies(type: string, country: any, providers: any
   const URL = `https://api.themoviedb.org/3/discover/${type}`
     + `?language=ko&api_key=${API_KEY}`
     + `&without_watch_providers=1796`
+    + `&watch_region=KR`
     + qeury.provider
     + qeury.date
     + qeury.genre

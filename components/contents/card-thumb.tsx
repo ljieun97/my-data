@@ -33,20 +33,6 @@ export default function CardThumb({ content }: { content: any }) {
 
   const clickCreate = async (content: any, rating: number) => {
     //영화 시리즈 구분하기
-    // if (type == "movie") {
-    //   let listStr = localStorage.getItem("m_list")
-    //   let listArr = listStr ? JSON.parse(listStr) : []
-    //   listArr.push(content.id)
-    //   localStorage.setItem("m_list", JSON.stringify(listArr))
-    // } else {
-    //   let listStr = localStorage.getItem("s_list")
-    //   let listArr = listStr ? JSON.parse(listStr) : []
-    //   listArr.push(content.id)
-    //   localStorage.setItem("s_list", JSON.stringify(listArr))
-    // }
-
-    // await CreateMovie(content, rating)
-  
     await fetch(`/api/user/${userId}/content/${id}`, {
       method: "POST",
       headers: {
@@ -64,31 +50,24 @@ export default function CardThumb({ content }: { content: any }) {
     <>
       <Card
         radius="sm"
-        className="group/footer"
+        className="group/footer mx-[2px]"
         isFooterBlurred
         isBlurred
+        shadow="none"
       >
         <Image
           radius="sm"
           alt="poster"
           src={img}
           fallbackSrc="/images/no-image.jpg"
-          className="w-full h-full object-cover brightness-125"
+          className="w-full h-full object-cover"
         />
         <CardHeader className="absolute justify-end z-20">
           <div className="flex gap-2">
             <Flatrates type={type} provider={content.id} />
           </div>
         </CardHeader>
-        {/* {!content.backdrop_path &&
-          <CardBody className="absolute z-20">
-            <h4 className="text-white text-lg font-bold tracking-tight">
-              {content.title ? content.title : content.name}
-            </h4>
-          </CardBody>
-        } */}
-        <CardFooter className="justify-between items-end invisible absolute group-hover/footer:visible bg-black/25 border-white/50 border-1 rounded-small shadow-small z-10 h-full w-full">
-          {/* TODO 추가 시 알림 추가하기 */}
+        <CardFooter className="justify-between items-end invisible absolute group-hover/footer:visible bg-black/25 border-white/0 border-1 rounded-small shadow-small z-10 h-full w-full">
           <div className="text-white text-sm font-bold text-pretty line-clamp-3">
             {content.title ? content.title : content.name}
           </div>

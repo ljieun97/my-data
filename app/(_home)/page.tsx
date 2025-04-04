@@ -10,7 +10,16 @@ export const metadata = {
   title: "홈"
 }
 
+const API_KEY = process.env.API_KEY_TMDB
 const Home = async () => {
+  const list = async () => {
+    const URL = `https://api.themoviedb.org/3/movie/top_rated?language=ko&api_key=${API_KEY}`
+    const response = await fetch(URL)
+    let { results } = await response.json()
+    results = results.filter((content: any) => content.backdrop_path )
+    return results
+  }
+
   const banners = await Promise.all([
     getDetail('movie', 872585), //오펜
     // getDetail('movie', 346698), //바비
@@ -31,18 +40,23 @@ const Home = async () => {
           <BannersSkel />
         }
 
-        <div className="p-6 mx-auto max-w-7xl">
-          <div className="flex justify-between pt-8 pb-2">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex justify-between px-6 pt-8">
             <span className="text-lg font-bold">최신 영화</span>
-            <Link href="/movie" color="success">더보기</Link>
           </div>
           <ImagesSlider contents={await getTodayMovies()} />
 
-          <div className="flex justify-between pt-8 pb-2">
+          <div className="flex justify-between px-6 pt-8">
             <span className="text-lg font-bold">최신 시리즈</span>
-            <Link href="/tv" color="success">더보기</Link>
           </div>
           <ImagesSlider contents={await getTodaySeries()} />
+
+          <div className="flex justify-between px-6 pt-8">
+            <span className="text-lg font-bold">평단의 찬사를 받은 영화</span>
+          </div>
+          <ImagesSlider contents={await list()} />
+
+          <Spacer y={8}/>
 
           {/* <div className="flex justify-between pt-8 pb-2">
             <span className="text-lg font-bold">추천 영화</span>

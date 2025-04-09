@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
 
   const tokenData = await tokenResponse.json()
   const accessToken = tokenData.access_token
+  const refreshToken = tokenData.refresh_token
 
   if (!accessToken) {
     return NextResponse.json({ error: 'Access token not found' }, { status: 400 })
@@ -50,7 +51,11 @@ export async function GET(req: NextRequest) {
   if (!user) {
     await db
       .collection("users")
-      .insertOne({ oauth: `k${kakaoId}`, nickname })
+      .insertOne({ oauth: `k${kakaoId}`, nickname, refreshToken })
+  } else {
+    await db
+      .collection("users")
+      .updateOne({ oauth: `k${kakaoId}` }, { $set: { refreshToken } })
   }
 
   const jwtToken = jwt.sign(
@@ -59,8 +64,7 @@ export async function GET(req: NextRequest) {
     { expiresIn: '7d' }
   )
 
-
-  const res = NextResponse.redirect("https://today-movie.vercel.app/")
+  const res = NextResponse.redirect("https://today-movie.vercel.app")
 
   res.cookies.set({
     name: "access_token",

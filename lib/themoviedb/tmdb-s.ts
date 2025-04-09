@@ -25,3 +25,10 @@ export async function getTodaySeries() {
   let { results } = await response.json()
   return results.filter((content: any) => content.poster_path && content.overview)
 }
+
+export async function getTopRatedMovies (){
+  const URL = `https://api.themoviedb.org/3/movie/top_rated?language=ko&api_key=${API_KEY}`;
+  const response = await fetch(URL, { next: { revalidate: 3600 } }); // ISR이나 캐싱도 가능
+  const { results } = await response.json()
+  return results.filter((content: any) => content.backdrop_path); 
+}

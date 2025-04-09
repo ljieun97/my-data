@@ -108,9 +108,8 @@ export default function ImagesSlider(props: any) {
                     shadow="none"
                   >
                     <Skeleton className="w-full h-full rounded-sm">
-                      <div className="w-[240px] h-[140px] rounded-sm bg-default-200" />
+                      <div className="w-[240px] h-[140px]" />
                     </Skeleton>
-
                   </Card>
                 </div>
               ))}

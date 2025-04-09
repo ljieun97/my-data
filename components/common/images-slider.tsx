@@ -1,28 +1,31 @@
 'use client'
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CardThumb from "../contents/card-thumb"
-import { Button } from "@heroui/react";
+import { Button, Card, Skeleton } from "@heroui/react";
+import { getTodayMovies, getTodaySeries, getTopRatedMovies } from "@/lib/themoviedb/tmdb";
 
 export default function ImagesSlider(props: any) {
+  const [movies, setMovies] = useState<any[] | null>(null);
+  const apiMap: Record<string, () => Promise<any>> = {
+    getTodayMovies,
+    getTodaySeries,
+    getTopRatedMovies,
+  }
 
-
-  // let img = ''
-  // if (props?.content?.backdrop_path) img = `https://image.tmdb.org/t/p/w500/${content.backdrop_path}`
-  // else img = '/images/no-image.jpg'
-
-  {/* <div className="flex overflow-x-scroll gap-2 pb-6">
-        {props.contents.map((content: any, index: number) => (
-          <div key={index}>
-            <div className="w-[160px] sm:w-[160px] md:w-[180px] lg:w-[200px]">
-              <CardThumb content={content}></CardThumb>
-            </div>
-          </div>
-        ))}
-      </div> */}
+  useEffect(() => {
+    const fetch = async () => {
+      const apiFunc = apiMap[props.type]
+      if (apiFunc) {
+        const data = await apiFunc()
+        setMovies(data)
+      }
+    }
+    fetch()
+  }, [props.type])
 
   const itemsPerPage = 5;
-  const totalPages = Math.ceil(props.contents.length / itemsPerPage);
+  const totalPages = movies ? Math.ceil(movies.length / itemsPerPage) : 0;
   const [page, setPage] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
 
@@ -79,14 +82,40 @@ export default function ImagesSlider(props: any) {
         </button>
 
         <div ref={sliderRef} className="flex transition-transform duration-300 ease-in-out w-full overflow-hidden scroll-snap-x snap-mandatory">
-          {props.contents.map((item: any, index: number) => (
-            <div
-              key={index}
-              className="flex-shrink-0 w-1/5"
-            >
-              <CardThumb content={item}></CardThumb>
-            </div>
-          ))}
+          {movies ?
+            <>
+              {movies.map((item: any, index: number) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 w-1/5"
+                >
+                  <CardThumb content={item}></CardThumb>
+                </div>
+              ))}
+            </>
+            :
+            <>
+              {Array.from({ length: 5 }, (_, index) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 w-1/5"
+                >
+                  <Card
+                    radius="sm"
+                    className="group/footer mx-[2px]"
+                    isFooterBlurred
+                    isBlurred
+                    shadow="none"
+                  >
+                    <Skeleton className="w-full h-full rounded-sm">
+                      <div className="w-[240px] h-[140px] rounded-sm bg-default-200" />
+                    </Skeleton>
+
+                  </Card>
+                </div>
+              ))}
+            </>
+          }
         </div>
 
         <button

@@ -1,7 +1,7 @@
 "use client"
 
 import Flatrates from "./flatrates"
-import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@heroui/react";
+import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, Skeleton } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -59,9 +59,11 @@ export default function CardThumb({ content }: { content: any }) {
           radius="sm"
           alt="poster"
           src={img}
-          fallbackSrc="/images/no-image.jpg"
-          className="w-full h-full object-cover"
+          className="w-[240px] h-[140px] object-cover"
         />
+          {/* // <Skeleton className="w-full h-full rounded-sm">
+          //   <div className="w-[240px] h-[140px] rounded-sm bg-default-200" />
+          // </Skeleton> */}
         <CardHeader className="absolute justify-end z-20">
           <div className="flex gap-2">
             <Flatrates type={type} provider={content.id} />

@@ -60,7 +60,7 @@ export default function CardThumb({ content }: { content: any }) {
           alt="poster"
           src={img}
           fallbackSrc={<Skeleton className="w-full h-full rounded-sm"></Skeleton>}
-          className="w-[240px] h-[140px] object-cover"
+          // className="w-[240px] h-[140px] object-cover"
         />
         <CardHeader className="absolute justify-end z-20">
           <div className="flex gap-2">

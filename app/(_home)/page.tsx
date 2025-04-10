@@ -26,6 +26,7 @@ const Home = async () => {
           <BannersSkel />
         }
 
+{/* 스켈레톤 - /api 에 넣어서 해보기 */}
         <div className="mx-auto max-w-7xl">
           <div className="flex justify-between px-6 pt-8">
             <span className="text-lg font-bold">최신 영화</span>

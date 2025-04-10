@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { CreateMovie } from "@/lib/mongo/movie";
 import { useUser } from "@/context/UserContext";
 
-export default function CardCol({ content }: { content: any }) {
+export default function CardCol({ content, isProvider }: { content: any, isProvider: boolean }) {
   const { userId } = useUser()
   const router = useRouter()
 
@@ -67,6 +67,7 @@ export default function CardCol({ content }: { content: any }) {
         className="group/footer w-full aspect-[26/37]"
         isFooterBlurred
         isBlurred
+        shadow="none"
       >
         <Image
           radius="sm"
@@ -74,11 +75,13 @@ export default function CardCol({ content }: { content: any }) {
           src={img}
           className="w-full h-full object-cover"
         />
-        <CardHeader className="absolute justify-end z-20">
-          <div className="flex gap-2">
-            <Flatrates type={type} provider={content.id} />
-          </div>
-        </CardHeader>
+        {isProvider &&
+          <CardHeader className="absolute justify-end z-20">
+            <div className="flex gap-2">
+              <Flatrates type={type} provider={content.id} />
+            </div>
+          </CardHeader>
+        }
         {/* {!content.poster_path &&
           <CardBody className="absolute z-20">
             <h4 className="text-white text-lg font-bold tracking-tight">

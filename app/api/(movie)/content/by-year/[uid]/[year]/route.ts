@@ -4,20 +4,21 @@ import connectMongo from "@/lib/mongo/mongodb"
 export async function GET(req: NextRequest, { params }: { params: any }) {
   try {
     const db = await connectMongo()
-    const { id } = await params
+    const { uid, year } = await params
 
     const results = await db
       .collection("contents")
-      .find({ user_id: id })
-      .sort({ user_date: -1 })
-      .limit(32)
-      .toArray()
+      .aggregate([
+        {
+          $match: {
+            user_id: uid,
+            user_date: { $regex: `^${year}`, $options: 'i' }
+          }
+        }
+      ])
+      .toArray();
 
-    const count = await db
-      .collection("contents")
-      .count({ user_id: id })
-
-    return NextResponse.json({ results: results, total: count })
+    return NextResponse.json(results)
   } catch (e) {
     console.log(e)
     return NextResponse.json({ error: e })

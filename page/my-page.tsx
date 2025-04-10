@@ -1,16 +1,16 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer, Button } from "@heroui/react"
-import { getDetail } from "@/lib/themoviedb/api"
-import InfiniteImages from "../components/common/infinite-images"
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, User, Spinner, Card, CardBody, Input, Tabs, Tab, CardFooter, Switch, RadioGroup, Radio, Spacer, Button, Accordion, AccordionItem } from "@heroui/react"
 import Title from "../components/common/title"
-import { useSearchParams } from "next/navigation"
-import CardCol from "@/components/contents/card-col"
+import { usePathname, useSearchParams } from "next/navigation"
+import AccordionCards from "@/components/common/accordion-cards"
 
-export default function MyPage({ data }: { data: any }) {
-  // const searchParams = useSearchParams()
-  // const type = searchParams.get('type')
+export default function MyPage({ counts }: { counts: any[] }) {
+  const [isSelectedProvider, setIsSelectedProvider] = useState(false)
+  const path = usePathname()
+  const pathParts = path.split('/')
+  const uid = pathParts[2]
 
   // const [list, setList] = useState([]) as any
   // useEffect(() => {
@@ -31,32 +31,25 @@ export default function MyPage({ data }: { data: any }) {
   // })()
   // }, [])
 
+
   return (
     <>
-      <Spacer y={16} />
-      <div className="gap-4 grid grid-cols-48 sm:grid-cols-8 md:grid-cols-8 lg:grid-cols-8">
-        {data.results.map((content: any, index: number) => (
-          <CardCol key={index} content={content}></CardCol>
-        ))}
+      <Title title="마이페이지" sub="" />
+      <div className="flex justify-end pb-2">
+        <Switch isSelected={isSelectedProvider} onValueChange={setIsSelectedProvider}>
+          제공사
+        </Switch>
       </div>
-      {/* <Tabs classNames={{ panel: "p-0", base: "py-4" }} aria-label="Options" selectedKey={type}>
-        <Tab key="movie" title="영화" href="/mypage?type=movie">
-          {!list.length && <span className="text-default-500">보관함이 비어있습니다.</span>}
-          <div className="gap-4 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-            {list.map((content: any, index: number) => (
-              <CardCol key={index} content={content}></CardCol>
-            ))}
-          </div>
-        </Tab>
-        <Tab key="tv" title="시리즈" href="/mypage?type=tv">
-          {!list.length && <span className="text-default-500">보관함이 비어있습니다.</span>}
-          <div className="gap-4 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-            {list.map((content: any, index: number) => (
-              <CardCol key={index} content={content}></CardCol>
-            ))}
-          </div>
-        </Tab>
-      </Tabs> */}
+  
+      <div className="overflow-auto border-2 rounded-md px-2" style={{ height: "calc(100% - 12px)" }}> 
+        <Accordion selectionMode="multiple" defaultExpandedKeys={["0"]}>
+          {counts.map((count: any, index: number) => (
+            <AccordionItem key={index} aria-label={count._id} title={`${count._id}년 (${count.count})`}>
+              <AccordionCards uid={uid} count={count} isProvider={isSelectedProvider} />
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
     </>
   )
 }

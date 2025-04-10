@@ -7,11 +7,35 @@ import { getTodayMovies, getTodaySeries, getTopRatedMovies } from "@/lib/themovi
 
 export default function ImagesSlider(props: any) {
   const [movies, setMovies] = useState<any[] | null>(null);
+  const [page, setPage] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  const totalPages = movies ? Math.ceil(movies.length / itemsPerPage) : 0;
+  const sliderRef = useRef<HTMLDivElement>(null);
+
   const apiMap: Record<string, () => Promise<any>> = {
     getTodayMovies,
     getTodaySeries,
     getTopRatedMovies,
   }
+
+  const calculateItemsPerPage = (width: number) => {
+    if (width >= 1280) return 5;
+    if (width >= 1024) return 4;
+    return 3;
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setItemsPerPage(calculateItemsPerPage(width));
+    };
+
+    handleResize(); // 초기 실행
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
 
   useEffect(() => {
     const fetch = async () => {
@@ -24,10 +48,16 @@ export default function ImagesSlider(props: any) {
     fetch()
   }, [props.type])
 
-  const itemsPerPage = 5;
-  const totalPages = movies ? Math.ceil(movies.length / itemsPerPage) : 0;
-  const [page, setPage] = useState(0);
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const getWidthClass = (count: number) => {
+    switch (count) {
+      case 3:
+        return "w-1/3";
+      case 4:
+        return "w-1/4";
+      default:
+        return "w-1/5";
+    }
+  };
 
   const next = () => {
     if (page < totalPages - 1) {
@@ -65,8 +95,7 @@ export default function ImagesSlider(props: any) {
           <button
             key={i}
             onClick={() => goToPage(i)}
-            className={`w-4 h-1 rounded-sm ${i === page ? "bg-green-500" : "bg-black/10"
-              }`}
+            className={`w-4 h-1 rounded-sm ${i === page ? "bg-green-500" : "bg-black/10"}`}
           >
           </button>
         ))}
@@ -87,7 +116,7 @@ export default function ImagesSlider(props: any) {
               {movies.map((item: any, index: number) => (
                 <div
                   key={index}
-                  className="flex-shrink-0 w-1/5"
+                  className={`flex-shrink-0 ${getWidthClass(itemsPerPage)}`}
                 >
                   <CardThumb content={item}></CardThumb>
                 </div>
@@ -95,10 +124,10 @@ export default function ImagesSlider(props: any) {
             </>
             :
             <>
-              {Array.from({ length: 5 }, (_, index) => (
+              {Array.from({ length: itemsPerPage }, (_, index) => (
                 <div
                   key={index}
-                  className="flex-shrink-0 w-1/5"
+                  className={`flex-shrink-0 ${getWidthClass(itemsPerPage)}`}
                 >
                   <Card
                     radius="sm"

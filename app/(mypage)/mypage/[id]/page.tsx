@@ -6,7 +6,7 @@ export const metadata = {
 
 export default async function Page({ params }: { params: any }) {
   const { id } = await params
-  const counts = await (await fetch(`http://localhost:3000/api/content/by-year/${id}`)).json()
+  const counts = await (await fetch(`https://today-movie.vercel.app/api/content/by-year/${id}`)).json()
 
   // const [] = await Promise.all([
   // ])

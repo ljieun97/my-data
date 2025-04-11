@@ -9,7 +9,7 @@ import { CreateMovie } from "@/lib/mongo/movie";
 import { useUser } from "@/context/UserContext";
 
 export default function CardThumb({ content }: { content: any }) {
-  const { userId } = useUser()
+  const { uid } = useUser()
   const router = useRouter()
 
   let type = ''
@@ -33,7 +33,7 @@ export default function CardThumb({ content }: { content: any }) {
 
   const clickCreate = async (content: any, rating: number) => {
     //영화 시리즈 구분하기
-    await fetch(`/api/user/${userId}/content/${id}`, {
+    await fetch(`/api/user/${uid}/content/${id}`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json'

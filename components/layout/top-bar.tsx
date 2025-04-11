@@ -18,7 +18,7 @@ import { useState } from "react"
 import { useUser } from "@/context/UserContext";
 
 export default function TopBar() {
-  const { userId } = useUser()
+  const { uid } = useUser()
   const path = usePathname()
   const [isScroll, setIsScroll] = useState(false)
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
@@ -119,7 +119,7 @@ export default function TopBar() {
 
         <NavbarContent as="div" className="items-center" justify="end">
           <SearchInput></SearchInput>
-          {!userId ?
+          {!uid ?
             <Button
               onPress={onOpen}
               radius="sm" variant="bordered"
@@ -138,7 +138,7 @@ export default function TopBar() {
                 />
               </DropdownTrigger>
               <DropdownMenu aria-label="Profile Actions" variant="flat">
-                <DropdownItem key="mypage" href={`/mypage/${userId}`}>
+                <DropdownItem key="mypage" href={`/mypage/${uid}`}>
                  마이페이지
                 </DropdownItem>
                 <DropdownItem key="logout" color="danger" onPress={() => clickLogout()}>

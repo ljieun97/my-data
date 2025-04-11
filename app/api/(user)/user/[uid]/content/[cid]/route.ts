@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/lib/mongo/mongodb"
 import dayjs from 'dayjs'
+import { ObjectId } from "mongodb";
 
-export async function POST(req: NextRequest, { params }: { params: any}) {
+export async function POST(req: NextRequest, { params }: { params: any }) {
+	const { uid } = await params
+	if (!uid) {
+		return NextResponse.json({ error: "Missing uid" }, { status: 400 });
+	}
 	const { content, rating } = await req.json()
-	// content.my_rating = rating
 
 	const today = dayjs().format('YYYY-MM-DD HH:mm:ss')
 	let date = ''
@@ -15,7 +19,7 @@ export async function POST(req: NextRequest, { params }: { params: any}) {
 		if (content.title) {
 			date = content.release_date
 			object = {
-				type: '영화',
+				type: "movie",
 				title: content.title,
 				id: content.id,
 				poster_path: content.poster_path,
@@ -24,7 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: any}) {
 		} else {
 			date = content.first_air_date
 			object = {
-				type: 'TV',
+				type: "tv",
 				title: content.name,
 				id: content.id,
 				poster_path: content.poster_path,
@@ -54,10 +58,7 @@ export async function POST(req: NextRequest, { params }: { params: any}) {
 		}
 	}
 
-
-	//TODO id 파라미터
-	const { id } = await params
-	object.user_id = id
+	object.user_id = uid
 	object.user_rating = rating
 	object.user_isLike = false
 	console.log(object)
@@ -80,6 +81,44 @@ export async function POST(req: NextRequest, { params }: { params: any}) {
 		//title type source sourceId age my_date my_rating my_isLike poster_path backdrop_path genres userId
 		//식별자 userId + type + sourceId
 		return NextResponse.json({ message: "success /content POST" })
+	} catch (e) {
+		console.log(e)
+		return NextResponse.json({ error: e })
+	}
+}
+
+export async function PUT(req: NextRequest, { params }: { params: any }) {
+	const { uid, cid } = await params
+	if (!uid || !cid) {
+		return NextResponse.json({ error: "Missing uid or cid" }, { status: 400 });
+	}
+	const { poster_path } = await req.json()
+	try {
+		const db = await connectMongo()
+		await db
+			.collection("contents")
+			.updateOne({ _id: new ObjectId(cid) },
+				{
+					$set: { poster_path: poster_path },
+				})
+		return NextResponse.json({ message: "success /movie DELETE" })
+	} catch (e) {
+		console.log(e)
+		return NextResponse.json({ error: e })
+	}
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: any }) {
+	const { uid, cid } = await params
+	if (!uid || !cid) {
+		return NextResponse.json({ error: "Missing uid or cid" }, { status: 400 });
+	}
+	try {
+		const db = await connectMongo()
+		await db
+			.collection("contents")
+			.findOneAndDelete({ _id: new ObjectId(cid) })
+		return NextResponse.json({ message: "success /movie DELETE" })
 	} catch (e) {
 		console.log(e)
 		return NextResponse.json({ error: e })

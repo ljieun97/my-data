@@ -3,14 +3,14 @@
 import { createContext, useContext } from "react";
 
 interface UserContextType {
-  userId: string | null;
+  uid: string | null;
 }
 
 const UserContext = createContext<UserContextType | null>(null);
 
-export function UserProvider({ children, userId }: { children: React.ReactNode; userId: string }) {
+export function UserProvider({ children, uid }: { children: React.ReactNode; uid: string }) {
   return (
-    <UserContext.Provider value={{ userId }}>
+    <UserContext.Provider value={{ uid }}>
       {children}
     </UserContext.Provider>
   );

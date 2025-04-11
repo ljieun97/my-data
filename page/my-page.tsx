@@ -30,7 +30,7 @@ export default function MyPage({ counts }: { counts: any[] }) {
   //   setList(list)
   // })()
   // }, [])
-
+  
 
   return (
     <>
@@ -44,7 +44,8 @@ export default function MyPage({ counts }: { counts: any[] }) {
       <div className="overflow-auto border-2 rounded-md px-2" style={{ height: "calc(100% - 12px)" }}> 
         <Accordion selectionMode="multiple" defaultExpandedKeys={["0"]}>
           {counts.map((count: any, index: number) => (
-            <AccordionItem key={index} aria-label={count._id} title={`${count._id}년 (${count.count})`}>
+            // <AccordionItem key={index} aria-label={count._id} title={`${count._id}년 (${count.count})`}>
+            <AccordionItem key={index} aria-label={count._id} title={`${count._id}년`}>
               <AccordionCards uid={uid} count={count} isProvider={isSelectedProvider} />
             </AccordionItem>
           ))}

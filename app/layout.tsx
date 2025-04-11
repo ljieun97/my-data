@@ -23,12 +23,12 @@ export default async function Layout({
 }) {
   const cookieStore = cookies()
   let token = (await cookieStore).get("access_token")?.value
-  let userId = null
+  let uid = null
 
   if (token) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload
-      userId = decoded.id
+      uid = decoded.id
     } catch (error) {
       console.log("Access token expired. Trying refresh...");
 
@@ -67,7 +67,7 @@ export default async function Layout({
             path: "/"
           });
 
-          userId = oauthId;
+          uid = oauthId;
         } else {
           console.error("Refresh failed:", tokenData);
         }
@@ -79,7 +79,7 @@ export default async function Layout({
   return (
     <html lang="ko">
       <body>
-        <UserProvider userId={userId}>
+        <UserProvider uid={uid}>
           <UiProvider modal={modal}>{children}</UiProvider>
         </UserProvider>
       </body>

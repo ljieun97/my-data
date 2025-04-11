@@ -10,7 +10,7 @@ if (!API_KEY) {
 
 //home
 
-export async function getDetail (type: string, id: any) {
+export async function getDetail(type: string, id: any) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}?language=ko&api_key=${API_KEY}`
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   const results = await response.json()
@@ -31,11 +31,20 @@ export async function getTodaySeries() {
   return results.filter((content: any) => content.poster_path && content.overview)
 }
 
-export async function getTopRatedMovies (){
+export async function getTopRatedMovies() {
   const URL = `https://api.themoviedb.org/3/movie/top_rated?language=ko&api_key=${API_KEY}`;
   const response = await fetch(URL, { next: { revalidate: 3600 } }); // ISR이나 캐싱도 가능
   const { results } = await response.json()
 
-  return results.filter((content: any) => content.backdrop_path); 
+  return results.filter((content: any) => content.backdrop_path);
+}
+
+export async function getPosters(type: string, id: string) {
+  const URL = `https://api.themoviedb.org/3/${type}/${id}/images?`
+    + 'include_image_language=en,ko&'
+    + `&api_key=${API_KEY}`
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
+  const { posters } = await response.json()
+  return posters
 }
 

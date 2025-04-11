@@ -9,7 +9,7 @@ import { CreateMovie } from "@/lib/mongo/movie";
 import { useUser } from "@/context/UserContext";
 
 export default function CardInfo({ content }: { content: any }) {
-  const {userId} = useUser()
+  const {uid} = useUser()
   const router = useRouter()
 
   let type = ''
@@ -45,7 +45,7 @@ export default function CardInfo({ content }: { content: any }) {
     //   localStorage.setItem("s_list", JSON.stringify(listArr))
     // }
     // await CreateMovie(content, rating)
-    await fetch(`/api/user/${userId}/content/${id}`, {
+    await fetch(`/api/user/${uid}/content/${id}`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json'

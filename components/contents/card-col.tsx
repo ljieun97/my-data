@@ -1,16 +1,33 @@
 "use client"
 
 import Flatrates from "./flatrates"
-import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@heroui/react";
+import {
+  Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, Skeleton, Popover, PopoverTrigger, PopoverContent,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  RadioGroup,
+  Radio,
+  useDisclosure,
+} from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons"
+import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus, faPen } from "@fortawesome/free-solid-svg-icons"
 import { useRouter } from "next/navigation";
 import { CreateMovie } from "@/lib/mongo/movie";
 import { useUser } from "@/context/UserContext";
+import { useState } from "react";
+import { getPosters } from "@/lib/themoviedb/tmdb";
 
-export default function CardCol({ content, isProvider }: { content: any, isProvider: boolean }) {
-  const { userId } = useUser()
+export default function CardCol({ content, isProvider, onDelete }: { content: any, isProvider: boolean, onDelete: any }) {
+  const { uid } = useUser()
   const router = useRouter()
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [isOpenPopover, setIsOpenPopover] = useState(false)
+  const [posters, setPosters] = useState([])
+  const [selectPoster, setSelectPoster] = useState() as any
+  const [posterImg, setPosterImg] = useState(`https://image.tmdb.org/t/p/w500/${content.poster_path}`)
 
   let type = ''
   let id = ''
@@ -31,29 +48,22 @@ export default function CardCol({ content, isProvider }: { content: any, isProvi
   if (content.poster_path) img = `https://image.tmdb.org/t/p/w500/${content.poster_path}`
   else img = '/images/no-image.jpg'
 
-  const clickCreate = async (content: any, rating: number) => {
-    //영화 시리즈 구분하기
-    // if (type == "movie") {
-    //   let listStr = localStorage.getItem("m_list")
-    //   let listArr = listStr ? JSON.parse(listStr) : []
-    //   listArr.push(content.id)
-    //   localStorage.setItem("m_list", JSON.stringify(listArr))
-    // } else {
-    //   let listStr = localStorage.getItem("s_list")
-    //   let listArr = listStr ? JSON.parse(listStr) : []
-    //   listArr.push(content.id)
-    //   localStorage.setItem("s_list", JSON.stringify(listArr))
-    // }
+  const handleOpen = async (type: string, id: string) => {
+    setIsOpenPopover(false)
+    setPosters(await getPosters(type, id))
+    onOpen()
+  }
 
-    // await CreateMovie(content, rating)
-
-    await fetch(`/api/user/${userId}/content/${id}`, {
-      method: "POST",
+  const handleSubmit = async (poster_path: string) => {
+    await fetch(`/api/user/${uid}/content/${content._id}`, {
+      method: "PUT",
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ content, rating })
+      body: JSON.stringify({ poster_path })
     })
+    setPosterImg(`https://image.tmdb.org/t/p/w500/${poster_path}`)
+    onClose()
   }
 
   const goDetailpage = () => {
@@ -72,7 +82,8 @@ export default function CardCol({ content, isProvider }: { content: any, isProvi
         <Image
           radius="sm"
           alt="poster"
-          src={img}
+          src={posterImg}
+          fallbackSrc={<Skeleton className="w-full h-full rounded-sm"></Skeleton>}
           className="w-full h-full object-cover"
         />
         {isProvider &&
@@ -82,14 +93,78 @@ export default function CardCol({ content, isProvider }: { content: any, isProvi
             </div>
           </CardHeader>
         }
-        {/* {!content.poster_path &&
-          <CardBody className="absolute z-20">
-            <h4 className="text-white text-lg font-bold tracking-tight">
-              {content.title ? content.title : content.name}
-            </h4>
-          </CardBody>
-        } */}
+        <CardFooter className="invisible absolute group-hover/footer:visible bg-black/25 border-white/0 border-1 rounded-small shadow-small z-10 h-full w-full">
+          <div className="w-full flex justify-center gap-2">
+            {/* <Button isIconOnly size="sm" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button> */}
+            <Popover isOpen={isOpenPopover} onOpenChange={(open) => setIsOpenPopover(open)} placement="top">
+              <PopoverTrigger>
+                <Button isIconOnly size="sm" variant="faded"><FontAwesomeIcon icon={faPen} /></Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <div className="flex gap-2">
+                  {/* <Button size="sm" variant="flat">날짜</Button> */}
+                  <Button size="sm" variant="flat" onPress={() => handleOpen(content.type, content.id)}>사진</Button>
+                  <Button size="sm" color="danger" variant="flat" onPress={() => {
+                    setIsOpenPopover(false)
+                    onDelete(content._id)
+                  }}>삭제</Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Button isIconOnly size="sm" variant="faded" onPress={() => goDetailpage()}><FontAwesomeIcon icon={faCircleInfo} /></Button>
+          </div>
+        </CardFooter>
       </Card>
+
+      <Modal
+        isOpen={isOpen}
+        scrollBehavior="inside"
+        onClose={onClose}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                포스터 ({posters.length})
+              </ModalHeader>
+              <ModalBody>
+                <RadioGroup
+                  onValueChange={setSelectPoster}
+                  classNames={{
+                    wrapper: "grid gap-1 grid-cols-4"
+                  }}>
+                  {posters?.map((e: any, index: number) => (
+                    <Radio
+                      key={index}
+                      value={e.file_path}
+                      classNames={{
+                        base: "m-0 p-1 hover:bg-content2 cursor-pointer rounded-lg border-2 border-transparent data-[selected=true]:border-primary",
+                        wrapper: "hidden",
+                        labelWrapper: "m-0 h-full",
+                        label: "h-full"
+                      }}
+                    >
+                      <img
+                        alt="choice search posters"
+                        src={"https://image.tmdb.org/t/p/w500" + e.file_path}
+                        className="w-full h-full object-cover"
+                      />
+                    </Radio>
+                  ))}
+                </RadioGroup>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="primary" onPress={() => handleSubmit(selectPoster)}>
+                  완료
+                </Button>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  닫기
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </>
   )
 }

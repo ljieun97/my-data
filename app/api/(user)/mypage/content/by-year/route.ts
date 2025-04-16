@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/lib/mongo/mongodb"
 import { headers } from "next/headers";
 
-export async function GET(req: NextRequest, res: NextResponse) {
+export async function GET(req: NextRequest, { params }: { params: any }) {
   try {
     const headersList = headers();
     const uid = (await headersList).get("authorization");

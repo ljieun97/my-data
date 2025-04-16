@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import connectMongo from "@/lib/mongo/mongodb"
 import dayjs from 'dayjs'
 import { ObjectId } from "mongodb";
+import { headers } from "next/headers";
 
 export async function POST(req: NextRequest, { params }: { params: any }) {
-	const { uid } = await params
+	const { uid, content, rating } = await req.json()
 	if (!uid) {
 		return NextResponse.json({ error: "Missing uid" }, { status: 400 });
 	}
-	const { content, rating } = await req.json()
-
 	const today = dayjs().format('YYYY-MM-DD HH:mm:ss')
 	let date = ''
 	let object = {} as any
@@ -88,18 +87,21 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 }
 
 export async function PUT(req: NextRequest, { params }: { params: any }) {
-	const { uid, cid } = await params
+	const { cid } = await params
+	const { uid, poster_path, date } = await req.json()
 	if (!uid || !cid) {
 		return NextResponse.json({ error: "Missing uid or cid" }, { status: 400 });
 	}
-	const { poster_path } = await req.json()
 	try {
 		const db = await connectMongo()
 		await db
 			.collection("contents")
 			.updateOne({ _id: new ObjectId(cid) },
 				{
-					$set: { poster_path: poster_path },
+					$set: {
+						poster_path: poster_path,
+						user_date: date
+					},
 				})
 		return NextResponse.json({ message: "success /movie DELETE" })
 	} catch (e) {
@@ -109,7 +111,9 @@ export async function PUT(req: NextRequest, { params }: { params: any }) {
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: any }) {
-	const { uid, cid } = await params
+	const headersList = headers()
+	const uid = (await headersList).get("authorization")
+	const { cid } = await params
 	if (!uid || !cid) {
 		return NextResponse.json({ error: "Missing uid or cid" }, { status: 400 });
 	}

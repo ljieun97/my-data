@@ -5,7 +5,6 @@ import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, Dropdo
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus, faEye } from "@fortawesome/free-solid-svg-icons"
 import { useRouter, useSearchParams } from "next/navigation";
-import { CreateMovie } from "@/lib/mongo/movie";
 import { useUser } from "@/context/UserContext";
 
 export default function CardInfo({ content }: { content: any }) {
@@ -45,12 +44,12 @@ export default function CardInfo({ content }: { content: any }) {
     //   localStorage.setItem("s_list", JSON.stringify(listArr))
     // }
     // await CreateMovie(content, rating)
-    await fetch(`/api/user/${uid}/content/${id}`, {
+    await fetch(`/api/mypage/content/${id}`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ content, rating })
+      body: JSON.stringify({ uid: uid, content, rating })
     })
   }
 

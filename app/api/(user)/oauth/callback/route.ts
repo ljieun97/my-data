@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from "jsonwebtoken"
 import connectMongo from '@/lib/mongo/mongodb'
+import { deployUrl } from '@/lib/config'
 
 export async function GET(req: NextRequest) {
   const REST_API_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY!
@@ -64,7 +65,7 @@ export async function GET(req: NextRequest) {
     { expiresIn: '7d' }
   )
 
-  const res = NextResponse.redirect("https://today-movie.vercel.app")
+  const res = NextResponse.redirect(deployUrl)
 
   res.cookies.set({
     name: "access_token",

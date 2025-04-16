@@ -1,28 +1,40 @@
+import MyPage from "@/page/my-page"
+import { deployUrl } from "@/lib/config"
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken"
 
-import Title from "@/components/common/title";
-import MyPage from "@/page/my-page";
+const JWT_SECRET = process.env.JWT_SECRET!
 
-export const dynamic = "force-dynamic"
 export const metadata = {
-  title: "보관함"
+  title: "마이페이지"
 }
 
-const Page = () => {
+export default async function Page() {
+  const cookieStore = cookies()
+  let token = (await cookieStore).get("access_token")?.value
+  let uid = null
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload
+      uid = decoded.id
+    } catch (error) {
+      console.log("Access token expired. Trying refresh...");
+    }
+  }
+
+  const counts = await (await fetch(`${deployUrl}/api/mypage/content/by-year`, {
+    method: "GET",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': uid,
+    },
+  })).json()
+
+  // const [] = await Promise.all([
+  // ])
 
   return (
-    <>
-      <Title
-        title="보관함"
-        sub=""
-      />
-
-      {/* <MyPage /> */}
-    </>
+    <MyPage counts={counts} />
   )
 }
-
-export default Page
-
-
-
-

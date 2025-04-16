@@ -5,7 +5,6 @@ import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, Dropdo
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { CreateMovie } from "@/lib/mongo/movie";
 import { useUser } from "@/context/UserContext";
 
 export default function CardThumb({ content }: { content: any }) {
@@ -33,12 +32,12 @@ export default function CardThumb({ content }: { content: any }) {
 
   const clickCreate = async (content: any, rating: number) => {
     //영화 시리즈 구분하기
-    await fetch(`/api/user/${uid}/content/${id}`, {
+    await fetch(`/api/mypage/content/${id}`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ content, rating })
+      body: JSON.stringify({ uid: uid, content, rating })
     })
   }
 

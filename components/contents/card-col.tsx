@@ -1,8 +1,9 @@
 "use client"
 
 import Flatrates from "./flatrates"
+import Image from "next/image";
 import {
-  Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, Skeleton, Popover, PopoverTrigger, PopoverContent,
+  Card, CardFooter, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, Skeleton, Popover, PopoverTrigger, PopoverContent,
   Modal,
   ModalContent,
   ModalHeader,
@@ -11,23 +12,25 @@ import {
   RadioGroup,
   Radio,
   useDisclosure,
+  DatePicker,
 } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus, faPen } from "@fortawesome/free-solid-svg-icons"
 import { useRouter } from "next/navigation";
-import { CreateMovie } from "@/lib/mongo/movie";
 import { useUser } from "@/context/UserContext";
 import { useState } from "react";
 import { getPosters } from "@/lib/themoviedb/tmdb";
+import { CalendarDate, parseDate } from "@internationalized/date";
 
-export default function CardCol({ content, isProvider, onDelete }: { content: any, isProvider: boolean, onDelete: any }) {
+export default function CardCol({ thisYear, content, isProvider, onUpdate, onDelete }: { thisYear: number, content: any, isProvider: boolean, onUpdate: any, onDelete: any }) {
   const { uid } = useUser()
   const router = useRouter()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [isOpenPopover, setIsOpenPopover] = useState(false)
+  const [date, setDate] = useState(parseDate(content.user_date))
   const [posters, setPosters] = useState([])
-  const [selectPoster, setSelectPoster] = useState() as any
-  const [posterImg, setPosterImg] = useState(`https://image.tmdb.org/t/p/w500/${content.poster_path}`)
+  const [selectPoster, setSelectPoster] = useState(content.poster_path) as any
+  const [posterImg, setPosterImg] = useState(`https://image.tmdb.org/t/p/w500${content.poster_path}`)
 
   let type = ''
   let id = ''
@@ -54,16 +57,28 @@ export default function CardCol({ content, isProvider, onDelete }: { content: an
     onOpen()
   }
 
-  const handleSubmit = async (poster_path: string) => {
-    await fetch(`/api/user/${uid}/content/${content._id}`, {
+  const handleSubmit = async () => {
+    const res = await fetch(`/api/mypage/content/${content._id}`, {
       method: "PUT",
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ poster_path })
+      body: JSON.stringify({ uid: uid, poster_path: selectPoster, date: date.toString() })
     })
-    setPosterImg(`https://image.tmdb.org/t/p/w500/${poster_path}`)
     onClose()
+
+    if (res.ok) {
+      onUpdate(thisYear)
+      if (thisYear != date.year) {
+        onUpdate(date.year)
+      } 
+      setPosterImg(`https://image.tmdb.org/t/p/w500/${selectPoster}`)
+    }
+  }
+
+  const handleDateChange = (newDate: CalendarDate | null) => {
+    if (newDate) setDate(newDate)
+    else setDate(content.user_date)
   }
 
   const goDetailpage = () => {
@@ -74,17 +89,18 @@ export default function CardCol({ content, isProvider, onDelete }: { content: an
     <>
       <Card
         radius="sm"
-        className="group/footer w-full aspect-[26/37]"
+        className="relative group/footer aspect-[26/37]"
         isFooterBlurred
         isBlurred
         shadow="none"
       >
         <Image
-          radius="sm"
+          fill
           alt="poster"
           src={posterImg}
-          fallbackSrc={<Skeleton className="w-full h-full rounded-sm"></Skeleton>}
-          className="w-full h-full object-cover"
+          className="object-cover"
+          sizes="100%"
+          priority
         />
         {isProvider &&
           <CardHeader className="absolute justify-end z-20">
@@ -96,17 +112,16 @@ export default function CardCol({ content, isProvider, onDelete }: { content: an
         <CardFooter className="invisible absolute group-hover/footer:visible bg-black/25 border-white/0 border-1 rounded-small shadow-small z-10 h-full w-full">
           <div className="w-full flex justify-center gap-2">
             {/* <Button isIconOnly size="sm" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button> */}
-            <Popover isOpen={isOpenPopover} onOpenChange={(open) => setIsOpenPopover(open)} placement="top">
+            <Popover isOpen={isOpenPopover} onOpenChange={(open) => setIsOpenPopover(open)} placement="bottom-start">
               <PopoverTrigger>
                 <Button isIconOnly size="sm" variant="faded"><FontAwesomeIcon icon={faPen} /></Button>
               </PopoverTrigger>
               <PopoverContent>
-                <div className="flex gap-2">
-                  {/* <Button size="sm" variant="flat">날짜</Button> */}
-                  <Button size="sm" variant="flat" onPress={() => handleOpen(content.type, content.id)}>사진</Button>
+                <div className="flex flex-col">
+                  <Button size="sm" variant="flat" onPress={() => handleOpen(content.type, content.id)}>수정</Button>
                   <Button size="sm" color="danger" variant="flat" onPress={() => {
                     setIsOpenPopover(false)
-                    onDelete(content._id)
+                    onDelete(thisYear, content._id)
                   }}>삭제</Button>
                 </div>
               </PopoverContent>
@@ -125,10 +140,14 @@ export default function CardCol({ content, isProvider, onDelete }: { content: an
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                포스터 ({posters.length})
+                수정하기
               </ModalHeader>
               <ModalBody>
+                <h2>날짜</h2>
+                <DatePicker showMonthAndYearPickers label="Viewing date" value={date} onChange={handleDateChange} />
+                <h2>사진 ({posters.length})</h2>
                 <RadioGroup
+                  value={selectPoster}
                   onValueChange={setSelectPoster}
                   classNames={{
                     wrapper: "grid gap-1 grid-cols-4"
@@ -154,7 +173,7 @@ export default function CardCol({ content, isProvider, onDelete }: { content: an
                 </RadioGroup>
               </ModalBody>
               <ModalFooter>
-                <Button color="primary" onPress={() => handleSubmit(selectPoster)}>
+                <Button color="primary" onPress={() => handleSubmit()}>
                   완료
                 </Button>
                 <Button color="danger" variant="light" onPress={onClose}>

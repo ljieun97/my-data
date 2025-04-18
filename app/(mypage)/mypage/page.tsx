@@ -2,6 +2,7 @@ import MyPage from "@/page/my-page"
 import { deployUrl } from "@/lib/config"
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken"
+import { notFound } from "next/navigation";
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
@@ -21,6 +22,8 @@ export default async function Page() {
     } catch (error) {
       console.log("Access token expired. Trying refresh...");
     }
+  } else {
+    return <>로그인을 해주세요.</>
   }
 
   const counts = await (await fetch(`${deployUrl}/api/mypage/content/by-year`, {

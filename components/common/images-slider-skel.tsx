@@ -2,7 +2,7 @@
 // import { useEffect, useRef, useState } from "react";
 import CardThumb from "../contents/card-thumb"
 import { Button, Card, Skeleton } from "@heroui/react";
-import { getTodayMovies, getTodaySeries, getTopRatedMovies } from "@/lib/themoviedb/tmdb";
+import { getTodayMovies, getTodaySeries, getTopRatedMovies } from "@/lib/themoviedb/tmdb-client";
 
 export default function ImagesSliderSkel() {
   // const [movies, setMovies] = useState<any[] | null>(null);

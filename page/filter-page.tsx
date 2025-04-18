@@ -176,7 +176,6 @@ export default function FilterPage({ type }: { type: string }) {
 
   return (
     <>
-      {/* TODO 스크롤 전체되는거 방지해야함 */}
 
       {/* <div className="flex items-center pt-8 pb-4">
         <Title
@@ -198,17 +197,12 @@ export default function FilterPage({ type }: { type: string }) {
         <SelectFilter type={'장르'} items={genreDatas} onChangeSelect={onChangeSelect} />
       </div>
 
-
-
-        <div className="h-[600px] overflow-auto p-2" ref={scrollerRef}>
-
-          <InfiniteImages type="info" contents={list.items} />
-          {hasMore ? (
-            <div className="flex w-full justify-center" ref={loaderRef}>
-
-            </div>
-          ) : null}
-        </div>
+      <div className="overflow-auto border-2 rounded-md p-2" style={{ height: "calc(100% - 72px)" }} ref={scrollerRef}>
+        <InfiniteImages type="info" contents={list.items} />
+        {hasMore ? (
+          <div className="flex w-full justify-center" ref={loaderRef}></div>
+        ) : null}
+      </div>
 
     </>
   )

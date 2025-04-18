@@ -1,6 +1,7 @@
 'use client'
 
 import { HeroUIProvider } from "@heroui/react";
+import { ToastProvider } from "@heroui/toast";
 import TopBar from "./top-bar";
 import React from "react";
 
@@ -13,6 +14,7 @@ export function UiProvider({
 
   return (
     <HeroUIProvider>
+      <ToastProvider />
       <main>
         <div className="text-foreground bg-background flex-grow">
           <TopBar />

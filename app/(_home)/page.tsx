@@ -2,7 +2,7 @@ import ImagesSlider from "@/components/common/images-slider";
 import { Banners } from "@/components/layout/banners";
 import { BannersSkel } from "@/components/layout/banners-skel";
 import { Link, Spacer } from "@heroui/react";
-import { getDetail } from "@/lib/themoviedb/tmdb"
+import { getDetail } from "@/lib/themoviedb/tmdb-client"
 
 export const dynamic = "force-dynamic";
 export const metadata = {

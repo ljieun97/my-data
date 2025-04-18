@@ -1,7 +1,7 @@
 "use client"
 
 import Flatrates from "./flatrates"
-import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, Skeleton } from "@heroui/react";
+import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, Skeleton, addToast } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -31,13 +31,16 @@ export default function CardThumb({ content }: { content: any }) {
   // else img = '/images/no-image.jpg'
 
   const clickCreate = async (content: any, rating: number) => {
-    //영화 시리즈 구분하기
-    await fetch(`/api/mypage/content/${id}`, {
+    const res = await fetch(`/api/mypage/content/${id}`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ uid: uid, content, rating })
+    })
+
+    if (res.ok) addToast({
+      title: "저장 되었습니다",
     })
   }
 
@@ -59,7 +62,7 @@ export default function CardThumb({ content }: { content: any }) {
           alt="poster"
           src={img}
           fallbackSrc={<Skeleton className="w-full h-full rounded-sm"></Skeleton>}
-          // className="w-[240px] h-[140px] object-cover"
+        // className="w-[240px] h-[140px] object-cover"
         />
         <CardHeader className="absolute justify-end z-20">
           <div className="flex gap-2">
@@ -71,7 +74,8 @@ export default function CardThumb({ content }: { content: any }) {
             {content.title ? content.title : content.name}
           </div>
           <div className="flex flex-nowrap gap-1">
-            <Button isIconOnly size="sm" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>
+            {uid &&
+              <Button isIconOnly size="sm" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>}
             <Button isIconOnly size="sm" variant="faded" onPress={() => goDetailpage()}><FontAwesomeIcon icon={faCircleInfo} /></Button>
           </div>
         </CardFooter>

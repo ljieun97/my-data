@@ -9,14 +9,6 @@ const month = dayjs().subtract(1, "month").format('YYYY-MM-DD')
 
 export const dynamic = "force-dynamic"
 
-export async function getSearchMulti(keyword: string, pageNum: number) {
-  const URL = `https://api.themoviedb.org/3/search/multi?query=${keyword}&language=ko&api_key=${API_KEY}`
-    + `&page=${pageNum}`
-  const response = await fetch(URL)
-  const results = await response.json()
-  return results
-}
-
 export async function getSearchMovies(keyword: string, pageNum: number) {
   const URL = `https://api.themoviedb.org/3/search/movie?query=${keyword}&language=ko&api_key=${API_KEY}`
     + `&page=${pageNum}`

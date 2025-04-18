@@ -1,14 +1,14 @@
 "use client"
 
 import Flatrates from "./flatrates"
-import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection } from "@heroui/react";
+import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, addToast } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus, faEye } from "@fortawesome/free-solid-svg-icons"
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 
 export default function CardInfo({ content }: { content: any }) {
-  const {uid} = useUser()
+  const { uid } = useUser()
   const router = useRouter()
 
   let type = ''
@@ -31,25 +31,16 @@ export default function CardInfo({ content }: { content: any }) {
   else img = '/images/no-image.jpg'
 
   const clickCreate = async (content: any, rating: number) => {
-    //영화 시리즈 구분하기
-    // if (type == "movie") {
-    //   let listStr = localStorage.getItem("m_list")
-    //   let listArr = listStr ? JSON.parse(listStr) : []
-    //   listArr.push(content.id)
-    //   localStorage.setItem("m_list", JSON.stringify(listArr))
-    // } else {
-    //   let listStr = localStorage.getItem("s_list")
-    //   let listArr = listStr ? JSON.parse(listStr) : []
-    //   listArr.push(content.id)
-    //   localStorage.setItem("s_list", JSON.stringify(listArr))
-    // }
-    // await CreateMovie(content, rating)
-    await fetch(`/api/mypage/content/${id}`, {
+    const res = await fetch(`/api/mypage/content/${id}`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ uid: uid, content, rating })
+    })
+
+    if(res.ok) addToast({
+      title: "저장 되었습니다",
     })
   }
 
@@ -92,8 +83,8 @@ export default function CardInfo({ content }: { content: any }) {
           </div>
         </CardBody>
         <CardFooter className="gap-2 justify-end items-end invisible absolute group-hover/footer:visible bg-black/50 border-white/50 border-1 rounded-large shadow-small z-10 h-full">
-          {/* TODO 추가 시 알림 추가하기 */}
-          <Button isIconOnly size="lg" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>
+          {uid &&
+          <Button isIconOnly size="lg" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>}
           <Button isIconOnly size="lg" variant="faded" onPress={() => goDetailpage()}><FontAwesomeIcon icon={faCircleInfo} /></Button>
         </CardFooter>
       </Card>

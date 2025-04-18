@@ -58,10 +58,11 @@ export default function MyPage({ counts }: { counts: any[] }) {
       </div>
 
       <div className="overflow-auto border-2 rounded-md px-2" style={{ height: "calc(100% - 12px)" }}>
+        {counts.length == 0 && <>시청내역이 비어있습니다.</>}
         <Accordion selectionMode="multiple" defaultExpandedKeys={["2025"]} onSelectionChange={(key: any) => getContentsByYear(key.currentKey)}>
           {counts.map((count: any, index: number) => (
-            // <AccordionItem key={index} aria-label={count._id} title={`${count._id}년 (${count.count})`}>
-            <AccordionItem key={count._id} aria-label={count._id} title={`${count._id}년`}>
+            <AccordionItem key={count._id} aria-label={count._id} title={`${count._id}년 (${count.count})`}>
+            {/* <AccordionItem key={count._id} aria-label={count._id} title={`${count._id}년`}> */}
               {/* <AccordionCards uid={uid} count={count} isProvider={isSelectedProvider} /> */}
               {contentsByYear[count._id] ?
                 <div className="gap-1 grid grid-cols-4 sm:grid-cols-8 md:grid-cols-8 lg:grid-cols-8">

@@ -127,25 +127,25 @@ export default function TopBar() {
             >로그인
             </Button>
             :
-            <Dropdown placement="bottom-end">
-              <DropdownTrigger>
-                <Avatar
-                  isBordered
-                  size="sm"
-                  as="button"
-                  className="transition-transform"
-                  src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-                />
-              </DropdownTrigger>
-              <DropdownMenu aria-label="Profile Actions" variant="flat">
-                <DropdownItem key="mypage" href={`/mypage/${uid}`}>
-                 마이페이지
-                </DropdownItem>
-                <DropdownItem key="logout" color="danger" onPress={() => clickLogout()}>
-                  로그아웃
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+              <Dropdown placement="bottom-end">
+                <DropdownTrigger>
+                  <Avatar
+                    isBordered
+                    size="sm"
+                    as="button"
+                    className="transition-transform"
+                    src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
+                  />
+                </DropdownTrigger>
+                <DropdownMenu aria-label="Profile Actions" variant="flat">
+                  <DropdownItem key="mypage" href='/mypage'>
+                    마이페이지
+                  </DropdownItem>
+                  <DropdownItem key="logout" color="danger" onPress={() => clickLogout()}>
+                    로그아웃
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
           }
 
           <Modal isOpen={isOpen} size="sm" placement="center" onOpenChange={onOpenChange}>

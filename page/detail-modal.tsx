@@ -37,23 +37,19 @@ export default function DetailModal(props: any) {
           {(onClose) => (
             <>
               <ModalBody className="p-0 gap-0">
-                <div className="relative">
-                  <div className="absolute z-20 right-0 p-4">
-                    {/* <div className=" absolute z-20 right-0 p-4"> */}
+                {/* <div className="relative"> */}
+                  <div className="absolute z-20 left-0 p-4">
                     {/* {content.name || content.title || ""} */}
                     <Button
                       isIconOnly
                       color="success"
                       onPress={() => router.back()}
                     >
-                      <FontAwesomeIcon icon={faXmark} />
+                      <FontAwesomeIcon icon={faArrowLeft} />
                     </Button>
-
-                  </div>
+                  {/* </div> */}
                 </div>
-
                 <>
-
                   {/* <div className="absolute z-5 w-full h-full bg-gradient-to-b from-black/0 to-black/25"></div> */}
                   {videoPath ?
                     <div className="relative">

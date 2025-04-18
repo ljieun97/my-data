@@ -16,7 +16,7 @@ export const PopupList = ({ type, list }: { type: string, list: [] }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <Popover placement="right-start" radius="sm" color="foreground"
+    <Popover placement="right-start" radius="sm"
       classNames={{
         content: ["cursor-pointer underline decoration-indigo-500"]
       }}
@@ -30,7 +30,7 @@ export const PopupList = ({ type, list }: { type: string, list: [] }) => {
       <PopoverContent>
         {list.map((e: any) => (
           <div key={e.id} className="w-full">
-            <Tooltip placement="right-start" color="foreground" closeDelay={100} className="p-2 w-[308px]" content={<TooltipDetail id={e.id} type={type} />}>
+            <Tooltip placement="right-start" closeDelay={100} className="p-2 w-[308px]" content={<TooltipDetail id={e.id} type={type} />}>
               <div onClick={() => {
                 setIsOpen(false)
                 router.push(`/${type}/${e.id}`)

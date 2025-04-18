@@ -17,7 +17,6 @@ export const TooltipDetail = ({ id, type }: { id: any, type: string }) => {
   useEffect(() => {
     (async () => {
       const results = await getDetail(type, id)
-      console.log(results)
       setPopcontent(results)
     })()
   }, [id])

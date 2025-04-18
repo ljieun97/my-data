@@ -19,7 +19,7 @@ import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { useState } from "react";
-import { getPosters } from "@/lib/themoviedb/tmdb";
+import { getPosters } from "@/lib/themoviedb/tmdb-client";
 import { CalendarDate, parseDate } from "@internationalized/date";
 
 export default function CardCol({ thisYear, content, isProvider, onUpdate, onDelete }: { thisYear: number, content: any, isProvider: boolean, onUpdate: any, onDelete: any }) {
@@ -105,13 +105,12 @@ export default function CardCol({ thisYear, content, isProvider, onUpdate, onDel
         {isProvider &&
           <CardHeader className="absolute justify-end z-20">
             <div className="flex gap-2">
-              <Flatrates type={type} provider={content.id} />
+              <Flatrates type={content.type} provider={content.id} />
             </div>
           </CardHeader>
         }
         <CardFooter className="invisible absolute group-hover/footer:visible bg-black/25 border-white/0 border-1 rounded-small shadow-small z-10 h-full w-full">
           <div className="w-full flex justify-center gap-2">
-            {/* <Button isIconOnly size="sm" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button> */}
             <Popover isOpen={isOpenPopover} onOpenChange={(open) => setIsOpenPopover(open)} placement="bottom-start">
               <PopoverTrigger>
                 <Button isIconOnly size="sm" variant="faded"><FontAwesomeIcon icon={faPen} /></Button>

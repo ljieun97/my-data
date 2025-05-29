@@ -18,7 +18,6 @@ const rows = [
       { "id": 862, "title": "토이 스토리", "src": "https://image.tmdb.org/t/p/original/tGSuFBsqdXxIz3fTSBfsZU9FBMN.jpg", "movie": true, "liked": true },
       { "id": 391713, "title": "레이디 버드", "src": "https://image.tmdb.org/t/p/original/tGSuFBsqdXxIz3fTSBfsZU9FBMN.jpg", "movie": true, "liked": true },
       { "id": 530915, "title": "1917", "src": "https://image.tmdb.org/t/p/original/tGSuFBsqdXxIz3fTSBfsZU9FBMN.jpg", "movie": true, "liked": true },
-
       { "id": 136283, "title": "더 글로리", "src": "https://image.tmdb.org/t/p/original/tGSuFBsqdXxIz3fTSBfsZU9FBMN.jpg", "movie": false, "liked": true }
     ]
   }

@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 const API_KEY = process.env.API_KEY_TMDB ? process.env.API_KEY_TMDB : process.env.NEXT_PUBLIC_API_KEY_TMDB
 const today = dayjs().format('YYYY-MM-DD')
 const month = dayjs().subtract(1, "month").format('YYYY-MM-DD')
-//ott 3구글 8넷플릭스 119아마존 96네이버 97왓챠 337디즈니 350애플 356웨이브
+//ott 3구글 8넷플릭스 119아마존 96네이버 97왓챠 337디즈니 350애플 356웨이브 1883티빙
 //라프텔 쿠팡 없음
 //장르 10762키즈 16애니
 //정렬 인기순이 기본값

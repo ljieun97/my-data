@@ -64,13 +64,14 @@ export default function FilterPage({ type }: { type: string }) {
 
   const flatformDatas = [
     { label: '구글', value: 3 },
-    { label: '넷플릭스', value: 8 },
-    { label: '아마존', value: 119 },
     { label: '네이버', value: 96 },
-    { label: '왓챠', value: 97 },
+    { label: '넷플릭스', value: 8 },
     { label: '디즈니플러스', value: 337 },
+    { label: '아마존', value: 119 },
     { label: '애플TV', value: 350 },
+    { label: '왓챠', value: 97 },
     { label: '웨이브', value: 356 },
+    // { label: '티빙', value: 1883 },
   ]
 
   const genreDatas = [

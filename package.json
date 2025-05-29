@@ -12,6 +12,9 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@fullcalendar/core": "^6.1.17",
+    "@fullcalendar/daygrid": "^6.1.17",
+    "@fullcalendar/react": "^6.1.17",
     "@heroui/use-infinite-scroll": "^2.2.7",
     "@internationalized/date": "^3.5.2",
     "@react-stately/data": "^3.11.2",
@@ -41,6 +44,7 @@
     "eslint-config-next": "14.1.0",
     "next-client-cookies": "^2.0.1",
     "postcss": "^8.4.35",
+    "puppeteer": "^24.9.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

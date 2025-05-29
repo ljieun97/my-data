@@ -64,6 +64,11 @@ export default function TopBar() {
                 홈
               </Link>
             </NavbarItem>
+            <NavbarItem isActive={path === "/calendar"}>
+              <Link href="/calendar" color="foreground">
+                캘린더
+              </Link>
+            </NavbarItem>
             <NavbarItem isActive={path === "/movie"}>
               <Link href="/movie" color="foreground">
                 영화
@@ -74,11 +79,6 @@ export default function TopBar() {
                 시리즈
               </Link>
             </NavbarItem>
-            {/* <NavbarItem isActive={path === "/user"}>
-              <Link href="/user" color="foreground">
-                유저
-              </Link>
-            </NavbarItem> */}
             {/* <NavbarItem isActive={path === "/mypage"}>
               <Link href="/mypage" color="foreground">
                 보관함
@@ -99,6 +99,11 @@ export default function TopBar() {
                 홈
               </Link>
             </NavbarItem>
+            <NavbarItem isActive={path === "/calendar"}>
+              <Link href="/calendar" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
+                캘린더
+              </Link>
+            </NavbarItem>
             <NavbarItem isActive={path === "/movie"}>
               <Link href="/movie" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
                 영화
@@ -109,11 +114,6 @@ export default function TopBar() {
                 시리즈
               </Link>
             </NavbarItem>
-            {/* <NavbarItem isActive={path === "/user"}>
-              <Link href="/user" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
-                유저
-              </Link>
-            </NavbarItem> */}
           </NavbarContent>
         </NavbarContent>
 
@@ -154,7 +154,8 @@ export default function TopBar() {
                 <>
                   <ModalHeader className="flex flex-col gap-1">로그인</ModalHeader>
                   <ModalBody className="py-4">
-                    <Button color="warning" onPress={() => clickKakaoLogin()}>카카오 로그인</Button>
+                    {/* <Button color="warning" onPress={() => clickKakaoLogin()}>카카오 로그인</Button> */}
+                    현재 수정 중인 기능입니다 😭
                   </ModalBody>
                 </>
               )}

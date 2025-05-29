@@ -6,3 +6,22 @@
   background: black;
 } */
 
+.fc {
+  font-size: 0.75rem !important;
+}
+
+.fc .fc-daygrid-day-number {
+  font-size: 0.75rem !important;
+  padding: 2px;
+}
+
+.fc .fc-event-title {
+  font-size: 0.75rem !important;
+}
+
+.fc-event {
+  /* padding: 0.75px !important;    */
+  font-size: 1.25rem !important;   /* 글자 크기 줄이기 */
+  line-height: 1rem !important;    /* 줄 높이 줄이기 */
+  min-height: 1rem !important;   /* 최소 높이 제한 */
+}

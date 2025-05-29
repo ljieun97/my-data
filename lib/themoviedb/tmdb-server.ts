@@ -26,9 +26,44 @@ export async function getTodaySeries() {
   return results.filter((content: any) => content.poster_path && content.overview)
 }
 
-export async function getTopRatedMovies (){
+export async function getTopRatedMovies() {
   const URL = `https://api.themoviedb.org/3/movie/top_rated?language=ko&api_key=${API_KEY}`;
   const response = await fetch(URL, { next: { revalidate: 3600 } }); // ISR이나 캐싱도 가능
   const { results } = await response.json()
-  return results.filter((content: any) => content.backdrop_path); 
+  return results.filter((content: any) => content.backdrop_path);
+}
+
+async function fetchMovies(endpoint: string, page: number) {
+  const URL = `https://api.themoviedb.org/3/movie/${endpoint}?`
+    + '&language=ko&region=KR&with_release_type=1'
+    + `&page=${page}`
+    + `&api_key=${API_KEY}`
+    try {
+      const response = await fetch(URL)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const results = await response.json()
+      return results
+    } catch (error) {
+      console.error('Failed to fetch:', error)
+      return null
+    }
+}
+
+export async function fetchAllMovies(endpoint: string) {
+  const { total_pages, results: firstPageResults } = await fetchMovies(endpoint, 1)
+
+  const requests = [];
+  for (let page = 2; page <= total_pages; page++) {
+    requests.push(fetchMovies(endpoint, page))
+  }
+
+  const otherPagesData = await Promise.all(requests);
+  const allResults = [
+    ...firstPageResults,
+    ...otherPagesData.flatMap(data => data.results),
+  ]
+
+  return allResults;
 }

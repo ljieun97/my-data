@@ -119,14 +119,14 @@ export default function TopBar() {
 
         <NavbarContent as="div" className="items-center" justify="end">
           <SearchInput></SearchInput>
-          {!uid ?
+          {/* {!uid ? */}
             <Button
               onPress={onOpen}
               radius="sm" variant="bordered"
               style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }}
             >로그인
             </Button>
-            :
+            {/* :
               <Dropdown placement="bottom-end">
                 <DropdownTrigger>
                   <Avatar
@@ -146,7 +146,7 @@ export default function TopBar() {
                   </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
-          }
+          } */}
 
           <Modal isOpen={isOpen} size="sm" placement="center" onOpenChange={onOpenChange}>
             <ModalContent>
@@ -154,8 +154,9 @@ export default function TopBar() {
                 <>
                   <ModalHeader className="flex flex-col gap-1">로그인</ModalHeader>
                   <ModalBody className="py-4">
-                    {/* <Button color="warning" onPress={() => clickKakaoLogin()}>카카오 로그인</Button> */}
-                    현재 수정 중인 기능입니다 😭
+                  {/* <Button color="warning" onPress={() => clickKakaoLogin()}>카카오 로그인</Button> */}
+                    <Button isDisabled color="warning">카카오 로그인</Button>
+                    서버 사용량 부족으로 현재 수정 중인 기능입니다 😭
                   </ModalBody>
                 </>
               )}

@@ -20,14 +20,14 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { useState } from "react";
 import { getPosters } from "@/lib/themoviedb/tmdb-client";
-import { CalendarDate, parseDate } from "@internationalized/date";
+import { CalendarDate, DateValue, parseDate, today } from "@internationalized/date";
 
 export default function CardCol({ thisYear, content, isProvider, onUpdate, onDelete }: { thisYear: number, content: any, isProvider: boolean, onUpdate: any, onDelete: any }) {
   const { uid } = useUser()
   const router = useRouter()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [isOpenPopover, setIsOpenPopover] = useState(false)
-  const [date, setDate] = useState(parseDate(content.user_date))
+  const [date, setDate] = useState<any>(parseDate(content.user_date))
   const [posters, setPosters] = useState([])
   const [selectPoster, setSelectPoster] = useState(content.poster_path) as any
   const [posterImg, setPosterImg] = useState(`https://image.tmdb.org/t/p/w500${content.poster_path}`)
@@ -63,20 +63,20 @@ export default function CardCol({ thisYear, content, isProvider, onUpdate, onDel
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ uid: uid, poster_path: selectPoster, date: date.toString() })
+      body: JSON.stringify({ uid: uid, poster_path: selectPoster, date: date?.toString() })
     })
     onClose()
 
     if (res.ok) {
       onUpdate(thisYear)
-      if (thisYear != date.year) {
-        onUpdate(date.year)
+      if (thisYear != date?.year) {
+        onUpdate(date?.year)
       } 
       setPosterImg(`https://image.tmdb.org/t/p/w500/${selectPoster}`)
     }
   }
 
-  const handleDateChange = (newDate: CalendarDate | null) => {
+  const handleDateChange = (newDate: any) => {
     if (newDate) setDate(newDate)
     else setDate(content.user_date)
   }

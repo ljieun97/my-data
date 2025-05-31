@@ -119,34 +119,34 @@ export default function TopBar() {
 
         <NavbarContent as="div" className="items-center" justify="end">
           <SearchInput></SearchInput>
-          {/* {!uid ? */}
+          {!uid ?
             <Button
               onPress={onOpen}
               radius="sm" variant="bordered"
               style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }}
             >로그인
             </Button>
-            {/* :
-              <Dropdown placement="bottom-end">
-                <DropdownTrigger>
-                  <Avatar
-                    isBordered
-                    size="sm"
-                    as="button"
-                    className="transition-transform"
-                    src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-                  />
-                </DropdownTrigger>
-                <DropdownMenu aria-label="Profile Actions" variant="flat">
-                  <DropdownItem key="mypage" href='/mypage'>
-                    마이페이지
-                  </DropdownItem>
-                  <DropdownItem key="logout" color="danger" onPress={() => clickLogout()}>
-                    로그아웃
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-          } */}
+            :
+            <Dropdown placement="bottom-end">
+              <DropdownTrigger>
+                <Avatar
+                  isBordered
+                  size="sm"
+                  as="button"
+                  className="transition-transform"
+                  src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
+                />
+              </DropdownTrigger>
+              <DropdownMenu aria-label="Profile Actions" variant="flat">
+                <DropdownItem key="mypage" href='/mypage'>
+                  마이페이지
+                </DropdownItem>
+                <DropdownItem key="logout" color="danger" onPress={() => clickLogout()}>
+                  로그아웃
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          }
 
           <Modal isOpen={isOpen} size="sm" placement="center" onOpenChange={onOpenChange}>
             <ModalContent>
@@ -154,9 +154,9 @@ export default function TopBar() {
                 <>
                   <ModalHeader className="flex flex-col gap-1">로그인</ModalHeader>
                   <ModalBody className="py-4">
-                  {/* <Button color="warning" onPress={() => clickKakaoLogin()}>카카오 로그인</Button> */}
-                    <Button isDisabled color="warning">카카오 로그인</Button>
-                    서버 사용량 부족으로 현재 수정 중인 기능입니다 😭
+                    <Button color="warning" onPress={() => clickKakaoLogin()}>카카오 로그인</Button>
+                    {/* <Button isDisabled color="warning">카카오 로그인</Button>
+                    서버 사용량 부족으로 현재 수정 중인 기능입니다 😭 */}
                   </ModalBody>
                 </>
               )}

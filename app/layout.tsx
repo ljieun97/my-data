@@ -4,9 +4,10 @@ import { cookies } from "next/headers";
 import jwt from "jsonwebtoken"
 import { UiProvider } from "@/components/layout/ui-provider";
 import { UserProvider } from "@/context/UserContext";
-import connectMongo from "@/lib/mongo/mongodb";
+import { closeMongo, connectMongo } from "@/lib/mongo/mongodb";
 
 const JWT_SECRET = process.env.JWT_SECRET!
+const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY!
 
 export const metadata: Metadata = {
   title: {
@@ -23,57 +24,71 @@ export default async function Layout({
 }) {
   const cookieStore = cookies()
   let token = (await cookieStore).get("access_token")?.value
-  let uid = "null"
+  let uid
 
-  // if (token) {
-  //   try {
-  //     const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload
-  //     uid = decoded.id
-  //   } catch (error) {
-  //     console.log("Access token expired. Trying refresh...");
+  if (token) {
+    let mongoClient
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload
+      uid = decoded.id
+    } catch (error) {
+      console.log("Access token expired. Trying refresh...");
+    } try {
+      // JWT가 만료된 경우
+      const { client, db } = await connectMongo()
+      mongoClient = client
+      const decoded = jwt.decode(token) as jwt.JwtPayload
+      const oauthId = decoded?.id
+      const user = await db.collection("users").findOne({ oauth: oauthId })
 
-  //     // JWT가 만료된 경우
-  //     const db = await connectMongo();
-  //     const decoded = jwt.decode(token) as jwt.JwtPayload;
-  //     const oauthId = decoded?.id;
-  //     const user = await db.collection("users").findOne({ oauth: oauthId });
-      
-  //     if (user?.refreshToken) {
-  //       // 카카오에 새로운 액세스 토큰 요청
-  //       const tokenRes = await fetch("https://kauth.kakao.com/oauth/token", {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-  //         body: new URLSearchParams({
-  //           grant_type: "refresh_token",
-  //           client_id: process.env.KAKAO_REST_API_KEY!,
-  //           refresh_token: user.refreshToken
-  //         }),
-  //       });
+      const tokenRes = await fetch("https://kauth.kakao.com/oauth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          client_id: KAKAO_REST_API_KEY,
+          refresh_token: user?.refreshToken
+        }),
+      });
 
-  //       const tokenData = await tokenRes.json();
-  //       if (tokenData.access_token) {
-  //         token = jwt.sign(
-  //           { id: oauthId, nickname: user.nickname },
-  //           process.env.NEXT_PUBLIC_JWT_SECRET!,
-  //           { expiresIn: "7d" }
-  //         );
+      const tokenData = await tokenRes.json();
+      if (tokenData.access_token) {
+        token = jwt.sign(
+          { id: oauthId, nickname: user?.nickname },
+          process.env.NEXT_PUBLIC_JWT_SECRET!,
+          { expiresIn: "7d" }
+        );
 
-  //         // 새 토큰 쿠키에 설정
-  //         (await cookies()).set({
-  //           name: "access_token",
-  //           value: token,
-  //           httpOnly: true,
-  //           secure: process.env.NODE_ENV === "production",
-  //           path: "/"
-  //         });
+        // 새 토큰 쿠키에 설정
+        const baseUrl =
+          process.env.NODE_ENV === "production"
+            ? "https://today-movie.vercel.app"
+            : "http://localhost:3000";
 
-  //         uid = oauthId;
-  //       } else {
-  //         console.error("Refresh failed:", tokenData);
-  //       }
-  //     }
-  //   }
-  // }
+        await fetch(`${baseUrl}/api/token`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token }),
+        })
+
+        // (await cookies()).set({
+        //   name: "access_token",
+        //   value: token,
+        //   httpOnly: true,
+        //   secure: process.env.NODE_ENV === "production",
+        //   path: "/"
+        // });
+
+        uid = oauthId;
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
+      if (mongoClient) await closeMongo()
+    }
+  }
 
   return (
     <html lang="ko">

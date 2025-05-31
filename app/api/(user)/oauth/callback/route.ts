@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from "jsonwebtoken"
-import connectMongo from '@/lib/mongo/mongodb'
+import { closeMongo, connectMongo } from '@/lib/mongo/mongodb'
 import { deployUrl } from '@/lib/config'
 
 export async function GET(req: NextRequest) {
   const REST_API_KEY = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY!
-  const REDIRECT_URI = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI!
+
+  const baseUrl =
+    process.env.NODE_ENV === "production"
+      ? "https://today-movie.vercel.app"
+      : "http://localhost:3000";
+
+  const REDIRECT_URI = baseUrl + process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI!
   const CLIENT_SECRET = process.env.NEXT_PUBLIC_KAKAO_CLIENT_SECRET!
 
   const code = req.nextUrl.searchParams.get('code')
@@ -43,20 +49,29 @@ export async function GET(req: NextRequest) {
   const kakaoId = userInfo.id
   const nickname = userInfo.properties?.nickname
 
-  // MongoDB에서 유저 찾기
-  const db = await connectMongo()
-  let user = await db
-    .collection("users")
-    .findOne({ oauth: `k${kakaoId}` })
+  let mongoClient
+  try {
+    // MongoDB에서 유저 찾기
+    const { client, db } = await connectMongo()
+    mongoClient = client
+    let user = await db
+      .collection("users")
+      .findOne({ oauth: `k${kakaoId}` })
 
-  if (!user) {
-    await db
-      .collection("users")
-      .insertOne({ oauth: `k${kakaoId}`, nickname, refreshToken })
-  } else {
-    await db
-      .collection("users")
-      .updateOne({ oauth: `k${kakaoId}` }, { $set: { refreshToken } })
+    if (!user) {
+      await db
+        .collection("users")
+        .insertOne({ oauth: `k${kakaoId}`, nickname, refreshToken })
+    } else {
+      await db
+        .collection("users")
+        .updateOne({ oauth: `k${kakaoId}` }, { $set: { refreshToken } })
+    }
+  } catch (e) {
+    console.log(e)
+    return NextResponse.json({ error: e })
+  } finally {
+    if (mongoClient) closeMongo()
   }
 
   const jwtToken = jwt.sign(

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectMongo from "@/lib/mongo/mongodb"
+import { closeMongo, connectMongo } from "@/lib/mongo/mongodb"
 import dayjs from 'dayjs'
 import { ObjectId } from "mongodb";
 import { headers } from "next/headers";
@@ -62,8 +62,10 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 	object.user_isLike = false
 	console.log(object)
 
+	let mongoClient
 	try {
-		const db = await connectMongo()
+		const { client, db } = await connectMongo()
+		mongoClient = client
 		await db
 			.collection("contents")
 			.updateOne(
@@ -83,6 +85,8 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 	} catch (e) {
 		console.log(e)
 		return NextResponse.json({ error: e })
+	} finally {
+		if (mongoClient) closeMongo()
 	}
 }
 
@@ -92,8 +96,10 @@ export async function PUT(req: NextRequest, { params }: { params: any }) {
 	if (!uid || !cid) {
 		return NextResponse.json({ error: "Missing uid or cid" }, { status: 400 });
 	}
+	let mongoClient
 	try {
-		const db = await connectMongo()
+		const { client, db } = await connectMongo()
+		mongoClient = client
 		await db
 			.collection("contents")
 			.updateOne({ _id: new ObjectId(cid) },
@@ -107,6 +113,8 @@ export async function PUT(req: NextRequest, { params }: { params: any }) {
 	} catch (e) {
 		console.log(e)
 		return NextResponse.json({ error: e })
+	} finally {
+		if (mongoClient) closeMongo()
 	}
 }
 
@@ -117,8 +125,11 @@ export async function DELETE(req: NextRequest, { params }: { params: any }) {
 	if (!uid || !cid) {
 		return NextResponse.json({ error: "Missing uid or cid" }, { status: 400 });
 	}
+
+	let mongoClient
 	try {
-		const db = await connectMongo()
+		const { client, db } = await connectMongo()
+		mongoClient = client
 		await db
 			.collection("contents")
 			.findOneAndDelete({ _id: new ObjectId(cid) })
@@ -126,5 +137,7 @@ export async function DELETE(req: NextRequest, { params }: { params: any }) {
 	} catch (e) {
 		console.log(e)
 		return NextResponse.json({ error: e })
+	} finally {
+		if (mongoClient) closeMongo()
 	}
 }

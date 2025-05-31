@@ -37,11 +37,11 @@ export const TooltipDetail = ({ id, type }: { id: any, type: string }) => {
       <div className="pt-2 text-tiny">
         {type == "movie" ?
           <>
-            <b>{popcontent.title}</b>{popcontent.title!=popcontent.original_title && `(${popcontent.original_title})`}는 {popcontent.release_date} 공개된 {popcontent.genres.map((e: any) => e.name).join('·')} 장르의 영화이다.
+            <b>{popcontent.title}</b>{popcontent.title!=popcontent.original_title && `(${popcontent.original_title})`}는 {popcontent.release_date} 공개된 {popcontent.genres?.map((e: any) => e.name).join('·')} 장르의 영화이다.
           </>
           :
           <>
-            <b>{popcontent.name}</b>{popcontent.name!=popcontent.original_name && `(${popcontent.original_name})`}는 { popcontent.first_air_date} 공개된 {popcontent.genres.map((e: any) => e.name).join('·')} 장르의 시리즈이다.
+            <b>{popcontent.name}</b>{popcontent.name!=popcontent.original_name && `(${popcontent.original_name})`}는 { popcontent.first_air_date} 공개된 {popcontent.genres?.map((e: any) => e.name).join('·')} 장르의 시리즈이다.
           </>
         }
       </div>

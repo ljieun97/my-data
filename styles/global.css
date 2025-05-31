@@ -6,8 +6,10 @@
   background: black;
 } */
 
+
 .fc {
   font-size: 0.75rem !important;
+  cursor: default;   
 }
 
 .fc .fc-daygrid-day-number {

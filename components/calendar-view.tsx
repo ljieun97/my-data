@@ -7,6 +7,7 @@ import koLocale from '@fullcalendar/core/locales/ko'
 import { useMemo, useState } from "react";
 import { Card, Spacer } from "@heroui/react";
 import { SP } from "next/dist/shared/lib/utils";
+import { TooltipDetail } from "./tooltip-detail";
 
 const groups = ['전체', '개봉', '굿즈']
 
@@ -17,7 +18,7 @@ const goodsEvents = [
 ];
 
 export default function CalendarView({ results, option }: { results: any[], option: any }) {
-
+  const [hoveredEvent, setHoveredEvent] = useState<{ x: number; y: number; data: any } | null>(null);
   // const [selectedGroup, setSelectedGroup] = useState('전체');
   // const filteredEvents = useMemo(() => {
   //   if (selectedGroup === '개봉') return results;
@@ -62,15 +63,34 @@ export default function CalendarView({ results, option }: { results: any[], opti
 
           events={results}
           eventDataTransform={(rawEvent) => {
-            // if (selectedGroup === '개봉' || (selectedGroup === '전체' && rawEvent.release_date)) {
             return {
               ...rawEvent,
               start: rawEvent.release_date,
+              color: rawEvent.color
             };
-          }
-            // return rawEvent;
-          }
+          }}
+          eventMouseEnter={(info) => {
+            setHoveredEvent({
+              x: info.jsEvent.pageX,
+              y: info.jsEvent.pageY,
+              data: info.event,
+            });
+          }}
+          eventMouseLeave={() => {
+            setHoveredEvent(null);
+          }}
         />
+        {hoveredEvent && (
+          // <TooltipDetail id={hoveredEvent.data.extendedProps.id} type="movie"/>
+          <div
+            className="absolute z-50 p-2 bg-white border rounded shadow-md text-sm"
+            style={{ top: hoveredEvent.y + 10, left: hoveredEvent.x + 10 }}
+          >
+            <p className="text-tiny">{hoveredEvent.data.extendedProps.type}</p>
+            <p className="font-semibold">{hoveredEvent.data.title}</p>
+            <p>개봉일: {hoveredEvent.data.start.toLocaleDateString()}</p>
+          </div>
+        )}
       </div>
     </>
   )

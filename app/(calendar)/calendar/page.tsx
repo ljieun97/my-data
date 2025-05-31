@@ -1,6 +1,6 @@
 import CalendarView from "@/components/calendar-view";
 import Title from "@/components/common/title";
-import { fetchAllMovies } from '@/lib/themoviedb/tmdb-server';
+import { fetchAllMovies, getTodayMovies, getTodaySeries } from '@/lib/themoviedb/tmdb-server';
 import puppeteer from 'puppeteer';
 
 export default async function Page() {
@@ -8,16 +8,30 @@ export default async function Page() {
     initialView: "dayGridMonth"
   }
   //------------------------------------------api
-  const [upcoming, nowPlaying] = await Promise.all([
+  const [upcoming, nowPlaying, ott] = await Promise.all([
     fetchAllMovies('upcoming'),
     fetchAllMovies('now_playing'),
+    getTodayMovies()
   ])
-  const merged = [...upcoming, ...nowPlaying]
-  const uniqueMoviesMap = new Map<number, typeof merged[0]>();
-  merged.forEach(movie => {
-    uniqueMoviesMap.set(movie.id, movie);
-  });
-  const uniqueMovies = Array.from(uniqueMoviesMap.values());
+  const mergedBox = [...upcoming, ...nowPlaying]
+  const uniqueBoxMoviesMap = new Map<number, typeof mergedBox[0]>();
+  mergedBox.forEach(movie => {
+    uniqueBoxMoviesMap.set(movie.id, {
+      ...movie,
+      type: '박스오피스',
+      color: '#f9ca24' 
+    })
+  })
+  const uniqueBoxMovies = Array.from(uniqueBoxMoviesMap.values())
+
+  const ottMovies = ott.map((movie: any) => ({
+    ...movie,
+    type: 'OTT',
+    color: '#eb4d4b'
+  }));
+
+  const results = [...uniqueBoxMovies, ...ottMovies]
+
 
   //------------------------------------------크롤링
   // const browser = await puppeteer.launch({ headless: "new" as any });
@@ -54,6 +68,7 @@ export default async function Page() {
   // await browser.close();
 
   // console.log(uniqueMovies.length, crawlings.length)
+  console.log(uniqueBoxMovies)
 
 
 
@@ -61,7 +76,7 @@ export default async function Page() {
     // <div className="flex flex-col md:flex-row">
     <>
       <div className="w-full h-full" >
-        <CalendarView results={uniqueMovies} option={option} />
+        <CalendarView results={results} option={option} />
       </div>
     </>
     // </div>

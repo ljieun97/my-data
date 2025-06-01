@@ -5,7 +5,7 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import koLocale from '@fullcalendar/core/locales/ko'
 import { useMemo, useState } from "react";
-import { Card, Spacer } from "@heroui/react";
+import { Card, Spacer, Image } from "@heroui/react";
 import { SP } from "next/dist/shared/lib/utils";
 import { TooltipDetail } from "./tooltip-detail";
 
@@ -18,6 +18,7 @@ const goodsEvents = [
 ];
 
 export default function CalendarView({ results, option }: { results: any[], option: any }) {
+  console.log(results)
   const [hoveredEvent, setHoveredEvent] = useState<{ x: number; y: number; data: any } | null>(null);
   // const [selectedGroup, setSelectedGroup] = useState('전체');
   // const filteredEvents = useMemo(() => {
@@ -63,10 +64,19 @@ export default function CalendarView({ results, option }: { results: any[], opti
 
           events={results}
           eventDataTransform={(rawEvent) => {
+            let title, color
+            if (rawEvent.type == "박스오피스") {
+              title = `🍿 ${rawEvent.title}`
+              color = "#f0932b"
+            } else if (rawEvent.type == "OTT") {
+              title = `🖥️ ${rawEvent.title}`
+              color = "#eb4d4b"
+            }
             return {
               ...rawEvent,
+              title: title,
+              color: color,
               start: rawEvent.release_date,
-              color: rawEvent.color
             };
           }}
           eventMouseEnter={(info) => {
@@ -83,12 +93,25 @@ export default function CalendarView({ results, option }: { results: any[], opti
         {hoveredEvent && (
           // <TooltipDetail id={hoveredEvent.data.extendedProps.id} type="movie"/>
           <div
-            className="absolute z-50 p-2 bg-white border rounded shadow-md text-sm"
+            className="absolute z-[100] p-2 bg-white border rounded shadow max-w-[308px]"
             style={{ top: hoveredEvent.y + 10, left: hoveredEvent.x + 10 }}
           >
-            <p className="text-tiny">{hoveredEvent.data.extendedProps.type}</p>
             <p className="font-semibold">{hoveredEvent.data.title}</p>
-            <p>개봉일: {hoveredEvent.data.start.toLocaleDateString()}</p>
+            <p className="text-tiny">플랫폼: {hoveredEvent.data.extendedProps.type}</p>
+            <p className="text-tiny">개봉일: {hoveredEvent.data.start.toLocaleDateString()}</p>
+
+            {hoveredEvent.data.extendedProps.backdrop_path &&
+              <>
+                <Spacer y={2} />
+                <Image
+                  radius="sm"
+                  alt="Poster Image"
+                  src={`https://image.tmdb.org/t/p/original${hoveredEvent.data.extendedProps.backdrop_path}`}
+                  width={300}
+                  height={168}
+                />
+              </>
+            }
           </div>
         )}
       </div>

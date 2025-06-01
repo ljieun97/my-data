@@ -1,4 +1,5 @@
-import { getCasts, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/themoviedb/api"
+import { getCasts, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/themoviedb/tmdb-server"
+
 import DetailModal from "@/page/detail-modal"
 
 export const metadata = {

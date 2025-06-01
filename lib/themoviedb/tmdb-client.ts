@@ -51,7 +51,7 @@ export async function getPosters(type: string, id: string) {
 export async function getSearchMulti(keyword: string, pageNum: number) {
   const URL = `https://api.themoviedb.org/3/search/multi?query=${keyword}&language=ko&api_key=${API_KEY}`
     + `&page=${pageNum}`
-  const response = await fetch(URL)
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
   let data = await response.json()
   data.results = data.results.flatMap((content: any) => {
     if (content.media_type === "person") {

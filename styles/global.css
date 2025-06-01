@@ -12,6 +12,10 @@
   cursor: default;   
 }
 
+.fc .fc-popover {
+  z-index: 40 !important;
+}
+
 .fc .fc-daygrid-day-number {
   font-size: 0.75rem !important;
   padding: 2px;

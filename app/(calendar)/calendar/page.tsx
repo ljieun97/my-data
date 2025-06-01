@@ -19,7 +19,6 @@ export default async function Page() {
     uniqueBoxMoviesMap.set(movie.id, {
       ...movie,
       type: '박스오피스',
-      color: '#f9ca24' 
     })
   })
   const uniqueBoxMovies = Array.from(uniqueBoxMoviesMap.values())
@@ -27,7 +26,6 @@ export default async function Page() {
   const ottMovies = ott.map((movie: any) => ({
     ...movie,
     type: 'OTT',
-    color: '#eb4d4b'
   }));
 
   const results = [...uniqueBoxMovies, ...ottMovies]
@@ -67,8 +65,7 @@ export default async function Page() {
 
   // await browser.close();
 
-  // console.log(uniqueMovies.length, crawlings.length)
-  console.log(uniqueBoxMovies)
+  console.log(uniqueBoxMovies.length, ottMovies.length)
 
 
 

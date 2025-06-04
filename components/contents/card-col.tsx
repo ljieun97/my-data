@@ -13,6 +13,7 @@ import {
   Radio,
   useDisclosure,
   DatePicker,
+  addToast,
 } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus, faPen } from "@fortawesome/free-solid-svg-icons"
@@ -22,7 +23,7 @@ import { useState } from "react";
 import { getPosters } from "@/lib/themoviedb/tmdb-client";
 import { CalendarDate, DateValue, parseDate, today } from "@internationalized/date";
 
-export default function CardCol({ thisYear, content, isProvider, onUpdate, onDelete }: { thisYear: number, content: any, isProvider: boolean, onUpdate: any, onDelete: any }) {
+export default function CardCol({ thisYear, content, isProvider, onUpdate, onDelete }: { thisYear: string, content: any, isProvider: boolean, onUpdate: any, onDelete: any }) {
   const { uid } = useUser()
   const router = useRouter()
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -68,11 +69,14 @@ export default function CardCol({ thisYear, content, isProvider, onUpdate, onDel
     onClose()
 
     if (res.ok) {
-      onUpdate(thisYear)
-      if (thisYear != date?.year) {
-        onUpdate(date?.year)
-      } 
-      setPosterImg(`https://image.tmdb.org/t/p/w500/${selectPoster}`)
+      if (thisYear != date?.year) { //다른연도로 이동
+        onUpdate(content._id)
+      } else {
+        setPosterImg(`https://image.tmdb.org/t/p/w500/${selectPoster}`)
+      }
+      addToast({
+        title: "수정 되었습니다",
+      })
     }
   }
 
@@ -103,7 +107,7 @@ export default function CardCol({ thisYear, content, isProvider, onUpdate, onDel
           priority
         />
         {isProvider &&
-          <CardHeader className="absolute justify-end z-20">
+          <CardHeader className="p-1 absolute justify-end z-20">
             <div className="flex gap-2">
               <Flatrates type={content.type} provider={content.id} />
             </div>

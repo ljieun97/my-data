@@ -31,17 +31,28 @@ export default function CardInfo({ content }: { content: any }) {
   else img = '/images/no-image.jpg'
 
   const clickCreate = async (content: any, rating: number) => {
-    const res = await fetch(`/api/mypage/content/${id}`, {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ uid: uid, content, rating })
-    })
+    if (uid) {
+      const res = await fetch(`/api/mypage/content/${id}`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ uid: uid, content, rating })
+      })
 
-    if(res.ok) addToast({
-      title: "저장 되었습니다",
-    })
+      if (res.ok) addToast({
+        title: "저장 되었습니다",
+      })
+    } else {
+      //localstorage
+      const stored = localStorage.getItem("movies")
+      const list = stored ? JSON.parse(stored) : []
+      list.push(content.poster_path)
+      localStorage.setItem("movies", JSON.stringify(list))
+      addToast({
+        title: "저장 되었습니다 (게스트)",
+      })
+    }
   }
 
   const goDetailpage = () => {
@@ -83,8 +94,7 @@ export default function CardInfo({ content }: { content: any }) {
           </div>
         </CardBody>
         <CardFooter className="gap-2 justify-end items-end invisible absolute group-hover/footer:visible bg-black/50 border-white/50 border-1 rounded-large shadow-small z-10 h-full">
-          {uid &&
-          <Button isIconOnly size="lg" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>}
+          <Button isIconOnly size="lg" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>
           <Button isIconOnly size="lg" variant="faded" onPress={() => goDetailpage()}><FontAwesomeIcon icon={faCircleInfo} /></Button>
         </CardFooter>
       </Card>

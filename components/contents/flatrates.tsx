@@ -18,7 +18,7 @@ export default function Flatrates({ type, provider }: { type: string, provider: 
   return (
     <>
       <Tooltip content={flatrates?.map((e: any, index: number) => { return (<div key={index}>{e.provider_name}</div>) })}>
-        <AvatarGroup max={3}>
+        <AvatarGroup max={2}>
           {(type == 'movie' || type == 'tv') && flatrates?.map((flatrate: any) => (
             // <>
             // {flatrate.provider_id != 1796 &&

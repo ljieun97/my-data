@@ -9,7 +9,7 @@ import { format } from "date-fns-tz";
 const timeZone = 'Asia/Seoul'
 const now = new Date()
 const today = format(now, "yyyy-MM-dd", { timeZone })
-const month = format(now, 'yyyy-MM', { timeZone })
+const month = format(now, 'yyyy-MM-01', { timeZone })
 
 
 export async function getTodayMovies() {
@@ -35,7 +35,7 @@ export async function getTopRatedMovies() {
 
 async function fetchMovies(endpoint: string, page: number) {
   const URL = `https://api.themoviedb.org/3/movie/${endpoint}?`
-    + '&language=ko&region=KR&with_release_type=1'
+    + '&language=ko&region=KR'
     + `&page=${page}`
     + `&api_key=${API_KEY}`
     try {
@@ -109,4 +109,8 @@ export async function getProviders(type: string, id: any) {
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   const { results } = await response.json()
   return results?.KR
+}
+
+function addMonths(now: Date, arg1: number) {
+  throw new Error("Function not implemented.");
 }

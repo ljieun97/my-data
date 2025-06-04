@@ -18,7 +18,7 @@ const goodsEvents = [
 ];
 
 export default function CalendarView({ results, option }: { results: any[], option: any }) {
-  console.log(results)
+  // console.log(results)
   const [hoveredEvent, setHoveredEvent] = useState<{ x: number; y: number; data: any } | null>(null);
   // const [selectedGroup, setSelectedGroup] = useState('전체');
   // const filteredEvents = useMemo(() => {

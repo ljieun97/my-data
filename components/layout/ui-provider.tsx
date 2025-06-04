@@ -18,7 +18,7 @@ export function UiProvider({
       <main>
         <div className="text-foreground bg-background flex-grow">
           <TopBar />
-          <div className="h-[calc(100vh_-_64px)] px-6 py-14 max-w-7xl mx-auto">
+          <div className="h-[calc(100vh_-_64px)] px-6 pt-16 pb-12 max-w-7xl mx-auto">
             {children}
           </div>
         </div>

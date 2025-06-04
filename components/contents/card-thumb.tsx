@@ -31,17 +31,29 @@ export default function CardThumb({ content }: { content: any }) {
   // else img = '/images/no-image.jpg'
 
   const clickCreate = async (content: any, rating: number) => {
-    const res = await fetch(`/api/mypage/content/${id}`, {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ uid: uid, content, rating })
-    })
+    if (uid) {
+      const res = await fetch(`/api/mypage/content/${id}`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ uid: uid, content, rating })
+      })
 
-    if (res.ok) addToast({
-      title: "저장 되었습니다",
-    })
+      if (res.ok) addToast({
+        title: "저장 되었습니다",
+      })
+    } else {
+      //localstorage
+      const stored = localStorage.getItem("movies")
+      const list = stored ? JSON.parse(stored) : []
+      list.push(content.poster_path)
+      localStorage.setItem("movies", JSON.stringify(list))
+
+      addToast({
+        title: "저장 되었습니다 (게스트)",
+      })
+    }
   }
 
   const goDetailpage = () => {
@@ -74,8 +86,7 @@ export default function CardThumb({ content }: { content: any }) {
             {content.title ? content.title : content.name}
           </div>
           <div className="flex flex-nowrap gap-1">
-            {uid &&
-              <Button isIconOnly size="sm" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>}
+            <Button isIconOnly size="sm" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>
             <Button isIconOnly size="sm" variant="faded" onPress={() => goDetailpage()}><FontAwesomeIcon icon={faCircleInfo} /></Button>
           </div>
         </CardFooter>

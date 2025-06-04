@@ -49,7 +49,7 @@ export default function TopBar() {
       <Navbar
         isBlurred={false}
         classNames={{
-          base: `fixed ${isScroll ? "bg-opacity-100" : "bg-opacity-0"}`,
+          base: `fixed ${path === "/" ? (isScroll ? "bg-opacity-100" : "bg-opacity-0") : "bg-[#dfe6e9]"}`,
           wrapper: "max-w-7xl"
         }}
         onScrollPositionChange={() => { if (path === "/") onChangeScroll() }}
@@ -79,11 +79,11 @@ export default function TopBar() {
                 시리즈
               </Link>
             </NavbarItem>
-            {/* <NavbarItem isActive={path === "/mypage"}>
+            <NavbarItem isActive={path === "/guest"}>
               <Link href="/mypage" color="foreground">
-                보관함
+                체험
               </Link>
-            </NavbarItem> */}
+            </NavbarItem>
           </NavbarMenu>
           <NavbarBrand>
             {/* <AcmeLogo /> */}
@@ -114,6 +114,11 @@ export default function TopBar() {
                 시리즈
               </Link>
             </NavbarItem>
+            <NavbarItem isActive={path === "/guest"}>
+              <Link href="/guest" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
+                체험
+              </Link>
+            </NavbarItem>
           </NavbarContent>
         </NavbarContent>
 
@@ -138,7 +143,7 @@ export default function TopBar() {
                 />
               </DropdownTrigger>
               <DropdownMenu aria-label="Profile Actions" variant="flat">
-                <DropdownItem key="mypage" href='/mypage'>
+                <DropdownItem key="mypage" href='/mypage/2025'>
                   마이페이지
                 </DropdownItem>
                 <DropdownItem key="logout" color="danger" onPress={() => clickLogout()}>

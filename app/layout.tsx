@@ -70,16 +70,8 @@ export default async function Layout({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ token }),
+          body: JSON.stringify({ token}),
         })
-
-        // (await cookies()).set({
-        //   name: "access_token",
-        //   value: token,
-        //   httpOnly: true,
-        //   secure: process.env.NODE_ENV === "production",
-        //   path: "/"
-        // });
 
         uid = oauthId;
       }

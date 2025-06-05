@@ -1,8 +1,8 @@
 'use client'
 
-import InfiniteImages from "../components/common/infinite-images"
+import InfiniteImages from "../common/infinite-images"
 import { Avatar, Chip, Tooltip, Image, Button, Card, CardHeader, CardBody, CardFooter, AvatarGroup, Spacer, Modal, ModalBody, ModalHeader, ModalFooter, ModalContent } from "@heroui/react"
-import Title from "../components/common/title"
+import Title from "../common/title"
 import { useRouter, useSearchParams } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft, faVolumeHigh, faVolumeXmark, faXmark, faImage } from "@fortawesome/free-solid-svg-icons"

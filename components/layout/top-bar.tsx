@@ -12,7 +12,9 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
-  Checkbox
+  Checkbox,
+  RadioGroup,
+  Radio
 } from "@heroui/react";
 import { useState } from "react"
 import { useUser } from "@/context/UserContext";
@@ -22,6 +24,8 @@ export default function TopBar() {
   const path = usePathname()
   const [isScroll, setIsScroll] = useState(false)
   const { isOpen, onOpen, onOpenChange } = useDisclosure()
+  const { isOpen: isOpenSet, onOpen: onOpenSet, onOpenChange: onOpenChangeSet } = useDisclosure()
+  const [selectedSet, setSelectedSet] = useState("release");
 
   const onChangeScroll = () => {
     if (window.scrollY < 30) setIsScroll(false)
@@ -42,6 +46,17 @@ export default function TopBar() {
     } else {
       console.error('Failed to log out');
     }
+  }
+
+  const handleOpenSet = () => {
+    const isTodaySave = localStorage.getItem("set_isTodaySave")
+    setSelectedSet(isTodaySave == "true" ? "today" : "release")
+    onOpenSet()
+  };
+
+  const handleChangeSet = (value: string) => {
+    setSelectedSet(value)
+    localStorage.setItem("set_isTodaySave", value == "today" ? "true" : "false")
   }
 
   return (
@@ -144,7 +159,10 @@ export default function TopBar() {
               </DropdownTrigger>
               <DropdownMenu aria-label="Profile Actions" variant="flat">
                 <DropdownItem key="mypage" href='/mypage/2025'>
-                  마이페이지
+                  마이페이지 이동
+                </DropdownItem>
+                <DropdownItem key="setting" onPress={() => handleOpenSet()}>
+                  설정
                 </DropdownItem>
                 <DropdownItem key="logout" color="danger" onPress={() => clickLogout()}>
                   로그아웃
@@ -152,23 +170,39 @@ export default function TopBar() {
               </DropdownMenu>
             </Dropdown>
           }
-
-          <Modal isOpen={isOpen} size="sm" placement="center" onOpenChange={onOpenChange}>
-            <ModalContent>
-              {(onClose) => (
-                <>
-                  <ModalHeader className="flex flex-col gap-1">로그인</ModalHeader>
-                  <ModalBody className="py-4">
-                    <Button color="warning" onPress={() => clickKakaoLogin()}>카카오 로그인</Button>
-                    {/* <Button isDisabled color="warning">카카오 로그인</Button>
-                    서버 사용량 부족으로 현재 수정 중인 기능입니다 😭 */}
-                  </ModalBody>
-                </>
-              )}
-            </ModalContent>
-          </Modal>
         </NavbarContent>
       </Navbar>
+
+      <Modal isOpen={isOpen} size="sm" placement="center" onOpenChange={onOpenChange}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">로그인</ModalHeader>
+              <ModalBody className="py-4">
+                <Button color="warning" onPress={() => clickKakaoLogin()}>카카오 로그인</Button>
+                {/* <Button isDisabled color="warning">카카오 로그인</Button>
+                    서버 사용량 부족으로 현재 수정 중인 기능입니다 😭 */}
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isOpenSet} size="sm" placement="center" onOpenChange={onOpenChangeSet}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">설정</ModalHeader>
+              <ModalBody className="py-4">
+                <RadioGroup orientation="horizontal" color="secondary" label="컨텐츠저장날짜" value={selectedSet} onValueChange={handleChangeSet}>
+                  <Radio value="release">공개일</Radio>
+                  <Radio value="today">오늘</Radio>
+                </RadioGroup>
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </>
   )
 }

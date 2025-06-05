@@ -1,6 +1,6 @@
 'use client'
 
-import { getProviders } from "@/lib/themoviedb/api";
+import { getProviders } from "@/lib/open-api/tmdb-server"
 import { Avatar, AvatarGroup, Tooltip } from "@heroui/react";
 import { useEffect, useState } from "react";
 

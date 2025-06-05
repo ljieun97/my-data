@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons"
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@/context/UserContext";
+import { saveContent } from "@/lib/actions/content";
 
 export default function CardThumb({ content }: { content: any }) {
   const { uid } = useUser()
@@ -30,31 +31,15 @@ export default function CardThumb({ content }: { content: any }) {
   // if (content.poster_path) img = `https://image.tmdb.org/t/p/w500/${content.poster_path}`
   // else img = '/images/no-image.jpg'
 
-  const clickCreate = async (content: any, rating: number) => {
-    if (uid) {
-      const res = await fetch(`/api/mypage/content/${id}`, {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ uid: uid, content, rating })
-      })
-
-      if (res.ok) addToast({
-        title: "저장 되었습니다",
-      })
-    } else {
-      //localstorage
-      const stored = localStorage.getItem("movies")
-      const list = stored ? JSON.parse(stored) : []
-      list.push(content.poster_path)
-      localStorage.setItem("movies", JSON.stringify(list))
-
-      addToast({
-        title: "저장 되었습니다 (게스트)",
-      })
-    }
-  }
+   const handleClick = async (content: any, rating: number) => {
+     saveContent({
+       uid,
+       id,
+       content,
+       rating,
+       addToast,
+     })
+   }
 
   const goDetailpage = () => {
     router.push(`/${type}/${id}`)
@@ -86,7 +71,7 @@ export default function CardThumb({ content }: { content: any }) {
             {content.title ? content.title : content.name}
           </div>
           <div className="flex flex-nowrap gap-1">
-            <Button isIconOnly size="sm" variant="faded" onPress={() => clickCreate(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>
+            <Button isIconOnly size="sm" variant="faded" onPress={() => handleClick(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>
             <Button isIconOnly size="sm" variant="faded" onPress={() => goDetailpage()}><FontAwesomeIcon icon={faCircleInfo} /></Button>
           </div>
         </CardFooter>

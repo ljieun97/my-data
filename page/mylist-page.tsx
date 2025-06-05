@@ -1,14 +1,14 @@
-'use client'
+"use client"
 
 import { SetStateAction, useEffect, useState } from "react"
 import { Switch, Accordion, AccordionItem, Select, SelectItem, addToast, Image } from "@heroui/react"
-import Title from "./common/title"
+import Title from "../components/common/title"
 import CardCol from "@/components/contents/card-col"
 import { useUser } from "@/context/UserContext"
 import { useRouter } from "next/navigation";
 import { FastAverageColor } from 'fast-average-color';
 
-export default function MylistYear({ year, list, counts }: { year: any, list: any[], counts: any[] }) {
+export default function MylistPage({ year, list, counts }: { year: any, list: any[], counts: any[] }) {
   const router = useRouter()
 
   const [currentList, setCurrentList] = useState(list) as any[]
@@ -146,8 +146,8 @@ export default function MylistYear({ year, list, counts }: { year: any, list: an
 
       </div>
 
-      <div className="overflow-auto border-2 rounded-md px-2" style={{ height: "calc(100% - 12px)" }}>
-        {currentList.length == 0 && list.length==0 && <>시청내역이 비어있습니다.</>}
+      <div className="overflow-auto border-2 rounded-md px-2" style={{ height: "calc(100% - 24px)" }}>
+        {currentList.length == 0 || list.length==0 && <>시청내역이 비어있습니다.</>}
 
         {uid ?
           <div className={`py-2 grid gap-1 ${selectGrid}`}>

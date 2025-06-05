@@ -1,6 +1,6 @@
 "use client"
 
-import { getFilterMovies } from "@/lib/themoviedb/api"
+import { getFilterMovies } from "@/lib/open-api/tmdb-client"
 import InfiniteImages from "../components/common/infinite-images"
 import { Spacer, Spinner } from "@heroui/react"
 import { RefObject, useCallback, useEffect, useRef, useState } from "react"

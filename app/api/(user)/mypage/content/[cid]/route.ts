@@ -2,21 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { closeMongo, connectMongo } from "@/lib/mongo/mongodb"
 import dayjs from 'dayjs'
 import { ObjectId } from "mongodb";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+
 
 export async function POST(req: NextRequest, { params }: { params: any }) {
-	const { uid, content, rating } = await req.json()
+	const { uid, content, rating, isTodaySave } = await req.json()
+
 	if (!uid) {
-		return NextResponse.json({ error: "Missing uid" }, { status: 400 });
+		return NextResponse.json({ error: "Missing uid or isTodaySave" }, { status: 400 });
 	}
-	const today = dayjs().format('YYYY-MM-DD HH:mm:ss')
-	let date = ''
+	const today = dayjs().format('YYYY-MM-DD')
+	let date = isTodaySave === "true" ? today : content.release_date 
 	let object = {} as any
 
 	//제목 정렬때문에 title로 통합
-	if (content.genre_ids) {
+	// if (content.genre_ids) {
 		if (content.title) {
-			date = content.release_date
 			object = {
 				type: "movie",
 				title: content.title,
@@ -25,7 +26,6 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 				genre_ids: content.genre_ids
 			}
 		} else {
-			date = content.first_air_date
 			object = {
 				type: "tv",
 				title: content.name,
@@ -34,28 +34,26 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 				genre_ids: content.genre_ids
 			}
 		}
-	} else if (content.webtoonId) {
-		date = today
-		object = {
-			type: '웹툰',
-			webtoonId: true,
-			title: content.title,
-			service: content.service,
-			id: content.webtoonId,
-			img: content.img,
-		}
-	} else if (content.isbn) {
-		date = today
-		object = {
-			type: '도서',
-			isbn: true,
-			title: content.title,
-			id: Number(content.isbn),
-			image: content.image,
-			// backdrop_path: content.backdrop_path,
-			// genres: content.genre_ids
-		}
-	}
+	// } else if (content.webtoonId) {
+	// 	date = today
+	// 	object = {
+	// 		type: '웹툰',
+	// 		webtoonId: true,
+	// 		title: content.title,
+	// 		service: content.service,
+	// 		id: content.webtoonId,
+	// 		img: content.img,
+	// 	}
+	// } else if (content.isbn) {
+	// 	date = today
+	// 	object = {
+	// 		type: '도서',
+	// 		isbn: true,
+	// 		title: content.title,
+	// 		id: Number(content.isbn),
+	// 		image: content.image,
+	// 	}
+	// }
 
 	object.user_id = uid
 	object.user_rating = rating

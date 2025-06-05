@@ -1,6 +1,6 @@
-import CalendarView from "@/components/calendar-view";
+import CalendarView from "@/components/contents/calendar-view";
 import Title from "@/components/common/title";
-import { fetchAllMovies, getTodayMovies, getTodaySeries } from '@/lib/themoviedb/tmdb-server';
+import { fetchAllMovies, getTodayMovies, getTodaySeries } from '@/lib/open-api/tmdb-server';
 import puppeteer from 'puppeteer';
 
 export default async function Page() {

@@ -1,6 +1,6 @@
-import { getCasts, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/themoviedb/tmdb-server"
+import { getCasts, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/open-api/tmdb-server"
 
-import DetailModal from "@/page/detail-modal"
+import DetailModal from "@/components/modal/detail-modal"
 
 export const metadata = {
   title: "영화"

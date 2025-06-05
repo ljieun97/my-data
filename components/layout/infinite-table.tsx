@@ -10,7 +10,7 @@ import {
   User,
 } from "@heroui/react"
 import { useCallback } from "react";
-import { PopupList } from "./popup-list";
+import { PopupList } from "../modal/popup-list";
 
 export const InfiniteTable = ({ columns, rows }: { columns: any[], rows: any[] }) => {
 

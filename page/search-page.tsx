@@ -7,7 +7,7 @@ import { RefObject, useEffect, useState } from "react";
 import { useAsyncList } from "@react-stately/data";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import InfiniteImages from "@/components/common/infinite-images";
-import { getSearchMulti } from "@/lib/themoviedb/tmdb-client"
+import { getSearchMulti } from "@/lib/open-api/tmdb-client"
 
 export default function SearchPage() {
   const searchParams = useSearchParams()

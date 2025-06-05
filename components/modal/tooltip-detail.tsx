@@ -5,7 +5,7 @@ import {
   Skeleton,
 } from "@heroui/react"
 import { useState, useEffect } from "react";
-import { getDetail } from "@/lib/themoviedb/api";
+import { getDetail } from "@/lib/open-api/tmdb-server"
 
 export const TooltipDetail = ({ id, type }: { id: any, type: string }) => {
   const [popcontent, setPopcontent] = useState({

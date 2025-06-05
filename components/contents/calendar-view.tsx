@@ -7,7 +7,7 @@ import koLocale from '@fullcalendar/core/locales/ko'
 import { useMemo, useState } from "react";
 import { Card, Spacer, Image } from "@heroui/react";
 import { SP } from "next/dist/shared/lib/utils";
-import { TooltipDetail } from "./tooltip-detail";
+import { TooltipDetail } from "../modal/tooltip-detail";
 
 const groups = ['전체', '개봉', '굿즈']
 

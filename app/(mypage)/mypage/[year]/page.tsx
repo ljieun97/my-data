@@ -1,7 +1,7 @@
 import { deployUrl } from "@/lib/config"
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken"
-import MylistYear from "@/components/mylist-year";
+import MylistPage from "@/page/mylist-page";
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
@@ -47,6 +47,6 @@ export default async function Page({ params }: { params: any }) {
   // ])
 
   return (
-    <MylistYear year={year} list={list} counts={counts}/>
+    <MylistPage year={year} list={list} counts={counts}/>
   )
 }

@@ -62,3 +62,33 @@ export async function getSearchMulti(keyword: string, pageNum: number) {
   return data
 }
 
+//영화 및 시리즈 필터페이지
+//with_watch_providers, watch_region 같이사용
+export async function getFilterMovies(type: string, country: any, providers: any, date: any, genres: any, pageNum: any) {
+  // providers = Array.from(providers).join("|")
+  let dateQueryByType = (type == 'movie') ? 
+    `&primary_release_year=${date}` :
+    `&first_air_date.gte=${date}-01-01&first_air_date.lte=${date}-12-31`
+  const qeury = {
+    country: country ? `&with_origin_country=${country}` : '',
+    provider: providers ? `&with_watch_providers=${providers}` : '',
+    date: date ? `${dateQueryByType}` : '',
+    genre: genres ? `&with_genres=${genres}` : ''
+  }
+
+  const URL = `https://api.themoviedb.org/3/discover/${type}`
+    + `?language=ko&api_key=${API_KEY}`
+    + `&without_watch_providers=1796`
+    + `&watch_region=KR`
+    + qeury.provider
+    + qeury.date
+    + qeury.genre
+    + qeury.country
+    // + `&primary_release_date.gte=${date.start.toString()}&primary_release_date.lte=${date.end.toString()}`
+    + `&page=${pageNum}`
+
+  const response = await fetch(URL)
+  const results = await response.json()
+  // results = results.filter((content: any) => content.poster_path && content.overview)
+  return results
+}

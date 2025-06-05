@@ -20,7 +20,7 @@ import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { useState } from "react";
-import { getPosters } from "@/lib/themoviedb/tmdb-client";
+import { getPosters } from "@/lib/open-api/tmdb-client";
 import { CalendarDate, DateValue, parseDate, today } from "@internationalized/date";
 
 export default function CardCol({ thisYear, content, isProvider, onUpdate, onDelete }: { thisYear: string, content: any, isProvider: boolean, onUpdate: any, onDelete: any }) {

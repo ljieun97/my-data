@@ -1,6 +1,6 @@
 "use client"
 
-import MylistYear from "@/components/mylist-year"
+import MylistPage from "@/page/mylist-page"
 import { useEffect, useState } from "react"
 
 
@@ -17,7 +17,7 @@ export default function GuestPage() {
 
   return (
     <>
-      <MylistYear year={"2025"} list={list} counts={[]} />
+      <MylistPage year={"2025"} list={list} counts={[]} />
     </>
   )
 }

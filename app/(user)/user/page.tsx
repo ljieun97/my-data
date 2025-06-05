@@ -1,5 +1,5 @@
 import Title from "@/components/common/title"
-import { InfiniteTable } from "@/components/infinite-table"
+import { InfiniteTable } from "@/components/layout/infinite-table"
 
 export const metadata = {
   title: "유저"

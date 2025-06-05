@@ -1,4 +1,4 @@
-import MyPage from "@/components/mylist-year"
+import MylistPage from "@/page/mylist-page"
 import { deployUrl } from "@/lib/config"
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken"
@@ -39,7 +39,7 @@ export default async function Page() {
 
   return (
     <>
-    {/* <MyPage counts={counts} /> */}
+    {/* <MylistPage counts={counts} /> */}
     </>
   )
 }

@@ -1,12 +1,10 @@
 'use client'
 
-import { today, getLocalTimeZone } from "@internationalized/date";
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import koLocale from '@fullcalendar/core/locales/ko'
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, Spacer, Image } from "@heroui/react";
-import { SP } from "next/dist/shared/lib/utils";
 import { TooltipDetail } from "../modal/tooltip-detail";
 
 const groups = ['전체', '개봉', '굿즈']
@@ -20,6 +18,7 @@ const goodsEvents = [
 export default function CalendarView({ results, option }: { results: any[], option: any }) {
   // console.log(results)
   const [hoveredEvent, setHoveredEvent] = useState<{ x: number; y: number; data: any } | null>(null);
+  const popupRef = useRef<HTMLDivElement | null>(null);
   // const [selectedGroup, setSelectedGroup] = useState('전체');
   // const filteredEvents = useMemo(() => {
   //   if (selectedGroup === '개봉') return results;
@@ -47,6 +46,8 @@ export default function CalendarView({ results, option }: { results: any[], opti
           plugins={[dayGridPlugin]}
           initialView={option.initialView}
           locale={koLocale}
+          // showNonCurrentDates={false}
+          fixedWeekCount={false}
           // firstDay={1} 
           // views={{
           //   customWeek: {
@@ -57,7 +58,7 @@ export default function CalendarView({ results, option }: { results: any[], opti
           // }}
           // validRange={{ start: new Date().toISOString().split('T')[0] }} // 과거 흐리게
           // contentHeight={400}
-          dayMaxEventRows={4}
+          // dayMaxEventRows={4}
           // dayMaxEvents={true}
           height="100%"
           // height="calc(100% - 106px)"
@@ -71,6 +72,8 @@ export default function CalendarView({ results, option }: { results: any[], opti
             } else if (rawEvent.type == "OTT") {
               title = `🖥️ ${rawEvent.title}`
               color = "#eb4d4b"
+            } else if (rawEvent.type == "재개봉") {
+              title = `🍿 ${rawEvent.title}`
             }
             return {
               ...rawEvent,
@@ -93,11 +96,18 @@ export default function CalendarView({ results, option }: { results: any[], opti
         {hoveredEvent && (
           // <TooltipDetail id={hoveredEvent.data.extendedProps.id} type="movie"/>
           <div
+            ref={popupRef}
             className="absolute z-[100] p-2 bg-white border rounded shadow max-w-[308px]"
-            style={{ top: hoveredEvent.y + 10, left: hoveredEvent.x + 10 }}
+            style={{
+              position: 'absolute',
+              left: hoveredEvent.x < window.innerWidth / 2 ? hoveredEvent.x : 'auto',
+              right: hoveredEvent.x >= window.innerWidth / 2 ? window.innerWidth - hoveredEvent.x : 'auto',
+              top: hoveredEvent.y < window.innerHeight / 2 ? hoveredEvent.y : 'auto',
+              bottom: hoveredEvent.y >= window.innerHeight / 2 ? window.innerHeight - hoveredEvent.y : 'auto',
+            }}
           >
             <p className="font-semibold">{hoveredEvent.data.title}</p>
-            <p className="text-tiny">플랫폼: {hoveredEvent.data.extendedProps.type}</p>
+            <p className="text-tiny">{hoveredEvent.data.extendedProps.type}</p>
             <p className="text-tiny">개봉일: {hoveredEvent.data.start.toLocaleDateString()}</p>
 
             {hoveredEvent.data.extendedProps.backdrop_path &&

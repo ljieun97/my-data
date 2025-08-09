@@ -6,6 +6,9 @@ type SaveContentParams = {
   addToast: (options: { title: string }) => void;
 }
 
+//설정값 db에서 조회해야함 - 다른기기에서설정달라지므로
+//타입스크립트진행하기
+
 export const saveContent = async ({ uid, id, content, rating, addToast }: SaveContentParams) => {
   if (uid) {
     const isTodaySave = localStorage.getItem("set_isTodaySave")

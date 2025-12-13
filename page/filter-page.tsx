@@ -71,7 +71,7 @@ export default function FilterPage({ type }: { type: string }) {
     { label: '애플TV', value: 350 },
     { label: '왓챠', value: 97 },
     { label: '웨이브', value: 356 },
-    // { label: '티빙', value: 1883 },
+    { label: '티빙', value: 1883 },
   ]
 
   const genreDatas = [

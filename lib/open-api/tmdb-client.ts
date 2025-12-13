@@ -63,10 +63,12 @@ export async function getSearchMulti(keyword: string, pageNum: number) {
   return data
 }
 
-export async function getContentByMood(genreId: number) {
-  let url = `${BASE_URL}/discover/movie?language=ko&watch_region=KR&api_key=${API_KEY}`
-    + `&with_genres=${genreId}`
-  //TODO 국가 언어 확인
+export async function getContentByMood(genres: string) {
+  let url = `${BASE_URL}/discover/movie?language=ko-KR&watch_region=KR`
+    + `&primary_release_date.gte=1980-01-01&vote_count.gte=800`
+    + `&with_watch_monetization_types=flatrate|free|ads|rent|buy&include_video=true`
+    + `&with_genres=${genres}`
+    + `&api_key=${API_KEY}`
 
   //시드를 위한 전체 페이지 수
   const response = await fetch(url+'&page=1', { next: { revalidate: 3600 } })
@@ -79,7 +81,6 @@ export async function getContentByMood(genreId: number) {
   const data = await response2.json()
 
   //랜덤 인덱스
-  console.log(genreId)
   const randomIndex = seed % 20
   return data.results[randomIndex]
 }

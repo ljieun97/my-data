@@ -72,10 +72,11 @@ export async function getContentByMood(genres: string) {
 
   //시드를 위한 전체 페이지 수
   const response = await fetch(url+'&page=1', { next: { revalidate: 3600 } })
-  const {total_pages} = await response.json()
+  const {total_pages, total_results} = await response.json()
+  console.log(total_results)
 
   //랜덤 페이지
-  const seed = Number(today.replaceAll('-', ""))
+  const seed = Math.floor(Math.random() * total_results) + Number(today.replaceAll("-", ""))
   const pageNum = (seed % Math.min(total_pages, 500)) + 1
   const response2 = await fetch(url+`&page=${pageNum}`, { next: { revalidate: 3600 } })
   const data = await response2.json()

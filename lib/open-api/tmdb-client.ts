@@ -81,7 +81,7 @@ export async function getContentByMood(genres: string) {
   const data = await response2.json()
 
   //랜덤 인덱스
-  const randomIndex = seed % 20
+  const randomIndex = seed % Math.min(data.results.length, 20)
   return data.results[randomIndex]
 }
 

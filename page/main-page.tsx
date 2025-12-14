@@ -11,7 +11,7 @@ export default function MainPage() {
 
   const discoverMovie = async (genres: string) => {
     try {
-       targetRef.current?.scrollIntoView({
+      targetRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
@@ -57,10 +57,13 @@ export default function MainPage() {
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Recommended Movies</h2>
             <div className="">
               <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-                <img src={'https://image.tmdb.org/t/p/w500/' + movie.poster_path} alt="Movie 1" className="w-full h-40 object-cover" />
+                {movie?.backdrop_path &&
+                  <img src={'https://image.tmdb.org/t/p/w500/' + movie.backdrop_path} alt="Movie 1" className="w-full h-40 object-cover" />
+                }
                 <div className="p-2 text-center text-sm font-medium text-gray-700">
                   {movie.title}
-                  <p>{movie.overview}</p>
+                  <p>{movie.release_date}</p>
+                  {movie.overview && <p>{movie.overview}</p>}
                 </div>
               </div>
             </div>

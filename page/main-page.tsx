@@ -67,7 +67,7 @@ export default function MainPage() {
         </div>
         <Spacer y={4} />
         {/* Movie Recommendations */}
-        <section className="w-full">
+        <section className="w-full max-w-md">
           {isMovie &&
             <>
               <b className="text-lg">
@@ -75,7 +75,16 @@ export default function MainPage() {
               </b>
               <Card>
                 {/* Image */}
-                <div className="h-40 bg-gray-200">
+                <div className="w-full aspect-video bg-gray-200">
+                    <img src={'https://image.tmdb.org/t/p/w500/' + movie.backdrop_path} alt="Movie 1"
+                      className={`
+                        w-full h-full object-cover transition-opacity duration-700 
+                        ${imageLoaded ? "opacity-100" : "opacity-0"}
+                      `}
+                      onLoad={() => setImageLoaded(true)}
+                    />
+                </div>
+                {/* <div className="w-[500px] bg-gray-200">
                   {movie?.backdrop_path &&
                     <img src={'https://image.tmdb.org/t/p/w500/' + movie.backdrop_path} alt="Movie 1"
                       className={`w-full h-full object-cover
@@ -83,13 +92,13 @@ export default function MainPage() {
                       onLoad={() => setImageLoaded(true)}
                     />
                   }
-                </div>
+                </div> */}
                 <CardFooter className="text-small justify-center">
                   <div className="">
                     {!imageLoaded ? (
                       <Spinner
                         color="default"
-                        label="GPT가 영화를 찾고있습니다..."
+                        label="JPT가 영화를 찾고있습니다..."
                         variant="wave"
                       />
                     ) : (

@@ -28,7 +28,7 @@ export default function CalendarView({ results, option }: { results: any[], opti
 
   return (
     <>
-      <Spacer y={12} />
+      {/* <Spacer y={12} /> */}
 
       <div className="h-full">
         {/* <div className="mb-4 space-x-2">

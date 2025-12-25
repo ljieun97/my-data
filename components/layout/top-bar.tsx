@@ -64,24 +64,30 @@ export default function TopBar() {
       <Navbar
         isBlurred={false}
         classNames={{
-          base: `fixed ${path === "/" ? (isScroll ? "bg-opacity-100" : "bg-opacity-0") : "bg-[#dfe6e9]"}`,
+          // base: `fixed ${path === "/" ? (isScroll ? "bg-opacity-100" : "bg-opacity-0") : "bg-[#dfe6e9]"}`,
+          base: "bg-gray-950",
           wrapper: "max-w-7xl"
         }}
         onScrollPositionChange={() => { if (path === "/") onChangeScroll() }}
       >
         <NavbarContent justify="start">
           <NavbarMenuToggle
-            className="sm:hidden"
+            className="sm:hidden text-white"
           />
-          <NavbarMenu className="bg-white/80">
+          <NavbarMenu>
             <NavbarItem isActive={path === "/"}>
-              <Link href="/" color="foreground" >
+              <Link href="/"  >
                 홈
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/calendar"}>
               <Link href="/calendar" color="foreground">
                 캘린더
+              </Link>
+            </NavbarItem>
+            <NavbarItem isActive={path === "/awards"}>
+              <Link href="/awards" color="foreground">
+                수상
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/movie"}>
@@ -103,34 +109,42 @@ export default function TopBar() {
           <NavbarBrand>
             {/* <AcmeLogo /> */}
             <p className="hidden sm:block font-bold text-inherit">
-              <Link href="/" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
+              <Link href="/"
+                style={{
+                  // color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` 
+                }} >
                 TOVIE
               </Link>
             </p>
           </NavbarBrand>
           <NavbarContent className="hidden sm:flex gap-5">
             <NavbarItem isActive={path === "/"}>
-              <Link href="/" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
+              <Link href="/" style={{ color: "#ffffffb3" }}>
                 홈
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/calendar"}>
-              <Link href="/calendar" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
+              <Link href="/calendar" style={{ color: "#ffffffb3" }}>
                 캘린더
               </Link>
             </NavbarItem>
+            <NavbarItem isActive={path === "/awards"}>
+              <Link href="/awards" style={{ color: "#ffffffb3" }}>
+                수상
+              </Link>
+            </NavbarItem>
             <NavbarItem isActive={path === "/movie"}>
-              <Link href="/movie" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
+              <Link href="/movie" style={{ color: "#ffffffb3" }}>
                 영화
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/tv"}>
-              <Link href="/tv" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
+              <Link href="/tv" style={{ color: "#ffffffb3" }}>
                 시리즈
               </Link>
             </NavbarItem>
             <NavbarItem isActive={path === "/guest"}>
-              <Link href="/guest" style={{ color: `${path === "/" && !isScroll ? "#ffffffb3" : "#747474"}` }} >
+              <Link href="/guest" style={{ color: "#ffffffb3" }}>
                 체험
               </Link>
             </NavbarItem>

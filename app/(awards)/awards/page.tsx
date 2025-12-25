@@ -32,10 +32,17 @@ const AWARDS = [
     id: 1064213,
     desc: "마이키 매디슨",
   },
+  {
+    title: "남우주연상",
+    type: "movie",
+    id: 549509,
+    desc: "에이드리언 브로디",
+  },
 ] as const;
 
 const SectionTitle = ({ title }: { title: string }) => (
-  <div className="flex items-center gap-4 my-6">
+  <div className="flex items-center gap-3 my-6">
+    {/* <span className="h-4 w-1 rounded bg-gray-600" /> */}
     <div className="h-px flex-1 bg-gray-200" />
     <h2 className="text-sm font-semibold tracking-wide text-gray-600">
       {title}
@@ -70,7 +77,7 @@ const Page = async () => {
             <SectionTitle title={award.title} />
 
             {award.type === "movie" ? (
-              <ImageCard content={data} desc={award.desc}/>
+              <ImageCard content={data} desc={award.desc} />
             ) : (
               // <PersonCard person={data} />
               <>

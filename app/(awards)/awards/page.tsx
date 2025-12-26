@@ -9,34 +9,100 @@ export const metadata = {
 
 const AWARDS = [
   {
-    title: "테스트",
-    type: "movie",
-    id: 76600,
-    desc: "",
-  },
-  {
     title: "작품상",
     type: "movie",
     id: 1064213,
     desc: "",
-  },
-  {
+  }, {
     title: "감독상",
     type: "movie",
     id: 1064213,
     desc: "션 베이커",
-  },
-  {
+  }, {
     title: "여우주연상",
     type: "movie",
     id: 1064213,
     desc: "마이키 매디슨",
-  },
-  {
+  }, {
     title: "남우주연상",
     type: "movie",
     id: 549509,
     desc: "에이드리언 브로디",
+  }, {
+    title: "여우조연상",
+    type: "movie",
+    id: 974950,
+    desc: "조이 샐다냐",
+  }, {
+    title: "남우조연상",
+    type: "movie",
+    id: 1013850,
+    desc: "키에란 컬킨",
+  }, {
+    title: "각본상",
+    type: "movie",
+    id: 1064213,
+    desc: "션 베이커",
+  }, {
+    title: "각색상",
+    type: "movie",
+    id: 974576,
+    desc: "",
+  }, {
+    title: "음악상",
+    type: "movie",
+    id: 549509,
+    desc: "대니얼 블럼버그",
+  }, {
+    title: "주제가상",
+    type: "movie",
+    id: 974950,
+    desc: "<El Mal>",
+  }, {
+    title: "미술상",
+    type: "movie",
+    id: 402431,
+    desc: "네이선 크롤리",
+  }, {
+    title: "분장상",
+    type: "movie",
+    id: 933260,
+    desc: "",
+  }, {
+    title: "의상상",
+    type: "movie",
+    id: 402431,
+    desc: "폴 타즈웰",
+  }, {
+    title: "촬영상",
+    type: "movie",
+    id: 549509,
+    desc: "롤 크롤리",
+  }, {
+    title: "편집상",
+    type: "movie",
+    id: 1064213,
+    desc: "션 베이커",
+  }, {
+    title: "시각효과상",
+    type: "movie",
+    id: 693134,
+    desc: "",
+  }, {
+    title: "음향상",
+    type: "movie",
+    id: 693134,
+    desc: "",
+  },{
+    title: "장편 애니메이션상",
+    type: "movie",
+    id: 823219,
+    desc: "",
+  },{
+    title: "장편 국제영화상",
+    type: "movie",
+    id: 1000837,
+    desc: "",
   },
 ] as const;
 

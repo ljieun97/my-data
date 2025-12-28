@@ -57,7 +57,7 @@ export default function ImageCard({ content, desc }: { content: any, desc: Strin
           className="z-0 w-full h-40 object-cover"
           src={img}
         />
-        <div className="absolute inset-0 bg-black/50 z-10" />
+        <div className="absolute inset-0 bg-black/30 z-10" />
         <CardHeader className="absolute justify-end z-30">
           <div className="flex gap-2">
             <Flatrates type={type} provider={content.id} />
@@ -65,28 +65,17 @@ export default function ImageCard({ content, desc }: { content: any, desc: Strin
         </CardHeader>
         <CardBody className="absolute z-20">
           <div className="flex gap-2">
-            {/* <Image
-              radius="none"
-              alt="poster"
-              src={`https://image.tmdb.org/t/p/w500/${content.poster_path}`}
-              className="object-cover"
-              height={100}
-              width={70}
-            /> */}
             <div className="flex flex-col justify-between">
               <div>
-                {/* <div className="max-w-[200px] break-keep">{content.title ? content.title : content.name}</div> */}
                 <div className="flex items-start gap-2">
                   <span className="mt-1 h-4 w-1 rounded bg-white" />
                   <h3 className="text-lg font-semibold leading-tight text-white drop-shadow">
                     {content.title}
-                    {/* {desc && <> · {desc}</>} */}
                   </h3>
                 </div>
                 <div className="text-gray-500">{desc && <>{desc}</>}</div>
               </div>
               <div className="text-gray-500">
-
               </div>
             </div>
           </div>

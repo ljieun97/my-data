@@ -24,7 +24,7 @@ import {
   RadioGroup,
   Radio,
 } from "@heroui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 
 const navItems = [
@@ -40,6 +40,7 @@ export default function TopBar() {
   const { uid } = useUser();
   const path = usePathname();
   const [isScroll, setIsScroll] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const {
     isOpen: isOpenSet,
@@ -52,6 +53,13 @@ export default function TopBar() {
     if (window.scrollY < 30) setIsScroll(false);
     else setIsScroll(true);
   };
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const nextIsDark = savedTheme === "dark";
+    setIsDarkMode(nextIsDark);
+    document.documentElement.classList.toggle("dark-theme", nextIsDark);
+  }, []);
 
   const clickKakaoLogin = () => {
     window.location.href = "/api/oauth/login";
@@ -81,6 +89,13 @@ export default function TopBar() {
     localStorage.setItem("set_isTodaySave", value === "today" ? "true" : "false");
   };
 
+  const toggleTheme = () => {
+    const nextIsDark = !isDarkMode;
+    setIsDarkMode(nextIsDark);
+    document.documentElement.classList.toggle("dark-theme", nextIsDark);
+    localStorage.setItem("theme", nextIsDark ? "dark" : "light");
+  };
+
   return (
     <>
       <Navbar
@@ -97,18 +112,16 @@ export default function TopBar() {
         }}
       >
         <NavbarContent justify="start">
-          <NavbarMenuToggle className="sm:hidden text-slate-700" />
-          <NavbarMenu className="border-t border-white/60 bg-white/92 px-4 pt-4 backdrop-blur-xl">
+          <NavbarMenuToggle className="topbar-toggle sm:hidden" />
+          <NavbarMenu className="topbar-menu border-t px-4 pt-4 backdrop-blur-xl">
             {navItems.map((item) => (
               <NavbarItem key={item.href} isActive={path === item.href}>
                 <Link
                   href={item.href}
                   color="foreground"
                   className={[
-                    "block rounded-2xl px-4 py-3 text-sm font-medium transition",
-                    path === item.href
-                      ? "bg-slate-900 text-white shadow-sm"
-                      : "text-slate-700 hover:bg-slate-100",
+                    "topbar-mobile-link block rounded-2xl px-4 py-3 text-sm font-medium transition",
+                    path === item.href ? "topbar-mobile-link--active" : "",
                   ].join(" ")}
                 >
                   {item.label}
@@ -121,7 +134,7 @@ export default function TopBar() {
             <p className="hidden sm:block text-inherit">
               <Link
                 href="/"
-                className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold tracking-[0.28em] text-white shadow-[0_12px_30px_rgba(15,23,42,0.22)] transition hover:bg-slate-800"
+                className="topbar-brand rounded-full px-4 py-2 text-sm font-semibold tracking-[0.28em] transition"
               >
                 TOVIE
               </Link>
@@ -134,10 +147,8 @@ export default function TopBar() {
                 <Link
                   href={item.href}
                   className={[
-                    "rounded-full px-4 py-2 text-sm font-medium transition",
-                    path === item.href
-                      ? "bg-white text-slate-950 shadow-sm ring-1 ring-slate-200"
-                      : "text-slate-600 hover:bg-white/80 hover:text-slate-900",
+                    "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
+                    path === item.href ? "topbar-link--active" : "",
                   ].join(" ")}
                 >
                   {item.label}
@@ -149,12 +160,20 @@ export default function TopBar() {
 
         <NavbarContent as="div" className="items-center gap-2 sm:gap-3" justify="end">
           <SearchInput />
+          <Button
+            radius="full"
+            variant="flat"
+            onPress={toggleTheme}
+            className="topbar-theme px-3 text-sm font-medium"
+          >
+            {isDarkMode ? "Light" : "Dark"}
+          </Button>
           {!uid ? (
             <Button
               onPress={onOpen}
               radius="full"
               variant="flat"
-              className="bg-slate-950 px-4 text-sm font-medium text-white shadow-[0_10px_24px_rgba(15,23,42,0.18)] hover:bg-slate-800"
+              className="topbar-login px-4 text-sm font-medium"
             >
               Login
             </Button>
@@ -165,11 +184,11 @@ export default function TopBar() {
                   isBordered
                   size="sm"
                   as="button"
-                  className="transition-transform ring-2 ring-white shadow-md"
+                  className="topbar-avatar transition-transform"
                   src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
                 />
               </DropdownTrigger>
-              <DropdownMenu aria-label="Profile Actions" variant="flat" className="min-w-44">
+              <DropdownMenu aria-label="Profile Actions" variant="flat" className="topbar-dropdown min-w-44">
                 <DropdownItem key="mypage" href="/mypage/2025">
                   My Page
                 </DropdownItem>

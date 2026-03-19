@@ -2,30 +2,31 @@
 
 import { getFilterMovies } from "@/lib/open-api/tmdb-client"
 import InfiniteImages from "../components/common/infinite-images"
-import { Spacer, Spinner } from "@heroui/react"
-import { RefObject, useCallback, useEffect, useRef, useState } from "react"
-import { getLocalTimeZone, today } from "@internationalized/date";
+import { RefObject, useEffect, useState } from "react"
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
-
 import SelectFilter from "../components/common/select-filter"
 import Title from "../components/common/title"
-import InfiniteImagesSkel from "../components/common/infinite-images-skel"
 
 export default function FilterPage({ type }: { type: string }) {
-  const [totalContents, setTotalContents] = useState('')
-  const [country, setCountries] = useState('')
-  const [providers, setProviders] = useState('')
-  const [genres, setGenres] = useState('')
-  const [date, setDate] = useState('')
+  const [totalContents, setTotalContents] = useState("")
+  const [country, setCountries] = useState("")
+  const [providers, setProviders] = useState("")
+  const [genres, setGenres] = useState("")
+  const [date, setDate] = useState("")
 
   const [hasMore, setHasMore] = useState(false)
   let list = useAsyncList({
-    async load({ signal, cursor }) {
-
-      const { results, page, total_pages, total_results } = await getFilterMovies(type, country, providers, date, genres, cursor ? cursor : 1)
+    async load({ cursor }) {
+      const { results, page, total_results } = await getFilterMovies(
+        type,
+        country,
+        providers,
+        date,
+        genres,
+        cursor ? cursor : 1
+      )
       setTotalContents(total_results)
-      // setHasMore(page < total_pages)
       setHasMore(true)
 
       return {
@@ -34,6 +35,7 @@ export default function FilterPage({ type }: { type: string }) {
       }
     }
   })
+
   const [loaderRef, scrollerRef] = useInfiniteScroll({
     hasMore,
     onLoadMore: list.loadMore
@@ -56,101 +58,43 @@ export default function FilterPage({ type }: { type: string }) {
   }, [genres])
 
   const countryDatas = [
-    { label: '한국', value: 'KR' },
-    { label: '미국', value: 'US' },
-    { label: '영국', value: 'GB' },
-    { label: '일본', value: 'JP' },
+    { label: "Korea", value: "KR" },
+    { label: "United States", value: "US" },
+    { label: "United Kingdom", value: "GB" },
+    { label: "Japan", value: "JP" },
   ]
 
   const flatformDatas = [
-    { label: '구글', value: 3 },
-    { label: '네이버', value: 96 },
-    { label: '넷플릭스', value: 8 },
-    { label: '디즈니플러스', value: 337 },
-    { label: '아마존', value: 119 },
-    { label: '애플TV', value: 350 },
-    { label: '왓챠', value: 97 },
-    { label: '웨이브', value: 356 },
-    { label: '티빙', value: 1883 },
+    { label: "Google Play", value: 3 },
+    { label: "Naver", value: 96 },
+    { label: "Netflix", value: 8 },
+    { label: "Disney+", value: 337 },
+    { label: "Prime Video", value: 119 },
+    { label: "Apple TV", value: 350 },
+    { label: "Watcha", value: 97 },
+    { label: "Wavve", value: 356 },
+    { label: "Laftel", value: 1883 },
   ]
 
   const genreDatas = [
-    {
-      value: 28,
-      label: "액션"
-    },
-    {
-      value: 12,
-      label: "모험"
-    },
-    {
-      value: 16,
-      label: "애니메이션"
-    },
-    {
-      value: 35,
-      label: "코미디"
-    },
-    {
-      value: 80,
-      label: "범죄"
-    },
-    {
-      value: 99,
-      label: "다큐멘터리"
-    },
-    {
-      value: 18,
-      label: "드라마"
-    },
-    {
-      value: 10751,
-      label: "가족"
-    },
-    {
-      value: 14,
-      label: "판타지"
-    },
-    {
-      value: 36,
-      label: "역사"
-    },
-    {
-      value: 27,
-      label: "공포"
-    },
-    {
-      value: 10402,
-      label: "음악"
-    },
-    {
-      value: 9648,
-      label: "미스터리"
-    },
-    // {
-    //   value: 10749,
-    //   label: "로맨스"
-    // },
-    {
-      value: 878,
-      label: "SF"
-    },
-    {
-      value: 10770,
-      label: "TV 영화"
-    },
-    {
-      value: 53,
-      label: "스릴러"
-    },
-    {
-      value: 10752,
-      label: "전쟁"
-    },
-    {
-      value: 37,
-      label: "서부"
-    }
+    { value: 28, label: "Action" },
+    { value: 12, label: "Adventure" },
+    { value: 16, label: "Animation" },
+    { value: 35, label: "Comedy" },
+    { value: 80, label: "Crime" },
+    { value: 99, label: "Documentary" },
+    { value: 18, label: "Drama" },
+    { value: 10751, label: "Family" },
+    { value: 14, label: "Fantasy" },
+    { value: 36, label: "History" },
+    { value: 27, label: "Horror" },
+    { value: 10402, label: "Music" },
+    { value: 9648, label: "Mystery" },
+    { value: 878, label: "Sci-Fi" },
+    { value: 10770, label: "TV Movie" },
+    { value: 53, label: "Thriller" },
+    { value: 10752, label: "War" },
+    { value: 37, label: "Western" }
   ]
 
   const yearDatas = []
@@ -158,54 +102,45 @@ export default function FilterPage({ type }: { type: string }) {
     yearDatas.push({ label: `${i}`, value: i })
   }
 
-  const onChangeSelect = (e: any, type: string) => {
-    switch (type) {
-      case '연도':
+  const onChangeSelect = (e: any, valueType: string) => {
+    switch (valueType) {
+      case "Year":
         setDate(e.target.value)
         break
-      case '국가':
+      case "Country":
         setCountries(e.target.value)
         break
-      case '제공사':
+      case "Platform":
         setProviders(e.target.value)
         break
-      case '장르':
+      case "Genre":
         setGenres(e.target.value)
         break
     }
   }
 
   return (
-    <>
+    <div className="content-panel">
+      <Title
+        title={type === "movie" ? "Movies" : "Series"}
+        sub={totalContents ? `${Number(totalContents).toLocaleString()} results` : "Browse by year, platform, country, and genre."}
+      />
 
-      {/* <div className="flex items-center pt-8 pb-4">
-        <Title
-          title={type === "movie" ? "영화" : "시리즈"}
-          sub={
-            <>
-              <span className="pr-1">검색결과</span>
-              {totalContents ? Number(totalContents).toLocaleString() : <Spinner size="sm" color="success" />}
-              건
-            </>
-          }
-        />
-      </div> */}
-
-      <div className="flex flex-row gap-2 py-4">
-        <SelectFilter type={'연도'} items={yearDatas} onChangeSelect={onChangeSelect} />
-        <SelectFilter type={'제공사'} items={flatformDatas} onChangeSelect={onChangeSelect} />
-        <SelectFilter type={'국가'} items={countryDatas} onChangeSelect={onChangeSelect} />
-        <SelectFilter type={'장르'} items={genreDatas} onChangeSelect={onChangeSelect} />
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <SelectFilter type={"Year"} items={yearDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={"Platform"} items={flatformDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={"Country"} items={countryDatas} onChangeSelect={onChangeSelect} />
+        <SelectFilter type={"Genre"} items={genreDatas} onChangeSelect={onChangeSelect} />
       </div>
 
-      <div className="overflow-auto border-2 rounded-md p-2" style={{ height: "calc(100% - 72px)" }} ref={scrollerRef}>
+      <div
+        className="content-grid-shell overflow-auto rounded-[24px] border p-3"
+        style={{ height: "calc(100vh - 280px)" }}
+        ref={scrollerRef}
+      >
         <InfiniteImages type="info" contents={list.items} />
-        {hasMore ? (
-          <div className="flex w-full justify-center" ref={loaderRef}></div>
-        ) : null}
+        {hasMore ? <div className="flex w-full justify-center" ref={loaderRef}></div> : null}
       </div>
-
-    </>
+    </div>
   )
 }
-

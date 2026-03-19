@@ -9,13 +9,11 @@ import { Spacer, Image } from "@heroui/react";
 export default function CalendarView({ results, option }: { results: any[], option: any }) {
   const [hoveredEvent, setHoveredEvent] = useState<{ x: number; y: number; data: any } | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
-  const popupOffset = 14;
 
   return (
     <>
-      <div className="calendar-shell min-h-[70vh] rounded-[28px] border border-white/70 bg-white/75 p-3 shadow-[0_22px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-5">
+      <div className="min-h-[70vh]">
         <FullCalendar
-          className="tovie-calendar"
           plugins={[dayGridPlugin]}
           initialView={option.initialView}
           locale={koLocale}
@@ -60,8 +58,10 @@ export default function CalendarView({ results, option }: { results: any[], opti
             className="absolute z-[100] max-w-[308px] rounded border bg-white p-2 shadow"
             style={{
               position: 'absolute',
-              left: hoveredEvent.x,
-              top: hoveredEvent.y + popupOffset,
+              left: hoveredEvent.x < window.innerWidth / 2 ? hoveredEvent.x : 'auto',
+              right: hoveredEvent.x >= window.innerWidth / 2 ? window.innerWidth - hoveredEvent.x : 'auto',
+              top: hoveredEvent.y < window.innerHeight / 2 ? hoveredEvent.y : 'auto',
+              bottom: hoveredEvent.y >= window.innerHeight / 2 ? window.innerHeight - hoveredEvent.y : 'auto',
             }}
           >
             <p className="font-semibold">{hoveredEvent.data.title}</p>

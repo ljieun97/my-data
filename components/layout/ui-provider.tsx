@@ -16,10 +16,12 @@ export function UiProvider({
     <HeroUIProvider>
       <ToastProvider />
       <main>
-        <div className="text-foreground bg-background flex-grow">
+        <div className="app-shell text-foreground bg-background flex-grow">
           <TopBar />
-          <div className="h-[calc(100vh_-_64px)] px-6 pt-16 pb-12 max-w-7xl mx-auto">
-            {children}
+          <div className="min-h-screen px-4 pb-12 pt-28 sm:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-7xl">
+              {children}
+            </div>
           </div>
         </div>
       </main>

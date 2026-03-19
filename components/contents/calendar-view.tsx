@@ -30,7 +30,7 @@ export default function CalendarView({ results, option }: { results: any[], opti
     <>
       {/* <Spacer y={12} /> */}
 
-      <div className="h-full">
+      <div className="min-h-[70vh]">
         {/* <div className="mb-4 space-x-2">
           {groups.map((group) => (
             <button
@@ -60,8 +60,7 @@ export default function CalendarView({ results, option }: { results: any[], opti
           // contentHeight={400}
           // dayMaxEventRows={4}
           // dayMaxEvents={true}
-          height="100%"
-          // height="calc(100% - 106px)"
+          height="auto"
 
           events={results}
           eventDataTransform={(rawEvent) => {

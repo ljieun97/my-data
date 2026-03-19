@@ -97,8 +97,9 @@ export default function FilterPage({ type }: { type: string }) {
     { value: 37, label: "Western" }
   ]
 
+  const currentYear = new Date().getFullYear()
   const yearDatas = []
-  for (let i = 2025; i >= 1980; i--) {
+  for (let i = currentYear; i >= 1980; i--) {
     yearDatas.push({ label: `${i}`, value: i })
   }
 

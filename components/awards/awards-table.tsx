@@ -27,10 +27,10 @@ export default function AwardsTable() {
 
     <Table aria-label="Example static collection table">
       <TableHeader>
-        <TableColumn>연도</TableColumn>
-        <TableColumn>크리틱스(1월)</TableColumn>
-        <TableColumn>아카데미(3월)</TableColumn>
-        <TableColumn>칸(5월)</TableColumn>
+        <TableColumn className="w-1/4">연도</TableColumn>
+        <TableColumn className="w-1/4">크리틱스(1월)</TableColumn>
+        <TableColumn className="w-1/4">아카데미(3월)</TableColumn>
+        <TableColumn className="w-1/4">칸(5월)</TableColumn>
       </TableHeader>
       <TableBody>
 

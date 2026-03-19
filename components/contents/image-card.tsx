@@ -54,7 +54,7 @@ export default function ImageCard({ content, desc }: { content: any, desc: Strin
         <Image
           removeWrapper
           alt="Card background"
-          className="z-0 w-full h-40 object-cover"
+          className="z-0 w-full max-h-[400px] object-cover"
           src={img}
         />
         <div className="absolute inset-0 bg-black/30 z-10" />

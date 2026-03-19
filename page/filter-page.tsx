@@ -2,11 +2,11 @@
 
 import { getFilterMovies } from "@/lib/open-api/tmdb-client"
 import InfiniteImages from "../components/common/infinite-images"
-import { RefObject, useEffect, useState } from "react"
+import { RefObject, useEffect, useMemo, useState } from "react"
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
 import SelectFilter from "../components/common/select-filter"
-import Title from "../components/common/title"
+import { Spacer } from "@heroui/react";
 
 export default function FilterPage({ type }: { type: string }) {
   const [totalContents, setTotalContents] = useState("")
@@ -119,28 +119,55 @@ export default function FilterPage({ type }: { type: string }) {
     }
   }
 
+  const activeFilters = useMemo(() => {
+    const items = [];
+    if (date) items.push(`Year ${date}`);
+    if (providers) items.push(`Platform ${providers}`);
+    if (country) items.push(`Country ${country}`);
+    if (genres) items.push(`Genre ${genres}`);
+    return items;
+  }, [country, date, genres, providers]);
+
+  const pageLabel = type === "movie" ? "Movies" : "Series";
+
   return (
     <div className="content-panel">
-      <Title
-        title={type === "movie" ? "Movies" : "Series"}
-        sub={totalContents ? `${Number(totalContents).toLocaleString()} results` : "Browse by year, platform, country, and genre."}
-      />
+      <section className="browse-header mb-4 flex flex-col gap-4">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="browse-results__eyebrow text-xs font-semibold uppercase tracking-[0.2em]">
+              Browse Library
+            </p>
+            <h1 className="browse-hero__title text-3xl font-semibold tracking-[-0.05em]">
+              {pageLabel}
+            </h1>
+          </div>
+          <div className="browse-header__meta flex flex-wrap gap-4 text-sm">
+            <span className="browse-header__stat">
+              {totalContents ? Number(totalContents).toLocaleString() : "..."} results
+            </span>
+            <span className="browse-header__stat">
+              {activeFilters.length} filters
+            </span>
+          </div>
+        </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <SelectFilter type={"Year"} items={yearDatas} onChangeSelect={onChangeSelect} />
-        <SelectFilter type={"Platform"} items={flatformDatas} onChangeSelect={onChangeSelect} />
-        <SelectFilter type={"Country"} items={countryDatas} onChangeSelect={onChangeSelect} />
-        <SelectFilter type={"Genre"} items={genreDatas} onChangeSelect={onChangeSelect} />
-      </div>
-
-      <div
-        className="content-grid-shell overflow-auto rounded-[24px] border p-3"
-        style={{ height: "calc(100vh - 280px)" }}
+        <div className="browse-filter-row flex flex-wrap gap-2">
+          <SelectFilter type={"Year"} items={yearDatas} onChangeSelect={onChangeSelect} />
+          <SelectFilter type={"Platform"} items={flatformDatas} onChangeSelect={onChangeSelect} />
+          <SelectFilter type={"Country"} items={countryDatas} onChangeSelect={onChangeSelect} />
+          <SelectFilter type={"Genre"} items={genreDatas} onChangeSelect={onChangeSelect} />
+        </div>
+      </section>
+      <Spacer y={4} />
+      <section
+        className="content-grid-shell browse-results overflow-auto rounded-[28px] border p-4 pb-6 sm:p-5 sm:pb-7"
+        style={{ height: "calc(100vh - 13.5rem)" }}
         ref={scrollerRef}
       >
         <InfiniteImages type="info" contents={list.items} />
-        {hasMore ? <div className="flex w-full justify-center" ref={loaderRef}></div> : null}
-      </div>
+        {hasMore ? <div className="flex w-full justify-center pt-4" ref={loaderRef}></div> : null}
+      </section>
     </div>
   )
 }

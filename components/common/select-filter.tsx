@@ -9,12 +9,15 @@ export default function SelectFilter(props: any) {
       items={items}
       label={type}
       placeholder="All"
-      className="w-full"
+      className="browse-chip-select w-auto min-w-[8.5rem]"
       classNames={{
-        trigger: "min-h-14 rounded-[18px] border border-white/70 bg-white/78 px-3 shadow-[0_12px_28px_rgba(148,163,184,0.14)]",
-        label: "text-slate-500",
-        value: "text-slate-900",
-        popoverContent: "rounded-[20px] border border-slate-200 bg-white/96 backdrop-blur-xl",
+        base: "max-w-full",
+        trigger: "browse-select min-h-[2.9rem] rounded-full border px-3 pr-4 shadow-none transition",
+        innerWrapper: "gap-2",
+        label: "browse-select__label text-[11px] font-semibold uppercase tracking-[0.16em]",
+        value: "browse-select__value text-sm font-medium",
+        popoverContent: "browse-select__popover rounded-[20px] border backdrop-blur-xl",
+        listboxWrapper: "max-h-72",
       }}
       onChange={(e) => onChangeSelect(e, type)}
       showScrollIndicators={false}

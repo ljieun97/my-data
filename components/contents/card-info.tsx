@@ -1,10 +1,10 @@
 "use client"
 
 import Flatrates from "./flatrates"
-import { Card, CardFooter, Image, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, addToast } from "@heroui/react";
+import { Card, Image, CardHeader, CardBody, Button, addToast } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus, faEye } from "@fortawesome/free-solid-svg-icons"
-import { useRouter, useSearchParams } from "next/navigation";
+import { faCircleInfo, faPlus, faEye, faStar } from "@fortawesome/free-solid-svg-icons"
+import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { saveContent } from "@/lib/actions/content";
 
@@ -12,24 +12,25 @@ export default function CardInfo({ content }: { content: any }) {
   const { uid } = useUser()
   const router = useRouter()
 
-  let type = ''
-  let id = ''
-  let img = ''
-  let adult = false
+  let type = ""
+  let id = ""
+  let img = ""
 
   if (content.title) {
-    type = 'movie'
-    adult = content.adult
+    type = "movie"
     id = content.id
   } else if (content.name) {
-    type = 'tv'
-    adult = content.adult
+    type = "tv"
     id = content.id
   }
-  // if (content.backdrop_path) img = `https://image.tmdb.org/t/p/w500/${content.backdrop_path}`
-  // else img = '/images/no-image.jpg'
+
   if (content.poster_path) img = `https://image.tmdb.org/t/p/w500/${content.poster_path}`
-  else img = '/images/no-image.jpg'
+  else img = "/images/no-image.jpg"
+
+  const title = content.title ? content.title : content.name
+  const releaseDate = type === "movie" ? content.release_date : content.first_air_date
+  const voteAverage = content.vote_average ? Number(content.vote_average).toFixed(1) : "-"
+  const voteCount = content.vote_count ? Number(content.vote_count).toLocaleString() : "0"
 
   const handleClick = async (content: any, rating: number) => {
     saveContent({
@@ -42,48 +43,63 @@ export default function CardInfo({ content }: { content: any }) {
   }
 
   const goDetailpage = () => {
-    // 이미 모달창이면 내용만 바꾸기
     router.push(`/${type}/${id}`)
   }
 
   return (
-    <>
-      <Card
-        isBlurred={false}
-        className="group/footer"
-      // shadow="sm"
-      >
-        <CardHeader className="absolute justify-end z-20">
-          <div className="flex gap-2">
-            <Flatrates type={type} provider={content.id} />
-          </div>
-        </CardHeader>
-        <CardBody>
-          <div className="flex gap-2">
-            <Image
-              radius="none"
-              alt="poster"
-              src={img}
-              className="object-cover"
-              height={100}
-              width={70}
-            />
-            <div className="flex flex-col justify-between">
-              <div>
-                <div className="max-w-[200px] break-keep">{content.title ? content.title : content.name}</div>
-                <div className="text-gray-500">{type === "movie" ? content.release_date : content.first_air_date}</div>
-              </div>
-              <div className="text-gray-500">
-                <FontAwesomeIcon icon={faEye} /> {content.vote_count}
-              </div>
+    <Card
+      isBlurred={false}
+      className="browse-card group/footer overflow-hidden rounded-[24px] border shadow-none"
+    >
+      <CardHeader className="absolute inset-x-0 top-0 z-20 flex items-start justify-end p-3">
+        <Flatrates type={type} provider={content.id} />
+      </CardHeader>
+
+      <CardBody className="p-0">
+        <div className="flex items-start gap-3 p-3 pb-2">
+          <Image
+            radius="lg"
+            alt="poster"
+            src={img}
+            className="h-[6.8rem] w-[4.7rem] shrink-0 object-cover shadow-[0_12px_24px_rgba(15,23,42,0.16)]"
+          />
+          <div className="flex min-w-0 flex-1 flex-col gap-2 py-1">
+            <div>
+              <h3 className="browse-card__title line-clamp-2 text-base font-semibold leading-6 tracking-[-0.03em]">
+                {title}
+              </h3>
+              <p className="browse-card__meta text-sm">
+                {releaseDate || "Release date unavailable"}
+              </p>
             </div>
+
+            <p className="browse-card__overview line-clamp-2 text-[13px] leading-[1.35rem]">
+              {content.overview || "No summary is available for this title yet."}
+            </p>
           </div>
-        </CardBody>
-        <CardFooter className="gap-2 justify-end items-end invisible absolute group-hover/footer:visible bg-black/50 border-white/50 border-1 rounded-large shadow-small z-10 h-full">
-          <Button isIconOnly size="lg" variant="faded" onPress={() => handleClick(content, 1)}><FontAwesomeIcon icon={faPlus} /></Button>
-          <Button isIconOnly size="lg" variant="faded" onPress={() => goDetailpage()}><FontAwesomeIcon icon={faCircleInfo} /></Button>
-        </CardFooter>
-      </Card>
-    </>
+        </div>
+
+        <div className="browse-card__footer flex items-center justify-between gap-2 border-t px-3 py-2">
+          <div className="flex flex-wrap gap-2">
+            <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
+              <FontAwesomeIcon icon={faStar} className="mr-1.5" />
+              {voteAverage}
+            </span>
+            <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
+              <FontAwesomeIcon icon={faEye} className="mr-1.5" />
+              {voteCount}
+            </span>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Button isIconOnly radius="full" variant="flat" size="sm" className="browse-card__action" onPress={() => handleClick(content, 1)}>
+              <FontAwesomeIcon icon={faPlus} />
+            </Button>
+            <Button isIconOnly radius="full" variant="flat" size="sm" className="browse-card__detail" onPress={() => goDetailpage()}>
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </Button>
+          </div>
+        </div>
+      </CardBody>
+    </Card>
   )
 }

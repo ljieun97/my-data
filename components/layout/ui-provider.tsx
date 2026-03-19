@@ -13,15 +13,16 @@ export function UiProvider({
 }) {
   const pathname = usePathname();
   const isCalendarPage = pathname?.startsWith("/calendar");
+  const isFilterPage = pathname === "/movie" || pathname === "/tv";
 
   return (
     <HeroUIProvider>
       <ToastProvider />
       <main>
-        <div className="app-shell text-foreground bg-background flex-grow">
+        <div className={`app-shell text-foreground bg-background flex-grow ${isFilterPage ? "app-shell--locked" : ""}`}>
           <TopBar />
-          <div className="min-h-screen px-4 pb-12 pt-28 sm:px-6 lg:px-8">
-            <div className={`mx-auto w-full max-w-7xl ${isCalendarPage ? "" : "page-shell"}`}>
+          <div className={`min-h-screen px-4 pb-12 pt-28 sm:px-6 lg:px-8 ${isFilterPage ? "app-shell__viewport" : ""}`}>
+            <div className={`mx-auto w-full max-w-7xl ${isCalendarPage ? "" : "page-shell"} ${isFilterPage ? "page-shell--locked" : ""}`}>
               {children}
             </div>
           </div>

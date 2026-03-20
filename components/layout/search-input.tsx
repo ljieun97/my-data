@@ -24,7 +24,7 @@ export default function SearchInput() {
   return (
     <Input
       classNames={{
-        base: "hidden h-11 md:flex md:w-[13rem] lg:w-[16rem]",
+        base: "hidden h-11 md:flex md:min-w-0 md:w-[10rem] lg:w-[13rem] xl:w-[16rem]",
         mainWrapper: "h-full",
         input: "topbar-search-input bg-transparent text-sm placeholder:text-slate-400",
         inputWrapper:

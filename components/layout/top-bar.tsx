@@ -1,5 +1,7 @@
 "use client"
 
+import { faCircleHalfStroke, faMoon } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { usePathname } from "next/navigation";
 import SearchInput from "./search-input";
 import {
@@ -58,7 +60,10 @@ export default function TopBar() {
     const savedTheme = localStorage.getItem("theme");
     const nextIsDark = savedTheme === "dark";
     setIsDarkMode(nextIsDark);
+    document.documentElement.classList.toggle("dark", nextIsDark);
     document.documentElement.classList.toggle("dark-theme", nextIsDark);
+    document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
+    document.cookie = `theme=${nextIsDark ? "dark" : "light"}; path=/; max-age=31536000; samesite=lax`;
   }, []);
 
   const clickKakaoLogin = () => {
@@ -92,8 +97,11 @@ export default function TopBar() {
   const toggleTheme = () => {
     const nextIsDark = !isDarkMode;
     setIsDarkMode(nextIsDark);
+    document.documentElement.classList.toggle("dark", nextIsDark);
     document.documentElement.classList.toggle("dark-theme", nextIsDark);
+    document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
     localStorage.setItem("theme", nextIsDark ? "dark" : "light");
+    document.cookie = `theme=${nextIsDark ? "dark" : "light"}; path=/; max-age=31536000; samesite=lax`;
   };
 
   return (
@@ -112,7 +120,7 @@ export default function TopBar() {
         }}
       >
         <NavbarContent justify="start">
-          <NavbarMenuToggle className="topbar-toggle sm:hidden" />
+          <NavbarMenuToggle className="topbar-toggle lg:hidden" />
           <NavbarMenu className="topbar-menu border-t px-4 pt-4 backdrop-blur-xl">
             {navItems.map((item) => (
               <NavbarItem key={item.href} isActive={path === item.href}>
@@ -131,7 +139,7 @@ export default function TopBar() {
           </NavbarMenu>
 
           <NavbarBrand>
-            <p className="hidden sm:block text-inherit">
+            <p className="hidden lg:block text-inherit">
               <Link
                 href="/"
                 className="topbar-brand rounded-full px-4 py-2 text-sm font-semibold tracking-[0.28em] transition"
@@ -141,7 +149,7 @@ export default function TopBar() {
             </p>
           </NavbarBrand>
 
-          <NavbarContent className="hidden gap-2 sm:flex">
+          <NavbarContent className="hidden gap-2 lg:flex">
             {navItems.map((item) => (
               <NavbarItem key={item.href} isActive={path === item.href}>
                 <Link
@@ -165,8 +173,10 @@ export default function TopBar() {
             variant="flat"
             onPress={toggleTheme}
             className="topbar-theme px-3 text-sm font-medium"
+            isIconOnly
+            aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
           >
-            {isDarkMode ? "Light" : "Dark"}
+            <FontAwesomeIcon icon={isDarkMode ? faCircleHalfStroke : faMoon} />
           </Button>
           {!uid ? (
             <Button

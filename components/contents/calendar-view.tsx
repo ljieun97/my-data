@@ -55,7 +55,7 @@ export default function CalendarView({ results, option }: { results: any[], opti
         {hoveredEvent && (
           <div
             ref={popupRef}
-            className="absolute z-[100] max-w-[308px] rounded border bg-white p-2 shadow"
+            className="calendar-hover-card absolute z-[100] max-w-[308px] rounded-xl border p-3 shadow-lg"
             style={{
               position: 'absolute',
               left: hoveredEvent.x < window.innerWidth / 2 ? hoveredEvent.x : 'auto',
@@ -64,9 +64,9 @@ export default function CalendarView({ results, option }: { results: any[], opti
               bottom: hoveredEvent.y >= window.innerHeight / 2 ? window.innerHeight - hoveredEvent.y : 'auto',
             }}
           >
-            <p className="font-semibold">{hoveredEvent.data.title}</p>
-            <p className="text-tiny">{hoveredEvent.data.extendedProps.type}</p>
-            <p className="text-tiny">Date: {hoveredEvent.data.start.toLocaleDateString()}</p>
+            <p className="font-semibold text-slate-900 dark:text-slate-50">{hoveredEvent.data.title}</p>
+            <p className="text-tiny text-slate-600 dark:text-slate-300">{hoveredEvent.data.extendedProps.type}</p>
+            <p className="text-tiny text-slate-600 dark:text-slate-300">Date: {hoveredEvent.data.start.toLocaleDateString()}</p>
 
             {hoveredEvent.data.extendedProps.backdrop_path && (
               <>

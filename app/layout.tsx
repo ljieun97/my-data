@@ -1,6 +1,7 @@
 import "@/styles/global.css";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import Script from "next/script";
 import jwt from "jsonwebtoken"
 import { UiProvider } from "@/components/layout/ui-provider";
 import { UserProvider } from "@/context/UserContext";
@@ -8,6 +9,21 @@ import { closeMongo, connectMongo } from "@/lib/mongo/mongodb";
 
 const JWT_SECRET = process.env.JWT_SECRET!
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY!
+
+const themeScript = `
+try {
+  const savedTheme = localStorage.getItem("theme");
+  if (!savedTheme) {
+    document.cookie = "theme=light; path=/; max-age=31536000; samesite=lax";
+  }
+
+  const isDarkMode = savedTheme === "dark";
+  document.documentElement.classList.toggle("dark", isDarkMode);
+  document.documentElement.classList.toggle("dark-theme", isDarkMode);
+  document.documentElement.style.colorScheme = isDarkMode ? "dark" : "light";
+  document.cookie = "theme=" + (isDarkMode ? "dark" : "light") + "; path=/; max-age=31536000; samesite=lax";
+} catch (error) {}
+`;
 
 export const metadata: Metadata = {
   title: {
@@ -23,6 +39,8 @@ export default async function Layout({
   children: React.ReactNode; modal: React.ReactNode
 }) {
   const cookieStore = cookies()
+  const theme = (await cookieStore).get("theme")?.value
+  const isDarkMode = theme === "dark"
   let token = (await cookieStore).get("access_token")?.value
   let uid
 
@@ -83,7 +101,17 @@ export default async function Layout({
   }
 
   return (
-    <html lang="ko">
+    <html
+      lang="ko"
+      suppressHydrationWarning
+      className={isDarkMode ? "dark dark-theme" : undefined}
+      style={{ colorScheme: isDarkMode ? "dark" : "light" }}
+    >
+      <head>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeScript}
+        </Script>
+      </head>
       <body>
         <UserProvider uid={uid}>
           <UiProvider modal={modal}>{children}</UiProvider>

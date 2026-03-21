@@ -163,7 +163,7 @@ export default function SavedListRow({
 
               <div className="flex flex-wrap items-center justify-between gap-2 pt-3">
                 <div className="flex flex-wrap gap-2">
-                  {genres.map((genre) => (
+                  {genres.map((genre: any) => (
                     <span key={genre} className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
                       {genre}
                     </span>

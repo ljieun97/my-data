@@ -25,13 +25,13 @@ export default function CalendarView({ results, option }: { results: any[], opti
             let color;
 
             if (rawEvent.type === "OTT") {
-              title = `OTT ${rawEvent.title}`;
+              title = `${rawEvent.title}`;
               color = "#eb4d4b";
             } else if (rawEvent.backdrop_path) {
-              title = `Movie ${rawEvent.title}`;
+              title = `${rawEvent.title}`;
               color = "#f0932b";
             } else {
-              title = `Release ${rawEvent.title}`;
+              title = `${rawEvent.title}`;
             }
 
             return {

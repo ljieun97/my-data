@@ -27,14 +27,6 @@ export default async function Page({ params }: { params: any }) {
     return <>로그인을 해주세요.</>
   }
 
-  const list = await (await fetch(`${deployUrl}/api/mypage/content/by-year/${year}`, {
-    method: "GET",
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': uid,
-    },
-  })).json()
-
   const counts = await (await fetch(`${deployUrl}/api/mypage/content/by-year`, {
     method: "GET",
     headers: {
@@ -47,6 +39,6 @@ export default async function Page({ params }: { params: any }) {
   // ])
 
   return (
-    <MylistPage year={year} list={list} counts={counts}/>
+    <MylistPage year={year} counts={counts}/>
   )
 }

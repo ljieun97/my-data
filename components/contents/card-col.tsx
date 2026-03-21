@@ -93,7 +93,7 @@ export default function CardCol({ thisYear, content, isProvider, onUpdate, onDel
     <>
       <Card
         radius="sm"
-        className="relative group/footer aspect-[26/37]"
+        className="relative group/footer aspect-[26/37] w-[92%] justify-self-center"
         isFooterBlurred
         isBlurred
         shadow="none"

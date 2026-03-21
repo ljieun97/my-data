@@ -179,9 +179,6 @@ export default function MylistPage({ year, counts }: { year: any, counts: any[] 
     })
     return acc
   }, {})
-  const topGenres = Object.entries(genreCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
 
   const monthlyCounts = Array.from({ length: 12 }, (_, index) => {
     const month = String(index + 1).padStart(2, "0")
@@ -317,10 +314,10 @@ export default function MylistPage({ year, counts }: { year: any, counts: any[] 
                   <p className="browse-card__meta text-xs uppercase tracking-[0.16em]">TV Series</p>
                   <p className="browse-card__title mt-3 text-3xl font-semibold">{tvCount}</p>
                 </div>
-                <div className="browse-card rounded-[24px] border p-4">
-                  <p className="browse-card__meta text-xs uppercase tracking-[0.16em]">Top Genres</p>
-                  <p className="browse-card__title mt-3 text-3xl font-semibold">{topGenres.length}</p>
-                </div>
+                {/* <div className="browse-card rounded-[24px] border p-4">
+                  <p className="browse-card__meta text-xs uppercase tracking-[0.16em]"></p>
+                  <p className="browse-card__title mt-3 text-3xl font-semibold"></p>
+                </div> */}
               </div>
 
               <div className="browse-card rounded-[24px] border p-4">
@@ -352,19 +349,6 @@ export default function MylistPage({ year, counts }: { year: any, counts: any[] 
                       <span className="browse-card__title text-right text-sm font-semibold">{item.count}</span>
                     </div>
                   ))}
-                </div>
-              </div>
-
-              <div className="browse-card rounded-[24px] border p-4">
-                <p className="browse-card__meta text-xs uppercase tracking-[0.16em]">Genre Frequency</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {topGenres.length > 0 ? topGenres.map(([genreId, count]) => (
-                    <span key={genreId} className="browse-card__stat rounded-full px-3 py-1.5 text-sm font-medium">
-                      Genre {genreId} · {count}
-                    </span>
-                  )) : (
-                    <span className="browse-card__meta text-sm">장르 데이터가 없습니다.</span>
-                  )}
                 </div>
               </div>
             </div>

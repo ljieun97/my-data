@@ -107,11 +107,11 @@ export default async function Layout({
       className={isDarkMode ? "dark dark-theme" : undefined}
       style={{ colorScheme: isDarkMode ? "dark" : "light" }}
     >
-      <head>
+      {/* <head>
         <Script id="theme-init" strategy="beforeInteractive">
           {themeScript}
         </Script>
-      </head>
+      </head> */}
       <body>
         <UserProvider uid={uid}>
           <UiProvider modal={modal}>{children}</UiProvider>

@@ -1,10 +1,5 @@
-import ImagesSlider from "@/components/common/images-slider";
-import { Banners } from "@/components/layout/banners";
-import { BannersSkel } from "@/components/layout/banners-skel";
-import { Link, Spacer } from "@heroui/react";
-import { getDetail } from "@/lib/open-api/tmdb-server"
-import { getContentByMood } from "@/lib/open-api/tmdb-client";
-import MainPage from "@/page/main-page";
+import BoxOffice from "@/components/box-office";
+import MoodSelecter from "@/components/mood-selecter";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -19,11 +14,45 @@ const Home = async () => {
   // const random = Math.floor(Math.random() * banners.length)
   // const movie = banners[random]
 
+  const year = 2026
+  const url = `https://kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList?key=c877d37a33a65c36aff072744f280149&openStartDt=${year}&openEndDt=${year}`
+  const results = []
+  const kobis = await fetch(url)
+  const totalCount = (await kobis.json()).movieListResult?.totCnt
+  const totalPages = Math.ceil(totalCount / 100);
 
+  for (let page = 1; page <= totalPages; page++) {
+    const res = await fetch(
+      `${url}&itemPerPage=100&curPage=${page}`
+    );
+    const data = await res.json();
+
+    const movies = Array.isArray(data.movieListResult?.movieList)
+      ? data.movieListResult.movieList
+      : [];
+
+    const filtered = movies.filter((movie: any) =>
+      !movie.genreAlt.includes('성인물(에로)')
+      && !movie.genreAlt.includes('기타')
+      && !((movie.repNationNm == "한국" || movie.repNationNm == "일본") && movie.genreAlt.includes('멜로/로맨스'))
+      && !((movie.repNationNm == "한국" || movie.repNationNm == "일본") && movie.genreAlt.includes('드라마') && movie.directors.length == 0)
+    );
+
+    
+
+    results.push(...filtered);
+
+    console.log(`${page}/${totalPages} 페이지 (필터 후 ${filtered.length}개)`);
+  }
+
+  results.sort((a, b) =>
+    Number(a.openDt) - Number(b.openDt)
+  );
 
   return (
     <>
-    <MainPage/>
+      <BoxOffice results={results} />
+      <MoodSelecter />
       {/* <div className="absolute top-0 left-0 w-full h-full">
         {movie ?
           <Banners movie={movie} />

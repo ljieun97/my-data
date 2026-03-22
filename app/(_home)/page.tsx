@@ -1,19 +1,14 @@
 import BoxOffice from "@/components/box-office";
 import MoodSelecter from "@/components/mood-selecter";
+import YearWorldcup from "@/components/year-worldcup";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "홈"
 }
 const Home = async () => {
-  // const banners = await Promise.all([
-  //   getDetail('movie', 872585), //오펜
-  //   getDetail('movie', 792307), //가여운것들
-  //   getDetail('movie', 915935), //추락의해부
-  // ])
-  // const random = Math.floor(Math.random() * banners.length)
-  // const movie = banners[random]
 
+//박스오피스
   const year = 2026
   const url = `https://kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList?key=c877d37a33a65c36aff072744f280149&openStartDt=${year}&openEndDt=${year}`
   const results = []
@@ -45,14 +40,25 @@ const Home = async () => {
     console.log(`${page}/${totalPages} 페이지 (필터 후 ${filtered.length}개)`);
   }
 
-  results.sort((a, b) =>
-    Number(a.openDt) - Number(b.openDt)
-  );
+  // results.sort((a, b) =>
+  //   Number(a.openDt) - Number(b.openDt)
+  // );
+
+  //박스오피스 end
+
+  // const banners = await Promise.all([
+  //   getDetail('movie', 872585), //오펜
+  //   getDetail('movie', 792307), //가여운것들
+  //   getDetail('movie', 915935), //추락의해부
+  // ])
+  // const random = Math.floor(Math.random() * banners.length)
+  // const movie = banners[random]
 
   return (
     <>
-      <BoxOffice results={results} />
-      <MoodSelecter />
+      <YearWorldcup results={results} />
+      {/* <BoxOffice results={results} /> */}
+      {/* <MoodSelecter /> */}
       {/* <div className="absolute top-0 left-0 w-full h-full">
         {movie ?
           <Banners movie={movie} />

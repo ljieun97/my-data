@@ -64,7 +64,7 @@ export default function MoodSelecter() {
                 Recommended Movie
               </b>
               <Card className="home-card overflow-hidden border shadow-[0_20px_44px_rgba(15,23,42,0.08)]">
-                <div className="aspect-video w-full bg-gray-200">
+                <div className="aspect-video w-full">
                   <img
                     src={"https://image.tmdb.org/t/p/w500/" + movie.backdrop_path}
                     alt="Movie"
@@ -73,15 +73,15 @@ export default function MoodSelecter() {
                   />
                 </div>
                 <CardFooter className="justify-center text-small">
-                  <div>
+                  <div className="text-slate-900 dark:text-slate-100">
                     {!imageLoaded ? (
                       <Spinner color="default" label="Loading recommendation..." variant="wave" />
                     ) : (
                       <>
-                        <b>{movie.title}</b>
-                        <p className="text-default-500">{movie.release_date}</p>
+                        <b className="block">{movie.title}</b>
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{movie.release_date}</p>
                         {movie.overview && (
-                          <p className="text-sm leading-relaxed line-clamp-3">
+                          <p className="mt-2 text-sm leading-relaxed line-clamp-3 text-slate-600 dark:text-slate-300">
                             {movie.overview}
                           </p>
                         )}
@@ -95,7 +95,7 @@ export default function MoodSelecter() {
         </section>
       </main>
       <footer className="home-copy py-4 text-center text-sm">
-        2025 CineMood. All rights reserved.
+        2026 CineMood. All rights reserved.
       </footer>
     </div>
   )

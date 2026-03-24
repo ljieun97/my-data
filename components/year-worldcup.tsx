@@ -167,32 +167,29 @@ export default function YearWorldcup({ results }: { results: Movie[] }) {
     return (
       <div
         key={movie.movieCd}
-        className="browse-card flex min-h-[220px] flex-col justify-between rounded-[28px] border p-5 text-left"
+        className="browse-card flex min-h-[220px] cursor-pointer flex-col justify-between rounded-[28px] border p-5 text-left"
+        onClick={() => advanceWinner(movie)}
       >
         <div className="flex min-h-[132px] flex-col">
-          <span className="browse-results__eyebrow text-xs font-semibold uppercase tracking-[0.22em]">
-            Pick winner
-          </span>
-          <div className="mt-3 flex-1">
-            <h2 className="browse-card__title text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">
-              {movie.movieNm}
-            </h2>
-          </div>
-          <div className="mt-3 flex items-center justify-between gap-2">
+          <div className="flex items-start justify-between gap-3">
+            <span className="browse-results__eyebrow text-xs font-semibold uppercase tracking-[0.22em]">
+              Pick winner
+            </span>
             <button
               type="button"
-              onClick={() => advanceWinner(movie)}
-              className="browse-card__detail rounded-full px-3 py-1.5 text-xs font-medium"
-            >
-              선택
-            </button>
-            <button
-              type="button"
-              onClick={() => skipMovie(movie)}
-              className="browse-card__action rounded-full px-3 py-1.5 text-xs font-medium"
+              onClick={(event) => {
+                event.stopPropagation()
+                skipMovie(movie)
+              }}
+              className="browse-card__action shrink-0 rounded-full px-3 py-1.5 text-xs font-medium"
             >
               Skip
             </button>
+          </div>
+          <div className="mt-4 flex-1">
+            <h2 className="browse-card__title text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">
+              {movie.movieNm}
+            </h2>
           </div>
         </div>
         <div className="mt-6 flex flex-wrap gap-2">

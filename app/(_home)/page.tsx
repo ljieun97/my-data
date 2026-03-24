@@ -1,14 +1,18 @@
 import BoxOffice from "@/components/box-office";
 import MoodSelecter from "@/components/mood-selecter";
 import YearWorldcup from "@/components/year-worldcup";
+import { getFilterMovies } from "@/lib/open-api/tmdb-server";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: "홈"
 }
 const Home = async () => {
+//tmdb 1년치
+  // const test = await getFilterMovies(1)
+  // console.log(test)
 
-//박스오피스
+//kobis 1년치
   const year = 2026
   const url = `https://kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList?key=c877d37a33a65c36aff072744f280149&openStartDt=${year}&openEndDt=${year}`
   const results = []
@@ -44,7 +48,7 @@ const Home = async () => {
   //   Number(a.openDt) - Number(b.openDt)
   // );
 
-  //박스오피스 end
+  //kobis 1년치 end
 
   // const banners = await Promise.all([
   //   getDetail('movie', 872585), //오펜

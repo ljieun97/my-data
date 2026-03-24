@@ -212,6 +212,11 @@ html.dark-theme .home-card {
   color: #0f172a !important;
 }
 
+.browse-card__action:hover {
+  background: rgba(203, 213, 225, 0.9) !important;
+  color: #020617 !important;
+}
+
 .browse-card__detail {
   background: #0f172a !important;
   color: #fff !important;
@@ -296,6 +301,11 @@ html.dark-theme .browse-card__footer {
 html.dark-theme .browse-card__action {
   background: rgba(30, 41, 59, 0.88) !important;
   color: #dbe7f5 !important;
+}
+
+html.dark-theme .browse-card__action:hover {
+  background: rgba(51, 65, 85, 0.98) !important;
+  color: #f8fafc !important;
 }
 
 html.dark-theme .browse-card__detail {

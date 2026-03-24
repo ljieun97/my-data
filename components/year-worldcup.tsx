@@ -118,8 +118,8 @@ export default function YearWorldcup({ results }: { results: Movie[] }) {
   }, [results])
 
   const { currentRound, nextRound, winner, roundLabel, roundSize, history } = tournament
-  const currentMatchup = currentRound.length === 3 ? currentRound.slice(0, 3) : currentRound.slice(0, 2)
-  const matchupCount = Math.floor(roundSize / 2)
+  const currentMatchup = currentRound.slice(0, Math.min(2, currentRound.length))
+  const matchupCount = Math.max(1, Math.ceil(roundSize / 2))
   const currentMatch = Math.min(nextRound.length + 1, matchupCount || 1)
 
   const resetTournament = () => {
@@ -144,21 +144,56 @@ export default function YearWorldcup({ results }: { results: Movie[] }) {
     )
   }
 
+  const skipMovie = (skippedMovie: Movie) => {
+    if (currentMatchup.length < 2) {
+      return
+    }
+
+    const remainingMatchup = currentMatchup.filter((movie) => movie.movieCd !== skippedMovie.movieCd)
+
+    setTournament((prev) => {
+      const restOfRound = prev.currentRound.slice(currentMatchup.length)
+      const skippedCount = currentMatchup.length - remainingMatchup.length
+
+      return normalizeTournament({
+        ...prev,
+        roundSize: Math.max(prev.nextRound.length + remainingMatchup.length + restOfRound.length, prev.roundSize - skippedCount),
+        currentRound: [...remainingMatchup, ...restOfRound],
+      })
+    })
+  }
+
   const renderMovieCard = (movie: Movie) => {
     return (
       <div
         key={movie.movieCd}
         className="browse-card flex min-h-[220px] flex-col justify-between rounded-[28px] border p-5 text-left"
       >
-        <div className="space-y-3">
+        <div className="flex min-h-[132px] flex-col">
           <span className="browse-results__eyebrow text-xs font-semibold uppercase tracking-[0.22em]">
             Pick winner
           </span>
-          <button type="button" onClick={() => advanceWinner(movie)} className="block w-full text-left">
+          <div className="mt-3 flex-1">
             <h2 className="browse-card__title text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">
               {movie.movieNm}
             </h2>
-          </button>
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => advanceWinner(movie)}
+              className="browse-card__detail rounded-full px-3 py-1.5 text-xs font-medium"
+            >
+              선택
+            </button>
+            <button
+              type="button"
+              onClick={() => skipMovie(movie)}
+              className="browse-card__action rounded-full px-3 py-1.5 text-xs font-medium"
+            >
+              Skip
+            </button>
+          </div>
         </div>
         <div className="mt-6 flex flex-wrap gap-2">
           {movie.openDt && (

@@ -116,20 +116,13 @@ function addMonths(now: Date, arg1: number) {
 }
 
 //월드컵용 연도별 국내에서 개봉 영화
-export async function getFilterMovies(pageNum: any) {
-  // const URL = `https://api.themoviedb.org/3/discover/movie`
-  //   + `?api_key=${API_KEY}`
-  //   + `&language=ko`
-  //   // + `&region=KR&with_release_type=2`
-  //   // + `&watch_region=KR&with_watch_monetization_types=flatrate|free|ads|rent|buy`
-  //   + `&primary_release_year=${2025}`
-  //   + `&page=${pageNum}`
-
-    const URL = `https://api.themoviedb.org/3/search/movie`
+export async function getFilterMovies(pageNum: any, year: number) {
+  const URL = `https://api.themoviedb.org/3/discover/movie`
     + `?api_key=${API_KEY}`
-    + `&language=ko&query=`
-    + `&primary_release_year=${2025}`
-    // + `&region=KR&year=${2025}`
+    + `&language=ko`
+    // + `&region=KR&with_release_type=3|2&year=2025`
+    + `&watch_region=KR&with_watch_monetization_types=flatrate`
+    + `&primary_release_year=${year}`
     + `&page=${pageNum}`
 
   const response = await fetch(URL)

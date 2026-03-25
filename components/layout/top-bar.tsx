@@ -2,7 +2,7 @@
 
 import { faCircleHalfStroke, faMoon } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import SearchInput from "./search-input";
 import {
   Navbar,
@@ -25,12 +25,15 @@ import {
   useDisclosure,
   RadioGroup,
   Radio,
+  Select,
+  SelectItem,
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 
 const navItems = [
   { href: "/", label: "Home" },
+  { href: "/worldcup", label: "Worldcup" },
   { href: "/calendar", label: "Calendar" },
   { href: "/awards", label: "Awards" },
   { href: "/movie", label: "Movies" },
@@ -41,6 +44,7 @@ const navItems = [
 export default function TopBar() {
   const { uid } = useUser();
   const path = usePathname();
+  const router = useRouter();
   const [isScroll, setIsScroll] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -49,7 +53,18 @@ export default function TopBar() {
     onOpen: onOpenSet,
     onOpenChange: onOpenChangeSet,
   } = useDisclosure();
+  const {
+    isOpen: isOpenWorldcup,
+    onOpen: onOpenWorldcup,
+    onOpenChange: onOpenChangeWorldcup,
+    onClose: onCloseWorldcup,
+  } = useDisclosure();
   const [selectedSet, setSelectedSet] = useState("release");
+  const [selectedSource, setSelectedSource] = useState("kobis");
+  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
+  const yearOptions = Array.from({ length: 26 }, (_, index) => String(2025 - index));
+
+  const isActivePath = (href: string) => path === href || path.startsWith(`${href}/`);
 
   const onChangeScroll = () => {
     if (window.scrollY < 30) setIsScroll(false);
@@ -94,6 +109,17 @@ export default function TopBar() {
     localStorage.setItem("set_isTodaySave", value === "today" ? "true" : "false");
   };
 
+  const handleOpenWorldcup = () => {
+    setSelectedSource("kobis");
+    setSelectedYear(String(new Date().getFullYear()));
+    onOpenWorldcup();
+  };
+
+  const handleNavigateWorldcup = () => {
+    router.push(`/worldcup?year=${selectedYear}&source=${selectedSource}`);
+    onCloseWorldcup();
+  };
+
   const toggleTheme = () => {
     const nextIsDark = !isDarkMode;
     setIsDarkMode(nextIsDark);
@@ -123,17 +149,30 @@ export default function TopBar() {
           <NavbarMenuToggle className="topbar-toggle lg:hidden" />
           <NavbarMenu className="topbar-menu border-t px-4 pt-4 backdrop-blur-xl">
             {navItems.map((item) => (
-              <NavbarItem key={item.href} isActive={path === item.href}>
-                <Link
-                  href={item.href}
-                  color="foreground"
-                  className={[
-                    "topbar-mobile-link block rounded-2xl px-4 py-3 text-sm font-medium transition",
-                    path === item.href ? "topbar-mobile-link--active" : "",
-                  ].join(" ")}
-                >
-                  {item.label}
-                </Link>
+              <NavbarItem key={item.href} isActive={isActivePath(item.href)}>
+                {item.href === "/worldcup" ? (
+                  <button
+                    type="button"
+                    onClick={handleOpenWorldcup}
+                    className={[
+                      "topbar-mobile-link block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
+                      isActivePath(item.href) ? "topbar-mobile-link--active" : "",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </button>
+                ) : (
+                  <Link
+                    href={item.href}
+                    color="foreground"
+                    className={[
+                      "topbar-mobile-link block rounded-2xl px-4 py-3 text-sm font-medium transition",
+                      isActivePath(item.href) ? "topbar-mobile-link--active" : "",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </Link>
+                )}
               </NavbarItem>
             ))}
           </NavbarMenu>
@@ -151,16 +190,29 @@ export default function TopBar() {
 
           <NavbarContent className="hidden gap-2 lg:flex">
             {navItems.map((item) => (
-              <NavbarItem key={item.href} isActive={path === item.href}>
-                <Link
-                  href={item.href}
-                  className={[
-                    "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
-                    path === item.href ? "topbar-link--active" : "",
-                  ].join(" ")}
-                >
-                  {item.label}
-                </Link>
+              <NavbarItem key={item.href} isActive={isActivePath(item.href)}>
+                {item.href === "/worldcup" ? (
+                  <button
+                    type="button"
+                    onClick={handleOpenWorldcup}
+                    className={[
+                      "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
+                      isActivePath(item.href) ? "topbar-link--active" : "",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </button>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className={[
+                      "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
+                      isActivePath(item.href) ? "topbar-link--active" : "",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </Link>
+                )}
               </NavbarItem>
             ))}
           </NavbarContent>
@@ -250,6 +302,47 @@ export default function TopBar() {
                   <Radio value="release">Release</Radio>
                   <Radio value="today">Today</Radio>
                 </RadioGroup>
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={isOpenWorldcup}
+        size="sm"
+        placement="center"
+        onOpenChange={onOpenChangeWorldcup}
+      >
+        <ModalContent>
+          {() => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Worldcup</ModalHeader>
+              <ModalBody className="py-4">
+                <Select
+                  label="Year"
+                  selectedKeys={[selectedYear]}
+                  onSelectionChange={(keys) => {
+                    const [value] = Array.from(keys).map(String);
+                    if (value) setSelectedYear(value);
+                  }}
+                >
+                  {yearOptions.map((year) => (
+                    <SelectItem key={year}>{year}</SelectItem>
+                  ))}
+                </Select>
+                <RadioGroup
+                  color="secondary"
+                  label="Source"
+                  value={selectedSource}
+                  onValueChange={setSelectedSource}
+                >
+                  <Radio value="kobis">Box Office (KOBIS)</Radio>
+                  <Radio value="tmdb">OTT (TMDB)</Radio>
+                </RadioGroup>
+                <Button className="topbar-login mt-2" radius="full" variant="flat" onPress={handleNavigateWorldcup}>
+                  Start worldcup
+                </Button>
               </ModalBody>
             </>
           )}

@@ -10,22 +10,85 @@ type Movie = {
   genreAlt?: string
 }
 
+type TmdbMovie = {
+  id: number
+  title: string
+  release_date?: string
+  original_language?: string
+  genre_ids?: number[]
+}
+
+type WorldcupMovie = Movie | TmdbMovie
+
+type NormalizedMovie = {
+  id: string
+  title: string
+  openDate?: string
+  nation?: string
+  genre?: string
+}
+
 type SelectionHistory = {
   round: number
-  winner: Movie
-  losers: Movie[]
+  winner: NormalizedMovie
+  losers: NormalizedMovie[]
 }
 
 type TournamentState = {
   roundLabel: number
   roundSize: number
-  currentRound: Movie[]
-  nextRound: Movie[]
-  winner: Movie | null
+  currentRound: NormalizedMovie[]
+  nextRound: NormalizedMovie[]
+  winner: NormalizedMovie | null
   history: SelectionHistory[]
 }
 
-const shuffleMovies = (movies: Movie[]) => {
+const genreLabelMap: Record<number, string> = {
+  12: "Adventure",
+  14: "Fantasy",
+  16: "Animation",
+  18: "Drama",
+  27: "Horror",
+  28: "Action",
+  35: "Comedy",
+  36: "History",
+  37: "Western",
+  53: "Thriller",
+  80: "Crime",
+  99: "Documentary",
+  878: "Sci-Fi",
+  9648: "Mystery",
+  10402: "Music",
+  10749: "Romance",
+  10751: "Family",
+  10752: "War",
+}
+
+const normalizeMovie = (movie: WorldcupMovie): NormalizedMovie => {
+  if ("movieCd" in movie) {
+    return {
+      id: movie.movieCd,
+      title: movie.movieNm,
+      openDate: movie.openDt,
+      nation: movie.nationAlt,
+      genre: movie.genreAlt,
+    }
+  }
+
+  return {
+    id: String(movie.id),
+    title: movie.title,
+    openDate: movie.release_date,
+    nation: movie.original_language?.toUpperCase(),
+    genre: movie.genre_ids
+      ?.map((genreId) => genreLabelMap[genreId])
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(", "),
+  }
+}
+
+const shuffleMovies = (movies: NormalizedMovie[]) => {
   const shuffled = [...movies]
 
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
@@ -38,7 +101,7 @@ const shuffleMovies = (movies: Movie[]) => {
   return shuffled
 }
 
-const buildInitialState = (results: Movie[]): TournamentState => ({
+const buildInitialState = (results: NormalizedMovie[]): TournamentState => ({
   roundLabel: results.length,
   roundSize: results.length,
   currentRound: results,
@@ -104,16 +167,17 @@ const normalizeTournament = (state: TournamentState): TournamentState => {
   }
 }
 
-const movieMeta = (movie: Movie) => {
-  return [movie.openDt, movie.nationAlt, movie.genreAlt].filter(Boolean).join(" | ")
+const movieMeta = (movie: NormalizedMovie) => {
+  return [movie.openDate, movie.nation, movie.genre].filter(Boolean).join(" | ")
 }
 
-export default function YearWorldcup({ results }: { results: Movie[] }) {
-  const [tournament, setTournament] = useState<TournamentState>(() => buildInitialState(results))
+export default function YearWorldcup({ title, results }: { title: string, results: WorldcupMovie[] }) {
+  const [tournament, setTournament] = useState<TournamentState>(() => buildInitialState(results.map(normalizeMovie)))
   const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
-    setTournament(normalizeTournament(buildInitialState(shuffleMovies(results))))
+    const normalizedResults = results.map(normalizeMovie)
+    setTournament(normalizeTournament(buildInitialState(shuffleMovies(normalizedResults))))
     setIsReady(true)
   }, [results])
 
@@ -123,15 +187,16 @@ export default function YearWorldcup({ results }: { results: Movie[] }) {
   const currentMatch = Math.min(nextRound.length + 1, matchupCount || 1)
 
   const resetTournament = () => {
-    setTournament(normalizeTournament(buildInitialState(shuffleMovies(results))))
+    const normalizedResults = results.map(normalizeMovie)
+    setTournament(normalizeTournament(buildInitialState(shuffleMovies(normalizedResults))))
   }
 
-  const advanceWinner = (selectedMovie: Movie) => {
+  const advanceWinner = (selectedMovie: NormalizedMovie) => {
     if (currentMatchup.length < 2) {
       return
     }
 
-    const losers = currentMatchup.filter((movie) => movie.movieCd !== selectedMovie.movieCd)
+    const losers = currentMatchup.filter((movie) => movie.id !== selectedMovie.id)
 
     setTournament((prev) =>
       normalizeTournament({
@@ -144,12 +209,12 @@ export default function YearWorldcup({ results }: { results: Movie[] }) {
     )
   }
 
-  const skipMovie = (skippedMovie: Movie) => {
+  const skipMovie = (skippedMovie: NormalizedMovie) => {
     if (currentMatchup.length < 2) {
       return
     }
 
-    const remainingMatchup = currentMatchup.filter((movie) => movie.movieCd !== skippedMovie.movieCd)
+    const remainingMatchup = currentMatchup.filter((movie) => movie.id !== skippedMovie.id)
 
     setTournament((prev) => {
       const restOfRound = prev.currentRound.slice(currentMatchup.length)
@@ -163,10 +228,10 @@ export default function YearWorldcup({ results }: { results: Movie[] }) {
     })
   }
 
-  const renderMovieCard = (movie: Movie) => {
+  const renderMovieCard = (movie: NormalizedMovie) => {
     return (
       <div
-        key={movie.movieCd}
+        key={movie.id}
         className="browse-card flex min-h-[220px] cursor-pointer flex-col justify-between rounded-[28px] border p-5 text-left"
         onClick={() => advanceWinner(movie)}
       >
@@ -188,24 +253,24 @@ export default function YearWorldcup({ results }: { results: Movie[] }) {
           </div>
           <div className="mt-4 flex-1">
             <h2 className="browse-card__title text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">
-              {movie.movieNm}
+              {movie.title}
             </h2>
           </div>
         </div>
         <div className="mt-6 flex flex-wrap gap-2">
-          {movie.openDt && (
+          {movie.openDate && (
             <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-              {movie.openDt}
+              {movie.openDate}
             </span>
           )}
-          {movie.nationAlt && (
+          {movie.nation && (
             <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-              {movie.nationAlt}
+              {movie.nation}
             </span>
           )}
-          {movie.genreAlt && (
+          {movie.genre && (
             <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-              {movie.genreAlt}
+              {movie.genre}
             </span>
           )}
         </div>
@@ -255,22 +320,22 @@ export default function YearWorldcup({ results }: { results: Movie[] }) {
               Year World Cup Winner
             </span>
             <h1 className="home-title text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
-              {winner.movieNm}
+              {winner.title}
             </h1>
             <div className="flex flex-wrap justify-center gap-2">
-              {winner.openDt && (
+              {winner.openDate && (
                 <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-                  {winner.openDt}
+                  {winner.openDate}
                 </span>
               )}
-              {winner.nationAlt && (
+              {winner.nation && (
                 <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-                  {winner.nationAlt}
+                  {winner.nation}
                 </span>
               )}
-              {winner.genreAlt && (
+              {winner.genre && (
                 <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-                  {winner.genreAlt}
+                  {winner.genre}
                 </span>
               )}
             </div>
@@ -288,17 +353,17 @@ export default function YearWorldcup({ results }: { results: Movie[] }) {
             <div className="mt-4 flex flex-col gap-3">
               {history.map((entry, index) => (
                 <div
-                  key={`${entry.round}-${entry.winner.movieCd}-${entry.losers.map((movie) => movie.movieCd).join("-")}-${index}`}
+                  key={`${entry.round}-${entry.winner.id}-${entry.losers.map((movie) => movie.id).join("-")}-${index}`}
                   className="rounded-2xl border border-slate-200/70 px-4 py-3 dark:border-slate-700/70"
                 >
                   <p className="browse-results__eyebrow text-[11px] font-semibold uppercase tracking-[0.2em]">
                     Round of {entry.round}
                   </p>
                   <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    {entry.winner.movieNm}
+                    {entry.winner.title}
                   </p>
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    def. {entry.losers.map((movie) => movie.movieNm).join(", ")}
+                    def. {entry.losers.map((movie) => movie.title).join(", ")}
                   </p>
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {movieMeta(entry.winner)}
@@ -321,7 +386,7 @@ export default function YearWorldcup({ results }: { results: Movie[] }) {
               Year World Cup
             </p>
             <h1 className="home-title text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
-              Choose one movie
+              {title}
             </h1>
           </div>
           <div className="flex flex-wrap gap-2">

@@ -146,9 +146,6 @@ html.dark-theme .home-card {
   border-color: rgba(226, 232, 240, 0.78) !important;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.94)) !important;
-  box-shadow:
-    0 18px 42px rgba(15, 23, 42, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .browse-card {

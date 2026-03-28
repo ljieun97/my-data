@@ -113,6 +113,5 @@ export async function getFilterMovies(type: string, country: any, providers: any
 
   const response = await fetch(URL)
   const results = await response.json()
-  // results = results.filter((content: any) => content.poster_path && content.overview)
   return results
 }

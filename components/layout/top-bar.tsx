@@ -42,6 +42,8 @@ const navItems = [
 ];
 
 export default function TopBar() {
+  const currentYear = new Date().getFullYear();
+  const defaultWorldcupYear = String(currentYear - 1);
   const { uid } = useUser();
   const path = usePathname();
   const router = useRouter();
@@ -61,8 +63,8 @@ export default function TopBar() {
   } = useDisclosure();
   const [selectedSet, setSelectedSet] = useState("release");
   const [selectedSource, setSelectedSource] = useState("kobis");
-  const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
-  const yearOptions = Array.from({ length: 26 }, (_, index) => String(2025 - index));
+  const [selectedYear, setSelectedYear] = useState(defaultWorldcupYear);
+  const yearOptions = Array.from({ length: 26 }, (_, index) => String(currentYear - index));
 
   const isActivePath = (href: string) => path === href || path.startsWith(`${href}/`);
 
@@ -111,7 +113,7 @@ export default function TopBar() {
 
   const handleOpenWorldcup = () => {
     setSelectedSource("kobis");
-    setSelectedYear(String(new Date().getFullYear()));
+    setSelectedYear(defaultWorldcupYear);
     onOpenWorldcup();
   };
 

@@ -88,7 +88,8 @@ const Page = async ({
   searchParams?: Promise<SearchParams>;
 }) => {
   const resolvedSearchParams = (await searchParams) ?? {};
-  const year = Number(resolvedSearchParams.year ?? 2025);
+  const defaultWorldcupYear = new Date().getFullYear() - 1;
+  const year = Number(resolvedSearchParams.year ?? defaultWorldcupYear);
   const requestedSource = resolvedSearchParams.source === "tmdb" ? "tmdb" : "kobis";
   const { title, getResults } = sourceConfig[requestedSource];
   const results = await getResults(year);

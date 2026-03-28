@@ -38,17 +38,17 @@ async function fetchMovies(endpoint: string, page: number) {
     + '&language=ko&region=KR'
     + `&page=${page}`
     + `&api_key=${API_KEY}`
-    try {
-      const response = await fetch(URL, { next: { revalidate: 3600 } })
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      const results = await response.json()
-      return results
-    } catch (error) {
-      console.error('Failed to fetch:', error)
-      return null
+  try {
+    const response = await fetch(URL, { next: { revalidate: 3600 } })
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
+    const results = await response.json()
+    return results
+  } catch (error) {
+    console.error('Failed to fetch:', error)
+    return null
+  }
 }
 
 export async function fetchAllMovies(endpoint: string) {
@@ -129,4 +129,45 @@ export async function getFilterMovies(pageNum: any, year: number) {
   const results = await response.json()
   // results = results.filter((content: any) => content.poster_path && content.overview)
   return results
+}
+
+type TmdbSearchMovie = {
+  id: number
+  title?: string
+  original_title?: string
+  release_date?: string
+  poster_path?: string | null
+}
+
+export async function searchMoviePosterByTitleAndDate(title: string, openDt: string) {
+  if (!API_KEY) return null
+  const trimmedTitle = title.trim()
+
+  if (!trimmedTitle) {
+    return null
+  }
+
+  const year = openDt.slice(0, 4)
+  const query = new URLSearchParams({
+    query: trimmedTitle,
+    language: "ko",
+    api_key: API_KEY,
+    region: "KR",
+    year: year
+  })
+
+  const URL = `https://api.themoviedb.org/3/search/movie?${query.toString()}`
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
+
+  if (!response.ok) {
+    return null
+  }
+
+  const data = await response.json()
+  const results = Array.isArray(data.results) ? (data.results as TmdbSearchMovie[]) : []
+
+  if (results.length == 1) {
+    return results[0]?.poster_path
+  }
+  return null
 }

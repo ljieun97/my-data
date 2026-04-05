@@ -139,6 +139,34 @@ type TmdbSearchMovie = {
   poster_path?: string | null
 }
 
+function normalizeTitle(value: string) {
+  return value.toLowerCase().replace(/[\s:!?'".,()-]/g, "")
+}
+
+function selectBestTmdbMatch(results: TmdbSearchMovie[], title: string, year: string) {
+  if (!results.length) {
+    return null
+  }
+
+  const normalizedTitle = normalizeTitle(title)
+
+  const exactTitleMatch = results.find((movie) => {
+    const candidates = [movie.title, movie.original_title].filter(Boolean) as string[]
+    return candidates.some((candidate) => normalizeTitle(candidate) === normalizedTitle)
+  })
+
+  if (exactTitleMatch) {
+    return exactTitleMatch
+  }
+
+  const sameYearMatch = results.find((movie) => movie.release_date?.startsWith(year))
+  if (sameYearMatch) {
+    return sameYearMatch
+  }
+
+  return results[0]
+}
+
 export async function searchMoviePosterByTitleAndDate(title: string, openDt: string) {
   if (!API_KEY) return null
   const trimmedTitle = title.trim()
@@ -153,7 +181,7 @@ export async function searchMoviePosterByTitleAndDate(title: string, openDt: str
     language: "ko",
     api_key: API_KEY,
     region: "KR",
-    year: year
+    year
   })
 
   const URL = `https://api.themoviedb.org/3/search/movie?${query.toString()}`
@@ -166,8 +194,50 @@ export async function searchMoviePosterByTitleAndDate(title: string, openDt: str
   const data = await response.json()
   const results = Array.isArray(data.results) ? (data.results as TmdbSearchMovie[]) : []
 
-  if (results.length == 1) {
-    return results[0]?.poster_path
+  if (results.length === 1) {
+    return results[0]?.poster_path ?? null
   }
+
   return null
+}
+
+export async function searchMovieMetaByTitleAndDate(title: string, openDt: string) {
+  if (!API_KEY) {
+    return { tmdbId: null, posterPath: null }
+  }
+
+  const trimmedTitle = title.trim()
+
+  if (!trimmedTitle) {
+    return { tmdbId: null, posterPath: null }
+  }
+
+  const year = openDt.slice(0, 4)
+  const query = new URLSearchParams({
+    query: trimmedTitle,
+    language: "ko",
+    api_key: API_KEY,
+    region: "KR",
+    year
+  })
+
+  const URL = `https://api.themoviedb.org/3/search/movie?${query.toString()}`
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
+
+  if (!response.ok) {
+    return { tmdbId: null, posterPath: null }
+  }
+
+  const data = await response.json()
+  const results = Array.isArray(data.results) ? (data.results as TmdbSearchMovie[]) : []
+  const matchedMovie = selectBestTmdbMatch(results, trimmedTitle, year)
+
+  if (!matchedMovie) {
+    return { tmdbId: null, posterPath: null }
+  }
+
+  return {
+    tmdbId: matchedMovie.id,
+    posterPath: matchedMovie.poster_path ?? null
+  }
 }

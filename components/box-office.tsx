@@ -1,4 +1,8 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Image from "next/image"
+import Flatrates from "@/components/contents/flatrates"
 
 type Movie = {
   rnum?: string
@@ -14,22 +18,32 @@ type Movie = {
   rankOldAndNew: string
   scrnCnt: string
   showCnt: string
+  tmdbId?: number | null
   posterPath?: string | null
 }
 
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342"
+const MAX_VISIBLE_ITEMS = 5
 
 const numberFormatter = new Intl.NumberFormat("ko-KR")
-const currencyFormatter = new Intl.NumberFormat("ko-KR")
 
-const formatCount = (value?: string) => {
+const formatCompactNumber = (value?: string) => {
   const parsed = Number(value ?? 0)
-  return `${numberFormatter.format(parsed)}명`
+
+  if (parsed >= 10000) {
+    const millions = parsed / 10000
+    const formatted = Number.isInteger(millions)
+      ? numberFormatter.format(millions)
+      : new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 1 }).format(millions)
+
+    return `${formatted}만`
+  }
+
+  return numberFormatter.format(parsed)
 }
 
-const formatCurrency = (value?: string) => {
-  const parsed = Number(value ?? 0)
-  return `${currencyFormatter.format(parsed)}원`
+const formatCount = (value?: string) => {
+  return `${formatCompactNumber(value)}명`
 }
 
 const formatDate = (value?: string) => {
@@ -42,22 +56,22 @@ const formatDate = (value?: string) => {
     return value
   }
 
-  return `${year}.${month}.${day}`
+  return `${year}`
 }
 
 const rankChangeLabel = (movie: Movie) => {
   const change = Number(movie.rankInten ?? 0)
 
   if (movie.rankOldAndNew === "NEW") {
-    return { label: "NEW", tone: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" }
+    return { label: "NEW", tone: "bg-emerald-500 text-white dark:bg-emerald-400 dark:text-slate-950" }
   }
 
   if (change > 0) {
-    return { label: `▲ ${change}`, tone: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300" }
+    return { label: `▲ ${change}`, tone: "bg-sky-500 text-white dark:bg-sky-400 dark:text-slate-950" }
   }
 
   if (change < 0) {
-    return { label: `▼ ${Math.abs(change)}`, tone: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300" }
+    return { label: `▼ ${Math.abs(change)}`, tone: "bg-rose-500 text-white dark:bg-rose-400 dark:text-slate-950" }
   }
 
   return { label: "", tone: "" }
@@ -65,6 +79,39 @@ const rankChangeLabel = (movie: Movie) => {
 
 export default function BoxOffice({ results }: { results?: Movie[] }) {
   const safeResults = Array.isArray(results) ? results : []
+  const [visibleItems, setVisibleItems] = useState(MAX_VISIBLE_ITEMS)
+  const [startIndex, setStartIndex] = useState(0)
+
+  useEffect(() => {
+    const updateVisibleItems = () => {
+      if (window.innerWidth < 640) {
+        setVisibleItems(3)
+        return
+      }
+
+      if (window.innerWidth < 1024) {
+        setVisibleItems(4)
+        return
+      }
+
+      setVisibleItems(MAX_VISIBLE_ITEMS)
+    }
+
+    updateVisibleItems()
+    window.addEventListener("resize", updateVisibleItems)
+
+    return () => {
+      window.removeEventListener("resize", updateVisibleItems)
+    }
+  }, [])
+
+  useEffect(() => {
+    const maxStartIndex = Math.max(0, safeResults.length - visibleItems)
+    setStartIndex((prev) => {
+      const clamped = Math.min(prev, maxStartIndex)
+      return Math.floor(clamped / visibleItems) * visibleItems
+    })
+  }, [safeResults.length, visibleItems])
 
   if (!safeResults.length) {
     return (
@@ -77,68 +124,83 @@ export default function BoxOffice({ results }: { results?: Movie[] }) {
       </section>
     )
   }
+
+  const maxStartIndex = Math.max(0, safeResults.length - visibleItems)
+
+  const handleNext = () => {
+    setStartIndex((prev) => Math.min(prev + visibleItems, maxStartIndex))
+  }
+
+  const handlePrevious = () => {
+    setStartIndex((prev) => Math.max(prev - visibleItems, 0))
+  }
+
+  const canGoPrevious = startIndex > 0
+  const canGoNext = startIndex + visibleItems < safeResults.length
+  const translatePercentage = (startIndex * 100) / visibleItems
+
   return (
-    <section className="">
-      <div className="">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="browse-results__eyebrow text-xs font-semibold uppercase tracking-[0.24em]">
-                MOVIE
-              </p>
-              <h1 className="home-title text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
-                Daily Box Office
-              </h1>
-              <p className="home-copy mt-2 text-sm">
-                Audience, screens, show counts, and sales in one clean view.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="browse-card__stat rounded-full px-3 py-1 text-xs font-medium">
-                {safeResults.length} titles
-              </span>
-              {safeResults[0]?.openDt && (
-                <span className="browse-card__stat rounded-full px-3 py-1 text-xs font-medium">
-                  Latest release: {formatDate(safeResults[0].openDt)}
-                </span>
-              )}
-            </div>
+    <section>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="home-title text-2xl font-semibold tracking-[-0.05em]">
+              박스오피스 순위
+            </h1>
+            <p className="home-copy mt-1 text-sm">
+              일일 집계에 따라 매일 순위가 변동됩니다.
+            </p>
           </div>
+        </div>
 
-          <div className="browse-results overflow-hidden rounded-[28px] border">
-            <div className="hidden grid-cols-[72px_minmax(0,1.4fr)_1fr_1fr] gap-3 border-b border-slate-200/80 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:border-slate-700/70 dark:text-slate-400 md:grid">
-              <span>Rank</span>
-              <span>Movie</span>
-              <span>Audience</span>
-              <span>Sales</span>
-            </div>
-            <div className="divide-y divide-slate-200/70 dark:divide-slate-700/70">
-              {safeResults.map((movie) => {
-                const rankChange = rankChangeLabel(movie)
+        <div>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={handlePrevious}
+              disabled={!canGoPrevious}
+              className="absolute -left-5 top-40 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300/80 bg-white/92 text-base font-semibold text-slate-900 shadow-md backdrop-blur transition hover:border-slate-400 hover:bg-white disabled:pointer-events-none disabled:opacity-0 dark:border-slate-700 dark:bg-slate-900/88 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900"
+              aria-label="Previous"
+            >
+              ‹
+            </button>
+            <div className="overflow-hidden">
+              <div
+                className="flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                style={{ transform: `translateX(-${translatePercentage}%)` }}
+              >
+                {safeResults.map((movie) => {
+                  const rankChange = rankChangeLabel(movie)
 
-                return (
-                  <article
-                    key={movie.movieNm + movie.rank}
-                    className="grid gap-3 px-4 py-4 md:grid-cols-[72px_minmax(0,1.4fr)_1fr_1fr]"
-                  >
-                    <div className="flex flex-col items-start gap-2">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-sm font-semibold text-slate-900 dark:bg-slate-800 dark:text-slate-100">
-                        {movie.rank}
-                      </div>
-                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${rankChange.tone}`}>
-                        {rankChange.label}
-                      </span>
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex gap-4">
-                        <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
+                  return (
+                    <article
+                      key={movie.movieNm + movie.rank}
+                      className="shrink-0 pr-4"
+                      style={{ width: `${100 / visibleItems}%` }}
+                    >
+                      <div className="flex min-w-0 flex-col">
+                        <div className="relative mb-2 aspect-[2/3] overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+                          <div className="absolute left-2 top-2 z-10 flex items-center gap-2">
+                            <div className="rounded-full bg-white/90 px-3 py-1.5 text-xs font-extrabold tracking-[0.04em] text-slate-900 shadow-lg backdrop-blur dark:bg-slate-900/80 dark:text-slate-100">
+                              {movie.rank}
+                            </div>
+                            {rankChange.label ? (
+                              <span className={`rounded-full px-3 py-1.5 text-xs font-extrabold tracking-[0.04em] shadow-lg ${rankChange.tone}`}>
+                                {rankChange.label}
+                              </span>
+                            ) : null}
+                          </div>
+                          {movie.tmdbId ? (
+                            <div className="absolute right-2 top-2 z-10">
+                              <Flatrates type="movie" provider={movie.tmdbId} />
+                            </div>
+                          ) : null}
                           {movie.posterPath ? (
                             <Image
                               src={`${TMDB_POSTER_BASE_URL}${movie.posterPath}`}
                               alt={`${movie.movieNm} poster`}
                               fill
-                              sizes="64px"
+                              sizes="(min-width: 1280px) 18vw, (min-width: 640px) 24vw, 33vw"
                               className="object-cover"
                             />
                           ) : (
@@ -147,63 +209,35 @@ export default function BoxOffice({ results }: { results?: Movie[] }) {
                             </div>
                           )}
                         </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-base font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-50">
+
+                        <div className="flex flex-1 flex-col">
+                          <p className="text-base font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-50">
                             {movie.movieNm}
                           </p>
-                          <p className="browse-card__meta mt-1 text-sm">
-                            개봉일 {formatDate(movie.openDt)}
+                          <p className="browse-card__meta text-sm">
+                            {formatDate(movie.openDt)}
                           </p>
-                          <p className="browse-card__meta mt-1 text-sm">
-                            예매율 {movie.salesShare ?? "0"}%
-                          </p>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-                              스크린 {numberFormatter.format(Number(movie.scrnCnt ?? 0))}
-                            </span>
-                            <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-                              상영 {numberFormatter.format(Number(movie.showCnt ?? 0))}
-                            </span>
+                          <div className="mt-2 px-0">
+                            <p className="browse-card__meta text-sm">
+                              일일 {formatCount(movie.audiCnt)} 누적 {formatCount(movie.audiAcc)}
+                            </p>
                           </div>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="md:hidden">
-                      <div className="flex flex-wrap gap-2">
-                        <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-                          관객 {formatCount(movie.audiCnt)}
-                        </span>
-                        <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-                          매출 {formatCurrency(movie.salesAmt)}
-                        </span>
-                      </div>
-                      <p className="browse-card__meta mt-2 text-sm">
-                        누적 관객 {formatCount(movie.audiAcc)} · 누적 매출 {formatCurrency(movie.salesAcc)}
-                      </p>
-                    </div>
-
-                    <div className="hidden md:block">
-                      <p className="text-base font-semibold text-slate-900 dark:text-slate-50">
-                        {formatCount(movie.audiCnt)}
-                      </p>
-                      <p className="browse-card__meta mt-1 text-sm">
-                        누적 {formatCount(movie.audiAcc)}
-                      </p>
-                    </div>
-
-                    <div className="hidden md:block">
-                      <p className="text-base font-semibold text-slate-900 dark:text-slate-50">
-                        {formatCurrency(movie.salesAmt)}
-                      </p>
-                      <p className="browse-card__meta mt-1 text-sm">
-                        누적 {formatCurrency(movie.salesAcc)}
-                      </p>
-                    </div>
-                  </article>
-                )
-              })}
+                    </article>
+                  )
+                })}
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={!canGoNext}
+              className="absolute -right-5 top-40 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300/80 bg-white/92 text-base font-semibold text-slate-900 shadow-md backdrop-blur transition hover:border-slate-400 hover:bg-white disabled:pointer-events-none disabled:opacity-0 dark:border-slate-700 dark:bg-slate-900/88 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900"
+              aria-label="Next"
+            >
+              ›
+            </button>
           </div>
         </div>
       </div>

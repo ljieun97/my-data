@@ -1,6 +1,6 @@
 import BoxOffice from "@/components/box-office";
 import { getKobisBoxoffice } from "@/lib/open-api/kobis";
-import { searchMoviePosterByTitleAndDate } from "@/lib/open-api/tmdb-server";
+import { searchMovieMetaByTitleAndDate } from "@/lib/open-api/tmdb-server";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -18,7 +18,7 @@ const Home = async () => {
   const moviesWithPosters = await Promise.all(
     dailyBoxOfficeList.map(async (movie: any) => ({
       ...movie,
-      posterPath: await searchMoviePosterByTitleAndDate(movie.movieNm, movie.openDt),
+      ...(await searchMovieMetaByTitleAndDate(movie.movieNm, movie.openDt)),
     }))
   )
 

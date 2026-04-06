@@ -30,7 +30,7 @@ export async function getTopRatedMovies() {
   const URL = `https://api.themoviedb.org/3/movie/top_rated?language=ko&api_key=${API_KEY}`;
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   const { results } = await response.json()
-  return results.filter((content: any) => content.backdrop_path);
+  return results.filter((content: any) => content.backdrop_path && content.overview);
 }
 
 async function fetchMovies(endpoint: string, page: number) {
@@ -109,10 +109,6 @@ export async function getProviders(type: string, id: any) {
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   const { results } = await response.json()
   return results?.KR
-}
-
-function addMonths(now: Date, arg1: number) {
-  throw new Error("Function not implemented.");
 }
 
 //월드컵용 연도별 국내에서 개봉 영화

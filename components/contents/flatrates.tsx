@@ -10,7 +10,7 @@ export default function Flatrates({ type, provider }: { type: string, provider: 
     (async () => {
       if (type == 'movie' || type == 'tv') {
         const results = await getProviders(type, provider)
-        setFlatrates(results?.flatrate)
+        setFlatrates(results?.flatrate?.filter((content: any) => content.provider_id != 1796))
       }
     })()
   }, [provider])

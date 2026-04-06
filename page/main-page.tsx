@@ -1,6 +1,6 @@
 'use client'
 
-import BoxOffice from "@/components/box-office";
+import BoxOffice from "@/components/card-slider";
 import MoodSelecter from "@/components/mood-selecter";
 
 export default function MainPage() {

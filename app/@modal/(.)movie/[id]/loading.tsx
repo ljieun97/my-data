@@ -1,3 +1,5 @@
+import DetailModalLoading from "@/components/modal/detail-modal-loading"
+
 export default function Loading() {
-  return <div>Loading...</div>;
+  return <DetailModalLoading />
 }

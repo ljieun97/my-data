@@ -8,14 +8,15 @@ export const metadata = {
 export default async function Page({ params }: { params: any }) {
   const { id } = await params
   const type = 'tv'
-  const [content, video, casts, rcm, providers] = await Promise.all([
+  const [content, video, casts, rcm, simFallback, providers] = await Promise.all([
     getDetail(type, id),
     getVideo(type, id),
     getCasts(type, id),
     getRecommendations(type, id),
+    getSimilars(type, id),
     getProviders(type, id),
   ])
-  const sim = (rcm?.length > 0 ? rcm : await getSimilars(type, id))
+  const sim = rcm?.length > 0 ? rcm : simFallback
 
   return (
     <DetailModal

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import Flatrates from "@/components/contents/flatrates"
 
 export type HomeMovieCardItem = {
@@ -73,6 +74,7 @@ export default function BoxOffice({
   desktopPageSize?: number
   desktopVisibleSlots?: number
 }) {
+  const router = useRouter()
   const safeResults = Array.isArray(results) ? results : []
   const [pageSize, setPageSize] = useState(desktopPageSize)
   const [visibleSlots, setVisibleSlots] = useState(desktopVisibleSlots)
@@ -219,6 +221,14 @@ export default function BoxOffice({
     handlePrevious()
   }
 
+  const prefetchDetail = (tmdbId?: number | null) => {
+    if (!tmdbId) {
+      return
+    }
+
+    router.prefetch(`/movie/${tmdbId}`)
+  }
+
   return (
     <section>
       <div className="flex flex-col gap-2">
@@ -256,7 +266,11 @@ export default function BoxOffice({
                     <Link
                       href={movie.tmdbId ? `/movie/${movie.tmdbId}` : "#"}
                       scroll={false}
+                      prefetch={movie.tmdbId ? true : false}
                       aria-disabled={!movie.tmdbId}
+                      onMouseEnter={() => prefetchDetail(movie.tmdbId)}
+                      onTouchStart={() => prefetchDetail(movie.tmdbId)}
+                      onFocus={() => prefetchDetail(movie.tmdbId)}
                       onClick={(event) => {
                         if (!movie.tmdbId) {
                           event.preventDefault()

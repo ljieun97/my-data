@@ -255,6 +255,7 @@ export default function BoxOffice({
                   >
                     <Link
                       href={movie.tmdbId ? `/movie/${movie.tmdbId}` : "#"}
+                      scroll={false}
                       aria-disabled={!movie.tmdbId}
                       onClick={(event) => {
                         if (!movie.tmdbId) {

@@ -28,6 +28,16 @@ body {
   background: transparent;
 }
 
+html.modal-scroll-lock,
+body.modal-scroll-lock {
+  overflow: hidden;
+}
+
+html.modal-scroll-lock .app-shell,
+body.modal-scroll-lock .app-shell {
+  overflow: hidden;
+}
+
 html.dark-theme body {
   color: #e5eefb;
 }

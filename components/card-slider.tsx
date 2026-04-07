@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import Flatrates from "@/components/contents/flatrates"
 
 export type HomeMovieCardItem = {
@@ -9,6 +10,7 @@ export type HomeMovieCardItem = {
   title: string
   year?: string
   englishTitle?: string | null
+  originalTitle?: string | null
   rank: string
   rankChangeLabel?: string
   rankChangeTone?: string
@@ -251,6 +253,19 @@ export default function BoxOffice({
                     className="shrink-0 pr-3"
                     style={{ width: `${100 / visibleSlots}%` }}
                   >
+                    <Link
+                      href={movie.tmdbId ? `/movie/${movie.tmdbId}` : "#"}
+                      aria-disabled={!movie.tmdbId}
+                      onClick={(event) => {
+                        if (!movie.tmdbId) {
+                          event.preventDefault()
+                        }
+                      }}
+                      className={[
+                        "group block rounded-2xl transition",
+                        movie.tmdbId ? "cursor-pointer" : "cursor-default",
+                      ].join(" ")}
+                    >
                     <div className="flex min-w-0 flex-col">
                       <div className="relative mb-2 aspect-[2/3]">
                         {showRank ? (
@@ -268,11 +283,24 @@ export default function BoxOffice({
                           </div>
                         ) : null}
                         {movie.tmdbId ? (
-                          <div className="absolute right-2 top-2 z-10">
+                          <div
+                            className="absolute right-2 top-2 z-10"
+                            onClick={(event) => {
+                              event.preventDefault()
+                              event.stopPropagation()
+                            }}
+                          >
                             <Flatrates type="movie" provider={movie.tmdbId} />
                           </div>
                         ) : null}
                         <div className="relative h-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+                          {movie.tmdbId ? (
+                            <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center bg-slate-950/0 opacity-0 transition duration-200 group-hover:bg-slate-950/18 group-hover:opacity-100">
+                              <span className="rounded-full border border-white/60 bg-white/14 px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] text-white backdrop-blur-sm">
+                                OPEN
+                              </span>
+                            </div>
+                          ) : null}
                           {movie.posterPath ? (
                             <Image
                               src={`${TMDB_POSTER_BASE_URL}${movie.posterPath}`}
@@ -316,6 +344,7 @@ export default function BoxOffice({
                         ) : null}
                       </div>
                     </div>
+                    </Link>
                   </article>
                 ))}
               </div>

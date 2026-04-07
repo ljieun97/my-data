@@ -15,7 +15,6 @@ type RottenTomatoesUpdate = {
   rottenTomatometer?: string | null
   rottenPopcornmeter?: string | null
   rottenTomatoesUrl?: string | null
-  rottenLine: string
 }
 
 type RottenTomatoesResponse = {
@@ -44,52 +43,56 @@ function applyRottenTomatoesUpdates(cards: HomeMovieCardItem[], updates: RottenT
   })
 }
 
-export default function HomeBoxOfficeSections() {
-  const [data, setData] = useState<HomeSectionsResponse | null>(null)
-  const [error, setError] = useState(false)
+function buildRtRequestPayload(data: HomeSectionsResponse) {
+  return {
+    boxOfficeCards: data.boxOfficeCards.map((card) => ({
+      id: card.id,
+      title: card.title,
+      year: card.year,
+      tmdbId: card.tmdbId,
+      englishTitle: card.englishTitle,
+      originalTitle: card.originalTitle,
+    })),
+    upcomingCards: data.upcomingCards.map((card) => ({
+      id: card.id,
+      title: card.title,
+      year: card.year,
+      tmdbId: card.tmdbId,
+      englishTitle: card.englishTitle,
+      originalTitle: card.originalTitle,
+    })),
+    topRatedCards: data.topRatedCards.map((card) => ({
+      id: card.id,
+      title: card.title,
+      year: card.year,
+      tmdbId: card.tmdbId,
+      englishTitle: card.englishTitle,
+      originalTitle: card.originalTitle,
+    })),
+  }
+}
+
+export default function HomeBoxOfficeSections({
+  initialData,
+}: {
+  initialData: HomeSectionsResponse
+}) {
+  const [data, setData] = useState<HomeSectionsResponse>(initialData)
+  const [error] = useState(false)
 
   useEffect(() => {
-    let cancelled = false
-
-    const load = async () => {
-      try {
-        const response = await fetch("/api/home", { cache: "no-store" })
-
-        if (!response.ok) {
-          throw new Error(`Failed to load home sections: ${response.status}`)
-        }
-
-        const payload = (await response.json()) as HomeSectionsResponse
-
-        if (!cancelled) {
-          setData(payload)
-          setError(false)
-        }
-      } catch (loadError) {
-        console.error(loadError)
-        if (!cancelled) {
-          setError(true)
-        }
-      }
-    }
-
-    load()
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!data) {
-      return
-    }
-
     let cancelled = false
 
     const loadRottenTomatoes = async () => {
       try {
-        const response = await fetch("/api/home/rottentomatoes", { cache: "no-store" })
+        const response = await fetch("/api/home/rottentomatoes", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+          body: JSON.stringify(buildRtRequestPayload(initialData)),
+        })
 
         if (!response.ok) {
           throw new Error(`Failed to load Rotten Tomatoes sections: ${response.status}`)
@@ -98,17 +101,11 @@ export default function HomeBoxOfficeSections() {
         const payload = (await response.json()) as RottenTomatoesResponse
 
         if (!cancelled) {
-          setData((prev) => {
-            if (!prev) {
-              return prev
-            }
-
-            return {
-              boxOfficeCards: applyRottenTomatoesUpdates(prev.boxOfficeCards, payload.boxOfficeUpdates),
-              upcomingCards: applyRottenTomatoesUpdates(prev.upcomingCards, payload.upcomingUpdates),
-              topRatedCards: applyRottenTomatoesUpdates(prev.topRatedCards, payload.topRatedUpdates),
-            }
-          })
+          setData((prev) => ({
+            boxOfficeCards: applyRottenTomatoesUpdates(prev.boxOfficeCards, payload.boxOfficeUpdates),
+            upcomingCards: applyRottenTomatoesUpdates(prev.upcomingCards, payload.upcomingUpdates),
+            topRatedCards: applyRottenTomatoesUpdates(prev.topRatedCards, payload.topRatedUpdates),
+          }))
         }
       } catch (loadError) {
         console.error(loadError)
@@ -120,31 +117,28 @@ export default function HomeBoxOfficeSections() {
     return () => {
       cancelled = true
     }
-  }, [data?.boxOfficeCards.length, data?.upcomingCards.length, data?.topRatedCards.length])
+  }, [initialData])
 
   return (
     <div className="flex flex-col gap-12">
       <CardSlider
         title="박스오피스 순위"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
-        results={data?.boxOfficeCards}
-        isLoading={!data && !error}
+        results={data.boxOfficeCards}
       />
       <CardSlider
         title="개봉예정작"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
-        results={data?.upcomingCards}
+        results={data.upcomingCards}
         showRank={false}
-        isLoading={!data && !error}
         desktopPageSize={7}
         desktopVisibleSlots={7.3}
       />
       <CardSlider
         title="인기 영화"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
-        results={data?.topRatedCards}
+        results={data.topRatedCards}
         showRank={false}
-        isLoading={!data && !error}
         desktopPageSize={7}
         desktopVisibleSlots={7.3}
       />

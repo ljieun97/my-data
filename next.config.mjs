@@ -4,7 +4,20 @@ const API_KEY = process.env.API_KEY_TMDB
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    domains: ['tmdb.org', 'www.themoviedb.org', 'image.tmdb.org'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "tmdb.org",
+      },
+      {
+        protocol: "https",
+        hostname: "www.themoviedb.org",
+      },
+      {
+        protocol: "https",
+        hostname: "image.tmdb.org",
+      },
+    ],
   },
   
   //외부 api말고 내부 api중에 url에 보안이 필요할때 사용하기

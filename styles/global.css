@@ -332,6 +332,20 @@ html.dark-theme .home-mood {
   background: rgba(255, 255, 255, 0.86) !important;
 }
 
+.home-score-chip {
+  border: 1px solid rgba(226, 232, 240, 0.86);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 20px rgba(148, 163, 184, 0.12);
+  color: #475569;
+}
+
+html.dark-theme .home-score-chip {
+  border-color: rgba(71, 85, 105, 0.76);
+  background: rgba(30, 41, 59, 0.92);
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.22);
+  color: #cbd5e1;
+}
+
 .topbar-shell {
   position: fixed !important;
   top: 1rem !important;

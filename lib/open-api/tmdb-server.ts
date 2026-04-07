@@ -135,6 +135,10 @@ type TmdbSearchMovie = {
   poster_path?: string | null
 }
 
+function hasLatinCharacters(value?: string | null) {
+  return Boolean(value && /[A-Za-z]/.test(value))
+}
+
 function normalizeTitle(value: string) {
   return value.toLowerCase().replace(/[\s:!?'".,()-]/g, "")
 }
@@ -236,4 +240,28 @@ export async function searchMovieMetaByTitleAndDate(title: string, openDt: strin
     tmdbId: matchedMovie.id,
     posterPath: matchedMovie.poster_path ?? null
   }
+}
+
+export async function getMovieEnglishTitleById(
+  movieId?: number | null,
+  fallbackOriginalTitle?: string | null,
+  fallbackTitle?: string | null
+) {
+  if (!movieId || !API_KEY) {
+    return fallbackOriginalTitle ?? fallbackTitle ?? null
+  }
+
+  if (hasLatinCharacters(fallbackOriginalTitle)) {
+    return fallbackOriginalTitle ?? null
+  }
+
+  const URL = `https://api.themoviedb.org/3/movie/${movieId}?language=en-US&api_key=${API_KEY}`
+  const response = await fetch(URL, { next: { revalidate: 86400 } })
+
+  if (!response.ok) {
+    return fallbackOriginalTitle ?? fallbackTitle ?? null
+  }
+
+  const results = await response.json()
+  return results.title ?? results.original_title ?? fallbackOriginalTitle ?? fallbackTitle ?? null
 }

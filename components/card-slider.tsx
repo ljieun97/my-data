@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Flatrates from "@/components/contents/flatrates"
 
@@ -8,6 +8,7 @@ export type HomeMovieCardItem = {
   id: string
   title: string
   year?: string
+  englishTitle?: string | null
   rank: string
   rankChangeLabel?: string
   rankChangeTone?: string
@@ -15,6 +16,9 @@ export type HomeMovieCardItem = {
   posterPath?: string | null
   detailLine?: string
   subdetailLine?: string
+  rottenTomatoesUrl?: string | null
+  rottenTomatometer?: string | null
+  rottenPopcornmeter?: string | null
 }
 
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342"
@@ -25,6 +29,30 @@ const MOBILE_VISIBLE_SLOTS = 3.08
 const DESKTOP_SIDE_PEEK_ITEMS = 0.12
 const TABLET_SIDE_PEEK_ITEMS = 0.08
 const MOBILE_SIDE_PEEK_ITEMS = 0.04
+const SWIPE_THRESHOLD = 40
+
+function RottenTomatoesBadges({
+  tomatometer,
+  popcornmeter,
+}: {
+  tomatometer?: string | null
+  popcornmeter?: string | null
+}) {
+  if (!tomatometer && !popcornmeter) {
+    return null
+  }
+
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      <span className="home-score-chip whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold">
+        {`🍅\u00A0${tomatometer ?? "-"}`}
+      </span>
+      <span className="home-score-chip whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold">
+        {`🍿\u00A0${popcornmeter ?? "-"}`}
+      </span>
+    </div>
+  )
+}
 
 export default function BoxOffice({
   title,
@@ -47,6 +75,9 @@ export default function BoxOffice({
   const [pageSize, setPageSize] = useState(desktopPageSize)
   const [visibleSlots, setVisibleSlots] = useState(desktopVisibleSlots)
   const [startIndex, setStartIndex] = useState(0)
+  const touchStartXRef = useRef<number | null>(null)
+  const viewportRef = useRef<HTMLDivElement | null>(null)
+  const [posterMidpoint, setPosterMidpoint] = useState(0)
 
   useEffect(() => {
     const updateVisibleItems = () => {
@@ -81,6 +112,32 @@ export default function BoxOffice({
       return Math.floor(clamped / pageSize) * pageSize
     })
   }, [safeResults.length, pageSize])
+
+  useEffect(() => {
+    const element = viewportRef.current
+
+    if (!element) {
+      return
+    }
+
+    const updatePosterMidpoint = () => {
+      const viewportWidth = element.clientWidth
+      const cardWidth = viewportWidth / visibleSlots
+      const posterHeight = cardWidth * 1.5
+      setPosterMidpoint(posterHeight / 2)
+    }
+
+    updatePosterMidpoint()
+
+    const resizeObserver = new ResizeObserver(updatePosterMidpoint)
+    resizeObserver.observe(element)
+    window.addEventListener("resize", updatePosterMidpoint)
+
+    return () => {
+      resizeObserver.disconnect()
+      window.removeEventListener("resize", updatePosterMidpoint)
+    }
+  }, [visibleSlots])
 
   if (isLoading || !safeResults.length) {
     return (
@@ -128,6 +185,37 @@ export default function BoxOffice({
       ? Math.max(0, Math.min(startIndex - sidePeekItems, maxTranslateIndex))
       : startIndex
   const translatePercentage = (effectiveStartIndex * 100) / visibleSlots
+  const isTouchSwipeEnabled = pageSize <= 4
+  const buttonPositionStyle = posterMidpoint > 0 ? { top: `${posterMidpoint}px` } : undefined
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!isTouchSwipeEnabled) {
+      return
+    }
+
+    touchStartXRef.current = event.touches[0]?.clientX ?? null
+  }
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!isTouchSwipeEnabled || touchStartXRef.current === null) {
+      return
+    }
+
+    const touchEndX = event.changedTouches[0]?.clientX ?? touchStartXRef.current
+    const deltaX = touchEndX - touchStartXRef.current
+    touchStartXRef.current = null
+
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD) {
+      return
+    }
+
+    if (deltaX < 0) {
+      handleNext()
+      return
+    }
+
+    handlePrevious()
+  }
 
   return (
     <section>
@@ -146,12 +234,13 @@ export default function BoxOffice({
               type="button"
               onClick={handlePrevious}
               disabled={!canGoPrevious}
-              className="absolute -left-5 top-40 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300/80 bg-white/92 text-base font-semibold text-slate-900 shadow-md backdrop-blur transition hover:border-slate-400 hover:bg-white disabled:pointer-events-none disabled:opacity-0 dark:border-slate-700 dark:bg-slate-900/88 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900"
+              style={buttonPositionStyle}
+              className="absolute -left-5 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300/80 bg-white/92 text-base font-semibold text-slate-900 shadow-md backdrop-blur transition hover:border-slate-400 hover:bg-white disabled:pointer-events-none disabled:opacity-0 dark:border-slate-700 dark:bg-slate-900/88 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900"
               aria-label="Previous"
             >
               ‹
             </button>
-            <div className="overflow-hidden">
+            <div ref={viewportRef} className="overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
               <div
                 className="flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 style={{ transform: `translateX(-${translatePercentage}%)` }}
@@ -209,6 +298,10 @@ export default function BoxOffice({
                             {movie.year}
                           </p>
                         ) : null}
+                        <RottenTomatoesBadges
+                          tomatometer={movie.rottenTomatometer}
+                          popcornmeter={movie.rottenPopcornmeter}
+                        />
                         {movie.detailLine ? (
                           <div className="mt-2 px-0">
                             <p className="browse-card__meta text-sm">
@@ -231,7 +324,8 @@ export default function BoxOffice({
               type="button"
               onClick={handleNext}
               disabled={!canGoNext}
-              className="absolute -right-5 top-40 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300/80 bg-white/92 text-base font-semibold text-slate-900 shadow-md backdrop-blur transition hover:border-slate-400 hover:bg-white disabled:pointer-events-none disabled:opacity-0 dark:border-slate-700 dark:bg-slate-900/88 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900"
+              style={buttonPositionStyle}
+              className="absolute -right-5 z-20 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-slate-300/80 bg-white/92 text-base font-semibold text-slate-900 shadow-md backdrop-blur transition hover:border-slate-400 hover:bg-white disabled:pointer-events-none disabled:opacity-0 dark:border-slate-700 dark:bg-slate-900/88 dark:text-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-900"
               aria-label="Next"
             >
               ›

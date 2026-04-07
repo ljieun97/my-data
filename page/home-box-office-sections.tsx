@@ -1,13 +1,47 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Spacer } from "@heroui/spacer"
 import CardSlider, { type HomeMovieCardItem } from "@/components/card-slider"
 
 type HomeSectionsResponse = {
   boxOfficeCards: HomeMovieCardItem[]
   upcomingCards: HomeMovieCardItem[]
   topRatedCards: HomeMovieCardItem[]
+}
+
+type RottenTomatoesUpdate = {
+  id: string
+  englishTitle?: string | null
+  rottenTomatometer?: string | null
+  rottenPopcornmeter?: string | null
+  rottenTomatoesUrl?: string | null
+  rottenLine: string
+}
+
+type RottenTomatoesResponse = {
+  boxOfficeUpdates: RottenTomatoesUpdate[]
+  upcomingUpdates: RottenTomatoesUpdate[]
+  topRatedUpdates: RottenTomatoesUpdate[]
+}
+
+function applyRottenTomatoesUpdates(cards: HomeMovieCardItem[], updates: RottenTomatoesUpdate[]) {
+  const updatesById = new Map(updates.map((item) => [item.id, item]))
+
+  return cards.map((card) => {
+    const update = updatesById.get(card.id)
+
+    if (!update) {
+      return card
+    }
+
+    return {
+      ...card,
+      englishTitle: update.englishTitle ?? card.englishTitle ?? null,
+      rottenTomatometer: update.rottenTomatometer ?? null,
+      rottenPopcornmeter: update.rottenPopcornmeter ?? null,
+      rottenTomatoesUrl: update.rottenTomatoesUrl ?? null,
+    }
+  })
 }
 
 export default function HomeBoxOfficeSections() {
@@ -46,15 +80,56 @@ export default function HomeBoxOfficeSections() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!data) {
+      return
+    }
+
+    let cancelled = false
+
+    const loadRottenTomatoes = async () => {
+      try {
+        const response = await fetch("/api/home/rottentomatoes", { cache: "no-store" })
+
+        if (!response.ok) {
+          throw new Error(`Failed to load Rotten Tomatoes sections: ${response.status}`)
+        }
+
+        const payload = (await response.json()) as RottenTomatoesResponse
+
+        if (!cancelled) {
+          setData((prev) => {
+            if (!prev) {
+              return prev
+            }
+
+            return {
+              boxOfficeCards: applyRottenTomatoesUpdates(prev.boxOfficeCards, payload.boxOfficeUpdates),
+              upcomingCards: applyRottenTomatoesUpdates(prev.upcomingCards, payload.upcomingUpdates),
+              topRatedCards: applyRottenTomatoesUpdates(prev.topRatedCards, payload.topRatedUpdates),
+            }
+          })
+        }
+      } catch (loadError) {
+        console.error(loadError)
+      }
+    }
+
+    loadRottenTomatoes()
+
+    return () => {
+      cancelled = true
+    }
+  }, [data?.boxOfficeCards.length, data?.upcomingCards.length, data?.topRatedCards.length])
+
   return (
-    <>
+    <div className="flex flex-col gap-12">
       <CardSlider
         title="박스오피스 순위"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
         results={data?.boxOfficeCards}
         isLoading={!data && !error}
       />
-      <Spacer y={12} />
       <CardSlider
         title="개봉예정작"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
@@ -73,6 +148,6 @@ export default function HomeBoxOfficeSections() {
         desktopPageSize={7}
         desktopVisibleSlots={7.3}
       />
-    </>
+    </div>
   )
 }

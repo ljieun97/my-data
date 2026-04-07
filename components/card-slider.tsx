@@ -166,7 +166,7 @@ export default function BoxOffice({
                       <div className="relative mb-2 aspect-[2/3]">
                         {showRank ? (
                           <div className="absolute bottom-0 -left-2 z-10 lg:bottom-1 lg:-left-6">
-                            <span className="text-5xl font-black italic leading-none tracking-[-0.08em] text-white drop-shadow-[0_3px_10px_rgba(15,23,42,0.85)] lg:text-7xl xl:text-8xl">
+                            <span className="text-6xl font-black italic leading-none tracking-[-0.08em] text-white drop-shadow-[0_3px_10px_rgba(15,23,42,0.85)] lg:text-7xl xl:text-8xl">
                               {movie.rank}
                             </span>
                           </div>

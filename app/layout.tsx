@@ -1,5 +1,5 @@
 import "@/styles/global.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import jwt from "jsonwebtoken"
@@ -31,6 +31,12 @@ export const metadata: Metadata = {
     default: "TOVIE"
   },
   description: "서비스 설명",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default async function Layout({

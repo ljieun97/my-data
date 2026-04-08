@@ -1,12 +1,12 @@
 "use client";
 
-import { faCircleHalfStroke, faMoon } from "@fortawesome/free-solid-svg-icons";
+import { faCircleHalfStroke, faMoon, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { usePathname, useRouter } from "next/navigation";
 import { Avatar, Button, Dropdown, Toast } from "@heroui/react";
 import SearchInput from "./search-input";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@/context/UserContext";
 
 function AvatarButton({ className, src }: { className?: string; src: string }) {
@@ -138,25 +138,45 @@ function SettingsModal({
   open,
   selectedSet,
   setSelectedSet,
+  isDarkMode,
+  onToggleTheme,
   onClose,
 }: {
   open: boolean;
   selectedSet: string;
   setSelectedSet: (value: string) => void;
+  isDarkMode: boolean;
+  onToggleTheme: () => void;
   onClose: () => void;
 }) {
   return (
     <OverlayModal open={open} title="Settings" onClose={onClose}>
-      <div className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-200">Date mode</div>
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="inline-flex items-center gap-2">
-          <input type="radio" name="date-mode" checked={selectedSet === "release"} onChange={() => setSelectedSet("release")} />
-          <span>Release</span>
-        </label>
-        <label className="inline-flex items-center gap-2">
-          <input type="radio" name="date-mode" checked={selectedSet === "today"} onChange={() => setSelectedSet("today")} />
-          <span>Today</span>
-        </label>
+      <div className="flex flex-col gap-6">
+        <div>
+          <div className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-200">Date mode</div>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="inline-flex items-center gap-2">
+              <input type="radio" name="date-mode" checked={selectedSet === "release"} onChange={() => setSelectedSet("release")} />
+              <span>Release</span>
+            </label>
+            <label className="inline-flex items-center gap-2">
+              <input type="radio" name="date-mode" checked={selectedSet === "today"} onChange={() => setSelectedSet("today")} />
+              <span>Today</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-200">Theme</div>
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            onClick={onToggleTheme}
+          >
+            <FontAwesomeIcon icon={isDarkMode ? faCircleHalfStroke : faMoon} />
+            <span>{isDarkMode ? "Dark" : "Light"}</span>
+          </button>
+        </div>
       </div>
     </OverlayModal>
   );
@@ -174,11 +194,12 @@ export default function TopBar() {
   const [selectedSet, setSelectedSet] = useState("release");
   const [selectedSource, setSelectedSource] = useState("kobis");
   const [selectedYear, setSelectedYear] = useState(defaultWorldcupYear);
-  const yearOptions = Array.from({ length: 26 }, (_, index) => String(currentYear - index));
+  const yearOptions = useMemo(() => Array.from({ length: 26 }, (_, index) => String(currentYear - index)), [currentYear]);
 
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isWorldcupOpen, setIsWorldcupOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const isActivePath = (href: string) => path === href || path.startsWith(`${href}/`);
 
@@ -193,14 +214,29 @@ export default function TopBar() {
   }, []);
 
   useEffect(() => {
+    let frameId = 0;
+
     const handleScroll = () => {
-      setIsScroll(window.scrollY >= 30);
+      if (frameId) {
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(() => {
+        const nextIsScroll = window.scrollY >= 30;
+        setIsScroll((prev) => (prev === nextIsScroll ? prev : nextIsScroll));
+        frameId = 0;
+      });
     };
 
     if (path === "/") {
       handleScroll();
       window.addEventListener("scroll", handleScroll, { passive: true });
-      return () => window.removeEventListener("scroll", handleScroll);
+      return () => {
+        window.removeEventListener("scroll", handleScroll);
+        if (frameId) {
+          window.cancelAnimationFrame(frameId);
+        }
+      };
     }
 
     setIsScroll(true);
@@ -255,6 +291,10 @@ export default function TopBar() {
     document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
     localStorage.setItem("theme", nextIsDark ? "dark" : "light");
     document.cookie = `theme=${nextIsDark ? "dark" : "light"}; path=/; max-age=31536000; samesite=lax`;
+  };
+
+  const handleToggleSearch = () => {
+    setIsSearchOpen((prev) => !prev);
   };
 
   return (
@@ -314,18 +354,34 @@ export default function TopBar() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <SearchInput />
+            <div
+              className={[
+                "overflow-hidden transition-all duration-200 ease-out",
+                isSearchOpen ? "w-[10.5rem] sm:w-[13rem] lg:w-[16rem]" : "w-0",
+              ].join(" ")}
+            >
+              <SearchInput
+                className="topbar-search h-11"
+                autoFocus={isSearchOpen}
+                onBlur={() => setIsSearchOpen(false)}
+              />
+            </div>
             <Button
               variant="secondary"
-              onPress={toggleTheme}
-              className="topbar-theme rounded-full px-3 text-sm font-medium"
-              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              onPress={handleToggleSearch}
+              className="topbar-theme h-11 w-11 min-w-0 rounded-full px-0 text-sm font-medium"
+              aria-label={isSearchOpen ? "Close search" : "Open search"}
             >
-              <FontAwesomeIcon icon={isDarkMode ? faCircleHalfStroke : faMoon} />
+              <FontAwesomeIcon icon={faMagnifyingGlass} />
             </Button>
             {!uid ? (
-              <Button onPress={() => setIsLoginOpen(true)} variant="primary" className="topbar-login rounded-full px-4 text-sm font-medium">
-                Login
+              <Button
+                onPress={() => setIsLoginOpen(true)}
+                variant="primary"
+                className="topbar-login h-11 w-11 min-w-0 rounded-full px-0 text-sm font-medium"
+                aria-label="Open login"
+              >
+                <FontAwesomeIcon icon={faUser} />
               </Button>
             ) : (
               <Dropdown>
@@ -378,7 +434,14 @@ export default function TopBar() {
       </nav>
 
       <LoginModal open={isLoginOpen} onLogin={clickKakaoLogin} onClose={() => setIsLoginOpen(false)} />
-      <SettingsModal open={isSettingsOpen} selectedSet={selectedSet} setSelectedSet={handleChangeSet} onClose={() => setIsSettingsOpen(false)} />
+      <SettingsModal
+        open={isSettingsOpen}
+        selectedSet={selectedSet}
+        setSelectedSet={handleChangeSet}
+        isDarkMode={isDarkMode}
+        onToggleTheme={toggleTheme}
+        onClose={() => setIsSettingsOpen(false)}
+      />
       <WorldcupModal
         open={isWorldcupOpen}
         selectedSource={selectedSource}

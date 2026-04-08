@@ -1,5 +1,4 @@
-import { getRottenTomatoesScore } from "@/lib/open-api/rottentomatoes"
-import { getCasts, getDetail, getMovieEnglishTitleById, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/open-api/tmdb-server"
+import { getCasts, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/open-api/tmdb-server"
 
 import DetailModal from "@/components/modal/detail-modal"
 
@@ -19,10 +18,6 @@ export default async function Page({ params }: { params: any }) {
     getProviders(type, id),
   ])
   const sim = rcm?.length > 0 ? rcm : simFallback
-  const rottenTitle = await getMovieEnglishTitleById(Number(id), content.original_title, content.title)
-  const rottenTomatoes = rottenTitle
-    ? await getRottenTomatoesScore(rottenTitle, content.release_date?.slice?.(0, 4))
-    : null
 
   return (
     <DetailModal
@@ -31,9 +26,6 @@ export default async function Page({ params }: { params: any }) {
       sim={sim}
       providers={providers}
       videoKey={video?.key}
-      rottenTomatometer={rottenTomatoes?.tomatometer}
-      rottenPopcornmeter={rottenTomatoes?.popcornmeter}
-      rottenTomatoesUrl={rottenTomatoes?.url}
     />
   )
 }

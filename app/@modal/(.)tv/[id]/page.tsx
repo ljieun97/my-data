@@ -1,5 +1,4 @@
 import DetailModal from "@/components/modal/detail-modal"
-import { getRottenTomatoesScore } from "@/lib/open-api/rottentomatoes"
 import { getCasts, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/open-api/tmdb-server"
 
 export const metadata = {
@@ -18,10 +17,6 @@ export default async function Page({ params }: { params: any }) {
     getProviders(type, id),
   ])
   const sim = rcm?.length > 0 ? rcm : simFallback
-  const rottenTitle = [content.original_name, content.name].find((value: string | undefined) => Boolean(value && /[A-Za-z]/.test(value)))
-  const rottenTomatoes = rottenTitle
-    ? await getRottenTomatoesScore(rottenTitle, content.first_air_date?.slice?.(0, 4))
-    : null
 
   return (
     <DetailModal
@@ -30,9 +25,6 @@ export default async function Page({ params }: { params: any }) {
       sim={sim}
       providers={providers}
       videoKey={video?.key}
-      rottenTomatometer={rottenTomatoes?.tomatometer}
-      rottenPopcornmeter={rottenTomatoes?.popcornmeter}
-      rottenTomatoesUrl={rottenTomatoes?.url}
     />
   )
 }

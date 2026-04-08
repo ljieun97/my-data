@@ -2,33 +2,55 @@
 
 import { Input } from "@heroui/react";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
+import { useSearchKeyword } from "@/context/SearchContext";
 
-export default function SearchInput() {
+export default function SearchInput({
+  className = "topbar-search h-11",
+  autoFocus = false,
+  onBlur,
+}: {
+  className?: string;
+  autoFocus?: boolean;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
+}) {
   const router = useRouter();
   const path = usePathname();
-  const [keyword, setKeyword] = useState("");
-
-  useEffect(() => {
-    if (keyword) {
-      router.push(`/search?keyword=${keyword}`);
-    } else if (path === "/search") {
-      router.push(`/`);
-    }
-  }, [keyword, path, router]);
+  const { keyword, setKeyword, lastNonSearchPath } = useSearchKeyword();
+  const previousPathRef = useRef(path);
 
   const handleInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setKeyword(e.target.value);
-  }, []);
+    const nextKeyword = e.target.value;
+    setKeyword(nextKeyword);
+
+    if (path === "/search" && !nextKeyword.trim()) {
+      router.push(lastNonSearchPath || "/");
+      return;
+    }
+
+    if (path !== "/search" && nextKeyword.trim()) {
+      router.push(`/search?keyword=${encodeURIComponent(nextKeyword)}`);
+    }
+  }, [lastNonSearchPath, path, router, setKeyword]);
+
+  useEffect(() => {
+    if (previousPathRef.current === "/search" && path !== "/search") {
+      setKeyword("");
+    }
+
+    previousPathRef.current = path;
+  }, [path, setKeyword]);
 
   return (
     <Input
-      className="topbar-search hidden h-11 md:flex md:min-w-0 md:w-[10rem] lg:w-[13rem] xl:w-[16rem]"
+      className={className}
       placeholder="Search titles"
       value={keyword}
       onChange={handleInput}
+      onBlur={onBlur}
       type="search"
       size={40}
+      autoFocus={autoFocus}
       aria-label="Search titles"
     />
   );

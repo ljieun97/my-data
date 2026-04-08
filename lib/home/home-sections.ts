@@ -1,6 +1,7 @@
 import type { HomeMovieCardItem } from "@/components/card-slider";
 import { getKobisBoxoffice } from "@/lib/open-api/kobis";
 import { getTopRatedMovies, searchMovieMetaByTitleAndDate } from "@/lib/open-api/tmdb-server";
+import { unstable_cache } from "next/cache";
 
 const TMDB_API_KEY = process.env.API_KEY_TMDB || process.env.NEXT_PUBLIC_API_KEY_TMDB;
 const numberFormatter = new Intl.NumberFormat("ko-KR");
@@ -73,38 +74,45 @@ async function fetchUpcomingMoviesPage() {
   return Array.isArray(data.results) ? data.results : [];
 }
 
+const getCachedBoxOfficeCards = unstable_cache(
+  async (targetDate: string) => {
+    const boxOfficeResponse = await getKobisBoxoffice(targetDate, "A");
+    const dailyBoxOfficeList = boxOfficeResponse?.boxOfficeResult?.dailyBoxOfficeList ?? [];
+
+    return Promise.all(
+      dailyBoxOfficeList.map(async (movie: any) => {
+        const meta = await searchMovieMetaByTitleAndDate(movie.movieNm, movie.openDt);
+        const rankChange = rankChangeLabel(movie);
+
+        return {
+          id: `kobis-${movie.rank}-${movie.movieCd ?? movie.movieNm}`,
+          title: movie.movieNm,
+          year: movie.openDt?.slice(0, 4),
+          rank: movie.rank,
+          rankChangeLabel: rankChange.label,
+          rankChangeTone: rankChange.tone,
+          tmdbId: meta.tmdbId,
+          posterPath: meta.posterPath,
+          detailLine: `\uC77C\uC77C ${formatCount(movie.audiCnt)} \uB204\uC801 ${formatCount(movie.audiAcc)}`,
+        } as HomeMovieCardSeed;
+      }),
+    );
+  },
+  ["home-kobis-boxoffice-cards"],
+  { revalidate: 86400 },
+)
+
 export async function getHomeSectionsSeed(): Promise<HomeSectionsSeed> {
   const targetDate = new Date(Date.now() - 24 * 60 * 60 * 1000)
     .toISOString()
     .slice(0, 10)
     .replaceAll("-", "");
 
-  const [boxOfficeResponse, upcomingMovies, topRatedMovies] = await Promise.all([
-    getKobisBoxoffice(targetDate, "A"),
+  const [boxOfficeCards, upcomingMovies, topRatedMovies] = await Promise.all([
+    getCachedBoxOfficeCards(targetDate),
     fetchUpcomingMoviesPage(),
     getTopRatedMovies(),
   ]);
-
-  const dailyBoxOfficeList = boxOfficeResponse?.boxOfficeResult?.dailyBoxOfficeList ?? [];
-
-  const boxOfficeCards: HomeMovieCardSeed[] = await Promise.all(
-    dailyBoxOfficeList.map(async (movie: any) => {
-      const meta = await searchMovieMetaByTitleAndDate(movie.movieNm, movie.openDt);
-      const rankChange = rankChangeLabel(movie);
-
-      return {
-        id: `kobis-${movie.rank}-${movie.movieCd ?? movie.movieNm}`,
-        title: movie.movieNm,
-        year: movie.openDt?.slice(0, 4),
-        rank: movie.rank,
-        rankChangeLabel: rankChange.label,
-        rankChangeTone: rankChange.tone,
-        tmdbId: meta.tmdbId,
-        posterPath: meta.posterPath,
-        detailLine: `\uC77C\uC77C ${formatCount(movie.audiCnt)} \uB204\uC801 ${formatCount(movie.audiAcc)}`,
-      };
-    }),
-  );
 
   const upcomingCards: HomeMovieCardSeed[] = upcomingMovies
     .filter((movie: any) => movie.poster_path)

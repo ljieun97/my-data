@@ -4,6 +4,7 @@ if (!API_KEY) {
   throw new Error("API key for TMDB is not defined");
 }
 
+import { unstable_cache } from "next/cache";
 import { format } from "date-fns-tz";
 
 const timeZone = 'Asia/Seoul'
@@ -201,7 +202,7 @@ export async function searchMoviePosterByTitleAndDate(title: string, openDt: str
   return null
 }
 
-export async function searchMovieMetaByTitleAndDate(title: string, openDt: string) {
+async function searchMovieMetaByTitleAndDateInternal(title: string, openDt: string) {
   if (!API_KEY) {
     return { tmdbId: null, posterPath: null }
   }
@@ -240,6 +241,16 @@ export async function searchMovieMetaByTitleAndDate(title: string, openDt: strin
     tmdbId: matchedMovie.id,
     posterPath: matchedMovie.poster_path ?? null
   }
+}
+
+const cachedSearchMovieMetaByTitleAndDate = unstable_cache(
+  async (title: string, openDt: string) => searchMovieMetaByTitleAndDateInternal(title, openDt),
+  ["tmdb-meta-by-title-and-date"],
+  { revalidate: 86400 },
+)
+
+export async function searchMovieMetaByTitleAndDate(title: string, openDt: string) {
+  return cachedSearchMovieMetaByTitleAndDate(title, openDt)
 }
 
 export async function getMovieEnglishTitleById(

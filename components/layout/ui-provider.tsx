@@ -4,6 +4,7 @@ import { Toast } from "@heroui/react";
 import TopBar from "./top-bar";
 import React from "react";
 import { usePathname } from "next/navigation";
+import { SearchProvider } from "@/context/SearchContext";
 
 export function UiProvider({
   children, modal
@@ -19,16 +20,18 @@ export function UiProvider({
   return (
     <>
       <Toast.Provider />
-      <main>
-        <div className={`app-shell text-foreground bg-background flex-grow ${isFilterPage ? "app-shell--locked" : ""}`}>
-          <TopBar />
-          <div className={`min-h-screen px-4 pb-12 pt-28 sm:px-6 lg:px-8 ${isFilterPage ? "app-shell__viewport" : ""}`}>
-            <div className={`mx-auto w-full max-w-7xl ${usePageShell ? "page-shell" : ""} ${isFilterPage ? "page-shell--locked" : ""}`}>
-              {children}
+      <SearchProvider>
+        <main>
+          <div className={`app-shell text-foreground bg-background flex-grow ${isFilterPage ? "app-shell--locked" : ""}`}>
+            <TopBar />
+            <div className={`min-h-screen px-4 pb-12 pt-28 sm:px-6 lg:px-8 ${isFilterPage ? "app-shell__viewport" : ""}`}>
+              <div className={`mx-auto w-full max-w-7xl ${usePageShell ? "page-shell" : ""} ${isFilterPage ? "page-shell--locked" : ""}`}>
+                {children}
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </SearchProvider>
       {modal}
     </>
   );

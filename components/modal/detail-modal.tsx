@@ -36,6 +36,11 @@ export default function DetailModal(props: any) {
   } = props;
   const videoPath = videoKey ? `https://www.youtube.com/watch?v=${videoKey}` : "";
   const [isMute, setIsMute] = useState(true);
+  const [rtState, setRtState] = useState({
+    rottenTomatometer: rottenTomatometer ?? null,
+    rottenPopcornmeter: rottenPopcornmeter ?? null,
+    rottenTomatoesUrl: rottenTomatoesUrl ?? null,
+  });
   const castsRef = useRef<HTMLSpanElement>(null!);
   const router = useRouter();
 
@@ -81,6 +86,53 @@ export default function DetailModal(props: any) {
       window.scrollTo(0, scrollY);
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const year = releaseDate !== "-" ? releaseDate.slice(0, 4) : "";
+    const titleParam = content.title || content.name || "";
+    const originalTitleParam = content.original_title || content.original_name || "";
+    const type = content.title ? "movie" : "tv";
+    const tmdbId = content.id;
+
+    const loadRottenTomatoes = async () => {
+      try {
+        const query = new URLSearchParams();
+        if (titleParam) query.set("title", titleParam);
+        if (originalTitleParam) query.set("originalTitle", originalTitleParam);
+        if (year) query.set("year", year);
+
+        const response = await fetch(`/api/rottentomatoes/${type}/${tmdbId}?${query.toString()}`, {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = await response.json();
+
+        if (!cancelled) {
+          setRtState({
+            rottenTomatometer: payload.rottenTomatometer ?? null,
+            rottenPopcornmeter: payload.rottenPopcornmeter ?? null,
+            rottenTomatoesUrl: payload.rottenTomatoesUrl ?? null,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (!rtState.rottenTomatometer && !rtState.rottenPopcornmeter) {
+      loadRottenTomatoes();
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [content.id, content.name, content.original_name, content.original_title, content.title, releaseDate, rtState.rottenPopcornmeter, rtState.rottenTomatometer]);
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
@@ -138,9 +190,9 @@ export default function DetailModal(props: any) {
                     <MetaChip>{runtime}</MetaChip>
                     <MediaScoreBadges
                       tmdbLabel={tmdbLabel}
-                      tomatometer={rottenTomatometer}
-                      popcornmeter={rottenPopcornmeter}
-                      rottenTomatoesUrl={rottenTomatoesUrl}
+                      tomatometer={rtState.rottenTomatometer}
+                      popcornmeter={rtState.rottenPopcornmeter}
+                      rottenTomatoesUrl={rtState.rottenTomatoesUrl}
                       variant="detail"
                     />
                   </div>

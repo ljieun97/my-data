@@ -7,10 +7,12 @@ import { useAsyncList } from "@react-stately/data";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import InfiniteImages from "@/components/common/infinite-images";
 import { getSearchMulti } from "@/lib/open-api/tmdb-client"
+import { useSearchKeyword } from "@/context/SearchContext";
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
-  const keyword = searchParams.get("keyword") || ""
+  const initialKeyword = searchParams.get("keyword") || ""
+  const { keyword, setKeyword } = useSearchKeyword()
 
   const [hasMoreMovies, setHasMoreMovies] = useState(false)
   let movies = useAsyncList({
@@ -30,6 +32,12 @@ export default function SearchPage() {
     hasMore: hasMoreMovies,
     onLoadMore: movies.loadMore
   }) as unknown as RefObject<HTMLDivElement>[]
+
+  useEffect(() => {
+    if (initialKeyword) {
+      setKeyword(initialKeyword)
+    }
+  }, [])
 
   useEffect(() => {
     movies.reload()

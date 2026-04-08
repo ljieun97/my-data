@@ -4,23 +4,60 @@ import InfiniteImages from "../common/infinite-images";
 import Title from "../common/title";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faImage, faVolumeHigh, faVolumeXmark } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faVolumeHigh, faVolumeXmark } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import MediaScoreBadges from "@/components/media/media-score-badges";
+import WatchProvidersPanel from "@/components/media/watch-providers-panel";
+import MediaOverviewPanel from "@/components/media/media-overview-panel";
+import MediaCastPanel from "@/components/media/media-cast-panel";
+import MediaDetailsPanel from "@/components/media/media-details-panel";
 
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
-function ProviderLogo({ src, alt }: { src: string; alt: string }) {
-  return <img src={src} alt={alt} className="h-8 w-8 rounded-md border border-white/70 object-cover shadow-sm" />;
+function MetaChip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 dark:bg-slate-900 dark:text-slate-300">
+      {children}
+    </span>
+  );
 }
 
 export default function DetailModal(props: any) {
-  const { content, casts, sim, providers, videoKey } = props;
-  const cutCasts = casts?.slice(0, 8);
+  const {
+    content,
+    casts = [],
+    sim = [],
+    providers,
+    videoKey,
+    rottenTomatometer,
+    rottenPopcornmeter,
+    rottenTomatoesUrl,
+  } = props;
   const videoPath = videoKey ? `https://www.youtube.com/watch?v=${videoKey}` : "";
   const [isMute, setIsMute] = useState(true);
-  const castsRef = useRef<HTMLDivElement>(null);
+  const castsRef = useRef<HTMLSpanElement>(null!);
   const router = useRouter();
+
+  const title = content.title || content.name || "";
+  const releaseDate = content.release_date || content.first_air_date || "-";
+  const releaseYear = releaseDate !== "-" ? releaseDate.slice(0, 4) : "";
+  const runtime =
+    typeof content.runtime === "number" && content.runtime > 0
+      ? `${content.runtime} min`
+      : typeof content.number_of_episodes === "number" && content.number_of_episodes > 0
+        ? `${content.number_of_episodes} episodes`
+        : "-";
+  const genres =
+    Array.isArray(content.genres) && content.genres.length > 0 ? content.genres.map((item: any) => item.name).join(", ") : "-";
+  const countries =
+    Array.isArray(content.production_countries) && content.production_countries.length > 0
+      ? content.production_countries.map((item: any) => item.name).join(", ")
+      : Array.isArray(content.origin_country) && content.origin_country.length > 0
+        ? content.origin_country.join(", ")
+        : "-";
+  const overview = content.overview || content.about || "Currently this title does not have overview information.";
+  const tmdbLabel = content.vote_average ? `TMDB ${Number(content.vote_average).toFixed(1)}` : "TMDB -";
 
   useEffect(() => {
     const scrollY = window.scrollY;
@@ -47,10 +84,14 @@ export default function DetailModal(props: any) {
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
-      <div className="h-full w-full max-w-4xl overflow-hidden bg-white dark:bg-slate-950">
+      <div className="h-full w-full max-w-5xl overflow-hidden bg-white dark:bg-slate-950">
         <div className="relative h-full overflow-y-auto">
           <div className="absolute left-0 top-0 z-20 p-4">
-            <button type="button" className="rounded-full bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-lg" onClick={() => router.back()}>
+            <button
+              type="button"
+              className="rounded-full bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-lg"
+              onClick={() => router.back()}
+            >
               <FontAwesomeIcon icon={faArrowLeft} />
             </button>
           </div>
@@ -86,125 +127,48 @@ export default function DetailModal(props: any) {
             />
           ) : null}
 
-          <div className="px-6 pb-8">
-            <Title
-              title={content.title || content.name || ""}
-              sub={
-                <>
-                  {content.release_date ? content.release_date.slice(0, 4) : ""}
-                  {content.first_air_date ? content.first_air_date.slice(0, 4) : ""}
-                </>
-              }
-            />
+          <div className="px-5 pb-10 pt-6 sm:px-6 lg:px-8">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]">
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <Title title={title} sub={releaseYear} />
 
-            <div className="pt-2 text-slate-500 md:flex">
-              <div className="pb-4 md:basis-3/5">
-                <p>{content.overview || content.about || "현재 정보가 등록되지 않았거나 정보가 없습니다."}</p>
-              </div>
-              {providers ? (
-                <div className="flex gap-4 md:basis-2/5 md:pl-10">
-                  {providers.flatrate ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span>구독</span>
-                      {providers.flatrate.map((item: any, index: number) =>
-                        item.provider_id !== 1796 ? (
-                          <span key={index} title={item.provider_name}>
-                            <ProviderLogo src={`https://image.tmdb.org/t/p/w500/${item.logo_path}`} alt={item.provider_name} />
-                          </span>
-                        ) : null,
-                      )}
-                    </div>
-                  ) : null}
-                  {providers.buy ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span>구매</span>
-                      {providers.buy.map((item: any, index: number) =>
-                        item.provider_id !== 1796 ? (
-                          <span key={index} title={item.provider_name}>
-                            <ProviderLogo src={`https://image.tmdb.org/t/p/w500/${item.logo_path}`} alt={item.provider_name} />
-                          </span>
-                        ) : null,
-                      )}
-                    </div>
-                  ) : null}
+                  <div className="flex flex-wrap gap-2">
+                    <MetaChip>{releaseDate}</MetaChip>
+                    <MetaChip>{runtime}</MetaChip>
+                    <MediaScoreBadges
+                      tmdbLabel={tmdbLabel}
+                      tomatometer={rottenTomatometer}
+                      popcornmeter={rottenPopcornmeter}
+                      rottenTomatoesUrl={rottenTomatoesUrl}
+                      variant="detail"
+                    />
+                  </div>
                 </div>
-              ) : null}
-            </div>
 
-            {casts.length > 0 ? (
-              <div className="py-4">
-                <h4 className="pb-4 text-lg font-bold">출연</h4>
-                <div className="grid grid-cols-4 gap-3 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-8">
-                  {cutCasts?.map((item: any, index: number) => (
-                    <div key={index} className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-                      <div className="overflow-hidden">
-                        {item.profile_path ? (
-                          <img
-                            width="100%"
-                            alt={item.name}
-                            className="aspect-[26/37] w-full object-cover"
-                            src={`https://image.tmdb.org/t/p/w500/${item.profile_path}`}
-                          />
-                        ) : (
-                          <div className="flex aspect-[26/37] w-full items-center justify-center bg-slate-200 dark:bg-slate-800">
-                            <FontAwesomeIcon icon={faImage} />
-                          </div>
-                        )}
-                      </div>
-                      <div className="px-2 py-3 text-center">
-                        <p className="text-sm">{item.name}</p>
-                        <p className="text-xs italic text-slate-500">{item.character}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <MediaOverviewPanel overview={overview} />
+                <MediaCastPanel casts={casts} castsRef={castsRef} />
+
+                <section className="space-y-4 rounded-[26px] bg-slate-50/80 p-5 dark:bg-slate-900/70">
+                  <h4 className="text-base font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-50">More like this</h4>
+                  {sim?.length > 0 ? (
+                    <InfiniteImages contents={sim} />
+                  ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Currently this title does not have recommendation information.</p>
+                  )}
+                </section>
               </div>
-            ) : null}
 
-            {casts.length > 8 ? (
-              <div className="flex justify-center py-2">
-                <button
-                  type="button"
-                  className="rounded-full border px-4 py-2 text-sm"
-                  onClick={() => castsRef.current?.scrollIntoView({ behavior: "smooth" })}
-                >
-                  더보기
-                </button>
+              <div className="space-y-5">
+                <WatchProvidersPanel providers={providers} />
+                <MediaDetailsPanel
+                  genres={genres}
+                  countries={countries}
+                  language={content.original_language?.toUpperCase?.() || "-"}
+                  casts={casts}
+                  castsRef={castsRef}
+                />
               </div>
-            ) : null}
-
-            {sim?.length > 0 ? (
-              <div className="py-4">
-                <h4 className="pb-2 text-lg font-bold">추천 콘텐츠</h4>
-                <InfiniteImages contents={sim} />
-              </div>
-            ) : null}
-
-            <div className="py-4">
-              <h4 className="pb-2 text-lg font-bold">상세 정보</h4>
-              {content.genres ? (
-                <div>
-                  <span>장르 </span>
-                  {content.genres.map((item: any, index: number) => (
-                    <span className="text-slate-500" key={index}>
-                      {item.name}
-                      {content.genres[index + 1] ? ", " : ""}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              {casts.length > 0 ? (
-                <div>
-                  <span ref={castsRef}>출연 </span>
-                  {casts.map((item: any, index: number) => (
-                    <span className="text-slate-500" key={index}>
-                      {item.original_name}
-                      {item.character ? `(${item.character})` : ""}
-                      {casts[index + 1] ? ", " : ""}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
             </div>
           </div>
         </div>

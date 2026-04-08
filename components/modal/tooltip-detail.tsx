@@ -1,50 +1,59 @@
-'use client'
+"use client";
 
-import {
-  Image,
-  Skeleton,
-} from "@heroui/react"
 import { useState, useEffect } from "react";
-import { getDetail } from "@/lib/open-api/tmdb-server"
+import { getDetail } from "@/lib/open-api/tmdb-server";
 
-export const TooltipDetail = ({ id, type }: { id: any, type: string }) => {
+export const TooltipDetail = ({ id, type }: { id: any; type: string }) => {
   const [popcontent, setPopcontent] = useState({
-    title: "", original_title: "", release_date: "",
-    name: "", original_name: "", first_air_date: "",
-    backdrop_path: "", genres: []
-  }) as any
+    title: "",
+    original_title: "",
+    release_date: "",
+    name: "",
+    original_name: "",
+    first_air_date: "",
+    backdrop_path: "",
+    genres: [],
+  }) as any;
 
   useEffect(() => {
     (async () => {
-      const results = await getDetail(type, id)
-      setPopcontent(results)
-    })()
-  }, [id])
+      const results = await getDetail(type, id);
+      setPopcontent(results);
+    })();
+  }, [id, type]);
 
   return (
     <>
-      {popcontent.backdrop_path ?
-        <Image
-          className="brightness-125"
+      {popcontent.backdrop_path ? (
+        <img
+          className="h-[168px] w-[300px] rounded-lg object-cover brightness-110"
           alt="Detail Image"
           src={`https://image.tmdb.org/t/p/original${popcontent.backdrop_path}`}
-          width={300}
-          height={168}
         />
-        :
-        <Skeleton className="rounded-lg w-[300px] h-[168px]"></Skeleton>
-      }
-      <div className="pt-2 text-tiny">
-        {type == "movie" ?
+      ) : (
+        <div className="h-[168px] w-[300px] animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
+      )}
+      <div className="pt-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+        {type === "movie" ? (
           <>
-            <b>{popcontent.title}</b>{popcontent.title!=popcontent.original_title && `(${popcontent.original_title})`}는 {popcontent.release_date} 공개된 {popcontent.genres?.map((e: any) => e.name).join('·')} 장르의 영화이다.
+            <b>{popcontent.title}</b>
+            {popcontent.title !== popcontent.original_title ? ` (${popcontent.original_title})` : ""}
+            {" · "}
+            {popcontent.release_date}
+            {" · "}
+            {popcontent.genres?.map((entry: any) => entry.name).join(", ")}
           </>
-          :
+        ) : (
           <>
-            <b>{popcontent.name}</b>{popcontent.name!=popcontent.original_name && `(${popcontent.original_name})`}는 { popcontent.first_air_date} 공개된 {popcontent.genres?.map((e: any) => e.name).join('·')} 장르의 시리즈이다.
+            <b>{popcontent.name}</b>
+            {popcontent.name !== popcontent.original_name ? ` (${popcontent.original_name})` : ""}
+            {" · "}
+            {popcontent.first_air_date}
+            {" · "}
+            {popcontent.genres?.map((entry: any) => entry.name).join(", ")}
           </>
-        }
+        )}
       </div>
     </>
-  )
-}
+  );
+};

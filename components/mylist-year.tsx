@@ -1,73 +1,73 @@
-"use client"
+"use client";
 
-import { SetStateAction, useState } from "react"
-import { Switch, Select, SelectItem, addToast, Image } from "@heroui/react"
-import Title from "./common/title"
-import CardCol from "@/components/contents/card-col"
-import { useUser } from "@/context/UserContext"
+import { SetStateAction, useState } from "react";
+import { Toast } from "@heroui/react";
+import Image from "next/image";
+import Title from "./common/title";
+import CardCol from "@/components/contents/card-col";
+import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
-import { FastAverageColor } from 'fast-average-color';
+import { FastAverageColor } from "fast-average-color";
 
-export default function MylistYear({ year, list, counts }: { year: any, list: any[], counts: any[] }) {
-  const router = useRouter()
-
-  const [currentList, setCurrentList] = useState(list) as any[]
-  const [isSelectedProvider, setIsSelectedProvider] = useState(false)
-  const [isSelectedRainbow, setIsSelectedRainbow] = useState(false)
-  const { uid } = useUser()
+export default function MylistYear({ year, list, counts }: { year: any; list: any[]; counts: any[] }) {
+  const router = useRouter();
+  const [currentList, setCurrentList] = useState(list) as any[];
+  const [isSelectedProvider, setIsSelectedProvider] = useState(false);
+  const [isSelectedRainbow, setIsSelectedRainbow] = useState(false);
+  const { uid } = useUser();
 
   const gridSettings = [
-    { key: "grid-cols-6", label: "세로6" },
-    { key: "grid-cols-7", label: "세로7" },
-    { key: "grid-cols-8", label: "세로8" },
-    { key: "grid-cols-9", label: "세로9" },
-    { key: "grid-cols-10", label: "세로10" },
-    { key: "grid-cols-11", label: "세로11" },
-    { key: "grid-cols-12", label: "세로12" },
-    { key: "grid-flow-col grid-rows-1", label: "가로1" },
-    { key: "grid-flow-col grid-rows-2", label: "가로2" },
-    { key: "grid-flow-col grid-rows-3", label: "가로3" },
-    { key: "grid-flow-col grid-rows-4", label: "가로4" },
-    { key: "grid-flow-col grid-rows-5", label: "가로5" },
-    { key: "grid-flow-col grid-rows-6", label: "가로6" },
-    { key: "grid-flow-col grid-rows-7", label: "가로7" },
-  ]
-  const [selectGrid, setSelectGrid] = useState("grid-cols-12")
-  const handleSelectionChange = (e: { target: { value: SetStateAction<string>; }; }) => {
+    { key: "grid-cols-6", label: "6 columns" },
+    { key: "grid-cols-7", label: "7 columns" },
+    { key: "grid-cols-8", label: "8 columns" },
+    { key: "grid-cols-9", label: "9 columns" },
+    { key: "grid-cols-10", label: "10 columns" },
+    { key: "grid-cols-11", label: "11 columns" },
+    { key: "grid-cols-12", label: "12 columns" },
+    { key: "grid-flow-col grid-rows-1", label: "Row 1" },
+    { key: "grid-flow-col grid-rows-2", label: "Row 2" },
+    { key: "grid-flow-col grid-rows-3", label: "Row 3" },
+    { key: "grid-flow-col grid-rows-4", label: "Row 4" },
+    { key: "grid-flow-col grid-rows-5", label: "Row 5" },
+    { key: "grid-flow-col grid-rows-6", label: "Row 6" },
+    { key: "grid-flow-col grid-rows-7", label: "Row 7" },
+  ];
+  const [selectGrid, setSelectGrid] = useState("grid-cols-12");
+
+  const handleSelectionChange = (e: { target: { value: SetStateAction<string> } }) => {
     setSelectGrid(e.target.value);
-  }
+  };
+
   const deleteItem = (cid: string) => {
-    setCurrentList(list.filter(item => item._id !== cid))
-  }
+    setCurrentList((prev: any[]) => prev.filter((item) => item._id !== cid));
+  };
 
   const handleDelete = async (cid: string) => {
-    if (!uid) return
+    if (!uid) return;
     const res = await fetch(`/api/mypage/content/${cid}`, {
       method: "DELETE",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': uid,
+        "Content-Type": "application/json",
+        Authorization: uid,
       },
-    })
+    });
 
     if (res.ok) {
-      deleteItem(cid)
-      addToast({
-        title: "삭제 되었습니다",
-      })
+      deleteItem(cid);
+      Toast.toast("Deleted.");
     }
-  }
+  };
 
-  const fac = new FastAverageColor()
+  const fac = new FastAverageColor();
   const rgbToHsl = (r: number, g: number, b: number) => {
     r /= 255;
     g /= 255;
     b /= 255;
 
-    const max = Math.max(r, g, b),
-      min = Math.min(r, g, b);
-    let h = 0,
-      s = 0
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0;
+    let s = 0;
     const l = (max + min) / 2;
 
     if (max !== min) {
@@ -86,89 +86,109 @@ export default function MylistYear({ year, list, counts }: { year: any, list: an
       }
       h /= 6;
     }
+
     return [h * 360, s, l];
   };
+
   const handleSelectionRainbow = async (isSelected: boolean) => {
     if (isSelected) {
-      setIsSelectedRainbow(true)
+      setIsSelectedRainbow(true);
       const colors = await Promise.all(
         currentList.map(async (item: any) => {
-          const { value } = await fac.getColorAsync(`/api/proxy?url=${encodeURIComponent('https://image.tmdb.org/t/p/w500' + item.poster_path)}`)
-          const [r, g, b] = value
-          const [h] = rgbToHsl(Number(r), Number(g), Number(b))
-          return { item, h }
-        }))
-      const sorted = colors.sort((a, b) => a.h - b.h)
-      setCurrentList(sorted.map((e: any) => e.item))
-    } else {
-      setIsSelectedRainbow(false)
-      setCurrentList(list)
+          const { value } = await fac.getColorAsync(
+            `/api/proxy?url=${encodeURIComponent("https://image.tmdb.org/t/p/w500" + item.poster_path)}`,
+          );
+          const [r, g, b] = value;
+          const [h] = rgbToHsl(Number(r), Number(g), Number(b));
+          return { item, h };
+        }),
+      );
+      const sorted = colors.sort((a, b) => a.h - b.h);
+      setCurrentList(sorted.map((entry: any) => entry.item));
+      return;
     }
-  }
+
+    setIsSelectedRainbow(false);
+    setCurrentList(list);
+  };
 
   return (
     <>
       <Title title="마이페이지" sub="" />
-      <div className="flex justify-end pb-2 gap-1">
-        <Switch isDisabled={!uid ? true : false} size="sm" isSelected={isSelectedRainbow} onValueChange={(isSelected) => handleSelectionRainbow(isSelected)}>
-          <span className="text-xs">무지개</span>
-        </Switch>
-        <Switch isDisabled={!uid ? true : false} size="sm" isSelected={isSelectedProvider} onValueChange={setIsSelectedProvider}>
-          <span className="text-xs">제공사</span>
-        </Switch>
-        <Select
-          className="max-w-xs"
-          label=""
-          placeholder="정렬 선택"
-          labelPlacement="outside-left"
-          size="sm"
-          variant="bordered"
-          items={gridSettings}
-          selectedKeys={[selectGrid]}
+      <div className="flex flex-wrap justify-end gap-2 pb-2">
+        <label className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-3 py-2 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200">
+          <input
+            type="checkbox"
+            disabled={!uid}
+            checked={isSelectedRainbow}
+            onChange={(event) => handleSelectionRainbow(event.target.checked)}
+          />
+          <span>무지개</span>
+        </label>
+        <label className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-3 py-2 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200">
+          <input
+            type="checkbox"
+            disabled={!uid}
+            checked={isSelectedProvider}
+            onChange={(event) => setIsSelectedProvider(event.target.checked)}
+          />
+          <span>제공처</span>
+        </label>
+        <select
+          className="min-h-[2.5rem] rounded-full border border-slate-300/80 bg-white px-3 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          value={selectGrid}
           onChange={handleSelectionChange}
         >
-          {(gridSettings: { label: string }) => <SelectItem>{gridSettings.label}</SelectItem>}
-        </Select>
-        <Select
-          className="max-w-xs"
-          label=""
-          placeholder="연도 선택"
-          variant="bordered"
-          size="sm"
-          labelPlacement="outside-left"
-          selectedKeys={[year]}
-          onChange={(e) => router.push(`/mypage/${e.target.value}`)}
+          {gridSettings.map((item) => (
+            <option key={item.key} value={item.key}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+        <select
+          className="min-h-[2.5rem] rounded-full border border-slate-300/80 bg-white px-3 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          value={year}
+          onChange={(event) => router.push(`/mypage/${event.target.value}`)}
         >
           {counts.map((count) => (
-            <SelectItem key={count._id} title={`${count._id}년도 (${count.count}개)`} textValue={year}>{count._id}</SelectItem>
+            <option key={count._id} value={count._id}>
+              {count._id} ({count.count})
+            </option>
           ))}
-        </Select>
-
+        </select>
       </div>
 
-      <div className="overflow-auto border-2 rounded-md px-2" style={{ height: "calc(100% - 12px)" }}>
-        {currentList.length == 0 && list.length == 0 && <>시청내역이 비어있습니다.</>}
+      <div className="overflow-auto rounded-md border-2 px-2" style={{ height: "calc(100% - 12px)" }}>
+        {currentList.length === 0 && list.length === 0 ? <>시청내역이 비어있습니다.</> : null}
 
-        {uid ?
-          <div className={`py-2 grid gap-1 ${selectGrid}`}>
+        {uid ? (
+          <div className={`grid gap-1 py-2 ${selectGrid}`}>
             {currentList.map((content: any) => (
-              <CardCol key={content.title} thisYear={year} content={content} isProvider={isSelectedProvider} onUpdate={deleteItem} onDelete={handleDelete}></CardCol>
-            ))}
-          </div>
-          :
-          <div className={`py-2 grid gap-1 ${selectGrid}`}>
-            {list.map((e: any, index: number) => (
-              <Image
-                alt="sorted posters"
-                key={index}
-                radius="sm"
-                src={`https://image.tmdb.org/t/p/w500${e}`}
-                className="w-full h-full object-cover"
+              <CardCol
+                key={content._id}
+                thisYear={year}
+                content={content}
+                isProvider={isSelectedProvider}
+                onUpdate={deleteItem}
+                onDelete={handleDelete}
               />
             ))}
           </div>
-        }
+        ) : (
+          <div className={`grid gap-1 py-2 ${selectGrid}`}>
+            {list.map((poster: any, index: number) => (
+              <Image
+                alt="sorted posters"
+                key={index}
+                src={`https://image.tmdb.org/t/p/w500${poster}`}
+                width={220}
+                height={330}
+                className="h-full w-full rounded-sm object-cover"
+              />
+            ))}
+          </div>
+        )}
       </div>
     </>
-  )
+  );
 }

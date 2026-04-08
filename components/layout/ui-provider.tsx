@@ -1,7 +1,6 @@
 'use client'
 
-import { HeroUIProvider } from "@heroui/react";
-import { ToastProvider } from "@heroui/toast";
+import { Toast } from "@heroui/react";
 import TopBar from "./top-bar";
 import React from "react";
 import { usePathname } from "next/navigation";
@@ -16,8 +15,8 @@ export function UiProvider({
   const isFilterPage = pathname === "/movie" || pathname === "/tv";
 
   return (
-    <HeroUIProvider>
-      <ToastProvider />
+    <>
+      <Toast.Provider />
       <main>
         <div className={`app-shell text-foreground bg-background flex-grow ${isFilterPage ? "app-shell--locked" : ""}`}>
           <TopBar />
@@ -29,6 +28,6 @@ export function UiProvider({
         </div>
       </main>
       {modal}
-    </HeroUIProvider>
+    </>
   );
 }

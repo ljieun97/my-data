@@ -1,4 +1,5 @@
 import "@/styles/global.css";
+import "@heroui/react/styles";
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import Script from "next/script";

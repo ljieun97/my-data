@@ -1,273 +1,214 @@
-'use client'
+"use client";
 
-import InfiniteImages from "../common/infinite-images"
-import { Avatar, Chip, Tooltip, Image, Button, Card, CardHeader, CardBody, CardFooter, AvatarGroup, Spacer, Modal, ModalBody, ModalHeader, ModalFooter, ModalContent } from "@heroui/react"
-import Title from "../common/title"
-import { useRouter, useSearchParams } from "next/navigation";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faArrowLeft, faVolumeHigh, faVolumeXmark, faXmark, faImage } from "@fortawesome/free-solid-svg-icons"
+import InfiniteImages from "../common/infinite-images";
+import Title from "../common/title";
+import { useRouter } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft, faImage, faVolumeHigh, faVolumeXmark } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
-import dynamic from 'next/dynamic';
-const ReactPlayer = dynamic(() => import('react-player/lazy'), { ssr: false });
+import dynamic from "next/dynamic";
+
+const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
+
+function ProviderLogo({ src, alt }: { src: string; alt: string }) {
+  return <img src={src} alt={alt} className="h-8 w-8 rounded-md border border-white/70 object-cover shadow-sm" />;
+}
 
 export default function DetailModal(props: any) {
-  const { content, casts, sim, providers, videoKey } = props
-  const cutCasts = casts?.slice(0, 8)
-  const videoPath = videoKey ? `https://www.youtube.com/watch?v=${videoKey}` : ''
-  const [isMute, setIsMute] = useState(true)
-  const castsRef = useRef<HTMLDivElement>(null)
-  const goCasts = () => {
-    castsRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-  const router = useRouter()
+  const { content, casts, sim, providers, videoKey } = props;
+  const cutCasts = casts?.slice(0, 8);
+  const videoPath = videoKey ? `https://www.youtube.com/watch?v=${videoKey}` : "";
+  const [isMute, setIsMute] = useState(true);
+  const castsRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const scrollY = window.scrollY
+    const scrollY = window.scrollY;
 
-    document.documentElement.classList.add("modal-scroll-lock")
-    document.body.classList.add("modal-scroll-lock")
-    document.body.style.position = "fixed"
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.left = "0"
-    document.body.style.right = "0"
-    document.body.style.width = "100%"
+    document.documentElement.classList.add("modal-scroll-lock");
+    document.body.classList.add("modal-scroll-lock");
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
 
     return () => {
-      document.documentElement.classList.remove("modal-scroll-lock")
-      document.body.classList.remove("modal-scroll-lock")
-      document.body.style.position = ""
-      document.body.style.top = ""
-      document.body.style.left = ""
-      document.body.style.right = ""
-      document.body.style.width = ""
-      window.scrollTo(0, scrollY)
-    }
-  }, [])
+      document.documentElement.classList.remove("modal-scroll-lock");
+      document.body.classList.remove("modal-scroll-lock");
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
 
   return (
-    <>
-      <Modal
-        isOpen={true}
-        hideCloseButton={true}
-        scrollBehavior="inside"
-        placement='center'
-        disableAnimation={true}
-        className='h-full max-w-4xl'
-        onClose={() => router.back()}
-        radius="none"
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalBody className="p-0 gap-0">
-                {/* <div className="relative"> */}
-                  <div className="absolute z-20 left-0 p-4">
-                    {/* {content.name || content.title || ""} */}
-                    <Button
-                      isIconOnly
-                      color="success"
-                      onPress={() => router.back()}
-                    >
-                      <FontAwesomeIcon icon={faArrowLeft} />
-                    </Button>
-                  {/* </div> */}
-                </div>
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm">
+      <div className="h-full w-full max-w-4xl overflow-hidden bg-white dark:bg-slate-950">
+        <div className="relative h-full overflow-y-auto">
+          <div className="absolute left-0 top-0 z-20 p-4">
+            <button type="button" className="rounded-full bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-lg" onClick={() => router.back()}>
+              <FontAwesomeIcon icon={faArrowLeft} />
+            </button>
+          </div>
+
+          {videoPath ? (
+            <div className="relative">
+              <div className="absolute bottom-0 right-0 z-20 p-4">
+                <button
+                  type="button"
+                  className="rounded-full bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-lg"
+                  onClick={() => setIsMute((prev) => !prev)}
+                >
+                  <FontAwesomeIcon icon={isMute ? faVolumeHigh : faVolumeXmark} />
+                </button>
+              </div>
+              <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                <ReactPlayer
+                  width="100%"
+                  height="100%"
+                  url={videoPath}
+                  playing
+                  muted={isMute}
+                  loop
+                  style={{ position: "absolute", top: 0, left: 0 }}
+                />
+              </div>
+            </div>
+          ) : content.backdrop_path ? (
+            <img
+              alt="Card background"
+              className="aspect-video w-full object-cover brightness-110"
+              src={`https://image.tmdb.org/t/p/original/${content.backdrop_path}`}
+            />
+          ) : null}
+
+          <div className="px-6 pb-8">
+            <Title
+              title={content.title || content.name || ""}
+              sub={
                 <>
-                  {/* <div className="absolute z-5 w-full h-full bg-gradient-to-b from-black/0 to-black/25"></div> */}
-                  {videoPath ?
-                    <div className="relative">
-                      <div className="absolute z-20 right-0 bottom-0 p-4">
-                        <Button
-                          isIconOnly
-                          color="success"
-                          onPress={() => {
-                            setIsMute(!isMute)
-                          }}
-                        >
-                          <FontAwesomeIcon icon={isMute ? faVolumeHigh : faVolumeXmark} />
-                        </Button>
-                      </div>
-                      <div
-                        className="aspect-video relative w-full"
-                        style={{ paddingBottom: '56.25%' }}
-                      >
-                        <ReactPlayer
-                          width="100%"
-                          height="100%"
-                          url={videoPath}
-                          playing={true}
-                          muted={isMute}
-                          loop={true}
-                          style={{ position: 'absolute', top: 0, left: 0 }}
-                        />
-                      </div>
-                    </div>
-                    :
-                    <>
-                      {
-                        content.backdrop_path &&
-                        <Image
-                          removeWrapper={true}
-                          radius="none"
-                          alt="Card background"
-                          className="w-full aspect-video object-cover brightness-125"
-                          src={content.backdrop_path ? `https://image.tmdb.org/t/p/original/${content.backdrop_path}` : ''}
-                        />
-                      }
-                    </>
-                  }
-
+                  {content.release_date ? content.release_date.slice(0, 4) : ""}
+                  {content.first_air_date ? content.first_air_date.slice(0, 4) : ""}
                 </>
+              }
+            />
 
-                {/* 내용 */}
-                <div className="px-6">
-                  <Title
-                    title={content.title || content.name || ''}
-                    sub={
-                      <>
-                        {content.release_date ? content.release_date.substr(0, 4) : ''}
-                        {content.first_air_date ? content.first_air_date.substr(0, 4) : ''}
-                      </>
-                    }
-                  />
-                  <div className="pt-2 md:flex text-default-500">
-                    <div className="md:basis-3/5 pb-4">
-                      <p>
-                        {content.overview}
-                        {content.about}
-                      </p>
-                    </div>
-                    {providers &&
-                      <div className="flex gap-2 md:basis-2/5 md:pl-10">
-                        {providers.flatrate &&
-                          <>
-                            <div className="flex gap-2">고정 요금
-                              {providers.flatrate.map((item: any, index: number) => (
-                                <span key={index}>
-                                  {item.provider_id != 1796 &&
-                                    <Tooltip content={item.provider_name}>
-                                      <Avatar
-                                        size="sm"
-                                        radius="sm"
-                                        src={`https://image.tmdb.org/t/p/w500/${item.logo_path}`}
-                                      />
-                                    </Tooltip>
-                                  }
-                                </span>
-                              ))}
-                            </div>
-                          </>
-                        }
-                        {providers.buy &&
-                          <>
-                            <div className="flex gap-2">개별 구매
-                              {providers.buy.map((item: any, index: number) => (
-                                <span key={index}>
-                                  {item.provider_id != 1796 &&
-                                    <Tooltip content={item.provider_name}>
-                                      <Avatar
-                                        size="sm"
-                                        radius="sm"
-                                        src={`https://image.tmdb.org/t/p/w500/${item.logo_path}`}
-                                      />
-                                    </Tooltip>
-                                  }
-                                </span>
-                              ))}
-                            </div>
-                          </>
-                        }
-                      </div>
-                    }
-                  </div>
-
-                  {casts.length > 0 &&
-                    <div className="py-4">
-                      <Spacer y={4} />
-                      <h4 className="pb-2 font-bold text-lg">출연</h4>
-                      <div className="gap-3 lg:gap-2 grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-8">
-                        {cutCasts?.map((item: any, index: number) => (
-                          <Card shadow="sm" radius="sm" key={index} isBlurred>
-                            <CardBody className="overflow-visible p-0">
-                              {item.profile_path ?
-                                <Image
-                                  shadow="sm"
-                                  radius="none"
-                                  width="100%"
-                                  alt={item.name}
-                                  className="object-cover w-full aspect-[26/37]"
-                                  src={`https://image.tmdb.org/t/p/w500/${item.profile_path}`}
-                                />
-                                :
-                                <div className="bg-default-300 flex items-center justify-center w-full aspect-[26/37]">
-                                  <FontAwesomeIcon icon={faImage} />
-                                </div>
-                              }
-                            </CardBody>
-                            <CardFooter className="px-0">
-                              <div className="w-full text-center">
-                                <p className="text-small">{item.name}</p>
-                                <p className="text-tiny italic text-default-500">{item.character}</p>
-                              </div>
-                            </CardFooter>
-                          </Card>
-                        ))}
-
-                      </div>
-                    </div>
-                  }
-
-                  {casts.length > 8 &&
-                    <div className="flex justify-center">
-                      <Button
-                        variant="bordered"
-                        onPress={() => { goCasts() }}
-                      >더보기
-                      </Button>
-                    </div>
-                  }
-
-                  {sim?.length > 0 &&
-                    <div className="py-4">
-                      <Spacer y={4} />
-                      <h4 className="pb-2 font-bold text-lg">추천 콘텐츠</h4>
-                      <InfiniteImages contents={sim} />
-                    </div>
-                  }
-
-                  <div className="py-4">
-                    <Spacer y={4} />
-                    <h4 className="pb-2 font-bold text-lg">세부정보</h4>
-                    {content.genres &&
-                      <div>
-                        <span>장르 </span>
-                        {content.genres.map((item: any, index: number) => (
-                          <span className="text-default-500" key={index}>
-                            {item.name}
-                            {content.genres[index + 1] ? ', ' : ''}
+            <div className="pt-2 text-slate-500 md:flex">
+              <div className="pb-4 md:basis-3/5">
+                <p>{content.overview || content.about || "현재 정보가 등록되지 않았거나 정보가 없습니다."}</p>
+              </div>
+              {providers ? (
+                <div className="flex gap-4 md:basis-2/5 md:pl-10">
+                  {providers.flatrate ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span>구독</span>
+                      {providers.flatrate.map((item: any, index: number) =>
+                        item.provider_id !== 1796 ? (
+                          <span key={index} title={item.provider_name}>
+                            <ProviderLogo src={`https://image.tmdb.org/t/p/w500/${item.logo_path}`} alt={item.provider_name} />
                           </span>
-                        ))}
-                      </div>
-                    }
-                    {casts.length > 0 &&
-                      <div>
-                        <span ref={castsRef}>출연 </span>
-                        {casts.map((item: any, index: number) => (
-                          <span className="text-default-500" key={index}>
-                            {item.original_name}
-                            {item.character && `(${item.character})`}
-                            {casts[index + 1] ? ', ' : ''}
+                        ) : null,
+                      )}
+                    </div>
+                  ) : null}
+                  {providers.buy ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span>구매</span>
+                      {providers.buy.map((item: any, index: number) =>
+                        item.provider_id !== 1796 ? (
+                          <span key={index} title={item.provider_name}>
+                            <ProviderLogo src={`https://image.tmdb.org/t/p/w500/${item.logo_path}`} alt={item.provider_name} />
                           </span>
-                        ))}
-                      </div>
-                    }
-                  </div>
+                        ) : null,
+                      )}
+                    </div>
+                  ) : null}
                 </div>
-              </ModalBody>
-            </>
-          )}
-        </ModalContent>
-      </Modal >
-    </>
-  )
+              ) : null}
+            </div>
+
+            {casts.length > 0 ? (
+              <div className="py-4">
+                <h4 className="pb-4 text-lg font-bold">출연</h4>
+                <div className="grid grid-cols-4 gap-3 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-8">
+                  {cutCasts?.map((item: any, index: number) => (
+                    <div key={index} className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                      <div className="overflow-hidden">
+                        {item.profile_path ? (
+                          <img
+                            width="100%"
+                            alt={item.name}
+                            className="aspect-[26/37] w-full object-cover"
+                            src={`https://image.tmdb.org/t/p/w500/${item.profile_path}`}
+                          />
+                        ) : (
+                          <div className="flex aspect-[26/37] w-full items-center justify-center bg-slate-200 dark:bg-slate-800">
+                            <FontAwesomeIcon icon={faImage} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="px-2 py-3 text-center">
+                        <p className="text-sm">{item.name}</p>
+                        <p className="text-xs italic text-slate-500">{item.character}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {casts.length > 8 ? (
+              <div className="flex justify-center py-2">
+                <button
+                  type="button"
+                  className="rounded-full border px-4 py-2 text-sm"
+                  onClick={() => castsRef.current?.scrollIntoView({ behavior: "smooth" })}
+                >
+                  더보기
+                </button>
+              </div>
+            ) : null}
+
+            {sim?.length > 0 ? (
+              <div className="py-4">
+                <h4 className="pb-2 text-lg font-bold">추천 콘텐츠</h4>
+                <InfiniteImages contents={sim} />
+              </div>
+            ) : null}
+
+            <div className="py-4">
+              <h4 className="pb-2 text-lg font-bold">상세 정보</h4>
+              {content.genres ? (
+                <div>
+                  <span>장르 </span>
+                  {content.genres.map((item: any, index: number) => (
+                    <span className="text-slate-500" key={index}>
+                      {item.name}
+                      {content.genres[index + 1] ? ", " : ""}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              {casts.length > 0 ? (
+                <div>
+                  <span ref={castsRef}>출연 </span>
+                  {casts.map((item: any, index: number) => (
+                    <span className="text-slate-500" key={index}>
+                      {item.original_name}
+                      {item.character ? `(${item.character})` : ""}
+                      {casts[index + 1] ? ", " : ""}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

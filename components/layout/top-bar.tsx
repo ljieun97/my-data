@@ -1,35 +1,51 @@
-"use client"
+"use client";
 
 import { faCircleHalfStroke, faMoon } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { usePathname, useRouter } from "next/navigation";
+import { Avatar, Button, Dropdown, Toast } from "@heroui/react";
 import SearchInput from "./search-input";
-import {
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  NavbarMenuToggle,
-  NavbarMenu,
-  DropdownItem,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  Avatar,
-  Button,
-  Link,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  useDisclosure,
-  RadioGroup,
-  Radio,
-  Select,
-  SelectItem,
-} from "@heroui/react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
+
+function AvatarButton({ className, src }: { className?: string; src: string }) {
+  return (
+    <Avatar className={className} size="sm">
+      <Avatar.Image src={src} />
+      <Avatar.Fallback>T</Avatar.Fallback>
+    </Avatar>
+  );
+}
+
+function OverlayModal({
+  open,
+  title,
+  onClose,
+  children,
+  footer,
+}: {
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">{title}</div>
+        <div className="px-6 py-5">{children}</div>
+        {footer ? <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-4 dark:border-slate-800">{footer}</div> : null}
+      </div>
+    </div>
+  );
+}
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -41,6 +57,111 @@ const navItems = [
   { href: "/guest", label: "Guest" },
 ];
 
+function WorldcupModal({
+  open,
+  selectedSource,
+  selectedYear,
+  setSelectedSource,
+  setSelectedYear,
+  yearOptions,
+  onSubmit,
+  onClose,
+}: {
+  open: boolean;
+  selectedSource: string;
+  selectedYear: string;
+  setSelectedSource: (value: string) => void;
+  setSelectedYear: (value: string) => void;
+  yearOptions: string[];
+  onSubmit: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <OverlayModal
+      open={open}
+      title="Worldcup"
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="button" className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white dark:bg-slate-100 dark:text-slate-900" onClick={onSubmit}>
+            Start worldcup
+          </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-5">
+        <label className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Year</span>
+          <select
+            value={selectedYear}
+            onChange={(event) => setSelectedYear(event.target.value)}
+            className="min-h-[2.85rem] rounded-2xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          >
+            {yearOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="text-sm font-medium text-slate-700 dark:text-slate-200">Source</div>
+        <div className="flex flex-col gap-3">
+          <label className="inline-flex items-center gap-2">
+            <input type="radio" name="worldcup-source" checked={selectedSource === "kobis"} onChange={() => setSelectedSource("kobis")} />
+            <span>Box Office (KOBIS)</span>
+          </label>
+          <label className="inline-flex items-center gap-2">
+            <input type="radio" name="worldcup-source" checked={selectedSource === "tmdb"} onChange={() => setSelectedSource("tmdb")} />
+            <span>OTT (TMDB)</span>
+          </label>
+        </div>
+      </div>
+    </OverlayModal>
+  );
+}
+
+function LoginModal({ open, onLogin, onClose }: { open: boolean; onLogin: () => void; onClose: () => void }) {
+  return (
+    <OverlayModal open={open} title="Login" onClose={onClose}>
+      <Button className="w-full" variant="primary" onPress={onLogin}>
+        Continue with Kakao
+      </Button>
+    </OverlayModal>
+  );
+}
+
+function SettingsModal({
+  open,
+  selectedSet,
+  setSelectedSet,
+  onClose,
+}: {
+  open: boolean;
+  selectedSet: string;
+  setSelectedSet: (value: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <OverlayModal open={open} title="Settings" onClose={onClose}>
+      <div className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-200">Date mode</div>
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="inline-flex items-center gap-2">
+          <input type="radio" name="date-mode" checked={selectedSet === "release"} onChange={() => setSelectedSet("release")} />
+          <span>Release</span>
+        </label>
+        <label className="inline-flex items-center gap-2">
+          <input type="radio" name="date-mode" checked={selectedSet === "today"} onChange={() => setSelectedSet("today")} />
+          <span>Today</span>
+        </label>
+      </div>
+    </OverlayModal>
+  );
+}
+
 export default function TopBar() {
   const currentYear = new Date().getFullYear();
   const defaultWorldcupYear = String(currentYear - 1);
@@ -49,29 +170,17 @@ export default function TopBar() {
   const router = useRouter();
   const [isScroll, setIsScroll] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const {
-    isOpen: isOpenSet,
-    onOpen: onOpenSet,
-    onOpenChange: onOpenChangeSet,
-  } = useDisclosure();
-  const {
-    isOpen: isOpenWorldcup,
-    onOpen: onOpenWorldcup,
-    onOpenChange: onOpenChangeWorldcup,
-    onClose: onCloseWorldcup,
-  } = useDisclosure();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedSet, setSelectedSet] = useState("release");
   const [selectedSource, setSelectedSource] = useState("kobis");
   const [selectedYear, setSelectedYear] = useState(defaultWorldcupYear);
   const yearOptions = Array.from({ length: 26 }, (_, index) => String(currentYear - index));
 
-  const isActivePath = (href: string) => path === href || path.startsWith(`${href}/`);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isWorldcupOpen, setIsWorldcupOpen] = useState(false);
 
-  const onChangeScroll = () => {
-    if (window.scrollY < 30) setIsScroll(false);
-    else setIsScroll(true);
-  };
+  const isActivePath = (href: string) => path === href || path.startsWith(`${href}/`);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -82,6 +191,20 @@ export default function TopBar() {
     document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
     document.cookie = `theme=${nextIsDark ? "dark" : "light"}; path=/; max-age=31536000; samesite=lax`;
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScroll(window.scrollY >= 30);
+    };
+
+    if (path === "/") {
+      handleScroll();
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      return () => window.removeEventListener("scroll", handleScroll);
+    }
+
+    setIsScroll(true);
+  }, [path]);
 
   const clickKakaoLogin = () => {
     window.location.href = "/api/oauth/login";
@@ -95,15 +218,16 @@ export default function TopBar() {
 
     if (response.ok) {
       window.location.href = "/";
-    } else {
-      console.error("Failed to log out");
+      return;
     }
+
+    Toast.toast("Failed to log out");
   };
 
   const handleOpenSet = () => {
     const isTodaySave = localStorage.getItem("set_isTodaySave");
     setSelectedSet(isTodaySave === "true" ? "today" : "release");
-    onOpenSet();
+    setIsSettingsOpen(true);
   };
 
   const handleChangeSet = (value: string) => {
@@ -114,12 +238,13 @@ export default function TopBar() {
   const handleOpenWorldcup = () => {
     setSelectedSource("kobis");
     setSelectedYear(defaultWorldcupYear);
-    onOpenWorldcup();
+    setIsWorldcupOpen(true);
+    setMobileOpen(false);
   };
 
   const handleNavigateWorldcup = () => {
     router.push(`/worldcup?year=${selectedYear}&source=${selectedSource}`);
-    onCloseWorldcup();
+    setIsWorldcupOpen(false);
   };
 
   const toggleTheme = () => {
@@ -134,222 +259,136 @@ export default function TopBar() {
 
   return (
     <>
-      <Navbar
-        isBlurred={false}
-        classNames={{
-          base: [
-            "topbar-shell",
-            path === "/" && !isScroll ? "topbar-shell--transparent" : "",
-          ].join(" "),
-          wrapper: "max-w-7xl px-3 sm:px-4",
-        }}
-        onScrollPositionChange={() => {
-          if (path === "/") onChangeScroll();
-        }}
+      <nav
+        className={[
+          "topbar-shell z-50",
+          path === "/" && !isScroll ? "topbar-shell--transparent" : "",
+        ].join(" ")}
       >
-        <NavbarContent justify="start">
-          <NavbarMenuToggle className="topbar-toggle lg:hidden" />
-          <NavbarMenu className="topbar-menu border-t px-4 pt-4 backdrop-blur-xl">
-            {navItems.map((item) => (
-              <NavbarItem key={item.href} isActive={isActivePath(item.href)}>
-                {item.href === "/worldcup" ? (
-                  <button
-                    type="button"
-                    onClick={handleOpenWorldcup}
-                    className={[
-                      "topbar-mobile-link block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-mobile-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </button>
-                ) : (
-                  <Link
-                    href={item.href}
-                    color="foreground"
-                    className={[
-                      "topbar-mobile-link block rounded-2xl px-4 py-3 text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-mobile-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </Link>
-                )}
-              </NavbarItem>
-            ))}
-          </NavbarMenu>
-
-          <NavbarBrand>
-            <p className="hidden lg:block text-inherit">
-              <Link
-                href="/"
-                className="topbar-brand rounded-full px-4 py-2 text-sm font-semibold tracking-[0.28em] transition"
-              >
-                TOVIE
-              </Link>
-            </p>
-          </NavbarBrand>
-
-          <NavbarContent className="hidden gap-2 lg:flex">
-            {navItems.map((item) => (
-              <NavbarItem key={item.href} isActive={isActivePath(item.href)}>
-                {item.href === "/worldcup" ? (
-                  <button
-                    type="button"
-                    onClick={handleOpenWorldcup}
-                    className={[
-                      "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </button>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className={[
-                      "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </Link>
-                )}
-              </NavbarItem>
-            ))}
-          </NavbarContent>
-        </NavbarContent>
-
-        <NavbarContent as="div" className="items-center gap-2 sm:gap-3" justify="end">
-          <SearchInput />
-          <Button
-            radius="full"
-            variant="flat"
-            onPress={toggleTheme}
-            className="topbar-theme px-3 text-sm font-medium"
-            isIconOnly
-            aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            <FontAwesomeIcon icon={isDarkMode ? faCircleHalfStroke : faMoon} />
-          </Button>
-          {!uid ? (
-            <Button
-              onPress={onOpen}
-              radius="full"
-              variant="flat"
-              className="topbar-login px-4 text-sm font-medium"
+        <div className="mx-auto flex min-h-[4.5rem] items-center justify-between gap-3 px-3 sm:px-4">
+          <div className="flex flex-1 items-center gap-2">
+            <button
+              type="button"
+              className="topbar-toggle inline-flex h-10 w-10 items-center justify-center rounded-full lg:hidden"
+              onClick={() => setMobileOpen((prev) => !prev)}
+              aria-label="Toggle menu"
             >
-              Login
+              <span className="text-lg leading-none">{mobileOpen ? "\u2715" : "\u2630"}</span>
+            </button>
+
+            <Link
+              href="/"
+              className="topbar-brand hidden rounded-full px-4 py-2 text-sm font-semibold tracking-[0.28em] transition lg:inline-flex"
+            >
+              TOVIE
+            </Link>
+
+            <div className="hidden items-center gap-2 lg:flex">
+              {navItems.map((item) =>
+                item.href === "/worldcup" ? (
+                  <button
+                    key={item.href}
+                    type="button"
+                    onClick={handleOpenWorldcup}
+                    className={[
+                      "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
+                      isActivePath(item.href) ? "topbar-link--active" : "",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </button>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={[
+                      "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
+                      isActivePath(item.href) ? "topbar-link--active" : "",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </Link>
+                ),
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <SearchInput />
+            <Button
+              variant="secondary"
+              onPress={toggleTheme}
+              className="topbar-theme rounded-full px-3 text-sm font-medium"
+              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              <FontAwesomeIcon icon={isDarkMode ? faCircleHalfStroke : faMoon} />
             </Button>
-          ) : (
-            <Dropdown placement="bottom-end">
-              <DropdownTrigger>
-                <Avatar
-                  isBordered
-                  size="sm"
-                  as="button"
-                  className="topbar-avatar transition-transform"
-                  src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-                />
-              </DropdownTrigger>
-              <DropdownMenu aria-label="Profile Actions" variant="flat" className="topbar-dropdown min-w-44">
-                <DropdownItem key="mypage" href="/mypage/2025">
-                  My Page
-                </DropdownItem>
-                <DropdownItem key="setting" onPress={handleOpenSet}>
-                  Settings
-                </DropdownItem>
-                <DropdownItem key="logout" color="danger" onPress={clickLogout}>
-                  Logout
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          )}
-        </NavbarContent>
-      </Navbar>
+            {!uid ? (
+              <Button onPress={() => setIsLoginOpen(true)} variant="primary" className="topbar-login rounded-full px-4 text-sm font-medium">
+                Login
+              </Button>
+            ) : (
+              <Dropdown>
+                <Dropdown.Trigger>
+                  <AvatarButton className="topbar-avatar cursor-pointer" src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
+                </Dropdown.Trigger>
+                <Dropdown.Popover placement="bottom end">
+                  <Dropdown.Menu className="topbar-dropdown min-w-44 rounded-2xl p-2">
+                    <Dropdown.Item href="/mypage/2025">My Page</Dropdown.Item>
+                    <Dropdown.Item onAction={handleOpenSet}>Settings</Dropdown.Item>
+                    <Dropdown.Item onAction={clickLogout}>Logout</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown.Popover>
+              </Dropdown>
+            )}
+          </div>
+        </div>
 
-      <Modal isOpen={isOpen} size="sm" placement="center" onOpenChange={onOpenChange}>
-        <ModalContent>
-          {() => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">Login</ModalHeader>
-              <ModalBody className="py-4">
-                <Button color="warning" onPress={clickKakaoLogin}>
-                  Continue with Kakao
-                </Button>
-              </ModalBody>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+        {mobileOpen ? (
+          <div className="topbar-menu border-t px-4 pb-4 pt-4 backdrop-blur-xl lg:hidden">
+            {navItems.map((item) =>
+              item.href === "/worldcup" ? (
+                <button
+                  key={item.href}
+                  type="button"
+                  onClick={handleOpenWorldcup}
+                  className={[
+                    "topbar-mobile-link mt-1 block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
+                    isActivePath(item.href) ? "topbar-mobile-link--active" : "",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </button>
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={[
+                    "topbar-mobile-link mt-1 block rounded-2xl px-4 py-3 text-sm font-medium transition",
+                    isActivePath(item.href) ? "topbar-mobile-link--active" : "",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </Link>
+              ),
+            )}
+          </div>
+        ) : null}
+      </nav>
 
-      <Modal
-        isOpen={isOpenSet}
-        size="sm"
-        placement="center"
-        onOpenChange={onOpenChangeSet}
-      >
-        <ModalContent>
-          {() => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">Settings</ModalHeader>
-              <ModalBody className="py-4">
-                <RadioGroup
-                  orientation="horizontal"
-                  color="secondary"
-                  label="Date mode"
-                  value={selectedSet}
-                  onValueChange={handleChangeSet}
-                >
-                  <Radio value="release">Release</Radio>
-                  <Radio value="today">Today</Radio>
-                </RadioGroup>
-              </ModalBody>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-
-      <Modal
-        isOpen={isOpenWorldcup}
-        size="sm"
-        placement="center"
-        onOpenChange={onOpenChangeWorldcup}
-      >
-        <ModalContent>
-          {() => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">Worldcup</ModalHeader>
-              <ModalBody className="py-4">
-                <Select
-                  label="Year"
-                  selectedKeys={[selectedYear]}
-                  onSelectionChange={(keys) => {
-                    const [value] = Array.from(keys).map(String);
-                    if (value) setSelectedYear(value);
-                  }}
-                >
-                  {yearOptions.map((year) => (
-                    <SelectItem key={year}>{year}</SelectItem>
-                  ))}
-                </Select>
-                <RadioGroup
-                  color="secondary"
-                  label="Source"
-                  value={selectedSource}
-                  onValueChange={setSelectedSource}
-                >
-                  <Radio value="kobis">Box Office (KOBIS)</Radio>
-                  <Radio value="tmdb">OTT (TMDB)</Radio>
-                </RadioGroup>
-                <Button className="topbar-login mt-2" radius="full" variant="flat" onPress={handleNavigateWorldcup}>
-                  Start worldcup
-                </Button>
-              </ModalBody>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      <LoginModal open={isLoginOpen} onLogin={clickKakaoLogin} onClose={() => setIsLoginOpen(false)} />
+      <SettingsModal open={isSettingsOpen} selectedSet={selectedSet} setSelectedSet={handleChangeSet} onClose={() => setIsSettingsOpen(false)} />
+      <WorldcupModal
+        open={isWorldcupOpen}
+        selectedSource={selectedSource}
+        selectedYear={selectedYear}
+        setSelectedSource={setSelectedSource}
+        setSelectedYear={setSelectedYear}
+        yearOptions={yearOptions}
+        onSubmit={handleNavigateWorldcup}
+        onClose={() => setIsWorldcupOpen(false)}
+      />
     </>
   );
 }

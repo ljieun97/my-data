@@ -1,32 +1,23 @@
-"use client"
-
-import { Select, SelectItem } from "@heroui/react"
+"use client";
 
 export default function SelectFilter(props: any) {
-  const { items, type, onChangeSelect } = props
+  const { items, type, onChangeSelect } = props;
+
   return (
-    <Select
-      items={items}
-      label={type}
-      placeholder="All"
-      className="browse-chip-select w-auto min-w-[8.5rem]"
-      classNames={{
-        base: "max-w-full",
-        trigger: "browse-select min-h-[2.9rem] rounded-full border px-3 pr-4 shadow-none transition",
-        innerWrapper: "gap-2",
-        label: "browse-select__label text-[11px] font-semibold uppercase tracking-[0.16em]",
-        value: "browse-select__value text-sm font-medium",
-        popoverContent: "browse-select__popover rounded-[20px] border backdrop-blur-xl",
-        listboxWrapper: "max-h-72",
-      }}
-      onChange={(e) => onChangeSelect(e, type)}
-      showScrollIndicators={false}
-    >
-      {(item: any) =>
-        <SelectItem key={item.value}>
-          {item.label}
-        </SelectItem>
-      }
-    </Select>
-  )
+    <label className="browse-chip-select flex w-auto min-w-[8.5rem] max-w-full flex-col gap-1">
+      <span className="browse-select__label text-[11px] font-semibold uppercase tracking-[0.16em]">{type}</span>
+      <select
+        className="browse-select browse-select__value min-h-[2.9rem] rounded-full border px-3 pr-4 text-sm font-medium shadow-none transition"
+        defaultValue=""
+        onChange={(e) => onChangeSelect(e, type)}
+      >
+        <option value="">All</option>
+        {items.map((item: any) => (
+          <option key={item.value} value={item.value}>
+            {item.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
 }

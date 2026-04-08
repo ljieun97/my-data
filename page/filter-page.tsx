@@ -6,7 +6,6 @@ import { RefObject, useEffect, useMemo, useState } from "react"
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import { useAsyncList } from "@react-stately/data";
 import SelectFilter from "../components/common/select-filter"
-import { Spacer } from "@heroui/react";
 
 export default function FilterPage({ type }: { type: string }) {
   const [totalContents, setTotalContents] = useState("")
@@ -160,7 +159,7 @@ export default function FilterPage({ type }: { type: string }) {
           <SelectFilter type={"Genre"} items={genreDatas} onChangeSelect={onChangeSelect} />
         </div>
       </section>
-      <Spacer y={4} />
+      <div className="h-4" aria-hidden="true" />
       <section
         className="content-grid-shell browse-results overflow-auto rounded-[28px] border p-4 pb-6 sm:p-5 sm:pb-7"
         style={{ height: "calc(100vh - 13.5rem)" }}

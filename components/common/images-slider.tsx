@@ -1,8 +1,7 @@
-'use client'
+"use client";
 
 import { useEffect, useRef, useState } from "react";
-import CardThumb from "../contents/card-thumb"
-import { Button, Card, Skeleton } from "@heroui/react";
+import CardThumb from "../contents/card-thumb";
 import { getTodayMovies, getTodaySeries, getTopRatedMovies } from "@/lib/open-api/tmdb-client";
 
 export default function ImagesSlider(props: any) {
@@ -17,7 +16,7 @@ export default function ImagesSlider(props: any) {
     getTodayMovies,
     getTodaySeries,
     getTopRatedMovies,
-  }
+  };
 
   const calculateItemsPerPage = (width: number) => {
     if (width >= 1280) return 5;
@@ -27,26 +26,24 @@ export default function ImagesSlider(props: any) {
 
   useEffect(() => {
     const handleResize = () => {
-      const width = window.innerWidth;
-      setItemsPerPage(calculateItemsPerPage(width));
+      setItemsPerPage(calculateItemsPerPage(window.innerWidth));
     };
 
-    handleResize(); // 초기 실행
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-
   useEffect(() => {
     const fetch = async () => {
-      const apiFunc = apiMap[props.type]
+      const apiFunc = apiMap[props.type];
       if (apiFunc) {
-        const data = await apiFunc()
-        setMovies(data)
+        const data = await apiFunc();
+        setMovies(data);
       }
-    }
-    fetch()
-  }, [props.type])
+    };
+    fetch();
+  }, [props.type]);
 
   const getWidthClass = (count: number) => {
     switch (count) {
@@ -79,7 +76,6 @@ export default function ImagesSlider(props: any) {
     }
   };
 
-
   const goToPage = (pageIndex: number) => {
     setPage(pageIndex);
     sliderRef.current?.scrollTo({
@@ -92,68 +88,33 @@ export default function ImagesSlider(props: any) {
     <>
       <div className="flex justify-end gap-1 pb-2 pr-6">
         {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => goToPage(i)}
-            className={`w-4 h-1 rounded-sm ${i === page ? "bg-green-500" : "bg-black/10"}`}
-          >
-          </button>
+          <button key={i} onClick={() => goToPage(i)} className={`h-1 w-4 rounded-sm ${i === page ? "bg-green-500" : "bg-black/10"}`} />
         ))}
       </div>
 
       <div className="flex w-full overflow-hidden">
-        <button
-          onClick={prev}
-          className="bg-black/10 px-[3px] mr-[2px] rounded-sm"
-          disabled={page === 0}
-        >
-          ◀
+        <button onClick={prev} className="mr-[2px] rounded-sm bg-black/10 px-[3px]" disabled={page === 0}>
+          ‹
         </button>
 
-        <div ref={sliderRef} className="flex transition-transform duration-300 ease-in-out w-full overflow-hidden scroll-snap-x snap-mandatory">
-          {movies ?
-            <>
-              {movies.map((item: any, index: number) => (
-                <div
-                  key={index}
-                  className={`flex-shrink-0 ${getWidthClass(itemsPerPage)}`}
-                >
-                  <CardThumb content={item}></CardThumb>
+        <div ref={sliderRef} className="flex w-full overflow-hidden scroll-snap-x snap-mandatory transition-transform duration-300 ease-in-out">
+          {movies
+            ? movies.map((item: any, index: number) => (
+                <div key={index} className={`flex-shrink-0 ${getWidthClass(itemsPerPage)}`}>
+                  <CardThumb content={item} />
+                </div>
+              ))
+            : Array.from({ length: itemsPerPage }, (_, index) => (
+                <div key={index} className={`flex-shrink-0 ${getWidthClass(itemsPerPage)}`}>
+                  <div className="mx-[2px] h-[140px] animate-pulse rounded-sm bg-gray-200 dark:bg-slate-800" />
                 </div>
               ))}
-            </>
-            :
-            <>
-              {Array.from({ length: itemsPerPage }, (_, index) => (
-                <div
-                  key={index}
-                  className={`flex-shrink-0 ${getWidthClass(itemsPerPage)}`}
-                >
-                  <Card
-                    radius="sm"
-                    className="group/footer mx-[2px]"
-                    isFooterBlurred
-                    isBlurred
-                    shadow="none"
-                  >
-                    <Skeleton className="w-full h-full rounded-sm">
-                      <div className="w-[240px] h-[140px]" />
-                    </Skeleton>
-                  </Card>
-                </div>
-              ))}
-            </>
-          }
         </div>
 
-        <button
-          onClick={next}
-          className="bg-black/10 px-[3px] ml-[2px] rounded-sm"
-          disabled={page === totalPages - 1}
-        >
-          ▶
+        <button onClick={next} className="ml-[2px] rounded-sm bg-black/10 px-[3px]" disabled={page === totalPages - 1}>
+          ›
         </button>
       </div>
     </>
-  )
+  );
 }

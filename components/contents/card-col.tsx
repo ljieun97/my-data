@@ -1,192 +1,160 @@
-"use client"
+"use client";
 
-import Flatrates from "./flatrates"
+import Flatrates from "./flatrates";
 import Image from "next/image";
-import {
-  Card, CardFooter, CardHeader, CardBody, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, DropdownSection, Skeleton, Popover, PopoverTrigger, PopoverContent,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  RadioGroup,
-  Radio,
-  useDisclosure,
-  DatePicker,
-  addToast,
-} from "@heroui/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faFaceLaughSquint, faFaceFrownOpen, faFaceSmileBeam, faEllipsisVertical, faCircleInfo, faPlus, faPen } from "@fortawesome/free-solid-svg-icons"
+import { Toast } from "@heroui/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleInfo, faPen } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { useState } from "react";
 import { getPosters } from "@/lib/open-api/tmdb-client";
-import { CalendarDate, DateValue, parseDate, today } from "@internationalized/date";
+import { parseDate } from "@internationalized/date";
 
-export default function CardCol({ thisYear, content, isProvider, onUpdate, onDelete }: { thisYear: string, content: any, isProvider: boolean, onUpdate: any, onDelete: any }) {
-  const { uid } = useUser()
-  const router = useRouter()
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const [isOpenPopover, setIsOpenPopover] = useState(false)
-  const [date, setDate] = useState<any>(parseDate(content.user_date))
-  const [posters, setPosters] = useState([])
-  const [selectPoster, setSelectPoster] = useState(content.poster_path) as any
-  const [posterImg, setPosterImg] = useState(`https://image.tmdb.org/t/p/w500${content.poster_path}`)
+export default function CardCol({
+  thisYear,
+  content,
+  isProvider,
+  onUpdate,
+  onDelete,
+}: {
+  thisYear: string;
+  content: any;
+  isProvider: boolean;
+  onUpdate: any;
+  onDelete: any;
+}) {
+  const { uid } = useUser();
+  const router = useRouter();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [date, setDate] = useState<any>(parseDate(content.user_date));
+  const [posters, setPosters] = useState<any[]>([]);
+  const [selectPoster, setSelectPoster] = useState(content.poster_path);
+  const [posterImg, setPosterImg] = useState(`https://image.tmdb.org/t/p/w500${content.poster_path}`);
 
-  let type = ''
-  let id = ''
-  let img = ''
-  let adult = false
+  const type = content.title ? "movie" : "tv";
+  const id = content.id;
 
-  if (content.title) {
-    type = 'movie'
-    adult = content.adult
-    id = content.id
-  } else if (content.name) {
-    type = 'tv'
-    adult = content.adult
-    id = content.id
-  }
-  // if (content.backdrop_path) img = `https://image.tmdb.org/t/p/w500/${content.backdrop_path}`
-  // else img = '/images/no-image.jpg'
-  if (content.poster_path) img = `https://image.tmdb.org/t/p/w500/${content.poster_path}`
-  else img = '/images/no-image.jpg'
-
-  const handleOpen = async (type: string, id: string) => {
-    setIsOpenPopover(false)
-    setPosters(await getPosters(type, id))
-    onOpen()
-  }
+  const handleOpen = async () => {
+    setIsMenuOpen(false);
+    setPosters(await getPosters(content.type, content.id));
+    setIsEditOpen(true);
+  };
 
   const handleSubmit = async () => {
     const res = await fetch(`/api/mypage/content/${content._id}`, {
       method: "PUT",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ uid: uid, poster_path: selectPoster, date: date?.toString() })
-    })
-    onClose()
+      body: JSON.stringify({ uid, poster_path: selectPoster, date: date?.toString() }),
+    });
+
+    setIsEditOpen(false);
 
     if (res.ok) {
-      if (thisYear != date?.year) { //다른연도로 이동
-        onUpdate(content._id)
+      if (thisYear !== String(date?.year)) {
+        onUpdate(content._id);
       } else {
-        setPosterImg(`https://image.tmdb.org/t/p/w500/${selectPoster}`)
+        setPosterImg(`https://image.tmdb.org/t/p/w500/${selectPoster}`);
       }
-      addToast({
-        title: "수정 되었습니다",
-      })
+      Toast.toast("수정되었습니다.");
     }
-  }
-
-  const handleDateChange = (newDate: any) => {
-    if (newDate) setDate(newDate)
-    else setDate(content.user_date)
-  }
-
-  const goDetailpage = () => {
-    router.push(`/${type}/${id}`)
-  }
+  };
 
   return (
     <>
-      <Card
-        radius="sm"
-        className="relative group/footer aspect-[26/37] w-[92%] justify-self-center"
-        isFooterBlurred
-        isBlurred
-        shadow="none"
-      >
-        <Image
-          fill
-          alt="poster"
-          src={posterImg}
-          className="object-cover"
-          sizes="100%"
-          priority
-        />
-        {isProvider &&
-          <CardHeader className="p-1 absolute justify-end z-20">
-            <div className="flex gap-2">
-              <Flatrates type={content.type} provider={content.id} />
-            </div>
-          </CardHeader>
-        }
-        <CardFooter className="invisible absolute group-hover/footer:visible bg-black/25 border-white/0 border-1 rounded-small shadow-small z-10 h-full w-full">
-          <div className="w-full flex justify-center gap-2">
-            <Popover isOpen={isOpenPopover} onOpenChange={(open) => setIsOpenPopover(open)} placement="bottom-start">
-              <PopoverTrigger>
-                <Button isIconOnly size="sm" variant="faded"><FontAwesomeIcon icon={faPen} /></Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                <div className="flex flex-col">
-                  <Button size="sm" variant="flat" onPress={() => handleOpen(content.type, content.id)}>수정</Button>
-                  <Button size="sm" color="danger" variant="flat" onPress={() => {
-                    setIsOpenPopover(false)
-                    onDelete(thisYear, content._id)
-                  }}>삭제</Button>
-                </div>
-              </PopoverContent>
-            </Popover>
-            <Button isIconOnly size="sm" variant="faded" onPress={() => goDetailpage()}><FontAwesomeIcon icon={faCircleInfo} /></Button>
-          </div>
-        </CardFooter>
-      </Card>
+      <div className="group/footer relative aspect-[26/37] w-[92%] justify-self-center overflow-hidden rounded-sm">
+        <Image fill alt="poster" src={posterImg} className="object-cover" sizes="100%" priority />
 
-      <Modal
-        isOpen={isOpen}
-        scrollBehavior="inside"
-        onClose={onClose}
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                수정하기
-              </ModalHeader>
-              <ModalBody>
-                <h2>날짜</h2>
-                <DatePicker showMonthAndYearPickers label="Viewing date" value={date} onChange={handleDateChange} />
-                <h2>사진 ({posters.length})</h2>
-                <RadioGroup
-                  value={selectPoster}
-                  onValueChange={setSelectPoster}
-                  classNames={{
-                    wrapper: "grid gap-1 grid-cols-4"
-                  }}>
-                  {posters?.map((e: any, index: number) => (
-                    <Radio
-                      key={index}
-                      value={e.file_path}
-                      classNames={{
-                        base: "m-0 p-1 hover:bg-content2 cursor-pointer rounded-lg border-2 border-transparent data-[selected=true]:border-primary",
-                        wrapper: "hidden",
-                        labelWrapper: "m-0 h-full",
-                        label: "h-full"
-                      }}
-                    >
-                      <img
-                        alt="choice search posters"
-                        src={"https://image.tmdb.org/t/p/w500" + e.file_path}
-                        className="w-full h-full object-cover"
-                      />
-                    </Radio>
-                  ))}
-                </RadioGroup>
-              </ModalBody>
-              <ModalFooter>
-                <Button color="primary" onPress={() => handleSubmit()}>
-                  완료
-                </Button>
-                <Button color="danger" variant="light" onPress={onClose}>
-                  닫기
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+        {isProvider ? (
+          <div className="absolute right-0 top-0 z-20 p-1">
+            <Flatrates type={content.type} provider={content.id} />
+          </div>
+        ) : null}
+
+        <div className="invisible absolute inset-0 z-10 flex items-center justify-center bg-black/25 group-hover/footer:visible">
+          <div className="relative flex gap-2">
+            <button
+              type="button"
+              className="rounded-full bg-white/90 px-2 py-1 text-sm"
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+            >
+              <FontAwesomeIcon icon={faPen} />
+            </button>
+            {isMenuOpen ? (
+              <div className="absolute left-0 top-full mt-2 min-w-24 rounded-xl bg-white p-1 shadow-lg">
+                <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100" onClick={handleOpen}>
+                  수정
+                </button>
+                <button
+                  type="button"
+                  className="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-slate-100"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onDelete(content._id);
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+            ) : null}
+            <button
+              type="button"
+              className="rounded-full bg-white/90 px-2 py-1 text-sm"
+              onClick={() => router.push(`/${type}/${id}`)}
+            >
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {isEditOpen ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
+            <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">수정하기</div>
+            <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-6 py-5">
+              <h2 className="mb-2 text-sm font-semibold">날짜</h2>
+              <input
+                type="date"
+                value={typeof date?.toString === "function" ? date.toString() : ""}
+                onChange={(event) => setDate(event.target.value ? parseDate(event.target.value) : null)}
+                className="min-h-[2.75rem] w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              />
+              <h2 className="mb-2 mt-5 text-sm font-semibold">사진 ({posters.length})</h2>
+              <div className="grid grid-cols-4 gap-1">
+                {posters.map((poster: any, index: number) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setSelectPoster(poster.file_path)}
+                    className={[
+                      "overflow-hidden rounded-lg border-2",
+                      selectPoster === poster.file_path ? "border-blue-500" : "border-transparent",
+                    ].join(" ")}
+                  >
+                    <img
+                      alt="choice search posters"
+                      src={`https://image.tmdb.org/t/p/w500${poster.file_path}`}
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-4 dark:border-slate-800">
+              <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={handleSubmit}>
+                완료
+              </button>
+              <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => setIsEditOpen(false)}>
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
-  )
+  );
 }

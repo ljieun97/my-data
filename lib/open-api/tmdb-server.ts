@@ -12,6 +12,12 @@ const now = new Date()
 const today = format(now, "yyyy-MM-dd", { timeZone })
 const month = format(now, 'yyyy-MM-01', { timeZone })
 
+function filterDisplayableTitles(results: any[]) {
+  return Array.isArray(results)
+    ? results.filter((content: any) => content?.poster_path && content?.overview)
+    : []
+}
+
 
 export async function getTodayMovies() {
   const URL = `https://api.themoviedb.org/3/discover/movie?release_date.gte=${month}&release_date.lte=${today}&language=ko&watch_region=KR&with_watch_monetization_types=flatrate&with_watch_providers=8|119|96|97|337|350|356&without_watch_providers=1796&sort_by=release_date.desc&api_key=${API_KEY}`
@@ -110,6 +116,44 @@ export async function getProviders(type: string, id: any) {
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   const { results } = await response.json()
   return results?.KR
+}
+
+export async function getDiscoverTitles(
+  type: string,
+  country: string = "",
+  providers: string = "",
+  date: string = "",
+  genres: string = "",
+  pageNum: number = 1,
+) {
+  const dateQueryByType =
+    type === "movie"
+      ? `&primary_release_year=${date}`
+      : `&first_air_date.gte=${date}-01-01&first_air_date.lte=${date}-12-31`
+
+  const query = {
+    country: country ? `&with_origin_country=${country}` : "",
+    provider: providers ? `&with_watch_providers=${providers}` : "",
+    date: date ? dateQueryByType : "",
+    genre: genres ? `&with_genres=${genres}` : "",
+  }
+
+  const URL = `https://api.themoviedb.org/3/discover/${type}`
+    + `?language=ko&api_key=${API_KEY}`
+    + `&without_watch_providers=1796`
+    + `&watch_region=KR`
+    + query.provider
+    + query.date
+    + query.genre
+    + query.country
+    + `&page=${pageNum}`
+
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
+  const data = await response.json()
+  return {
+    ...data,
+    results: filterDisplayableTitles(data?.results),
+  }
 }
 
 //월드컵용 연도별 국내에서 개봉 영화

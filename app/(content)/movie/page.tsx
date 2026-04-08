@@ -1,16 +1,13 @@
-import Title from "@/components/common/title"
 import FilterPage from "@/page/filter-page"
+import { getDiscoverTitles } from "@/lib/open-api/tmdb-server"
 
 export const dynamic = "force-dynamic"
 export const metadata = {
   title: "영화"
 }
 
-export default function Page() {
-  return (
-    <>
-      {/* <Title title={"영화"} sub=""/> */}
-      <FilterPage type={'movie'} />
-    </>
-  )
+export default async function Page() {
+  const initialData = await getDiscoverTitles("movie", "", "", "", "", 1)
+
+  return <FilterPage type="movie" initialData={initialData} />
 }

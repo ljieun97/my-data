@@ -9,6 +9,12 @@ if (!API_KEY) {
   throw new Error("API key for TMDB is not defined");
 }
 
+function filterDisplayableTitles(results: any[]) {
+  return Array.isArray(results)
+    ? results.filter((content: any) => content?.poster_path && content?.overview)
+    : []
+}
+
 //home
 
 export async function getDetail(type: string, id: any) {
@@ -113,5 +119,8 @@ export async function getFilterMovies(type: string, country: any, providers: any
 
   const response = await fetch(URL)
   const results = await response.json()
-  return results
+  return {
+    ...results,
+    results: filterDisplayableTitles(results?.results),
+  }
 }

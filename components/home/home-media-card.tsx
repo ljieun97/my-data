@@ -2,9 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Toast } from "@heroui/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import Flatrates from "@/components/contents/flatrates";
 import MediaScoreBadges from "@/components/media/media-score-badges";
 import type { HomeMovieCardItem } from "@/components/card-slider";
+import { useUser } from "@/context/UserContext";
+import { saveContent } from "@/lib/actions/content";
 
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
 
@@ -21,6 +26,31 @@ export default function HomeMediaCard({
   isRtLoading: boolean;
   onPrefetch: (tmdbId?: number | null) => void;
 }) {
+  const { uid } = useUser();
+
+  const handleSave = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!movie.tmdbId) return;
+
+    await saveContent({
+      uid,
+      id: String(movie.tmdbId),
+      content: {
+        id: movie.tmdbId,
+        title: movie.title,
+        poster_path: movie.posterPath,
+        release_date: movie.year ? `${movie.year}-01-01` : "",
+        vote_average: 0,
+        vote_count: 0,
+        overview: movie.detailLine ?? "",
+      },
+      rating: 1,
+      addToast: ({ title }: any) => Toast.toast(title),
+    });
+  };
+
   return (
     <article className="shrink-0 pr-3" style={{ width: `${100 / visibleSlots}%` }}>
       <Link
@@ -67,9 +97,20 @@ export default function HomeMediaCard({
             ) : null}
             <div className="relative h-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
               {movie.tmdbId ? (
-                <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center bg-slate-950/0 opacity-0 transition duration-200 group-hover:bg-slate-950/18 group-hover:opacity-100">
-                  <span className="rounded-full border border-white/60 bg-white/14 px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] text-white backdrop-blur-sm">
-                    OPEN
+                <div className="pointer-events-none absolute inset-0 z-[1] bg-slate-950/0 opacity-0 transition duration-200 group-hover:bg-slate-950/18 group-hover:opacity-100" />
+              ) : null}
+              {movie.tmdbId ? (
+                <div className="invisible absolute inset-0 z-[2] flex items-center justify-center gap-2 transition group-hover:visible">
+                  <button
+                    type="button"
+                    aria-label={`${movie.title} save`}
+                    className="browse-card__action pointer-events-auto rounded-full px-3 py-2 text-sm shadow-sm transition"
+                    onClick={handleSave}
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                  </button>
+                  <span className="browse-card__detail pointer-events-auto rounded-full px-3 py-2 text-sm shadow-sm transition">
+                    <FontAwesomeIcon icon={faCircleInfo} />
                   </span>
                 </div>
               ) : null}

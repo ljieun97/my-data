@@ -41,6 +41,7 @@ export default function DetailModal(props: any) {
     rottenPopcornmeter: rottenPopcornmeter ?? null,
     rottenTomatoesUrl: rottenTomatoesUrl ?? null,
   });
+  const [isRtLoading, setIsRtLoading] = useState(!(rottenTomatometer || rottenPopcornmeter));
   const castsRef = useRef<HTMLSpanElement>(null!);
   const router = useRouter();
 
@@ -119,13 +120,18 @@ export default function DetailModal(props: any) {
             rottenPopcornmeter: payload.rottenPopcornmeter ?? null,
             rottenTomatoesUrl: payload.rottenTomatoesUrl ?? null,
           });
+          setIsRtLoading(false);
         }
       } catch (error) {
         console.error(error);
+        if (!cancelled) {
+          setIsRtLoading(false);
+        }
       }
     };
 
     if (!rtState.rottenTomatometer && !rtState.rottenPopcornmeter) {
+      setIsRtLoading(true);
       loadRottenTomatoes();
     }
 
@@ -193,6 +199,7 @@ export default function DetailModal(props: any) {
                       tomatometer={rtState.rottenTomatometer}
                       popcornmeter={rtState.rottenPopcornmeter}
                       rottenTomatoesUrl={rtState.rottenTomatoesUrl}
+                      isLoading={isRtLoading}
                       variant="detail"
                     />
                   </div>

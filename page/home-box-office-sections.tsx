@@ -79,6 +79,7 @@ export default function HomeBoxOfficeSections({
 }) {
   const [data, setData] = useState<HomeSectionsResponse>(initialData)
   const [error] = useState(false)
+  const [isRtLoading, setIsRtLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
@@ -109,6 +110,10 @@ export default function HomeBoxOfficeSections({
         }
       } catch (loadError) {
         console.error(loadError)
+      } finally {
+        if (!cancelled) {
+          setIsRtLoading(false)
+        }
       }
     }
 
@@ -125,11 +130,13 @@ export default function HomeBoxOfficeSections({
         title="박스오피스 순위"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
         results={data.boxOfficeCards}
+        isScoreLoading={isRtLoading}
       />
       <CardSlider
         title="개봉예정작"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
         results={data.upcomingCards}
+        isScoreLoading={isRtLoading}
         showRank={false}
         desktopPageSize={7}
         desktopVisibleSlots={7.3}
@@ -138,6 +145,7 @@ export default function HomeBoxOfficeSections({
         title="인기 영화"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
         results={data.topRatedCards}
+        isScoreLoading={isRtLoading}
         showRank={false}
         desktopPageSize={7}
         desktopVisibleSlots={7.3}

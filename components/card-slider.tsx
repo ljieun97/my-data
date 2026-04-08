@@ -38,6 +38,7 @@ export default function BoxOffice({
   results,
   showRank = true,
   isLoading = false,
+  isScoreLoading = false,
   desktopPageSize = MAX_PAGE_SIZE,
   desktopVisibleSlots = DESKTOP_VISIBLE_SLOTS,
 }: {
@@ -46,13 +47,14 @@ export default function BoxOffice({
   results?: HomeMovieCardItem[];
   showRank?: boolean;
   isLoading?: boolean;
+  isScoreLoading?: boolean;
   desktopPageSize?: number;
   desktopVisibleSlots?: number;
 }) {
   const router = useRouter();
   const safeResults = Array.isArray(results) ? results : [];
-  const [pageSize, setPageSize] = useState(desktopPageSize);
-  const [visibleSlots, setVisibleSlots] = useState(desktopVisibleSlots);
+  const [pageSize, setPageSize] = useState<number | null>(null);
+  const [visibleSlots, setVisibleSlots] = useState<number | null>(null);
   const [startIndex, setStartIndex] = useState(0);
   const touchStartXRef = useRef<number | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -84,15 +86,25 @@ export default function BoxOffice({
     };
   }, [desktopPageSize, desktopVisibleSlots]);
 
+  const isViewportReady = pageSize !== null && visibleSlots !== null;
+
   useEffect(() => {
+    if (!isViewportReady) {
+      return;
+    }
+
     const maxStartIndex = Math.max(0, safeResults.length - pageSize);
     setStartIndex((prev) => {
       const clamped = Math.min(prev, maxStartIndex);
       return Math.floor(clamped / pageSize) * pageSize;
     });
-  }, [safeResults.length, pageSize]);
+  }, [isViewportReady, pageSize, safeResults.length]);
 
   useEffect(() => {
+    if (!isViewportReady) {
+      return;
+    }
+
     const element = viewportRef.current;
 
     if (!element) {
@@ -116,7 +128,7 @@ export default function BoxOffice({
       resizeObserver.disconnect();
       window.removeEventListener("resize", updatePosterMidpoint);
     };
-  }, [visibleSlots]);
+  }, [isViewportReady, visibleSlots]);
 
   if (isLoading || !safeResults.length) {
     return (
@@ -135,6 +147,21 @@ export default function BoxOffice({
               </div>
             </div>
           </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!isViewportReady) {
+    return (
+      <section>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="home-title text-lg font-semibold tracking-[-0.05em]">{title}</h1>
+            </div>
+          </div>
+          <div className="h-[18rem] sm:h-[22rem]" aria-hidden="true" />
         </div>
       </section>
     );
@@ -222,6 +249,7 @@ export default function BoxOffice({
                     movie={movie}
                     visibleSlots={visibleSlots}
                     showRank={showRank}
+                    isRtLoading={isScoreLoading}
                     onPrefetch={prefetchDetail}
                   />
                 ))}

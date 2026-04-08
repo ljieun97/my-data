@@ -16,6 +16,8 @@ export type HomeMovieCardItem = {
   rankChangeTone?: string;
   tmdbId?: number | null;
   posterPath?: string | null;
+  backdropPath?: string | null;
+  overview?: string | null;
   detailLine?: string;
   subdetailLine?: string;
   rottenTomatoesUrl?: string | null;

@@ -93,6 +93,8 @@ const getCachedBoxOfficeCards = unstable_cache(
           rankChangeTone: rankChange.tone,
           tmdbId: meta.tmdbId,
           posterPath: meta.posterPath,
+          backdropPath: meta.backdropPath,
+          overview: meta.overview,
           detailLine: `\uC77C\uC77C ${formatCount(movie.audiCnt)} \uB204\uC801 ${formatCount(movie.audiAcc)}`,
         } as HomeMovieCardSeed;
       }),
@@ -123,6 +125,8 @@ export async function getHomeSectionsSeed(): Promise<HomeSectionsSeed> {
       rank: String(index + 1),
       tmdbId: movie.id,
       posterPath: movie.poster_path,
+      backdropPath: movie.backdrop_path ?? null,
+      overview: movie.overview ?? null,
       englishTitle: movie.original_title ?? movie.title ?? null,
       originalTitle: movie.original_title ?? null,
     }));
@@ -136,6 +140,8 @@ export async function getHomeSectionsSeed(): Promise<HomeSectionsSeed> {
       rank: String(index + 1),
       tmdbId: movie.id,
       posterPath: movie.poster_path,
+      backdropPath: movie.backdrop_path ?? null,
+      overview: movie.overview ?? null,
       englishTitle: movie.original_title ?? movie.title ?? null,
       originalTitle: movie.original_title ?? null,
     }));

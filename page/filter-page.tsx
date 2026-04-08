@@ -196,7 +196,7 @@ export default function FilterPage({
         ref={scrollerRef}
       >
         {isInitialLoading ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="filter-page-grid grid gap-3">
             {Array.from({ length: 10 }).map((_, index) => (
               <div key={index} className="aspect-[2/3] animate-pulse rounded-[24px] bg-slate-200/80 dark:bg-slate-800/70" />
             ))}

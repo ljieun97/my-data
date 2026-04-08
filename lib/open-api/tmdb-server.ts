@@ -248,13 +248,13 @@ export async function searchMoviePosterByTitleAndDate(title: string, openDt: str
 
 async function searchMovieMetaByTitleAndDateInternal(title: string, openDt: string) {
   if (!API_KEY) {
-    return { tmdbId: null, posterPath: null }
+    return { tmdbId: null, posterPath: null, backdropPath: null, overview: null }
   }
 
   const trimmedTitle = title.trim()
 
   if (!trimmedTitle) {
-    return { tmdbId: null, posterPath: null }
+    return { tmdbId: null, posterPath: null, backdropPath: null, overview: null }
   }
 
   const year = openDt.slice(0, 4)
@@ -270,7 +270,7 @@ async function searchMovieMetaByTitleAndDateInternal(title: string, openDt: stri
   const response = await fetch(URL, { next: { revalidate: 3600 } })
 
   if (!response.ok) {
-    return { tmdbId: null, posterPath: null }
+    return { tmdbId: null, posterPath: null, backdropPath: null, overview: null }
   }
 
   const data = await response.json()
@@ -278,12 +278,14 @@ async function searchMovieMetaByTitleAndDateInternal(title: string, openDt: stri
   const matchedMovie = selectBestTmdbMatch(results, trimmedTitle, year)
 
   if (!matchedMovie) {
-    return { tmdbId: null, posterPath: null }
+    return { tmdbId: null, posterPath: null, backdropPath: null, overview: null }
   }
 
   return {
     tmdbId: matchedMovie.id,
-    posterPath: matchedMovie.poster_path ?? null
+    posterPath: matchedMovie.poster_path ?? null,
+    backdropPath: (matchedMovie as any).backdrop_path ?? null,
+    overview: (matchedMovie as any).overview ?? null,
   }
 }
 

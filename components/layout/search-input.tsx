@@ -18,6 +18,7 @@ export default function SearchInput({
   const path = usePathname();
   const { keyword, setKeyword, lastNonSearchPath } = useSearchKeyword();
   const previousPathRef = useRef(path);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const nextKeyword = e.target.value;
@@ -41,8 +42,24 @@ export default function SearchInput({
     previousPathRef.current = path;
   }, [path, setKeyword]);
 
+  useEffect(() => {
+    if (!autoFocus) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [autoFocus]);
+
   return (
     <Input
+      ref={inputRef}
       className={className}
       placeholder="Search titles"
       value={keyword}

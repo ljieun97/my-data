@@ -13,6 +13,7 @@ export default async function Page() {
   const cookieStore = cookies()
   let token = (await cookieStore).get("access_token")?.value
   let uid = null
+  const currentYear = String(new Date().getFullYear())
 
   if (token) {
     try {
@@ -25,18 +26,24 @@ export default async function Page() {
     return <>로그인을 해주세요.</>
   }
 
-  const counts = await (await fetch(`${deployUrl}/api/mypage/content/by-year`, {
-    method: "GET",
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': uid,
-    },
-  })).json()
-
-  // const [] = await Promise.all([
-  // ])
+  const [counts, currentYearItems] = await Promise.all([
+    (await fetch(`${deployUrl}/api/mypage/content/by-year`, {
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': uid,
+      },
+    })).json(),
+    (await fetch(`${deployUrl}/api/mypage/content/by-year/${currentYear}`, {
+      method: "GET",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': uid,
+      },
+    })).json(),
+  ])
 
   return (
-    <MyPageOverviewPage counts={counts} />
+    <MyPageOverviewPage counts={counts} currentYear={currentYear} currentYearItems={currentYearItems} />
   )
 }

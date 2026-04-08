@@ -84,11 +84,9 @@ html.dark-theme .app-shell {
 .page-shell {
   border: 0;
   border-radius: 32px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.58));
-  box-shadow:
-    0 26px 64px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
   padding: 1.5rem;
 }
 
@@ -98,10 +96,8 @@ html.dark-theme .app-shell {
 }
 
 html.dark-theme .page-shell {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.64));
-  box-shadow:
-    0 26px 64px rgba(2, 6, 23, 0.36),
-    inset 0 1px 0 rgba(148, 163, 184, 0.08);
+  background: transparent;
+  box-shadow: none;
 }
 
 .content-panel {
@@ -110,15 +106,19 @@ html.dark-theme .page-shell {
 
 .content-grid-shell {
   border-color: transparent;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 8px 24px rgba(15, 23, 42, 0.04);
 }
 
 html.dark-theme .content-grid-shell,
 html.dark-theme .home-card {
   border-color: transparent;
-  background: rgba(15, 23, 42, 0.58);
-  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.05);
+  background: rgba(15, 23, 42, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(148, 163, 184, 0.05),
+    0 10px 28px rgba(2, 6, 23, 0.12);
 }
 
 .browse-results__eyebrow,
@@ -171,16 +171,13 @@ html.dark-theme .home-card {
 .browse-results {
   border-color: transparent !important;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.94)) !important;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(248, 250, 252, 0.64)) !important;
 }
 
 .browse-card {
-  border-color: rgba(226, 232, 240, 0.82) !important;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.86)) !important;
-  box-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none;
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
@@ -188,11 +185,9 @@ html.dark-theme .home-card {
 }
 
 .browse-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(148, 163, 184, 0.5) !important;
-  box-shadow:
-    0 18px 34px rgba(15, 23, 42, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  transform: none;
+  border-color: transparent !important;
+  box-shadow: none;
 }
 
 .browse-card__title {
@@ -215,16 +210,15 @@ html.dark-theme .home-card {
 
 .browse-card__stat {
   border-color: transparent;
-  background: rgba(255, 255, 255, 0.74);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.54);
+  box-shadow: none;
   color: #334155;
 }
 
 .browse-card__footer {
   border-color: transparent;
-  background:
-    linear-gradient(180deg, rgba(248, 250, 252, 0.4), rgba(241, 245, 249, 0.86));
-  backdrop-filter: blur(8px);
+  background: transparent;
+  backdrop-filter: none;
   border-bottom-left-radius: 24px;
   border-bottom-right-radius: 24px;
   overflow: hidden;
@@ -293,29 +287,23 @@ html.dark-theme .browse-select__popover {
 html.dark-theme .browse-results {
   border-color: transparent !important;
   background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.82)) !important;
+    linear-gradient(180deg, rgba(15, 23, 42, 0.38), rgba(15, 23, 42, 0.48)) !important;
 }
 
 html.dark-theme .browse-card {
-  border-color: rgba(51, 65, 85, 0.72) !important;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.76)) !important;
-  box-shadow:
-    0 14px 28px rgba(2, 6, 23, 0.2),
-    inset 0 1px 0 rgba(148, 163, 184, 0.04);
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none;
 }
 
 html.dark-theme .browse-card:hover {
-  border-color: rgba(148, 163, 184, 0.3) !important;
-  box-shadow:
-    0 20px 36px rgba(2, 6, 23, 0.3),
-    inset 0 1px 0 rgba(148, 163, 184, 0.06);
+  border-color: transparent !important;
+  box-shadow: none;
 }
 
 html.dark-theme .browse-card__footer {
   border-color: transparent;
-  background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.42), rgba(15, 23, 42, 0.84));
+  background: transparent;
   border-bottom-left-radius: 24px;
   border-bottom-right-radius: 24px;
   overflow: hidden;

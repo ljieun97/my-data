@@ -238,7 +238,7 @@ export default function DetailModal(props: any) {
           <div className="px-5 pb-10 pt-6 sm:px-6 lg:px-8">
             <div className="space-y-6">
               <div className="space-y-4">
-                <Title title={title} sub={releaseYear} />
+                <Title title={title} sub={releaseYear} compact={false} />
 
                 <div className="flex flex-wrap gap-2">
                   <MetaChip>{releaseDate}</MetaChip>

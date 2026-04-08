@@ -15,7 +15,7 @@ export default function AwardsTable() {
     <div className="content-panel">
       <div className="mb-6 flex items-center justify-between gap-3">
         <div>
-          <h1 className="page-title text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">Awards</h1>
+          <h1 className="page-title text-lg font-semibold tracking-[-0.05em]">Awards</h1>
           <p className="page-subtitle mt-1 text-sm">Major awards by year.</p>
         </div>
         <button

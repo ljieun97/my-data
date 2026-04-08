@@ -390,7 +390,7 @@ export default function TopBar() {
                 </Dropdown.Trigger>
                 <Dropdown.Popover placement="bottom end">
                   <Dropdown.Menu className="topbar-dropdown min-w-44 rounded-2xl p-2">
-                    <Dropdown.Item href="/mypage/2025">My Page</Dropdown.Item>
+                    <Dropdown.Item href="/mypage">My Page</Dropdown.Item>
                     <Dropdown.Item onAction={handleOpenSet}>Settings</Dropdown.Item>
                     <Dropdown.Item onAction={clickLogout}>Logout</Dropdown.Item>
                   </Dropdown.Menu>

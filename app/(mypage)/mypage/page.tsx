@@ -1,8 +1,7 @@
-import MylistPage from "@/page/mylist-page"
+import MyPageOverviewPage from "@/page/mypage-overview-page"
 import { deployUrl } from "@/lib/config"
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken"
-import { notFound } from "next/navigation";
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
@@ -38,8 +37,6 @@ export default async function Page() {
   // ])
 
   return (
-    <>
-    {/* <MylistPage counts={counts} /> */}
-    </>
+    <MyPageOverviewPage counts={counts} />
   )
 }

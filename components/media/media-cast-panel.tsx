@@ -10,13 +10,13 @@ export default function MediaCastPanel({
   casts: any[];
   castsRef: React.RefObject<HTMLSpanElement>;
 }) {
-  const cutCasts = casts.slice(0, 8);
+  const cutCasts = casts.slice(0, 12);
 
   return (
     <section className="space-y-4 rounded-[26px] bg-slate-50/80 p-5 dark:bg-slate-900/70">
       <h4 className="text-base font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-50">Cast</h4>
       {cutCasts.length > 0 ? (
-        <div className="grid grid-cols-4 gap-3 sm:grid-cols-4 lg:grid-cols-4">
+        <div className="media-cast-grid grid gap-3">
           {cutCasts.map((item: any, index: number) => (
             <div key={index} className="overflow-hidden rounded-2xl bg-white/90 shadow-sm dark:bg-slate-950/80">
               <div className="overflow-hidden">
@@ -44,7 +44,7 @@ export default function MediaCastPanel({
         <p className="text-sm text-slate-500 dark:text-slate-400">Currently this title does not have cast information.</p>
       )}
 
-      {casts.length > 8 ? (
+      {casts.length > 12 ? (
         <div className="flex justify-center pt-1">
           <button
             type="button"

@@ -303,13 +303,14 @@ export default function TopBar() {
         className={[
           "topbar-shell z-50",
           path === "/" && !isScroll ? "topbar-shell--transparent" : "",
+          mobileOpen ? "topbar-shell--menu-open" : "",
         ].join(" ")}
       >
         <div className="mx-auto flex min-h-[4.5rem] items-center justify-between gap-3 px-3 sm:px-4">
           <div className="flex flex-1 items-center gap-2">
             <button
               type="button"
-              className="topbar-toggle inline-flex h-10 w-10 items-center justify-center rounded-full lg:hidden"
+              className="topbar-toggle topbar-toggle--mobile inline-flex h-10 w-10 items-center justify-center rounded-full"
               onClick={() => setMobileOpen((prev) => !prev)}
               aria-label="Toggle menu"
             >
@@ -318,12 +319,12 @@ export default function TopBar() {
 
             <Link
               href="/"
-              className="topbar-brand hidden rounded-full px-4 py-2 text-sm font-semibold tracking-[0.28em] transition lg:inline-flex"
+              className="topbar-brand topbar-brand--desktop rounded-full px-4 py-2 text-sm font-semibold tracking-[0.28em] transition"
             >
               TOVIE
             </Link>
 
-            <div className="hidden items-center gap-2 lg:flex">
+            <div className="topbar-desktop-nav items-center gap-2">
               {navItems.map((item) =>
                 item.href === "/worldcup" ? (
                   <button
@@ -401,7 +402,7 @@ export default function TopBar() {
         </div>
 
         {mobileOpen ? (
-          <div className="topbar-menu border-t px-4 pb-4 pt-4 backdrop-blur-xl lg:hidden">
+          <div className="topbar-menu topbar-menu--mobile border-t px-4 pb-4 pt-4 backdrop-blur-xl">
             {navItems.map((item) =>
               item.href === "/worldcup" ? (
                 <button

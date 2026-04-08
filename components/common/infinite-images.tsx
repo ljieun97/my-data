@@ -4,9 +4,9 @@ import CardThumb from "../contents/card-thumb"
 export default function InfiniteImages(props: any) {
   let style
   if (props.type == "info")
-    style = "grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4"
+    style = "media-recommendation-grid media-recommendation-grid--info grid gap-4"
   else
-    style = "grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+    style = "media-recommendation-grid grid gap-4"
   return (
     <>
       <div className={style}>

@@ -2,9 +2,9 @@
 
 import InfiniteImages from "../common/infinite-images";
 import Title from "../common/title";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faVolumeHigh, faVolumeXmark } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faVolumeHigh, faVolumeXmark, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import MediaScoreBadges from "@/components/media/media-score-badges";
@@ -44,6 +44,7 @@ export default function DetailModal(props: any) {
   const [isRtLoading, setIsRtLoading] = useState(!(rottenTomatometer || rottenPopcornmeter));
   const castsRef = useRef<HTMLSpanElement>(null!);
   const router = useRouter();
+  const pathname = usePathname();
 
   const title = content.title || content.name || "";
   const releaseDate = content.release_date || content.first_air_date || "-";
@@ -64,6 +65,36 @@ export default function DetailModal(props: any) {
         : "-";
   const overview = content.overview || content.about || "Currently this title does not have overview information.";
   const tmdbLabel = content.vote_average ? `TMDB ${Number(content.vote_average).toFixed(1)}` : "TMDB -";
+
+  const closeAllDetailModals = () => {
+    const isDetailPath = (value: string) => /^\/(?:movie|tv)\/[^/]+\/?$/.test(value);
+
+    if (typeof window === "undefined") {
+      router.push("/");
+      return;
+    }
+
+    let attempts = 0;
+
+    const handlePopState = () => {
+      attempts += 1;
+
+      if (!isDetailPath(window.location.pathname) || attempts >= 8) {
+        window.removeEventListener("popstate", handlePopState);
+        return;
+      }
+
+      window.history.back();
+    };
+
+    if (!isDetailPath(pathname)) {
+      router.push("/");
+      return;
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    window.history.back();
+  };
 
   useEffect(() => {
     const scrollY = window.scrollY;
@@ -149,28 +180,41 @@ export default function DetailModal(props: any) {
         className="h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-hidden rounded-[28px] border border-white/60 bg-white shadow-[0_28px_72px_rgba(15,23,42,0.28)] dark:border-slate-800 dark:bg-slate-950 dark:shadow-[0_32px_80px_rgba(2,6,23,0.48)] sm:h-[calc(100dvh-7rem)] sm:max-w-4xl lg:h-[calc(100dvh-9rem)] lg:max-w-[68rem] xl:h-[calc(100dvh-11rem)] xl:max-w-[72rem]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="relative h-full overflow-y-auto">
-          <div className="absolute left-0 top-0 z-20 p-4">
+        <div className="relative h-full">
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between p-4">
             <button
               type="button"
-              className="rounded-full bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-lg"
+              className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-sm text-slate-900 shadow-lg"
               onClick={() => router.back()}
+              aria-label="Go back"
             >
               <FontAwesomeIcon icon={faArrowLeft} />
             </button>
+            <button
+              type="button"
+              className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-sm text-slate-900 shadow-lg"
+              onClick={closeAllDetailModals}
+              aria-label="Close modal"
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
           </div>
+          {videoPath ? (
+            <div className="pointer-events-none absolute bottom-0 right-0 z-20 p-4">
+              <button
+                type="button"
+                className="pointer-events-auto rounded-full bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-lg"
+                onClick={() => setIsMute((prev) => !prev)}
+              >
+                <FontAwesomeIcon icon={isMute ? faVolumeHigh : faVolumeXmark} />
+              </button>
+            </div>
+          ) : null}
+
+          <div className="h-full overflow-y-auto">
 
           {videoPath ? (
             <div className="relative">
-              <div className="absolute bottom-0 right-0 z-20 p-4">
-                <button
-                  type="button"
-                  className="rounded-full bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-lg"
-                  onClick={() => setIsMute((prev) => !prev)}
-                >
-                  <FontAwesomeIcon icon={isMute ? faVolumeHigh : faVolumeXmark} />
-                </button>
-              </div>
               <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                 <ReactPlayer
                   width="100%"
@@ -192,49 +236,49 @@ export default function DetailModal(props: any) {
           ) : null}
 
           <div className="px-5 pb-10 pt-6 sm:px-6 lg:px-8">
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]">
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <Title title={title} sub={releaseYear} />
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <Title title={title} sub={releaseYear} />
 
-                  <div className="flex flex-wrap gap-2">
-                    <MetaChip>{releaseDate}</MetaChip>
-                    <MetaChip>{runtime}</MetaChip>
-                    <MediaScoreBadges
-                      tmdbLabel={tmdbLabel}
-                      tomatometer={rtState.rottenTomatometer}
-                      popcornmeter={rtState.rottenPopcornmeter}
-                      rottenTomatoesUrl={rtState.rottenTomatoesUrl}
-                      isLoading={isRtLoading}
-                      variant="detail"
-                    />
-                  </div>
+                <div className="flex flex-wrap gap-2">
+                  <MetaChip>{releaseDate}</MetaChip>
+                  <MetaChip>{runtime}</MetaChip>
+                  <MediaScoreBadges
+                    tmdbLabel={tmdbLabel}
+                    tomatometer={rtState.rottenTomatometer}
+                    popcornmeter={rtState.rottenPopcornmeter}
+                    rottenTomatoesUrl={rtState.rottenTomatoesUrl}
+                    isLoading={isRtLoading}
+                    variant="detail"
+                  />
                 </div>
+              </div>
 
+              <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]">
                 <MediaOverviewPanel overview={overview} />
-                <MediaCastPanel casts={casts} castsRef={castsRef} />
-
-                <section className="space-y-4 rounded-[26px] bg-slate-50/80 p-5 dark:bg-slate-900/70">
-                  <h4 className="text-base font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-50">More like this</h4>
-                  {sim?.length > 0 ? (
-                    <InfiniteImages contents={sim} />
-                  ) : (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Currently this title does not have recommendation information.</p>
-                  )}
-                </section>
-              </div>
-
-              <div className="space-y-5">
                 <WatchProvidersPanel providers={providers} />
-                <MediaDetailsPanel
-                  genres={genres}
-                  countries={countries}
-                  language={content.original_language?.toUpperCase?.() || "-"}
-                  casts={casts}
-                  castsRef={castsRef}
-                />
               </div>
+
+              <MediaCastPanel casts={casts} castsRef={castsRef} />
+
+              <section className="space-y-4 rounded-[26px] bg-slate-50/80 p-5 dark:bg-slate-900/70">
+                <h4 className="text-base font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-50">More like this</h4>
+                {sim?.length > 0 ? (
+                  <InfiniteImages contents={sim} />
+                ) : (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Currently this title does not have recommendation information.</p>
+                )}
+              </section>
+
+              <MediaDetailsPanel
+                genres={genres}
+                countries={countries}
+                language={content.original_language?.toUpperCase?.() || "-"}
+                casts={casts}
+                castsRef={castsRef}
+              />
             </div>
+          </div>
           </div>
         </div>
       </div>

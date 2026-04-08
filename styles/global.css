@@ -66,6 +66,28 @@ html.dark-theme body {
     radial-gradient(circle at 85% 14%, rgba(255, 255, 255, 0.68), transparent 18%);
 }
 
+.app-frame {
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .app-frame {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-frame {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
 .app-shell--locked {
   height: 100vh;
   overflow: hidden;
@@ -400,25 +422,18 @@ html.dark-theme .home-score-chip {
 
 .topbar-shell {
   position: fixed !important;
-  top: 1rem !important;
-  left: 50% !important;
-  width: min(calc(100dvw - 1.5rem), 1280px) !important;
-  transform: translateX(-50%);
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  border-radius: 9999px;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100dvw !important;
   background: rgba(248, 250, 252, 0.8) !important;
   box-shadow:
-    0 18px 42px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    0 12px 32px rgba(15, 23, 42, 0.08);
   backdrop-filter: blur(18px);
 }
 
 html.dark-theme .topbar-shell {
-  border-color: rgba(71, 85, 105, 0.72);
   background: rgba(15, 23, 42, 0.76) !important;
-  box-shadow:
-    0 18px 42px rgba(2, 6, 23, 0.3),
-    inset 0 1px 0 rgba(148, 163, 184, 0.08);
+  box-shadow: 0 12px 32px rgba(2, 6, 23, 0.3);
 }
 
 .topbar-shell--transparent {
@@ -436,7 +451,11 @@ html.dark-theme .topbar-shell--transparent {
 }
 
 .topbar-shell--menu-open {
-  border-radius: 32px;
+  border-radius: 0;
+}
+
+.topbar-inner {
+  width: 100%;
 }
 
 .topbar-toggle {
@@ -802,9 +821,7 @@ html.dark-theme .fc .fc-button-primary:not(:disabled).fc-button-active {
 
 @media (max-width: 639px) {
   .topbar-shell {
-    top: 0.75rem !important;
-    width: calc(100dvw - 1rem) !important;
-    border-radius: 28px;
+    width: 100dvw !important;
   }
 }
 

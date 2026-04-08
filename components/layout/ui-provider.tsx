@@ -40,8 +40,8 @@ export function UiProvider({
         <main>
           <div className={`app-shell text-foreground bg-background flex-grow ${isFilterPage ? "app-shell--locked" : ""}`}>
             <TopBar />
-            <div className={`min-h-screen pb-12 pt-28 ${shouldUseFullWidthHomeLayout ? "" : "px-4 sm:px-6 lg:px-8"} ${isFilterPage ? "app-shell__viewport" : ""}`}>
-              <div className={`${shouldUseFullWidthHomeLayout ? "w-full" : "mx-auto w-full max-w-7xl"} ${usePageShell ? "page-shell" : ""} ${isFilterPage ? "flex h-full min-h-0 flex-col" : ""} ${isFilterPage ? "page-shell--locked" : ""}`}>
+            <div className={`min-h-screen pb-12 pt-28 ${isFilterPage ? "app-shell__viewport" : ""}`}>
+              <div className={`${shouldUseFullWidthHomeLayout ? "w-full" : "app-frame"} ${usePageShell ? "page-shell" : ""} ${isFilterPage ? "flex h-full min-h-0 flex-col" : ""} ${isFilterPage ? "page-shell--locked" : ""}`}>
                 {children}
               </div>
             </div>

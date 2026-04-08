@@ -19,7 +19,7 @@ export default async function Home() {
   return (
     <div className="-mt-28 overflow-x-hidden">
       {featuredMovie ? <Banners movie={featuredMovie} /> : null}
-      <div className="mx-auto max-w-7xl px-4 pb-12 pt-8 sm:px-6 lg:px-8">
+      <div className="app-frame pb-12 pt-8">
         <HomeBoxOfficeSections initialData={initialData} />
       </div>
     </div>

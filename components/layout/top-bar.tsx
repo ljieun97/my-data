@@ -306,7 +306,7 @@ export default function TopBar() {
           mobileOpen ? "topbar-shell--menu-open" : "",
         ].join(" ")}
       >
-        <div className="mx-auto flex min-h-[4.5rem] items-center justify-between gap-3 px-3 sm:px-4">
+        <div className="app-frame topbar-inner flex min-h-[4.5rem] items-center justify-between gap-3">
           <div className="flex flex-1 items-center gap-2">
             <button
               type="button"
@@ -402,34 +402,36 @@ export default function TopBar() {
         </div>
 
         {mobileOpen ? (
-          <div className="topbar-menu topbar-menu--mobile border-t px-4 pb-4 pt-4 backdrop-blur-xl">
-            {navItems.map((item) =>
-              item.href === "/worldcup" ? (
-                <button
-                  key={item.href}
-                  type="button"
-                  onClick={handleOpenWorldcup}
-                  className={[
-                    "topbar-mobile-link mt-1 block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
-                    isActivePath(item.href) ? "topbar-mobile-link--active" : "",
-                  ].join(" ")}
-                >
-                  {item.label}
-                </button>
-              ) : (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={[
-                    "topbar-mobile-link mt-1 block rounded-2xl px-4 py-3 text-sm font-medium transition",
-                    isActivePath(item.href) ? "topbar-mobile-link--active" : "",
-                  ].join(" ")}
-                >
-                  {item.label}
-                </Link>
-              ),
-            )}
+          <div className="topbar-menu topbar-menu--mobile border-t backdrop-blur-xl">
+            <div className="app-frame topbar-inner pb-4 pt-4">
+              {navItems.map((item) =>
+                item.href === "/worldcup" ? (
+                  <button
+                    key={item.href}
+                    type="button"
+                    onClick={handleOpenWorldcup}
+                    className={[
+                      "topbar-mobile-link mt-1 block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
+                      isActivePath(item.href) ? "topbar-mobile-link--active" : "",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </button>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={[
+                      "topbar-mobile-link mt-1 block rounded-2xl px-4 py-3 text-sm font-medium transition",
+                      isActivePath(item.href) ? "topbar-mobile-link--active" : "",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </Link>
+                ),
+              )}
+            </div>
           </div>
         ) : null}
       </nav>

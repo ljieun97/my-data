@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FastAverageColor } from "fast-average-color";
+import Image from "next/image";
+import { Toast } from "@heroui/react";
+import { faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { parseDate } from "@internationalized/date";
 import Title from "@/components/common/title";
+import PosterHoverActions from "@/components/media/poster-hover-actions";
+import Flatrates from "@/components/contents/flatrates";
+import { useUser } from "@/context/UserContext";
+import { getPosters } from "@/lib/open-api/tmdb-client";
 
 type YearCount = {
   _id: string;
@@ -26,6 +34,162 @@ type MonthGroup = {
   monthLabel: string;
   items: SavedItem[];
 };
+
+function MonthlySavedCard({
+  content,
+  backgroundColor,
+  onDelete,
+  onUpdate,
+}: {
+  content: SavedItem;
+  backgroundColor: string;
+  onDelete: (cid: string) => Promise<void>;
+  onUpdate: (contentId: string, nextDate: string, nextPosterPath: string) => void;
+}) {
+  const { uid } = useUser();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [date, setDate] = useState<any>(content.user_date ? parseDate(content.user_date) : null);
+  const [posters, setPosters] = useState<any[]>([]);
+  const [selectPoster, setSelectPoster] = useState(content.poster_path ?? "");
+  const [posterImg, setPosterImg] = useState(
+    content.poster_path ? `https://image.tmdb.org/t/p/w500${content.poster_path}` : "",
+  );
+
+  const title = content.title || content.name || "Untitled";
+
+  const handleOpen = async () => {
+    if (!content.type) return;
+    setPosters(await getPosters(content.type, String(content.id)));
+    setIsEditOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    if (!uid || !date) return;
+
+    const res = await fetch(`/api/mypage/content/${content._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ uid, poster_path: selectPoster, date: date.toString() }),
+    });
+
+    setIsEditOpen(false);
+
+    if (res.ok) {
+      if (selectPoster) {
+        setPosterImg(`https://image.tmdb.org/t/p/w500${selectPoster}`);
+      }
+      onUpdate(content._id, date.toString(), selectPoster);
+      Toast.toast("수정되었습니다.");
+    }
+  };
+
+  return (
+    <>
+      <div
+        className="group block overflow-hidden rounded-[22px] p-[1px] transition-transform hover:-translate-y-0.5"
+        style={{ backgroundColor }}
+      >
+        <div className="overflow-hidden rounded-[21px] bg-white/88 backdrop-blur-sm dark:bg-slate-950/78">
+          <div className="relative aspect-[2/3] overflow-hidden bg-slate-200 dark:bg-slate-800">
+            {posterImg ? (
+              <Image alt={title} src={posterImg} fill className="object-cover transition duration-300 group-hover:scale-[1.03]" sizes="100%" />
+            ) : (
+              <div className="flex h-full items-center justify-center px-3 text-center text-xs text-slate-400 dark:text-slate-500">
+                No poster
+              </div>
+            )}
+
+            {content.type ? (
+              <div className="absolute right-0 top-0 z-20 p-1">
+                <Flatrates type={content.type} provider={content.id} />
+              </div>
+            ) : null}
+
+            <PosterHoverActions
+              overlayClassName="bg-black/25 group-hover:visible"
+              actions={[
+                {
+                  icon: faPen,
+                  label: "수정하기",
+                  onClick: handleOpen,
+                  className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
+                },
+                {
+                  icon: faTrashCan,
+                  label: "삭제하기",
+                  onClick: () => {
+                    void onDelete(content._id);
+                  },
+                  className: "rounded-full bg-red-500/90 px-3 py-2 text-sm text-white shadow-sm transition hover:bg-red-500",
+                },
+              ]}
+            />
+          </div>
+
+          <div className="px-2.5 pb-2.5 pt-2 sm:px-3 sm:py-3">
+            <div className="sm:hidden">
+              <p className="browse-card__meta text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                ⭐ {formatRating(content.user_rating)}
+              </p>
+            </div>
+
+            <div className="hidden sm:block">
+              <p className="browse-card__title line-clamp-2 text-sm font-semibold">{title}</p>
+              <p className="browse-card__meta mt-1 text-xs">{content.user_date ?? "-"}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {isEditOpen ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
+            <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">수정하기</div>
+            <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-6 py-5">
+              <h2 className="mb-2 text-sm font-semibold">날짜</h2>
+              <input
+                type="date"
+                value={typeof date?.toString === "function" ? date.toString() : ""}
+                onChange={(event) => setDate(event.target.value ? parseDate(event.target.value) : null)}
+                className="min-h-[2.75rem] w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              />
+              <h2 className="mb-2 mt-5 text-sm font-semibold">사진 ({posters.length})</h2>
+              <div className="grid grid-cols-4 gap-1">
+                {posters.map((poster: any, index: number) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setSelectPoster(poster.file_path)}
+                    className={[
+                      "overflow-hidden rounded-lg border-2",
+                      selectPoster === poster.file_path ? "border-blue-500" : "border-transparent",
+                    ].join(" ")}
+                  >
+                    <img
+                      alt="choice search posters"
+                      src={`https://image.tmdb.org/t/p/w500${poster.file_path}`}
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-4 dark:border-slate-800">
+              <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={handleSubmit}>
+                완료
+              </button>
+              <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => setIsEditOpen(false)}>
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
 
 function groupItemsByMonth(items: SavedItem[]): MonthGroup[] {
   const buckets = Array.from({ length: 12 }, (_, index) => ({
@@ -66,11 +230,48 @@ export default function MyPageOverviewPage({
   currentYear: string;
   currentYearItems: SavedItem[];
 }) {
+  const { uid } = useUser();
   const safeCounts = Array.isArray(counts) ? counts : [];
-  const safeItems = Array.isArray(currentYearItems) ? currentYearItems : [];
+  const [items, setItems] = useState<SavedItem[]>(Array.isArray(currentYearItems) ? currentYearItems : []);
   const totalSaved = safeCounts.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
-  const groupedMonths = groupItemsByMonth(safeItems);
+  const groupedMonths = groupItemsByMonth(items);
   const [posterColors, setPosterColors] = useState<Record<string, string>>({});
+
+  const handleDelete = async (cid: string) => {
+    if (!uid) return;
+
+    const res = await fetch(`/api/mypage/content/${cid}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: uid,
+      },
+    });
+
+    if (res.ok) {
+      setItems((prev) => prev.filter((item) => item._id !== cid));
+      Toast.toast("Deleted.");
+    }
+  };
+
+  const handleUpdate = (contentId: string, nextDate: string, nextPosterPath: string) => {
+    if (!nextDate.startsWith(`${currentYear}-`)) {
+      setItems((prev) => prev.filter((item) => item._id !== contentId));
+      return;
+    }
+
+    setItems((prev) =>
+      prev.map((item) =>
+        item._id === contentId
+          ? {
+              ...item,
+              user_date: nextDate,
+              poster_path: nextPosterPath || item.poster_path,
+            }
+          : item,
+      ),
+    );
+  };
 
   useEffect(() => {
     let isCancelled = false;
@@ -78,7 +279,7 @@ export default function MyPageOverviewPage({
 
     const extractColors = async () => {
       const colorEntries = await Promise.all(
-        safeItems.map(async (item) => {
+        items.map(async (item) => {
           if (!item.poster_path) {
             return [item._id, "rgba(148, 163, 184, 0.16)"] as const;
           }
@@ -105,7 +306,7 @@ export default function MyPageOverviewPage({
       isCancelled = true;
       fac.destroy();
     };
-  }, [safeItems]);
+  }, [items]);
 
   return (
     <>
@@ -115,7 +316,7 @@ export default function MyPageOverviewPage({
         <div />
         <div className="flex items-center gap-3">
           <p className="browse-card__meta text-sm">
-            올해 {safeItems.length}개 / 총 {totalSaved}개
+            올해 {items.length}개 / 총 {totalSaved}개
           </p>
           <Link
             href={`/mypage/${currentYear}`}
@@ -139,47 +340,14 @@ export default function MyPageOverviewPage({
 
               <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
                 {group.items.map((item) => {
-                  const href = item.type ? `/${item.type}/${item.id}` : "#";
-                  const title = item.title || item.name || "Untitled";
-
                   return (
-                    <Link
+                    <MonthlySavedCard
                       key={item._id}
-                      href={href}
-                      className="group block overflow-hidden rounded-[22px] p-[1px] transition-transform hover:-translate-y-0.5"
-                      style={{
-                        backgroundColor: posterColors[item._id] ?? "rgba(148, 163, 184, 0.16)",
-                      }}
-                    >
-                      <div className="overflow-hidden rounded-[21px] bg-white/88 backdrop-blur-sm dark:bg-slate-950/78">
-                        <div className="relative aspect-[2/3] overflow-hidden bg-slate-200 dark:bg-slate-800">
-                          {item.poster_path ? (
-                            <img
-                              alt={title}
-                              src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-                              className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center px-3 text-center text-xs text-slate-400 dark:text-slate-500">
-                              No poster
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="px-2.5 pb-2.5 pt-2 sm:px-3 sm:py-3">
-                          <div className="sm:hidden">
-                            <p className="browse-card__meta text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                              ⭐ {formatRating(item.user_rating)}
-                            </p>
-                          </div>
-
-                          <div className="hidden sm:block">
-                            <p className="browse-card__title line-clamp-2 text-sm font-semibold">{title}</p>
-                            <p className="browse-card__meta mt-1 text-xs">{item.user_date ?? "-"}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
+                      content={item}
+                      backgroundColor={posterColors[item._id] ?? "rgba(148, 163, 184, 0.16)"}
+                      onDelete={handleDelete}
+                      onUpdate={handleUpdate}
+                    />
                   );
                 })}
               </div>

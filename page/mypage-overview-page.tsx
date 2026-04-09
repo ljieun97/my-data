@@ -5,7 +5,8 @@ import Link from "next/link";
 import { FastAverageColor } from "fast-average-color";
 import Image from "next/image";
 import { Toast } from "@heroui/react";
-import { faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faStar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { parseDate } from "@internationalized/date";
 import Title from "@/components/common/title";
 import PosterHoverActions from "@/components/media/poster-hover-actions";
@@ -44,13 +45,14 @@ function MonthlySavedCard({
   content: SavedItem;
   backgroundColor: string;
   onDelete: (cid: string) => Promise<void>;
-  onUpdate: (contentId: string, nextDate: string, nextPosterPath: string) => void;
+  onUpdate: (contentId: string, nextDate: string, nextPosterPath: string, nextRating: number) => void;
 }) {
   const { uid } = useUser();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [date, setDate] = useState<any>(content.user_date ? parseDate(content.user_date) : null);
   const [posters, setPosters] = useState<any[]>([]);
   const [selectPoster, setSelectPoster] = useState(content.poster_path ?? "");
+  const [rating, setRating] = useState(Number(content.user_rating) > 0 ? Number(content.user_rating) : 2.5);
   const [posterImg, setPosterImg] = useState(
     content.poster_path ? `https://image.tmdb.org/t/p/w500${content.poster_path}` : "",
   );
@@ -71,7 +73,7 @@ function MonthlySavedCard({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ uid, poster_path: selectPoster, date: date.toString() }),
+      body: JSON.stringify({ uid, poster_path: selectPoster, date: date.toString(), rating }),
     });
 
     setIsEditOpen(false);
@@ -80,7 +82,7 @@ function MonthlySavedCard({
       if (selectPoster) {
         setPosterImg(`https://image.tmdb.org/t/p/w500${selectPoster}`);
       }
-      onUpdate(content._id, date.toString(), selectPoster);
+      onUpdate(content._id, date.toString(), selectPoster, rating);
       Toast.toast("수정되었습니다.");
     }
   };
@@ -131,7 +133,7 @@ function MonthlySavedCard({
           <div
             className="px-2.5 pb-2.5 pt-2 sm:px-3 sm:py-3"
             style={{
-              background: `linear-gradient(180deg, ${backgroundColor} 0%, rgba(255,255,255,0.32) 100%)`,
+              background: `linear-gradient(180deg, ${backgroundColor} 0%, rgba(255,255,255,0.08) 100%)`,
             }}
           >
             <div className="sm:hidden">
@@ -160,6 +162,29 @@ function MonthlySavedCard({
                 onChange={(event) => setDate(event.target.value ? parseDate(event.target.value) : null)}
                 className="min-h-[2.75rem] w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
+              <h2 className="mb-2 mt-5 text-sm font-semibold">평점</h2>
+              <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
+                {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((value) => {
+                  const isActive = Math.abs(rating - value) < 0.001;
+
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setRating(value)}
+                      className={[
+                        "inline-flex min-h-[2.5rem] items-center justify-center gap-1 rounded-xl border px-2 text-sm transition",
+                        isActive
+                          ? "border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-400 dark:bg-amber-500/15 dark:text-amber-200"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-slate-600",
+                      ].join(" ")}
+                    >
+                      <FontAwesomeIcon icon={faStar} className="text-[11px]" />
+                      <span>{value.toFixed(1)}</span>
+                    </button>
+                  );
+                })}
+              </div>
               <h2 className="mb-2 mt-5 text-sm font-semibold">사진 ({posters.length})</h2>
               <div className="grid grid-cols-4 gap-1">
                 {posters.map((poster: any, index: number) => (
@@ -222,7 +247,7 @@ function formatRating(value?: number | null) {
 }
 
 function toPastelColor(r: number, g: number, b: number) {
-  const mix = (channel: number) => Math.round(channel + (255 - channel) * 0.72);
+  const mix = (channel: number) => Math.round(channel + (255 - channel) * 0.24);
   return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
 }
 
@@ -259,7 +284,7 @@ export default function MyPageOverviewPage({
     }
   };
 
-  const handleUpdate = (contentId: string, nextDate: string, nextPosterPath: string) => {
+  const handleUpdate = (contentId: string, nextDate: string, nextPosterPath: string, nextRating: number) => {
     if (!nextDate.startsWith(`${currentYear}-`)) {
       setItems((prev) => prev.filter((item) => item._id !== contentId));
       return;
@@ -272,6 +297,7 @@ export default function MyPageOverviewPage({
               ...item,
               user_date: nextDate,
               poster_path: nextPosterPath || item.poster_path,
+              user_rating: nextRating,
             }
           : item,
       ),

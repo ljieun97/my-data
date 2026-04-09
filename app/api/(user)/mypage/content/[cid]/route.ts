@@ -120,7 +120,7 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 
 export async function PUT(req: NextRequest, { params }: { params: any }) {
 	const { cid } = await params
-	const { uid, poster_path, date } = await req.json()
+	const { uid, poster_path, date, rating } = await req.json()
 	if (!uid || !cid) {
 		return NextResponse.json({ error: "Missing uid or cid" }, { status: 400 });
 	}
@@ -134,7 +134,8 @@ export async function PUT(req: NextRequest, { params }: { params: any }) {
 				{
 					$set: {
 						poster_path: poster_path,
-						user_date: date
+						user_date: date,
+						user_rating: rating
 					},
 				})
 		return NextResponse.json({ message: "success /movie DELETE" })

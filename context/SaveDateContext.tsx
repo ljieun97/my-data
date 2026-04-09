@@ -8,6 +8,7 @@ type SaveDateContextValue = {
   mode: SaveDateMode;
   setMode: (mode: SaveDateMode) => void;
   requestDate: (initialDate?: string) => Promise<string | null>;
+  requestDuplicateAction: (payload: { existingDate?: string | null; nextDate?: string | null }) => Promise<"keep" | "change" | null>;
 };
 
 const SaveDateContext = createContext<SaveDateContextValue | null>(null);
@@ -34,9 +35,12 @@ function readInitialMode(): SaveDateMode {
 
 export function SaveDateProvider({ children }: { children: React.ReactNode }) {
   const [mode, setModeState] = useState<SaveDateMode>("release");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
-  const resolverRef = useRef<((value: string | null) => void) | null>(null);
+  const [duplicateDates, setDuplicateDates] = useState<{ existingDate?: string | null; nextDate?: string | null }>({});
+  const dateResolverRef = useRef<((value: string | null) => void) | null>(null);
+  const duplicateResolverRef = useRef<((value: "keep" | "change" | null) => void) | null>(null);
 
   useEffect(() => {
     setModeState(readInitialMode());
@@ -48,18 +52,33 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LEGACY_STORAGE_KEY, nextMode === "today" ? "true" : "false");
   }, []);
 
-  const closeWithValue = useCallback((value: string | null) => {
-    resolverRef.current?.(value);
-    resolverRef.current = null;
-    setIsModalOpen(false);
+  const closeDateModal = useCallback((value: string | null) => {
+    dateResolverRef.current?.(value);
+    dateResolverRef.current = null;
+    setIsDateModalOpen(false);
+  }, []);
+
+  const closeDuplicateModal = useCallback((value: "keep" | "change" | null) => {
+    duplicateResolverRef.current?.(value);
+    duplicateResolverRef.current = null;
+    setIsDuplicateModalOpen(false);
   }, []);
 
   const requestDate = useCallback((initialDate?: string) => {
     setSelectedDate(initialDate || getTodayDate());
-    setIsModalOpen(true);
+    setIsDateModalOpen(true);
 
     return new Promise<string | null>((resolve) => {
-      resolverRef.current = resolve;
+      dateResolverRef.current = resolve;
+    });
+  }, []);
+
+  const requestDuplicateAction = useCallback((payload: { existingDate?: string | null; nextDate?: string | null }) => {
+    setDuplicateDates(payload);
+    setIsDuplicateModalOpen(true);
+
+    return new Promise<"keep" | "change" | null>((resolve) => {
+      duplicateResolverRef.current = resolve;
     });
   }, []);
 
@@ -68,15 +87,16 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
       mode,
       setMode,
       requestDate,
+      requestDuplicateAction,
     }),
-    [mode, requestDate, setMode],
+    [mode, requestDate, requestDuplicateAction, setMode],
   );
 
   return (
     <SaveDateContext.Provider value={contextValue}>
       {children}
-      {isModalOpen ? (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/72 p-4 backdrop-blur-sm" onClick={() => closeWithValue(null)}>
+      {isDateModalOpen ? (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/72 p-4 backdrop-blur-sm" onClick={() => closeDateModal(null)}>
           <div
             className="w-full max-w-sm rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950"
             onClick={(event) => event.stopPropagation()}
@@ -94,15 +114,50 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
               </label>
             </div>
             <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-4 dark:border-slate-800">
-              <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => closeWithValue(null)}>
+              <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => closeDateModal(null)}>
                 Cancel
               </button>
               <button
                 type="button"
                 className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white dark:bg-slate-100 dark:text-slate-900"
-                onClick={() => closeWithValue(selectedDate)}
+                onClick={() => closeDateModal(selectedDate)}
               >
                 Save with this date
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      {isDuplicateModalOpen ? (
+        <div className="fixed inset-0 z-[131] flex items-center justify-center bg-slate-950/72 p-4 backdrop-blur-sm" onClick={() => closeDuplicateModal(null)}>
+          <div
+            className="w-full max-w-sm rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">이미 저장된 영화입니다</div>
+            <div className="px-6 py-5 text-sm text-slate-600 dark:text-slate-300">
+              <p>기존 저장 날짜를 유지할지, 지금 선택한 날짜로 바꿀지 선택해주세요.</p>
+              <div className="mt-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-medium text-slate-700 dark:text-slate-200">현재 날짜</span>
+                  <span>{duplicateDates.existingDate || "-"}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-medium text-slate-700 dark:text-slate-200">변경 날짜</span>
+                  <span>{duplicateDates.nextDate || "-"}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-4 dark:border-slate-800">
+              <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => closeDuplicateModal("keep")}>
+                유지
+              </button>
+              <button
+                type="button"
+                className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white dark:bg-slate-100 dark:text-slate-900"
+                onClick={() => closeDuplicateModal("change")}
+              >
+                날짜 변경
               </button>
             </div>
           </div>

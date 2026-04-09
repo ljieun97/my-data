@@ -6,17 +6,28 @@ type SaveContentParams = {
   saveDateMode?: "release" | "today" | "custom";
   saveDate?: string;
   addToast: (options: { title: string }) => void;
-}
+};
 
-//설정값 db에서 조회해야함 - 다른기기에서설정달라지므로
-//타입스크립트진행하기
+type SaveContentResult = {
+  ok: boolean;
+  status: number;
+  data: any;
+};
 
-export const saveContent = async ({ uid, id, content, rating, saveDateMode, saveDate, addToast }: SaveContentParams) => {
+export const saveContent = async ({
+  uid,
+  id,
+  content,
+  rating,
+  saveDateMode,
+  saveDate,
+  addToast,
+}: SaveContentParams): Promise<SaveContentResult> => {
   if (uid) {
-    const isTodaySave = localStorage.getItem("set_isTodaySave")
+    const isTodaySave = localStorage.getItem("set_isTodaySave");
     const res = await fetch(`/api/mypage/content/${id}`, {
       method: "POST",
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         uid,
         content,
@@ -25,15 +36,30 @@ export const saveContent = async ({ uid, id, content, rating, saveDateMode, save
         saveDateMode: saveDateMode ?? (isTodaySave === "true" ? "today" : "release"),
         saveDate,
       }),
-    })
+    });
+
+    const data = await res.json();
+
     if (res.ok) {
-      addToast({ title: "저장 되었습니다" });
+      addToast({ title: "저장했습니다." });
     }
-  } else {
-    const stored = localStorage.getItem("movies")
-    const list = stored ? JSON.parse(stored) : []
-    list.push(content.poster_path)
-    localStorage.setItem("movies", JSON.stringify(list))
-    addToast({ title: "저장 되었습니다 (게스트)" })
+
+    return {
+      ok: res.ok,
+      status: res.status,
+      data,
+    };
   }
-}
+
+  const stored = localStorage.getItem("movies");
+  const list = stored ? JSON.parse(stored) : [];
+  list.push(content.poster_path);
+  localStorage.setItem("movies", JSON.stringify(list));
+  addToast({ title: "저장했습니다.(게스트)" });
+
+  return {
+    ok: true,
+    status: 200,
+    data: null,
+  };
+};

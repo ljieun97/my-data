@@ -75,6 +75,25 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 	try {
 		const { client, db } = await connectMongo()
 		mongoClient = client
+		const existingItem = await db.collection("contents").findOne({
+			user_id: object.user_id,
+			type: object.type,
+			id: object.id
+		})
+
+		if (existingItem) {
+			return NextResponse.json(
+				{
+					message: "duplicate",
+					duplicate: true,
+					existingId: String(existingItem._id),
+					existingDate: existingItem.user_date ?? null,
+					nextDate: date ?? null,
+				},
+				{ status: 409 },
+			)
+		}
+
 		await db
 			.collection("contents")
 			.updateOne(
@@ -90,7 +109,7 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 				}, { upsert: true })
 		//title type source sourceId age my_date my_rating my_isLike poster_path backdrop_path genres userId
 		//식별자 userId + type + sourceId
-		return NextResponse.json({ message: "success /content POST" })
+		return NextResponse.json({ message: "success /content POST", duplicate: false })
 	} catch (e) {
 		console.log(e)
 		return NextResponse.json({ error: e })

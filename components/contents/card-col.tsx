@@ -3,13 +3,12 @@
 import Flatrates from "./flatrates";
 import Image from "next/image";
 import { Toast } from "@heroui/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo, faPen } from "@fortawesome/free-solid-svg-icons";
-import { useRouter } from "next/navigation";
+import { faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useUser } from "@/context/UserContext";
 import { useState } from "react";
 import { getPosters } from "@/lib/open-api/tmdb-client";
 import { parseDate } from "@internationalized/date";
+import PosterHoverActions from "@/components/media/poster-hover-actions";
 
 export default function CardCol({
   thisYear,
@@ -25,19 +24,13 @@ export default function CardCol({
   onDelete: any;
 }) {
   const { uid } = useUser();
-  const router = useRouter();
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [date, setDate] = useState<any>(parseDate(content.user_date));
   const [posters, setPosters] = useState<any[]>([]);
   const [selectPoster, setSelectPoster] = useState(content.poster_path);
   const [posterImg, setPosterImg] = useState(`https://image.tmdb.org/t/p/w500${content.poster_path}`);
 
-  const type = content.title ? "movie" : "tv";
-  const id = content.id;
-
   const handleOpen = async () => {
-    setIsMenuOpen(false);
     setPosters(await getPosters(content.type, content.id));
     setIsEditOpen(true);
   };
@@ -59,7 +52,7 @@ export default function CardCol({
       } else {
         setPosterImg(`https://image.tmdb.org/t/p/w500/${selectPoster}`);
       }
-      Toast.toast("수정되었습니다.");
+      Toast.toast("수정했습니다.");
     }
   };
 
@@ -74,41 +67,23 @@ export default function CardCol({
           </div>
         ) : null}
 
-        <div className="invisible absolute inset-0 z-10 flex items-center justify-center bg-black/25 group-hover/footer:visible">
-          <div className="relative flex gap-2">
-            <button
-              type="button"
-              className="rounded-full bg-white/90 px-2 py-1 text-sm"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-            >
-              <FontAwesomeIcon icon={faPen} />
-            </button>
-            {isMenuOpen ? (
-              <div className="absolute left-0 top-full mt-2 min-w-24 rounded-xl bg-white p-1 shadow-lg">
-                <button type="button" className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100" onClick={handleOpen}>
-                  수정
-                </button>
-                <button
-                  type="button"
-                  className="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-slate-100"
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    onDelete(content._id);
-                  }}
-                >
-                  삭제
-                </button>
-              </div>
-            ) : null}
-            <button
-              type="button"
-              className="rounded-full bg-white/90 px-2 py-1 text-sm"
-              onClick={() => router.push(`/${type}/${id}`)}
-            >
-              <FontAwesomeIcon icon={faCircleInfo} />
-            </button>
-          </div>
-        </div>
+        <PosterHoverActions
+          overlayClassName="bg-black/25 group-hover/footer:visible"
+          actions={[
+            {
+              icon: faPen,
+              label: "수정하기",
+              onClick: handleOpen,
+              className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
+            },
+            {
+              icon: faTrashCan,
+              label: "삭제하기",
+              onClick: () => onDelete(content._id),
+              className: "rounded-full bg-red-500/90 px-3 py-2 text-sm text-white shadow-sm transition hover:bg-red-500",
+            },
+          ]}
+        />
       </div>
 
       {isEditOpen ? (

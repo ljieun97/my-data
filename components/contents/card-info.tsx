@@ -1,11 +1,11 @@
 "use client";
 
 import Flatrates from "./flatrates";
-import { Toast } from "@heroui/react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faPlus, faEye, faStar } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { useSaveContent } from "@/hooks/useSaveContent";
+import PosterHoverActions from "@/components/media/poster-hover-actions";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function CardInfo({ content }: { content: any }) {
   const router = useRouter();
@@ -37,22 +37,23 @@ export default function CardInfo({ content }: { content: any }) {
               src={img}
               className="h-auto w-full rounded-lg object-cover shadow-[0_12px_24px_rgba(15,23,42,0.16)] aspect-[2/3] md:h-[6.8rem] md:w-[4.7rem] md:shrink-0"
             />
-            <div className="invisible absolute inset-0 z-10 flex items-center justify-center gap-2 rounded-lg bg-slate-950/24 transition group-hover/poster:visible dark:bg-slate-950/42">
-              <button
-                type="button"
-                className="browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition"
-                onClick={() => handleClick(1)}
-              >
-                <FontAwesomeIcon icon={faPlus} />
-              </button>
-              <button
-                type="button"
-                className="browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition"
-                onClick={() => router.push(`/${type}/${id}`)}
-              >
-                <FontAwesomeIcon icon={faCircleInfo} />
-              </button>
-            </div>
+            <PosterHoverActions
+              overlayClassName="bg-slate-950/24 group-hover/poster:visible dark:bg-slate-950/42"
+              actions={[
+                {
+                  icon: faPlus,
+                  label: `${title} save`,
+                  onClick: () => handleClick(1),
+                  className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
+                },
+                {
+                  icon: faCircleInfo,
+                  label: `${title} details`,
+                  onClick: () => router.push(`/${type}/${id}`),
+                  className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
+                },
+              ]}
+            />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2 md:py-1">
             <div>

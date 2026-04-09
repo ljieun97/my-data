@@ -1,10 +1,10 @@
 "use client";
 
 import Flatrates from "./flatrates";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { useSaveContent } from "@/hooks/useSaveContent";
+import PosterHoverActions from "@/components/media/poster-hover-actions";
 
 export default function ImageCard({ content, desc }: { content: any; desc: String }) {
   const router = useRouter();
@@ -36,14 +36,24 @@ export default function ImageCard({ content, desc }: { content: any; desc: Strin
           </div>
         </div>
       </div>
-      <div className="invisible absolute inset-0 z-10 flex h-full items-end justify-end gap-2 rounded-large bg-black/50 p-4 group-hover/footer:visible">
-        <button type="button" className="rounded-full bg-white/90 px-3 py-2 text-sm" onClick={() => handleClick(1)}>
-          <FontAwesomeIcon icon={faPlus} />
-        </button>
-        <button type="button" className="rounded-full bg-white/90 px-3 py-2 text-sm" onClick={() => router.push(`/${type}/${id}`)}>
-          <FontAwesomeIcon icon={faCircleInfo} />
-        </button>
-      </div>
+      <PosterHoverActions
+        overlayClassName="rounded-large bg-black/50 group-hover/footer:visible"
+        groupClassName="absolute bottom-4 right-4"
+        actions={[
+          {
+            icon: faPlus,
+            label: `${content.title} save`,
+            onClick: () => handleClick(1),
+            className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
+          },
+          {
+            icon: faCircleInfo,
+            label: `${content.title} details`,
+            onClick: () => router.push(`/${type}/${id}`),
+            className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
+          },
+        ]}
+      />
     </div>
   );
 }

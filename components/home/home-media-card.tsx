@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import Flatrates from "@/components/contents/flatrates";
 import MediaScoreBadges from "@/components/media/media-score-badges";
+import PosterHoverActions from "@/components/media/poster-hover-actions";
 import type { HomeMovieCardItem } from "@/components/card-slider";
 import { useSaveContent } from "@/hooks/useSaveContent";
+import { useRouter } from "next/navigation";
 
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
 
@@ -24,12 +25,10 @@ export default function HomeMediaCard({
   isRtLoading: boolean;
   onPrefetch: (tmdbId?: number | null) => void;
 }) {
+  const router = useRouter();
   const { saveWithPreference } = useSaveContent();
 
-  const handleSave = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-
+  const handleSave = async () => {
     if (!movie.tmdbId) return;
 
     await saveWithPreference({
@@ -96,19 +95,23 @@ export default function HomeMediaCard({
                 <div className="pointer-events-none absolute inset-0 z-[1] bg-slate-950/0 opacity-0 transition duration-200 group-hover:bg-slate-950/18 group-hover:opacity-100" />
               ) : null}
               {movie.tmdbId ? (
-                <div className="invisible absolute inset-0 z-[2] flex items-center justify-center gap-2 transition group-hover:visible">
-                  <button
-                    type="button"
-                    aria-label={`${movie.title} save`}
-                    className="browse-card__action pointer-events-auto rounded-full px-3 py-2 text-sm shadow-sm transition"
-                    onClick={handleSave}
-                  >
-                    <FontAwesomeIcon icon={faPlus} />
-                  </button>
-                  <span className="browse-card__detail pointer-events-auto rounded-full px-3 py-2 text-sm shadow-sm transition">
-                    <FontAwesomeIcon icon={faCircleInfo} />
-                  </span>
-                </div>
+                <PosterHoverActions
+                  overlayClassName="group-hover:visible"
+                  actions={[
+                    {
+                      icon: faPlus,
+                      label: `${movie.title} save`,
+                      onClick: handleSave,
+                      className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
+                    },
+                    {
+                      icon: faCircleInfo,
+                      label: `${movie.title} details`,
+                      onClick: () => router.push(`/movie/${movie.tmdbId}`),
+                      className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
+                    },
+                  ]}
+                />
               ) : null}
               {movie.posterPath ? (
                 <Image

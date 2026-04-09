@@ -5,12 +5,11 @@ import { Toast } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faPlus, faEye, faStar } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/context/UserContext";
-import { saveContent } from "@/lib/actions/content";
+import { useSaveContent } from "@/hooks/useSaveContent";
 
 export default function CardInfo({ content }: { content: any }) {
-  const { uid } = useUser();
   const router = useRouter();
+  const { saveWithPreference } = useSaveContent();
 
   const type = content.title ? "movie" : "tv";
   const id = content.id;
@@ -21,13 +20,7 @@ export default function CardInfo({ content }: { content: any }) {
   const voteCount = content.vote_count ? Number(content.vote_count).toLocaleString() : "0";
 
   const handleClick = async (rating: number) => {
-    saveContent({
-      uid,
-      id,
-      content,
-      rating,
-      addToast: ({ title }: any) => Toast.toast(title),
-    });
+    await saveWithPreference({ id, content, rating });
   };
 
   return (

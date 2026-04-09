@@ -1,29 +1,21 @@
 "use client";
 
 import Flatrates from "./flatrates";
-import { Toast } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/context/UserContext";
-import { saveContent } from "@/lib/actions/content";
+import { useSaveContent } from "@/hooks/useSaveContent";
 
 export default function CardThumb({ content }: { content: any }) {
-  const { uid } = useUser();
   const router = useRouter();
+  const { saveWithPreference } = useSaveContent();
 
   const type = content.title ? "movie" : "tv";
   const id = content.id;
   const img = content.backdrop_path ? `https://image.tmdb.org/t/p/w500/${content.backdrop_path}` : "/images/no-image.jpg";
 
   const handleClick = async (rating: number) => {
-    saveContent({
-      uid,
-      id,
-      content,
-      rating,
-      addToast: ({ title }: any) => Toast.toast(title),
-    });
+    await saveWithPreference({ id, content, rating });
   };
 
   return (

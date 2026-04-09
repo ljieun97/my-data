@@ -6,13 +6,24 @@ import { cookies, headers } from "next/headers";
 
 
 export async function POST(req: NextRequest, { params }: { params: any }) {
-	const { uid, content, rating, isTodaySave } = await req.json()
+	const { uid, content, rating, isTodaySave, saveDateMode, saveDate } = await req.json()
 
 	if (!uid) {
 		return NextResponse.json({ error: "Missing uid or isTodaySave" }, { status: 400 });
 	}
 	const today = dayjs().format('YYYY-MM-DD')
-	let date = isTodaySave === "true" ? today : content.release_date 
+	const resolvedMode =
+		saveDateMode === "release" || saveDateMode === "today" || saveDateMode === "custom"
+			? saveDateMode
+			: isTodaySave === "true"
+				? "today"
+				: "release"
+	let date =
+		resolvedMode === "today"
+			? today
+			: resolvedMode === "custom"
+				? saveDate || today
+				: content.release_date
 	let object = {} as any
 
 	//제목 정렬때문에 title로 통합

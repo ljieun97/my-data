@@ -8,6 +8,7 @@ import SearchInput from "./search-input";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@/context/UserContext";
+import { useSaveDate } from "@/context/SaveDateContext";
 
 function AvatarButton({ className, src }: { className?: string; src: string }) {
   return (
@@ -144,7 +145,7 @@ function SettingsModal({
 }: {
   open: boolean;
   selectedSet: string;
-  setSelectedSet: (value: string) => void;
+  setSelectedSet: (value: "release" | "today" | "custom") => void;
   isDarkMode: boolean;
   onToggleTheme: () => void;
   onClose: () => void;
@@ -162,6 +163,10 @@ function SettingsModal({
             <label className="inline-flex items-center gap-2">
               <input type="radio" name="date-mode" checked={selectedSet === "today"} onChange={() => setSelectedSet("today")} />
               <span>Today</span>
+            </label>
+            <label className="inline-flex items-center gap-2">
+              <input type="radio" name="date-mode" checked={selectedSet === "custom"} onChange={() => setSelectedSet("custom")} />
+              <span>Custom</span>
             </label>
           </div>
         </div>
@@ -186,12 +191,13 @@ export default function TopBar() {
   const currentYear = new Date().getFullYear();
   const defaultWorldcupYear = String(currentYear - 1);
   const { uid } = useUser();
+  const { mode: saveDateMode, setMode: setSaveDateMode } = useSaveDate();
   const path = usePathname();
   const router = useRouter();
   const [isScroll, setIsScroll] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [selectedSet, setSelectedSet] = useState("release");
+  const [selectedSet, setSelectedSet] = useState<"release" | "today" | "custom">("release");
   const [selectedSource, setSelectedSource] = useState("kobis");
   const [selectedYear, setSelectedYear] = useState(defaultWorldcupYear);
   const yearOptions = useMemo(() => Array.from({ length: 26 }, (_, index) => String(currentYear - index)), [currentYear]);
@@ -261,14 +267,13 @@ export default function TopBar() {
   };
 
   const handleOpenSet = () => {
-    const isTodaySave = localStorage.getItem("set_isTodaySave");
-    setSelectedSet(isTodaySave === "true" ? "today" : "release");
+    setSelectedSet(saveDateMode);
     setIsSettingsOpen(true);
   };
 
-  const handleChangeSet = (value: string) => {
+  const handleChangeSet = (value: "release" | "today" | "custom") => {
     setSelectedSet(value);
-    localStorage.setItem("set_isTodaySave", value === "today" ? "true" : "false");
+    setSaveDateMode(value);
   };
 
   const handleOpenWorldcup = () => {

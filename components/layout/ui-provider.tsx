@@ -5,6 +5,7 @@ import TopBar from "./top-bar";
 import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { SearchProvider } from "@/context/SearchContext";
+import { SaveDateProvider } from "@/context/SaveDateContext";
 
 export function UiProvider({
   children, modal
@@ -37,16 +38,18 @@ export function UiProvider({
     <>
       <Toast.Provider />
       <SearchProvider>
-        <main>
-          <div className={`app-shell text-foreground bg-background flex-grow ${isFilterPage ? "app-shell--locked" : ""}`}>
-            <TopBar />
-            <div className={`min-h-screen pb-12 pt-28 ${isFilterPage ? "app-shell__viewport" : ""}`}>
-              <div className={`${shouldUseFullWidthHomeLayout ? "w-full" : "app-frame"} ${usePageShell ? "page-shell" : ""} ${isFilterPage ? "flex h-full min-h-0 flex-col" : ""} ${isFilterPage ? "page-shell--locked" : ""}`}>
-                {children}
+        <SaveDateProvider>
+          <main>
+            <div className={`app-shell text-foreground bg-background flex-grow ${isFilterPage ? "app-shell--locked" : ""}`}>
+              <TopBar />
+              <div className={`min-h-screen pb-12 pt-28 ${isFilterPage ? "app-shell__viewport" : ""}`}>
+                <div className={`${shouldUseFullWidthHomeLayout ? "w-full" : "app-frame"} ${usePageShell ? "page-shell" : ""} ${isFilterPage ? "flex h-full min-h-0 flex-col" : ""} ${isFilterPage ? "page-shell--locked" : ""}`}>
+                  {children}
+                </div>
               </div>
             </div>
-          </div>
-        </main>
+          </main>
+        </SaveDateProvider>
       </SearchProvider>
       {modal}
     </>

@@ -2,14 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Toast } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import Flatrates from "@/components/contents/flatrates";
 import MediaScoreBadges from "@/components/media/media-score-badges";
 import type { HomeMovieCardItem } from "@/components/card-slider";
-import { useUser } from "@/context/UserContext";
-import { saveContent } from "@/lib/actions/content";
+import { useSaveContent } from "@/hooks/useSaveContent";
 
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
 
@@ -26,7 +24,7 @@ export default function HomeMediaCard({
   isRtLoading: boolean;
   onPrefetch: (tmdbId?: number | null) => void;
 }) {
-  const { uid } = useUser();
+  const { saveWithPreference } = useSaveContent();
 
   const handleSave = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -34,8 +32,7 @@ export default function HomeMediaCard({
 
     if (!movie.tmdbId) return;
 
-    await saveContent({
-      uid,
+    await saveWithPreference({
       id: String(movie.tmdbId),
       content: {
         id: movie.tmdbId,
@@ -47,7 +44,6 @@ export default function HomeMediaCard({
         overview: movie.detailLine ?? "",
       },
       rating: 1,
-      addToast: ({ title }: any) => Toast.toast(title),
     });
   };
 

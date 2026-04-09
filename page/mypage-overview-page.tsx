@@ -79,7 +79,7 @@ export default function MyPageOverviewPage({
                   {group.items.length}개
                 </span>
               </div>
-              <div className="grid sm:grid-cols-4 grid-cols-8 gap-3">
+              <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
                 {group.items.map((item) => {
                   const href = item.type ? `/${item.type}/${item.id}` : "#";
                   const title = item.title || item.name || "Untitled";

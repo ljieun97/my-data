@@ -52,6 +52,7 @@ const navItems = [
   { href: "/", label: "Home" },
   { href: "/worldcup", label: "Worldcup" },
   { href: "/calendar", label: "Calendar" },
+  { href: "/timetable", label: "Timetable" },
   { href: "/awards", label: "Awards" },
   { href: "/movie", label: "Movies" },
   { href: "/tv", label: "Series" },

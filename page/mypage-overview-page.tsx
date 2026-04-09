@@ -91,7 +91,7 @@ function MonthlySavedCard({
         className="group block overflow-hidden rounded-[22px] p-[1px] transition-transform hover:-translate-y-0.5"
         style={{ backgroundColor }}
       >
-        <div className="overflow-hidden rounded-[21px] bg-white/88 backdrop-blur-sm dark:bg-slate-950/78">
+        <div className="overflow-hidden rounded-[21px] bg-white/92 backdrop-blur-sm dark:bg-slate-950/82">
           <div className="relative aspect-[2/3] overflow-hidden bg-slate-200 dark:bg-slate-800">
             {posterImg ? (
               <Image alt={title} src={posterImg} fill className="object-cover transition duration-300 group-hover:scale-[1.03]" sizes="100%" />
@@ -128,9 +128,14 @@ function MonthlySavedCard({
             />
           </div>
 
-          <div className="px-2.5 pb-2.5 pt-2 sm:px-3 sm:py-3">
+          <div
+            className="px-2.5 pb-2.5 pt-2 sm:px-3 sm:py-3"
+            style={{
+              background: `linear-gradient(180deg, ${backgroundColor} 0%, rgba(255,255,255,0.32) 100%)`,
+            }}
+          >
             <div className="sm:hidden">
-              <p className="browse-card__meta text-[11px] font-medium text-slate-600 dark:text-slate-300">
+              <p className="browse-card__meta text-[11px] font-medium text-slate-700 dark:text-slate-800">
                 ⭐ {formatRating(content.user_rating)}
               </p>
             </div>
@@ -338,7 +343,7 @@ export default function MyPageOverviewPage({
                 </span>
               </div>
 
-              <div className="grid grid-cols-4 gap-3 sm:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-3 lg:grid-cols-6 xl:grid-cols-8">
                 {group.items.map((item) => {
                   return (
                     <MonthlySavedCard

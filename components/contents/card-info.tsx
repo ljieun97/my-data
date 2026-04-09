@@ -43,7 +43,7 @@ export default function CardInfo({ content }: { content: any }) {
                 {
                   icon: faPlus,
                   label: `${title} save`,
-                  onClick: () => handleClick(1),
+                  onClick: () => handleClick(2.5),
                   className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
                 },
                 {

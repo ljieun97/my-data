@@ -43,7 +43,7 @@ export default function ImageCard({ content, desc }: { content: any; desc: Strin
           {
             icon: faPlus,
             label: `${content.title} save`,
-            onClick: () => handleClick(1),
+            onClick: () => handleClick(2.5),
             className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
           },
           {

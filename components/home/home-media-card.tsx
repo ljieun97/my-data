@@ -42,7 +42,7 @@ export default function HomeMediaCard({
         vote_count: 0,
         overview: movie.detailLine ?? "",
       },
-      rating: 1,
+      rating: 2.5,
     });
   };
 

@@ -35,7 +35,7 @@ export default function CardThumb({ content }: { content: any }) {
             {
               icon: faPlus,
               label: `${content.title ? content.title : content.name} save`,
-              onClick: () => handleClick(1),
+              onClick: () => handleClick(2.5),
               className: "browse-card__action rounded-full px-2 py-1 text-sm shadow-sm transition",
             },
             {

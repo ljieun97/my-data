@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchOfficialMovieShowtimes } from "@/lib/open-api/official-movie-showtimes";
+import { fetchNaverMovieShowtimes } from "@/lib/open-api/naver-movie-showtimes";
 
 type MovieInput = {
   movieCd: string;
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const showtime = await fetchOfficialMovieShowtimes(movie, date);
+    const showtime = await fetchNaverMovieShowtimes(movie, date);
 
     return NextResponse.json({
       date,

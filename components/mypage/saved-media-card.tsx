@@ -92,10 +92,10 @@ export default function SavedMediaCard({
   return (
     <>
       <div
-        className="group block overflow-hidden rounded-[22px] p-[1px] transition-transform hover:-translate-y-0.5"
+        className="group block overflow-hidden rounded-[14px] p-[1px] transition-transform hover:-translate-y-0.5 sm:rounded-[18px]"
         style={{ backgroundColor }}
       >
-        <div className="overflow-hidden rounded-[21px] bg-white/92 backdrop-blur-sm dark:bg-slate-950/82">
+        <div className="overflow-hidden rounded-[13px] bg-white/92 backdrop-blur-sm dark:bg-slate-950/82 sm:rounded-[17px]">
           <div className="relative aspect-[2/3] overflow-hidden bg-slate-200 dark:bg-slate-800">
             {posterImg ? (
               <Image alt={title} src={posterImg} fill className="object-cover transition duration-300 group-hover:scale-[1.03]" sizes="100%" />
@@ -134,7 +134,7 @@ export default function SavedMediaCard({
           </div>
 
           <div
-            className="flex min-h-[2.55rem] items-center justify-between gap-2 px-2.5 py-2 sm:min-h-[4.55rem] sm:px-3 sm:py-3"
+            className="flex min-h-[1.75rem] items-center justify-between gap-2 px-2 py-1 sm:min-h-[4.55rem] sm:px-3 sm:py-3"
             style={{ backgroundColor }}
           >
             <div className="min-w-0 sm:hidden">
@@ -145,7 +145,12 @@ export default function SavedMediaCard({
 
             <div className="hidden min-w-0 sm:block">
               <p className="browse-card__title line-clamp-2 text-sm font-semibold">{title}</p>
-              <p className="browse-card__meta mt-1 text-xs">{content.user_date ?? "-"}</p>
+              <div className="mt-1 flex items-center justify-between gap-2">
+                <p className="browse-card__meta min-w-0 truncate text-xs">{content.user_date ?? "-"}</p>
+                <p className="shrink-0 text-xs font-semibold text-slate-800 dark:text-slate-900">
+                  별 점수 {formatRating(content.user_rating)}
+                </p>
+              </div>
             </div>
           </div>
         </div>

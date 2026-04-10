@@ -9,6 +9,8 @@ type ShowtimeItem = {
   theater: string;
   brand: string;
   time: string;
+  endTime: string;
+  screen: string;
   sourceQuery: string;
 };
 
@@ -83,7 +85,7 @@ function uniqItems(items: ShowtimeItem[]) {
   const seen = new Set<string>();
 
   return items.filter((item) => {
-    const key = `${item.theater}-${item.time}`;
+    const key = `${item.theater}-${item.screen}-${item.time}-${item.endTime}`;
     if (seen.has(key)) {
       return false;
     }
@@ -141,7 +143,11 @@ function parseScheduleHtml(html: string) {
 
     theaterRoot.find("li._time_check").each((__, timeElement) => {
       const timeRoot = $(timeElement);
-      const time = timeRoot.find(".this_point_big").first().text().trim();
+      const timeText = timeRoot.find(".this_text_time").first().text().replace(/\s+/g, "").trim();
+      const timeRange = timeText.match(/(\d{1,2}:\d{2})~(\d{1,2}:\d{2})/);
+      const time = timeRange?.[1] ?? timeRoot.find(".this_point_big").first().text().trim();
+      const endTime = timeRange?.[2] ?? "";
+      const screen = timeRoot.find(".this_text_place").first().text().replace(/\s+/g, " ").trim();
       const href = timeRoot.find("a.area_link").first().attr("href") ?? "";
 
       if (!time) {
@@ -152,6 +158,8 @@ function parseScheduleHtml(html: string) {
         theater,
         brand,
         time,
+        endTime,
+        screen,
         sourceQuery: href,
       });
     });

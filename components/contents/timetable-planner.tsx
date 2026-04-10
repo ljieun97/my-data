@@ -1,5 +1,6 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 type KobisMovie = {
@@ -14,6 +15,8 @@ type ShowtimeItem = {
   theater: string;
   brand: string;
   time: string;
+  endTime: string;
+  screen: string;
   sourceQuery: string;
 };
 
@@ -32,6 +35,8 @@ type PlannedItem = {
   theater: string;
   brand: string;
   time: string;
+  endTime?: string;
+  screen?: string;
   date: string;
   sourceQuery: string;
 };
@@ -78,9 +83,38 @@ function sortShowtimes(items: ShowtimeItem[]) {
   });
 }
 
+function timeToMinutes(time: string) {
+  const [hour, minute] = time.split(":").map(Number);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) {
+    return null;
+  }
+
+  return hour * 60 + minute;
+}
+
+function getRange(item: { time: string; endTime?: string }) {
+  const start = timeToMinutes(item.time);
+  const end = item.endTime ? timeToMinutes(item.endTime) : null;
+
+  if (start === null || end === null) {
+    return null;
+  }
+
+  return {
+    start,
+    end: end <= start ? end + 24 * 60 : end,
+  };
+}
+
+function rangesOverlap(a: { start: number; end: number }, b: { start: number; end: number }) {
+  return a.start < b.end && b.start < a.end;
+}
+
 export default function TimetablePlanner() {
   const [selectedDate, setSelectedDate] = useState(() => toDateInputValue(new Date()));
   const [selectedMovieCd, setSelectedMovieCd] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState("");
+  const [searchedMovie, setSearchedMovie] = useState<KobisMovie | null>(null);
   const [movies, setMovies] = useState<KobisMovie[]>([]);
   const [plans, setPlans] = useState<PlannedItem[]>([]);
   const [showtimeMap, setShowtimeMap] = useState<Record<string, LoadState>>({});
@@ -88,9 +122,16 @@ export default function TimetablePlanner() {
   const [error, setError] = useState<string | null>(null);
 
   const week = useMemo(() => buildWeek(selectedDate), [selectedDate]);
+  const displayedMovies = useMemo(() => {
+    if (!searchedMovie) {
+      return movies;
+    }
+
+    return [searchedMovie, ...movies.filter((movie) => movie.movieNm !== searchedMovie.movieNm)];
+  }, [movies, searchedMovie]);
   const selectedMovie = useMemo(
-    () => movies.find((movie) => movie.movieCd === selectedMovieCd) ?? null,
-    [movies, selectedMovieCd],
+    () => displayedMovies.find((movie) => movie.movieCd === selectedMovieCd) ?? null,
+    [displayedMovies, selectedMovieCd],
   );
   const selectedState = selectedMovieCd ? showtimeMap[selectedMovieCd] : undefined;
   const selectedShowtimes = selectedState?.data ? sortShowtimes(selectedState.data.items) : [];
@@ -215,6 +256,11 @@ export default function TimetablePlanner() {
   };
 
   const selectMovie = (movie: KobisMovie) => {
+    if (selectedMovieCd === movie.movieCd) {
+      setSelectedMovieCd(null);
+      return;
+    }
+
     setSelectedMovieCd(movie.movieCd);
 
     if (!showtimeMap[movie.movieCd]?.data && !showtimeMap[movie.movieCd]?.isLoading) {
@@ -222,16 +268,49 @@ export default function TimetablePlanner() {
     }
   };
 
+  const searchMovie = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const movieName = searchText.trim();
+    if (!movieName) {
+      return;
+    }
+
+    const movie = {
+      movieCd: `search:${movieName}`,
+      movieNm: movieName,
+      openDt: "",
+      rank: "검색",
+      rankOldAndNew: "OLD",
+    };
+
+    setSearchedMovie(movie);
+    setSelectedMovieCd(movie.movieCd);
+    void loadMovieShowtimes(movie);
+  };
+
   const addPlan = (movie: MovieShowtime, item: ShowtimeItem) => {
+    const existingPlan = getMatchingPlan(movie, item);
+    if (existingPlan) {
+      removePlan(existingPlan.id);
+      return;
+    }
+
+    if (isOverlapping(item)) {
+      return;
+    }
+
     setPlans((current) => [
       ...current,
       {
-        id: `${movie.movieCd}-${selectedDate}-${item.theater}-${item.time}-${Date.now()}`,
+        id: `${movie.movieCd}-${selectedDate}-${item.theater}-${item.screen}-${item.time}-${Date.now()}`,
         movieCd: movie.movieCd,
         movieNm: movie.movieNm,
         theater: item.theater,
         brand: item.brand,
         time: item.time,
+        endTime: item.endTime,
+        screen: item.screen,
         date: selectedDate,
         sourceQuery: item.sourceQuery,
       },
@@ -245,6 +324,34 @@ export default function TimetablePlanner() {
   const resetPlans = () => {
     setPlans([]);
     localStorage.removeItem(STORAGE_KEY);
+  };
+
+  const getMatchingPlan = (movie: MovieShowtime, item: ShowtimeItem) => {
+    return plans.find((plan) => {
+      return (
+        plan.date === selectedDate &&
+        plan.movieCd === movie.movieCd &&
+        plan.theater === item.theater &&
+        (!plan.screen || plan.screen === item.screen) &&
+        plan.time === item.time &&
+        (!plan.endTime || plan.endTime === item.endTime)
+      );
+    });
+  };
+
+  const isOverlapping = (item: ShowtimeItem) => {
+    const range = getRange(item);
+    return Boolean(
+      range &&
+        plans.some((plan) => {
+          if (plan.date !== selectedDate) {
+            return false;
+          }
+
+          const planRange = getRange(plan);
+          return Boolean(planRange && rangesOverlap(range, planRange));
+        }),
+    );
   };
 
   return (
@@ -268,10 +375,26 @@ export default function TimetablePlanner() {
 
         {error ? <div className="mb-2 rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">{error}</div> : null}
 
-        <div className="flex max-h-[calc(100vh-180px)] flex-col gap-1 overflow-y-auto pr-1">
+        <form onSubmit={searchMovie} className="mb-3 flex gap-2">
+          <input
+            type="search"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            placeholder="영화 검색"
+            className="min-h-10 min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-amber-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          />
+          <button
+            type="submit"
+            className="rounded-2xl bg-slate-950 px-3 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
+          >
+            검색
+          </button>
+        </form>
+
+        <div className="flex max-h-[calc(100vh-230px)] flex-col gap-1 overflow-y-auto pr-1">
           {isMoviesLoading ? <div className="px-3 py-8 text-center text-sm text-slate-500">불러오는 중</div> : null}
-          {!isMoviesLoading && !movies.length ? <div className="px-3 py-8 text-center text-sm text-slate-500">영화 없음</div> : null}
-          {movies.map((movie) => {
+          {!isMoviesLoading && !displayedMovies.length ? <div className="px-3 py-8 text-center text-sm text-slate-500">영화 없음</div> : null}
+          {displayedMovies.map((movie) => {
             const isSelected = movie.movieCd === selectedMovieCd;
 
             return (
@@ -321,17 +444,36 @@ export default function TimetablePlanner() {
             <div className="px-3 py-10 text-center text-sm text-slate-500">상영시간 없음</div>
           ) : null}
           {selectedState?.data
-            ? selectedShowtimes.map((item) => (
-                <button
-                  key={`${item.theater}-${item.time}`}
-                  type="button"
-                  onClick={() => addPlan(selectedState.data!, item)}
-                  className="grid grid-cols-[4.5rem,1fr] items-center rounded-2xl px-3 py-2 text-left text-sm text-slate-800 transition hover:bg-amber-100 dark:text-slate-100 dark:hover:bg-amber-500/15"
-                >
-                  <span className="font-semibold tabular-nums">{item.time}</span>
-                  <span className="truncate">{item.theater}</span>
-                </button>
-              ))
+            ? selectedShowtimes.map((item) => {
+                const isSelected = Boolean(getMatchingPlan(selectedState.data!, item));
+                const isBlocked = !isSelected && isOverlapping(item);
+
+                return (
+                  <button
+                    key={`${item.theater}-${item.screen}-${item.time}-${item.endTime}`}
+                    type="button"
+                    onClick={() => addPlan(selectedState.data!, item)}
+                    disabled={isBlocked}
+                    className={`grid grid-cols-[7.5rem,1fr,3.5rem] items-center rounded-2xl px-3 py-2 text-left text-sm transition disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent ${
+                      isSelected
+                        ? "bg-amber-300 text-slate-950 hover:bg-amber-200 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300"
+                        : "text-slate-800 hover:bg-amber-100 dark:text-slate-100 dark:hover:bg-amber-500/15"
+                    }`}
+                  >
+                    <span className="font-semibold tabular-nums">
+                      {item.time}
+                      {item.endTime ? `~${item.endTime}` : ""}
+                    </span>
+                    <span className="truncate">
+                      {item.theater}
+                      {item.screen ? ` ${item.screen}` : ""}
+                    </span>
+                    <span className={`text-right text-xs ${isSelected ? "font-semibold text-slate-950" : "text-rose-500"}`}>
+                      {isSelected ? "선택됨" : isBlocked ? "겹침" : ""}
+                    </span>
+                  </button>
+                );
+              })
             : null}
         </div>
       </main>
@@ -362,9 +504,15 @@ export default function TimetablePlanner() {
                         onClick={() => removePlan(item.id)}
                         className="rounded-xl bg-white px-2 py-2 text-left text-xs text-slate-700 hover:text-rose-600 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-rose-300"
                       >
-                        <span className="mr-2 font-semibold tabular-nums">{item.time}</span>
+                        <span className="mr-2 font-semibold tabular-nums">
+                          {item.time}
+                          {item.endTime ? `~${item.endTime}` : ""}
+                        </span>
                         <span className="font-semibold">{item.movieNm}</span>
-                        <span className="ml-2 text-slate-400">{item.theater}</span>
+                        <span className="ml-2 text-slate-400">
+                          {item.theater}
+                          {item.screen ? ` ${item.screen}` : ""}
+                        </span>
                       </button>
                     ))}
                   </div>

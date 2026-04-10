@@ -12,8 +12,18 @@ type ProviderItem = {
 const flatratesCache = new Map<string, ProviderItem[]>();
 const pendingRequests = new Map<string, Promise<ProviderItem[]>>();
 
-function ProviderAvatar({ src, alt }: { src: string; alt: string }) {
-  return <img src={src} alt={alt} className="h-8 w-8 rounded-md border border-white/70 object-cover shadow-sm" />;
+function ProviderAvatar({ src, alt, index = 0 }: { src: string; alt: string; index?: number }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={[
+        "h-6 w-6 rounded-md border border-white/80 object-cover shadow-[0_3px_8px_rgba(15,23,42,0.2)] sm:h-7 sm:w-7",
+        index > 0 ? "-ml-2 sm:-ml-2.5" : "",
+      ].join(" ")}
+      style={{ zIndex: 10 - index }}
+    />
+  );
 }
 
 async function loadFlatrates(type: string, providerId: string | number) {
@@ -80,15 +90,24 @@ export default function Flatrates({ type, provider }: { type: string; provider: 
     return null;
   }
 
+  const visibleFlatrates = flatrates.slice(0, 3);
+  const hiddenCount = flatrates.length - visibleFlatrates.length;
+
   return (
-    <div className="flex items-center gap-1" title={title}>
-      {flatrates.slice(0, 2).map((flatrate) => (
+    <div className="flex max-w-[4.6rem] items-center justify-end" title={title}>
+      {visibleFlatrates.map((flatrate, index) => (
         <ProviderAvatar
           key={flatrate.provider_id}
           src={`https://image.tmdb.org/t/p/w500/${flatrate.logo_path}`}
           alt={flatrate.provider_name}
+          index={index}
         />
       ))}
+      {hiddenCount > 0 ? (
+        <span className="-ml-2 inline-flex h-6 min-w-6 items-center justify-center rounded-md border border-white/80 bg-slate-900 px-1 text-[9px] font-semibold text-white shadow-[0_3px_8px_rgba(15,23,42,0.2)] sm:-ml-2.5 sm:h-7 sm:min-w-7 sm:text-[10px]">
+          +{hiddenCount}
+        </span>
+      ) : null}
     </div>
   );
 }

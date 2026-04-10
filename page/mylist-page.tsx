@@ -41,7 +41,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
     { key: "grid-flow-col grid-rows-6", label: "Row 6" },
     { key: "grid-flow-col grid-rows-7", label: "Row 7" },
   ];
-  const [selectGrid, setSelectGrid] = useState("grid-cols-12");
+  const [selectGrid, setSelectGrid] = useState("sm:grid-cols-12");
   const [viewMode, setViewMode] = useState<ViewMode>("poster");
 
   const handleSelectionChange = (e: { target: { value: SetStateAction<string> } }) => {
@@ -402,7 +402,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
               </div>
             </div>
           ) : (
-            <div className={`grid gap-1 py-2 ${selectGrid}`}>
+            <div className={`grid grid-cols-6 gap-1 py-2 ${selectGrid}`}>
               {currentList.map((content: any) => (
                 <CardCol
                   key={content._id}
@@ -416,7 +416,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
             </div>
           )
         ) : (
-          <div className={`grid gap-1 py-2 ${selectGrid}`}>
+          <div className={`grid grid-cols-6 gap-1 py-2 ${selectGrid}`}>
             {currentList.map((poster: any, index: number) => (
               <Image
                 alt="sorted posters"

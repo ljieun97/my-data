@@ -1,6 +1,6 @@
 "use client";
 
-import { SetStateAction, useEffect, useState } from "react";
+import { type ChangeEvent, SetStateAction, useEffect, useState } from "react";
 import { Toast } from "@heroui/react";
 import Image from "next/image";
 import Title from "../components/common/title";
@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { FastAverageColor } from "fast-average-color";
 
 type ViewMode = "poster" | "list" | "stats";
+type SortMode = "user_date" | "rating" | "rainbow";
 
 export default function MylistPage({ year, counts }: { year: any; counts: any[] }) {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
   const [baseList, setBaseList] = useState([]) as any[];
   const [currentList, setCurrentList] = useState([]) as any[];
   const [isSelectedProvider, setIsSelectedProvider] = useState(false);
-  const [isSelectedRainbow, setIsSelectedRainbow] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>("user_date");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const { uid } = useUser();
@@ -47,6 +48,12 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
     setSelectGrid(e.target.value);
   };
 
+  const sortByDate = (items: any[]) =>
+    [...items].sort((a, b) => String(b.user_date || "").localeCompare(String(a.user_date || "")));
+
+  const sortByRating = (items: any[]) =>
+    [...items].sort((a, b) => (Number(b.user_rating) || 0) - (Number(a.user_rating) || 0));
+
   const refreshListPageAfterRemoval = (currentPageSize: number) => {
     const nextPage = currentPageSize === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
     setTotalItems((prev) => Math.max(prev - 1, 0));
@@ -72,7 +79,8 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
 
     const items = await res.json();
     setBaseList(items);
-    setCurrentList(items);
+    setSortMode("user_date");
+    setCurrentList(sortByDate(items));
     setTotalItems(items.length);
   };
 
@@ -151,26 +159,42 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
     return [h * 360, s, l];
   };
 
-  const handleSelectionRainbow = async (isSelected: boolean) => {
-    if (isSelected) {
-      setIsSelectedRainbow(true);
-      const colors = await Promise.all(
-        baseList.map(async (item: any) => {
-          const { value } = await fac.getColorAsync(
-            `/api/proxy?url=${encodeURIComponent("https://image.tmdb.org/t/p/w500" + item.poster_path)}`,
-          );
-          const [r, g, b] = value;
-          const [h] = rgbToHsl(Number(r), Number(g), Number(b));
-          return { item, h };
-        }),
-      );
-      const sorted = colors.sort((a, b) => a.h - b.h);
-      setCurrentList(sorted.map((entry: any) => entry.item));
+  const applySortMode = async (mode: SortMode, items: any[] = baseList) => {
+    if (mode === "user_date") {
+      setCurrentList(sortByDate(items));
       return;
     }
 
-    setIsSelectedRainbow(false);
-    setCurrentList(baseList);
+    if (mode === "rating") {
+      setCurrentList(sortByRating(items));
+      return;
+    }
+
+    const colors = await Promise.all(
+      items.map(async (item: any) => {
+        const { value } = await fac.getColorAsync(
+          `/api/proxy?url=${encodeURIComponent("https://image.tmdb.org/t/p/w500" + item.poster_path)}`,
+        );
+        const [r, g, b] = value;
+        const [h] = rgbToHsl(Number(r), Number(g), Number(b));
+        return { item, h };
+      }),
+    );
+    const sorted = colors.sort((a, b) => a.h - b.h);
+    setCurrentList(sorted.map((entry: any) => entry.item));
+  };
+
+  const handleSortModeChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const mode = event.target.value as SortMode;
+    setSortMode(mode);
+    void applySortMode(mode);
+  };
+
+  const isSelectedRainbow = sortMode === "rainbow";
+  const handleSelectionRainbow = (isSelected: boolean) => {
+    const mode: SortMode = isSelected ? "rainbow" : "user_date";
+    setSortMode(mode);
+    void applySortMode(mode);
   };
 
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
@@ -208,17 +232,23 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
     fetchListPage(currentPage);
   }, [uid, year, viewMode, currentPage]);
 
-  useEffect(() => {
-    if (viewMode !== "poster" && isSelectedRainbow) {
-      setIsSelectedRainbow(false);
-    }
-  }, [viewMode, isSelectedRainbow]);
-
   return (
     <>
       <Title title="마이페이지" sub="" />
       <div className="flex flex-wrap justify-end gap-2 pb-2">
-        <label className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-3 py-2 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200">
+        {viewMode === "poster" ? (
+          <select
+            className="min-h-[2.5rem] rounded-full border border-slate-300/80 bg-white px-3 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            value={sortMode}
+            disabled={!uid}
+            onChange={handleSortModeChange}
+          >
+            <option value="user_date">user_date</option>
+            <option value="rating">rating</option>
+            <option value="rainbow">무지개</option>
+          </select>
+        ) : null}
+        {false ? <label className="hidden">
           <input
             type="checkbox"
             disabled={!uid || viewMode !== "poster"}
@@ -226,7 +256,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
             onChange={(event) => handleSelectionRainbow(event.target.checked)}
           />
           <span>무지개</span>
-        </label>
+        </label> : null}
         <label className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-3 py-2 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200">
           <input
             type="checkbox"

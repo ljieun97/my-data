@@ -4,12 +4,13 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Toast } from "@heroui/react";
-import { faPen, faStar } from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo, faPen, faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { parseDate } from "@internationalized/date";
 import Flatrates from "@/components/contents/flatrates";
 import { useUser } from "@/context/UserContext";
 import { getPosters } from "@/lib/open-api/tmdb-client";
+import PosterHoverActions from "@/components/media/poster-hover-actions";
 
 export type SavedMediaItem = {
   _id: string;
@@ -96,28 +97,40 @@ export default function SavedMediaCard({
       >
         <div className="overflow-hidden rounded-[21px] bg-white/92 backdrop-blur-sm dark:bg-slate-950/82">
           <div className="relative aspect-[2/3] overflow-hidden bg-slate-200 dark:bg-slate-800">
-            <button
-              type="button"
-              className="absolute inset-0 block h-full w-full"
-              onClick={() => {
-                if (content.type) router.push(href);
-              }}
-              aria-label={`${title} 상세보기`}
-            >
-              {posterImg ? (
-                <Image alt={title} src={posterImg} fill className="object-cover transition duration-300 group-hover:scale-[1.03]" sizes="100%" />
-              ) : (
-                <div className="flex h-full items-center justify-center px-3 text-center text-xs text-slate-400 dark:text-slate-500">
-                  No poster
-                </div>
-              )}
-            </button>
+            {posterImg ? (
+              <Image alt={title} src={posterImg} fill className="object-cover transition duration-300 group-hover:scale-[1.03]" sizes="100%" />
+            ) : (
+              <div className="flex h-full items-center justify-center px-3 text-center text-xs text-slate-400 dark:text-slate-500">
+                No poster
+              </div>
+            )}
 
             {showProvider && content.type ? (
               <div className="absolute right-0 top-0 z-20 p-1">
                 <Flatrates type={content.type} provider={content.id} />
               </div>
             ) : null}
+
+            <PosterHoverActions
+              overlayClassName="bg-black/25 group-hover:visible"
+              groupClassName="flex-col"
+              actions={[
+                {
+                  icon: faPen,
+                  label: "수정하기",
+                  onClick: handleOpen,
+                  className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
+                },
+                {
+                  icon: faCircleInfo,
+                  label: "상세보기",
+                  onClick: () => {
+                    if (content.type) router.push(href);
+                  },
+                  className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
+                },
+              ]}
+            />
           </div>
 
           <div
@@ -134,15 +147,6 @@ export default function SavedMediaCard({
               <p className="browse-card__title line-clamp-2 text-sm font-semibold">{title}</p>
               <p className="browse-card__meta mt-1 text-xs">{content.user_date ?? "-"}</p>
             </div>
-
-            <button
-              type="button"
-              aria-label={`${title} 수정하기`}
-              onClick={handleOpen}
-              className="browse-card__action inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs shadow-sm transition sm:h-9 sm:w-9"
-            >
-              <FontAwesomeIcon icon={faPen} />
-            </button>
           </div>
         </div>
       </div>

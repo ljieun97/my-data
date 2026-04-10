@@ -40,7 +40,7 @@ function groupItemsByMonth(items: SavedMediaItem[]): MonthGroup[] {
 }
 
 function toPastelColor(r: number, g: number, b: number) {
-  const mix = (channel: number) => Math.round(channel + (255 - channel) * 0.08);
+  const mix = (channel: number) => Math.round(channel + (255 - channel) * 0.42);
   return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
 }
 

@@ -1,6 +1,16 @@
 "use client";
 
-import SavedMediaCard from "@/components/mypage/saved-media-card";
+import { useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Toast } from "@heroui/react";
+import { faCircleInfo, faPen, faStar } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { parseDate } from "@internationalized/date";
+import Flatrates from "./flatrates";
+import { useUser } from "@/context/UserContext";
+import { getPosters } from "@/lib/open-api/tmdb-client";
+import PosterHoverActions from "@/components/media/poster-hover-actions";
 
 export default function CardCol({
   thisYear,
@@ -15,18 +25,157 @@ export default function CardCol({
   onUpdate: any;
   onDelete: any;
 }) {
-  const handleUpdate = (contentId: string, nextDate: string, nextPosterPath: string, nextRating: number) => {
-    if (thisYear !== nextDate.slice(0, 4)) {
-      onUpdate(contentId);
+  const router = useRouter();
+  const { uid } = useUser();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [date, setDate] = useState<any>(parseDate(content.user_date));
+  const [posters, setPosters] = useState<any[]>([]);
+  const [selectPoster, setSelectPoster] = useState(content.poster_path);
+  const [rating, setRating] = useState(Number(content.user_rating) > 0 ? Number(content.user_rating) : 2.5);
+  const [posterImg, setPosterImg] = useState(`https://image.tmdb.org/t/p/w500${content.poster_path}`);
+
+  const title = content.title || content.name || "Untitled";
+
+  const handleOpen = async () => {
+    setPosters(await getPosters(content.type, content.id));
+    setIsEditOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    const res = await fetch(`/api/mypage/content/${content._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ uid, poster_path: selectPoster, date: date?.toString(), rating }),
+    });
+
+    setIsEditOpen(false);
+
+    if (res.ok) {
+      if (thisYear !== String(date?.year)) {
+        onUpdate(content._id);
+      } else {
+        setPosterImg(`https://image.tmdb.org/t/p/w500${selectPoster}`);
+      }
+      Toast.toast("수정되었습니다.");
     }
   };
 
+  const handleDeleteFromModal = () => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    setIsEditOpen(false);
+    onDelete(content._id);
+  };
+
   return (
-    <SavedMediaCard
-      content={content}
-      showProvider={isProvider}
-      onDelete={onDelete}
-      onUpdate={handleUpdate}
-    />
+    <>
+      <div className="group/footer relative aspect-[26/37] w-[92%] justify-self-center overflow-hidden rounded-sm">
+        <Image fill alt={title} src={posterImg} className="object-cover" sizes="100%" priority />
+
+        {isProvider ? (
+          <div className="absolute right-0 top-0 z-20 p-1">
+            <Flatrates type={content.type} provider={content.id} />
+          </div>
+        ) : null}
+
+        <PosterHoverActions
+          overlayClassName="bg-black/25 group-hover/footer:visible"
+          actions={[
+            {
+              icon: faPen,
+              label: "수정하기",
+              onClick: handleOpen,
+              className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
+            },
+            {
+              icon: faCircleInfo,
+              label: "상세보기",
+              onClick: () => router.push(`/${content.type}/${content.id}`),
+              className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
+            },
+          ]}
+        />
+      </div>
+
+      {isEditOpen ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
+            <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">수정하기</div>
+            <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-6 py-5">
+              <h2 className="mb-2 text-sm font-semibold">날짜</h2>
+              <input
+                type="date"
+                value={typeof date?.toString === "function" ? date.toString() : ""}
+                onChange={(event) => setDate(event.target.value ? parseDate(event.target.value) : null)}
+                className="min-h-[2.75rem] w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              />
+
+              <h2 className="mb-2 mt-5 text-sm font-semibold">평점</h2>
+              <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
+                {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((value) => {
+                  const isActive = Math.abs(rating - value) < 0.001;
+
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setRating(value)}
+                      className={[
+                        "inline-flex min-h-[2.5rem] items-center justify-center gap-1 rounded-xl border px-2 text-sm transition",
+                        isActive
+                          ? "border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-400 dark:bg-amber-500/15 dark:text-amber-200"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-slate-600",
+                      ].join(" ")}
+                    >
+                      <FontAwesomeIcon icon={faStar} className="text-[11px]" />
+                      <span>{value.toFixed(1)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <h2 className="mb-2 mt-5 text-sm font-semibold">사진 ({posters.length})</h2>
+              <div className="grid grid-cols-4 gap-1">
+                {posters.map((poster: any, index: number) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setSelectPoster(poster.file_path)}
+                    className={[
+                      "overflow-hidden rounded-lg border-2",
+                      selectPoster === poster.file_path ? "border-blue-500" : "border-transparent",
+                    ].join(" ")}
+                  >
+                    <img
+                      alt="choice search posters"
+                      src={`https://image.tmdb.org/t/p/w500${poster.file_path}`}
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-2 border-t border-slate-200/70 px-6 py-4 dark:border-slate-800">
+              <button
+                type="button"
+                className="rounded-full border border-red-200 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 dark:border-red-900/70 dark:text-red-300 dark:hover:bg-red-950/40"
+                onClick={handleDeleteFromModal}
+              >
+                삭제하기
+              </button>
+              <div className="flex justify-end gap-2">
+                <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={handleSubmit}>
+                  완료
+                </button>
+                <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => setIsEditOpen(false)}>
+                  닫기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

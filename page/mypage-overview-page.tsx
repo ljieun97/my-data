@@ -162,7 +162,7 @@ export default function MyPageOverviewPage({
                 </span>
               </div>
 
-              <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-3 md:grid-cols-6 lg:grid-cols-8">
+              <div className="grid grid-cols-4 gap-2 min-[640px]:grid-cols-5 sm:gap-3 min-[960px]:grid-cols-6">
                 {group.items.map((item) => (
                   <SavedMediaCard
                     key={item._id}

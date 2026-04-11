@@ -93,10 +93,10 @@ export default function SavedMediaCard({
     <>
       <div
         className="group block overflow-hidden rounded-[14px] p-[1px] transition-transform hover:-translate-y-0.5 sm:rounded-[18px]"
-        style={{ backgroundColor }}
+        style={{ backgroundColor: "transparent" }}
       >
-        <div className="overflow-hidden rounded-[13px] bg-white/92 backdrop-blur-sm dark:bg-slate-950/82 sm:rounded-[17px]">
-          <div className="relative aspect-[2/3] overflow-hidden bg-slate-200 dark:bg-slate-800">
+        <div className="overflow-hidden rounded-[13px] bg-transparent backdrop-blur-none sm:rounded-[17px]">
+          <div className="relative aspect-[2/3] overflow-hidden rounded-[13px] bg-slate-200 dark:bg-slate-800 sm:rounded-[17px]">
             {posterImg ? (
               <Image alt={title} src={posterImg} fill className="object-cover transition duration-300 group-hover:scale-[1.03]" sizes="100%" />
             ) : (
@@ -110,6 +110,12 @@ export default function SavedMediaCard({
                 <Flatrates type={content.type} provider={content.id} />
               </div>
             ) : null}
+
+            <div className="absolute bottom-2 right-2 z-20 sm:bottom-3 sm:right-3">
+              <span className="rounded-full bg-black/72 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.04em] text-white shadow-lg backdrop-blur-sm sm:px-3 sm:py-1.5 sm:text-xs">
+                ⭐ {formatRating(content.user_rating)}
+              </span>
+            </div>
 
             <PosterHoverActions
               overlayClassName="bg-black/25 group-hover:visible"
@@ -132,27 +138,6 @@ export default function SavedMediaCard({
               ]}
             />
           </div>
-
-          <div
-            className="flex min-h-[1.75rem] items-center justify-between gap-2 px-2 py-1 sm:min-h-[4.55rem] sm:px-3 sm:py-3"
-            style={{ backgroundColor }}
-          >
-            <div className="min-w-0 sm:hidden">
-              <p className="browse-card__meta text-[11px] font-medium text-slate-700 dark:text-slate-800">
-                ⭐ {formatRating(content.user_rating)}
-              </p>
-            </div>
-
-            <div className="hidden min-w-0 sm:block">
-              <p className="browse-card__title line-clamp-2 text-sm font-semibold">{title}</p>
-              <div className="mt-1 flex items-center justify-between gap-2">
-                <p className="browse-card__meta min-w-0 truncate text-xs">{content.user_date ?? "-"}</p>
-                <p className="shrink-0 text-xs font-semibold text-slate-800 dark:text-slate-900">
-                  별 점수 {formatRating(content.user_rating)}
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -169,7 +154,7 @@ export default function SavedMediaCard({
                 className="min-h-[2.75rem] w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
 
-              <h2 className="mb-2 mt-5 text-sm font-semibold">평점</h2>
+              <h2 className="mb-2 mt-5 text-sm font-semibold">별점</h2>
               <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
                 {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((value) => {
                   const isActive = Math.abs(rating - value) < 0.001;

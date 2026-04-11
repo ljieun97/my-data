@@ -158,11 +158,7 @@ export default function BoxOffice({
     return (
       <section>
         <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="home-title text-lg font-semibold tracking-[-0.05em]">{title}</h1>
-            </div>
-          </div>
+            <h1 className="home-title text-lg font-semibold tracking-[-0.05em]">{title}</h1>
           <div className="h-[18rem] sm:h-[22rem]" aria-hidden="true" />
         </div>
       </section>
@@ -231,11 +227,7 @@ export default function BoxOffice({
   return (
     <section>
       <div className="flex flex-col gap-2">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="home-title text-lg font-semibold tracking-[-0.05em]">{title}</h1>
-          </div>
-        </div>
+        <h1 className="home-title text-lg font-semibold tracking-[-0.05em]">{title}</h1>
 
         <div>
           <div className="relative">

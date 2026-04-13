@@ -12,16 +12,23 @@ import { useUser } from "@/context/UserContext";
 import { getPosters } from "@/lib/open-api/tmdb-client";
 import PosterHoverActions from "@/components/media/poster-hover-actions";
 
+function formatRating(value?: number | null) {
+  const normalized = Number(value);
+  return Number.isFinite(normalized) && normalized > 0 ? normalized.toFixed(1) : "-";
+}
+
 export default function CardCol({
   thisYear,
   content,
   isProvider,
+  isRating,
   onUpdate,
   onDelete,
 }: {
   thisYear: string;
   content: any;
   isProvider: boolean;
+  isRating: boolean;
   onUpdate: any;
   onDelete: any;
 }) {
@@ -70,12 +77,20 @@ export default function CardCol({
 
   return (
     <>
-      <div className="group/footer relative aspect-[26/37] w-[92%] justify-self-center overflow-hidden rounded-sm">
+      <div className="group/footer relative aspect-[26/37] w-full overflow-hidden rounded-sm">
         <Image fill alt={title} src={posterImg} className="object-cover" sizes="100%" priority />
 
         {isProvider ? (
           <div className="absolute right-0 top-0 z-20 p-1">
             <Flatrates type={content.type} provider={content.id} />
+          </div>
+        ) : null}
+
+        {isRating ? (
+          <div className="absolute bottom-2 right-2 z-20 sm:bottom-3 sm:right-3">
+            <span className="rounded-full bg-black/72 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.04em] text-white shadow-lg backdrop-blur-sm sm:px-3 sm:py-1.5 sm:text-xs">
+              ⭐ {formatRating(content.user_rating)}
+            </span>
           </div>
         ) : null}
 

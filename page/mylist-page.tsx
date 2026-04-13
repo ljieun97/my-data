@@ -1,52 +1,72 @@
 "use client";
 
-import { type ChangeEvent, SetStateAction, useEffect, useState } from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 import { Toast } from "@heroui/react";
 import Image from "next/image";
 import Title from "../components/common/title";
 import CardCol from "@/components/contents/card-col";
-import SavedListRow from "@/components/contents/saved-list-row";
+import SavedMediaCard, { type SavedMediaItem } from "@/components/mypage/saved-media-card";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import { FastAverageColor } from "fast-average-color";
 
 type ViewMode = "poster" | "list" | "stats";
 type SortMode = "user_date" | "rating" | "rainbow";
+type MonthGroup = {
+  monthNumber: number;
+  monthLabel: string;
+  items: SavedMediaItem[];
+};
+type RatingGroup = {
+  ratingValue: number;
+  ratingLabel: string;
+  items: SavedMediaItem[];
+};
+
+function groupItemsByMonth(items: SavedMediaItem[]): MonthGroup[] {
+  const buckets = Array.from({ length: 12 }, (_, index) => ({
+    monthNumber: index + 1,
+    monthLabel: `${index + 1}월`,
+    items: [] as SavedMediaItem[],
+  }));
+
+  for (const item of items) {
+    const monthValue = Number(item.user_date?.slice(5, 7));
+
+    if (!Number.isFinite(monthValue) || monthValue < 1 || monthValue > 12) {
+      continue;
+    }
+
+    buckets[monthValue - 1].items.push(item);
+  }
+
+  return buckets.filter((bucket) => bucket.items.length > 0).sort((a, b) => b.monthNumber - a.monthNumber);
+}
+
+function groupItemsByRating(items: SavedMediaItem[]): RatingGroup[] {
+  const ratingValues = Array.from({ length: 11 }, (_, index) => 5 - index * 0.5);
+
+  return ratingValues
+    .map((ratingValue) => ({
+      ratingValue,
+      ratingLabel: `${ratingValue.toFixed(1)}점`,
+      items: items.filter((item) => Number(item.user_rating) === ratingValue),
+    }))
+    .filter((group) => group.items.length > 0);
+}
 
 export default function MylistPage({ year, counts }: { year: any; counts: any[] }) {
   const router = useRouter();
-  const itemsPerPage = 10;
 
   const [baseList, setBaseList] = useState([]) as any[];
   const [currentList, setCurrentList] = useState([]) as any[];
-  const [isSelectedProvider, setIsSelectedProvider] = useState(false);
+  const [isSelectedProvider, setIsSelectedProvider] = useState(true);
+  const [isSelectedRating, setIsSelectedRating] = useState(true);
   const [sortMode, setSortMode] = useState<SortMode>("user_date");
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [posterColors, setPosterColors] = useState<Record<string, string>>({});
   const { uid } = useUser();
-
-  const gridSettings = [
-    { key: "grid-cols-6", label: "6 columns" },
-    { key: "grid-cols-7", label: "7 columns" },
-    { key: "grid-cols-8", label: "8 columns" },
-    { key: "grid-cols-9", label: "9 columns" },
-    { key: "grid-cols-10", label: "10 columns" },
-    { key: "grid-cols-11", label: "11 columns" },
-    { key: "grid-cols-12", label: "12 columns" },
-    { key: "grid-flow-col grid-rows-1", label: "Row 1" },
-    { key: "grid-flow-col grid-rows-2", label: "Row 2" },
-    { key: "grid-flow-col grid-rows-3", label: "Row 3" },
-    { key: "grid-flow-col grid-rows-4", label: "Row 4" },
-    { key: "grid-flow-col grid-rows-5", label: "Row 5" },
-    { key: "grid-flow-col grid-rows-6", label: "Row 6" },
-    { key: "grid-flow-col grid-rows-7", label: "Row 7" },
-  ];
-  const [selectGrid, setSelectGrid] = useState("sm:grid-cols-12");
   const [viewMode, setViewMode] = useState<ViewMode>("poster");
-
-  const handleSelectionChange = (e: { target: { value: SetStateAction<string> } }) => {
-    setSelectGrid(e.target.value);
-  };
 
   const sortByDate = (items: any[]) =>
     [...items].sort((a, b) => String(b.user_date || "").localeCompare(String(a.user_date || "")));
@@ -54,61 +74,10 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
   const sortByRating = (items: any[]) =>
     [...items].sort((a, b) => (Number(b.user_rating) || 0) - (Number(a.user_rating) || 0));
 
-  const refreshListPageAfterRemoval = (currentPageSize: number) => {
-    const nextPage = currentPageSize === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
-    setTotalItems((prev) => Math.max(prev - 1, 0));
-
-    if (nextPage !== currentPage) {
-      setCurrentPage(nextPage);
-      return;
-    }
-
-    fetchListPage(nextPage);
-  };
-
-  const fetchPosterList = async () => {
-    const res = await fetch(`/api/mypage/content/by-year/${year}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: uid || "",
-      },
-    });
-
-    if (!res.ok) return;
-
-    const items = await res.json();
-    setBaseList(items);
-    setSortMode("user_date");
-    setCurrentList(sortByDate(items));
-    setTotalItems(items.length);
-  };
-
-  const fetchListPage = async (page: number) => {
-    const res = await fetch(`/api/mypage/content/by-year/${year}?page=${page}&limit=${itemsPerPage}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: uid || "",
-      },
-    });
-
-    if (!res.ok) return;
-
-    const data = await res.json();
-    setCurrentList(data.items || []);
-    setTotalItems(data.totalCount || 0);
-  };
-
   const removeItemFromView = (cid: string) => {
-    if (viewMode === "poster") {
-      setBaseList((prev: any[]) => prev.filter((item) => item._id !== cid));
-      setCurrentList((prev: any[]) => prev.filter((item) => item._id !== cid));
-      setTotalItems((prev) => Math.max(prev - 1, 0));
-      return;
-    }
-
-    refreshListPageAfterRemoval(currentList.length);
+    setBaseList((prev: any[]) => prev.filter((item) => item._id !== cid));
+    setCurrentList((prev: any[]) => prev.filter((item) => item._id !== cid));
+    setTotalItems((prev) => Math.max(prev - 1, 0));
   };
 
   const handleDelete = async (cid: string) => {
@@ -197,40 +166,94 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
     void applySortMode(mode);
   };
 
-  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
-  const movieCount = baseList.filter((item: any) => item.type === "movie").length;
-  const tvCount = baseList.filter((item: any) => item.type === "tv").length;
-  const savedDates = baseList.map((item: any) => item.user_date).filter(Boolean).sort();
-  const latestSaved = savedDates.length ? savedDates[savedDates.length - 1] : "-";
-  const firstSaved = savedDates.length ? savedDates[0] : "-";
+  const groupedMonths = groupItemsByMonth(baseList);
+  const groupedRatings = groupItemsByRating(baseList);
 
-  const monthlyCounts = Array.from({ length: 12 }, (_, index) => {
-    const month = String(index + 1).padStart(2, "0");
-    const count = baseList.filter((item: any) => item.user_date?.slice(5, 7) === month).length;
-    return {
-      month: `${index + 1}월`,
-      count,
+  const handleGroupedCardUpdate = (contentId: string, nextDate: string, nextPosterPath: string, nextRating: number) => {
+    if (!nextDate.startsWith(`${year}-`)) {
+      setBaseList((prev: any[]) => prev.filter((item) => item._id !== contentId));
+      setCurrentList((prev: any[]) => prev.filter((item) => item._id !== contentId));
+      setTotalItems((prev) => Math.max(prev - 1, 0));
+      return;
+    }
+
+    const applyUpdate = (items: any[]) =>
+      items.map((item) =>
+        item._id === contentId
+          ? {
+              ...item,
+              user_date: nextDate,
+              poster_path: nextPosterPath || item.poster_path,
+              user_rating: nextRating,
+            }
+          : item,
+      );
+
+    setBaseList((prev: any[]) => applyUpdate(prev));
+    setCurrentList((prev: any[]) => applyUpdate(prev));
+  };
+
+  useEffect(() => {
+    if (!uid) return;
+
+    const loadYearItems = async () => {
+      const res = await fetch(`/api/mypage/content/by-year/${year}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: uid || "",
+        },
+      });
+
+      if (!res.ok) return;
+
+      const items = await res.json();
+      setBaseList(items);
+      setSortMode("user_date");
+      setCurrentList(sortByDate(items));
+      setTotalItems(items.length);
     };
-  });
-  const maxMonthlyCount = Math.max(...monthlyCounts.map((item) => item.count), 1);
 
-  useEffect(() => {
-    setCurrentPage((prev) => Math.min(prev, totalPages));
-  }, [totalPages]);
-
-  useEffect(() => {
-    if (viewMode === "list") setCurrentPage(1);
-  }, [viewMode, year]);
-
-  useEffect(() => {
-    if (!uid || (viewMode !== "poster" && viewMode !== "stats")) return;
-    fetchPosterList();
+    void loadYearItems();
   }, [uid, year, viewMode]);
 
   useEffect(() => {
-    if (!uid || viewMode !== "list") return;
-    fetchListPage(currentPage);
-  }, [uid, year, viewMode, currentPage]);
+    if (viewMode !== "stats" && viewMode !== "list") return;
+
+    let isCancelled = false;
+    const facForStats = new FastAverageColor();
+
+    const extractColors = async () => {
+      const colorEntries = await Promise.all(
+        baseList.map(async (item: SavedMediaItem) => {
+          if (!item.poster_path) {
+            return [item._id, "rgba(148, 163, 184, 0.16)"] as const;
+          }
+
+          try {
+            const { value } = await facForStats.getColorAsync(
+              `/api/proxy?url=${encodeURIComponent(`https://image.tmdb.org/t/p/w500${item.poster_path}`)}`,
+            );
+            const [r, g, b] = value.map((channel) => Number(channel));
+            const mix = (channel: number) => Math.round(channel + (255 - channel) * 0.42);
+            return [item._id, `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`] as const;
+          } catch {
+            return [item._id, "rgba(148, 163, 184, 0.16)"] as const;
+          }
+        }),
+      );
+
+      if (isCancelled) return;
+      setPosterColors(Object.fromEntries(colorEntries));
+    };
+
+    void extractColors();
+
+    return () => {
+      isCancelled = true;
+      facForStats.destroy();
+    };
+  }, [baseList, viewMode]);
 
   return (
     <>
@@ -243,9 +266,9 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
             disabled={!uid}
             onChange={handleSortModeChange}
           >
-            <option value="user_date">user_date</option>
-            <option value="rating">rating</option>
-            <option value="rainbow">무지개</option>
+            <option value="user_date">관람일순</option>
+            <option value="rating">점수순</option>
+            <option value="rainbow">무지개순</option>
           </select>
         ) : null}
         {false ? <label className="hidden">
@@ -266,6 +289,15 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
           />
           <span>제공처</span>
         </label>
+        <label className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-3 py-2 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200">
+          <input
+            type="checkbox"
+            disabled={!uid}
+            checked={isSelectedRating}
+            onChange={(event) => setIsSelectedRating(event.target.checked)}
+          />
+          <span>점수</span>
+        </label>
         <div className="inline-flex rounded-full border border-slate-300/80 bg-white/80 p-1 dark:border-slate-700 dark:bg-slate-900/70">
           {(["poster", "list", "stats"] as ViewMode[]).map((mode) => (
             <button
@@ -280,23 +312,10 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
                   : "text-slate-600 dark:text-slate-300",
               ].join(" ")}
             >
-              {mode === "poster" ? "포스터" : mode === "list" ? "리스트" : "통계"}
+              {mode === "poster" ? "전체" : mode === "list" ? "점수별" : "월별"}
             </button>
           ))}
         </div>
-        {viewMode === "poster" ? (
-          <select
-            className="min-h-[2.5rem] rounded-full border border-slate-300/80 bg-white px-3 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-            value={selectGrid}
-            onChange={handleSelectionChange}
-          >
-            {gridSettings.map((item) => (
-              <option key={item.key} value={item.key}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        ) : null}
         <select
           className="min-h-[2.5rem] rounded-full border border-slate-300/80 bg-white px-3 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           value={year}
@@ -311,104 +330,78 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
       </div>
 
       <div>
-        {((viewMode === "list" && totalItems === 0) || ((viewMode === "poster" || viewMode === "stats") && baseList.length === 0)) ? (
+        {((viewMode === "poster" && currentList.length === 0) || ((viewMode === "list" || viewMode === "stats") && baseList.length === 0)) ? (
           <>시청내역이 비어있습니다.</>
         ) : null}
 
         {uid ? (
           viewMode === "list" ? (
-            <div className="flex flex-col gap-3 py-3">
-              {currentList.map((content: any) => (
-                <SavedListRow
-                  key={content._id}
-                  thisYear={year}
-                  content={content}
-                  isProvider={isSelectedProvider}
-                  onUpdate={removeItemFromView}
-                  onDelete={handleDelete}
-                />
-              ))}
-              {totalItems > itemsPerPage ? (
-                <div className="flex flex-wrap items-center justify-center gap-2 border-t border-slate-200/70 pt-3 dark:border-slate-700/70">
-                  <button
-                    type="button"
-                    className="rounded-full border px-3 py-1.5 text-sm"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                  >
-                    이전
-                  </button>
-                  <span className="browse-card__meta text-sm">
-                    {currentPage} / {totalPages}
-                  </span>
-                  <button
-                    type="button"
-                    className="rounded-full border px-3 py-1.5 text-sm"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                  >
-                    다음
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          ) : viewMode === "stats" ? (
-            <div className="grid gap-4 py-4 lg:grid-cols-[1.15fr_0.85fr]">
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <div className="browse-card rounded-[24px] border p-4">
-                  <p className="browse-card__meta text-xs uppercase tracking-[0.16em]">Total Saved</p>
-                  <p className="browse-card__title mt-3 text-3xl font-semibold">{totalItems}</p>
-                </div>
-                <div className="browse-card rounded-[24px] border p-4">
-                  <p className="browse-card__meta text-xs uppercase tracking-[0.16em]">Movies</p>
-                  <p className="browse-card__title mt-3 text-3xl font-semibold">{movieCount}</p>
-                </div>
-                <div className="browse-card rounded-[24px] border p-4">
-                  <p className="browse-card__meta text-xs uppercase tracking-[0.16em]">TV Series</p>
-                  <p className="browse-card__title mt-3 text-3xl font-semibold">{tvCount}</p>
-                </div>
-              </div>
-
-              <div className="browse-card rounded-[24px] border p-4">
-                <p className="browse-card__meta text-xs uppercase tracking-[0.16em]">Saved Range</p>
-                <div className="mt-3 flex flex-col gap-2 text-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="browse-card__meta">첫 저장일</span>
-                    <span className="browse-card__title text-base font-semibold">{firstSaved}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="browse-card__meta">최근 저장일</span>
-                    <span className="browse-card__title text-base font-semibold">{latestSaved}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="browse-card rounded-[24px] border p-4">
-                <p className="browse-card__meta text-xs uppercase tracking-[0.16em]">Monthly Activity</p>
-                <div className="mt-4 flex flex-col gap-3">
-                  {monthlyCounts.map((item) => (
-                    <div key={item.month} className="grid grid-cols-[3rem_1fr_2rem] items-center gap-3">
-                      <span className="browse-card__meta text-sm">{item.month}</span>
-                      <div className="h-2.5 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800/80">
-                        <div
-                          className="h-full rounded-full bg-slate-900 dark:bg-slate-100"
-                          style={{ width: `${(item.count / maxMonthlyCount) * 100}%` }}
-                        />
-                      </div>
-                      <span className="browse-card__title text-right text-sm font-semibold">{item.count}</span>
+            groupedRatings.length ? (
+              <div className="flex flex-col gap-8 py-2">
+                {groupedRatings.map((group) => (
+                  <section key={group.ratingValue} className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-3 dark:border-slate-800/80">
+                      <h2 className="page-title text-lg font-semibold">{group.ratingLabel}</h2>
+                      <span className="browse-card__meta rounded-full bg-white/70 px-3 py-1 text-sm dark:bg-slate-900/70">
+                        {group.items.length}개
+                      </span>
                     </div>
-                  ))}
-                </div>
+
+                    <div className="grid grid-cols-4 gap-2 min-[640px]:grid-cols-5 sm:gap-3 min-[960px]:grid-cols-6">
+                      {group.items.map((item) => (
+                        <SavedMediaCard
+                          key={item._id}
+                          content={item}
+                          backgroundColor={posterColors[item._id] ?? "rgba(148, 163, 184, 0.16)"}
+                          showProvider={isSelectedProvider}
+                          showRating={isSelectedRating}
+                          onDelete={handleDelete}
+                          onUpdate={handleGroupedCardUpdate}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                ))}
               </div>
-            </div>
+            ) : null
+          ) : viewMode === "stats" ? (
+            groupedMonths.length ? (
+              <div className="flex flex-col gap-8 py-2">
+                {groupedMonths.map((group) => (
+                  <section key={group.monthNumber} className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-3 dark:border-slate-800/80">
+                      <h2 className="page-title text-lg font-semibold">{group.monthLabel}</h2>
+                      <span className="browse-card__meta rounded-full bg-white/70 px-3 py-1 text-sm dark:bg-slate-900/70">
+                        {group.items.length}개
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 min-[640px]:grid-cols-5 sm:gap-3 min-[960px]:grid-cols-6">
+                      {group.items.map((item) => (
+                        <SavedMediaCard
+                          key={item._id}
+                          content={item}
+                          backgroundColor={posterColors[item._id] ?? "rgba(148, 163, 184, 0.16)"}
+                          showProvider={isSelectedProvider}
+                          showRating={isSelectedRating}
+                          onDelete={handleDelete}
+                          onUpdate={handleGroupedCardUpdate}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            ) : null
           ) : (
-            <div className={`grid grid-cols-6 gap-1 py-2 ${selectGrid}`}>
+            <div className="grid grid-cols-8 gap-1 p-2">
               {currentList.map((content: any) => (
                 <CardCol
                   key={content._id}
                   thisYear={year}
                   content={content}
                   isProvider={isSelectedProvider}
+                  isRating={isSelectedRating}
                   onUpdate={removeItemFromView}
                   onDelete={handleDelete}
                 />
@@ -416,7 +409,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
             </div>
           )
         ) : (
-          <div className={`grid grid-cols-6 gap-1 py-2 ${selectGrid}`}>
+          <div className="grid grid-cols-8 gap-1 p-2">
             {currentList.map((poster: any, index: number) => (
               <Image
                 alt="sorted posters"

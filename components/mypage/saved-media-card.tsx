@@ -32,12 +32,14 @@ export default function SavedMediaCard({
   content,
   backgroundColor = "rgba(148, 163, 184, 0.16)",
   showProvider = false,
+  showRating = true,
   onDelete,
   onUpdate,
 }: {
   content: SavedMediaItem;
   backgroundColor?: string;
   showProvider?: boolean;
+  showRating?: boolean;
   onDelete: (cid: string) => Promise<void> | void;
   onUpdate: (contentId: string, nextDate: string, nextPosterPath: string, nextRating: number) => void;
 }) {
@@ -111,11 +113,13 @@ export default function SavedMediaCard({
               </div>
             ) : null}
 
-            <div className="absolute bottom-2 right-2 z-20 sm:bottom-3 sm:right-3">
-              <span className="rounded-full bg-black/72 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.04em] text-white shadow-lg backdrop-blur-sm sm:px-3 sm:py-1.5 sm:text-xs">
-                ⭐ {formatRating(content.user_rating)}
-              </span>
-            </div>
+            {showRating ? (
+              <div className="absolute bottom-2 right-2 z-20 sm:bottom-3 sm:right-3">
+                <span className="rounded-full bg-black/72 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.04em] text-white shadow-lg backdrop-blur-sm sm:px-3 sm:py-1.5 sm:text-xs">
+                  ⭐ {formatRating(content.user_rating)}
+                </span>
+              </div>
+            ) : null}
 
             <PosterHoverActions
               overlayClassName="bg-black/25 group-hover:visible"

@@ -3,6 +3,7 @@
 import { type ChangeEvent, useEffect, useState } from "react";
 import { Toast } from "@heroui/react";
 import Image from "next/image";
+import Link from "next/link";
 import Title from "../components/common/title";
 import CardCol from "@/components/contents/card-col";
 import SavedMediaCard, { type SavedMediaItem } from "@/components/mypage/saved-media-card";
@@ -257,7 +258,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
 
   return (
     <>
-      <Title title="마이페이지" sub="" />
+      <Title title={`마이페이지 > ${year}`} sub="" />
       <div className="flex flex-wrap justify-end gap-2 pb-2">
         {viewMode === "poster" ? (
           <select
@@ -323,10 +324,16 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
         >
           {counts.map((count) => (
             <option key={count._id} value={count._id}>
-              {count._id} ({count.count})
+              {count._id}
             </option>
           ))}
         </select>
+        <Link
+          href="/mypage"
+          className="inline-flex min-h-[2.5rem] items-center rounded-full border border-slate-300/80 bg-white px-3 text-sm text-slate-900 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-900"
+        >
+          전체 통계
+        </Link>
       </div>
 
       <div>
@@ -347,7 +354,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-2 min-[640px]:grid-cols-5 sm:gap-3 min-[960px]:grid-cols-6">
+                    <div className="grid grid-cols-4 gap-1 min-[640px]:grid-cols-5 min-[960px]:grid-cols-8">
                       {group.items.map((item) => (
                         <SavedMediaCard
                           key={item._id}
@@ -376,7 +383,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-2 min-[640px]:grid-cols-5 sm:gap-3 min-[960px]:grid-cols-6">
+                    <div className="grid grid-cols-4 gap-1 min-[640px]:grid-cols-5 min-[960px]:grid-cols-8">
                       {group.items.map((item) => (
                         <SavedMediaCard
                           key={item._id}

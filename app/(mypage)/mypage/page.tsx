@@ -26,7 +26,7 @@ export default async function Page() {
     return <>로그인을 해주세요.</>
   }
 
-  const [counts, currentYearItems] = await Promise.all([
+  const [counts, allItems] = await Promise.all([
     (await fetch(`${deployUrl}/api/mypage/content/by-year`, {
       method: "GET",
       headers: {
@@ -34,7 +34,7 @@ export default async function Page() {
         'Authorization': uid,
       },
     })).json(),
-    (await fetch(`${deployUrl}/api/mypage/content/by-year/${currentYear}`, {
+    (await fetch(`${deployUrl}/api/mypage/content`, {
       method: "GET",
       headers: {
         'Content-Type': 'application/json',
@@ -44,6 +44,6 @@ export default async function Page() {
   ])
 
   return (
-    <MyPageOverviewPage counts={counts} currentYear={currentYear} currentYearItems={currentYearItems} />
+    <MyPageOverviewPage counts={counts} currentYear={currentYear} allItems={allItems} />
   )
 }

@@ -13,52 +13,74 @@ type YearCount = {
   count: number;
 };
 
-type MonthGroup = {
-  monthNumber: number;
-  monthLabel: string;
-  items: SavedMediaItem[];
+type RatingBucket = {
+  label: string;
+  count: number;
 };
-
-function groupItemsByMonth(items: SavedMediaItem[]): MonthGroup[] {
-  const buckets = Array.from({ length: 12 }, (_, index) => ({
-    monthNumber: index + 1,
-    monthLabel: `${index + 1}월`,
-    items: [] as SavedMediaItem[],
-  }));
-
-  for (const item of items) {
-    const monthValue = Number(item.user_date?.slice(5, 7));
-
-    if (!Number.isFinite(monthValue) || monthValue < 1 || monthValue > 12) {
-      continue;
-    }
-
-    buckets[monthValue - 1].items.push(item);
-  }
-
-  return buckets.filter((bucket) => bucket.items.length > 0).sort((a, b) => b.monthNumber - a.monthNumber);
-}
 
 function toPastelColor(r: number, g: number, b: number) {
   const mix = (channel: number) => Math.round(channel + (255 - channel) * 0.42);
   return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
 }
 
+function formatRating(value?: number | null) {
+  const rating = Number(value);
+  return Number.isFinite(rating) && rating > 0 ? rating.toFixed(1) : "-";
+}
+
+function buildRatingBuckets(items: SavedMediaItem[]): RatingBucket[] {
+  return Array.from({ length: 11 }, (_, index) => 5 - index * 0.5)
+    .map((value) => ({
+      label: `${value.toFixed(1)}점`,
+      count: items.filter((item) => Number(item.user_rating) === value).length,
+    }))
+    .filter((item) => item.count > 0);
+}
+
 export default function MyPageOverviewPage({
   counts,
   currentYear,
-  currentYearItems,
+  allItems,
 }: {
   counts: YearCount[];
   currentYear: string;
-  currentYearItems: SavedMediaItem[];
+  allItems: SavedMediaItem[];
 }) {
   const { uid } = useUser();
-  const safeCounts = Array.isArray(counts) ? counts : [];
-  const [items, setItems] = useState<SavedMediaItem[]>(Array.isArray(currentYearItems) ? currentYearItems : []);
-  const totalSaved = safeCounts.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
-  const groupedMonths = groupItemsByMonth(items);
+  const [items, setItems] = useState<SavedMediaItem[]>(Array.isArray(allItems) ? allItems : []);
   const [posterColors, setPosterColors] = useState<Record<string, string>>({});
+  const [isYearStatsExpanded, setIsYearStatsExpanded] = useState(false);
+
+  const safeCounts = Array.isArray(counts) ? counts : [];
+  const totalSaved = items.length;
+  const movieCount = items.filter((item) => item.type === "movie").length;
+  const tvCount = items.filter((item) => item.type === "tv").length;
+  const thisYearCount = items.filter((item) => item.user_date?.startsWith(`${currentYear}-`)).length;
+  const ratedItems = items.filter((item) => Number(item.user_rating) > 0);
+  const averageRating = ratedItems.length
+    ? (ratedItems.reduce((sum, item) => sum + Number(item.user_rating || 0), 0) / ratedItems.length).toFixed(1)
+    : "-";
+  const savedDates = items.map((item) => item.user_date).filter(Boolean).sort();
+  const firstSaved = savedDates[0] || "-";
+  const latestSaved = savedDates[savedDates.length - 1] || "-";
+  const recentItems = [...items].sort((a, b) => String(b.user_date || "").localeCompare(String(a.user_date || ""))).slice(0, 8);
+  const topRatedItems = [...items]
+    .filter((item) => Number(item.user_rating) > 0)
+    .sort((a, b) => {
+      const ratingDiff = Number(b.user_rating || 0) - Number(a.user_rating || 0);
+      if (ratingDiff !== 0) return ratingDiff;
+      return String(b.user_date || "").localeCompare(String(a.user_date || ""));
+    })
+    .slice(0, 8);
+  const ratingBuckets = buildRatingBuckets(items);
+  const maxYearCount = Math.max(...safeCounts.map((item) => Number(item.count) || 0), 1);
+  const maxRatingCount = Math.max(...ratingBuckets.map((item) => item.count), 1);
+  const topYearByCount = [...safeCounts].sort((a, b) => (Number(b.count) || 0) - (Number(a.count) || 0))[0];
+  const averagePerYear = safeCounts.length
+    ? String(Math.round(safeCounts.reduce((sum, item) => sum + (Number(item.count) || 0), 0) / safeCounts.length))
+    : "0";
+  const visibleYearCounts = isYearStatsExpanded ? safeCounts : safeCounts.slice(0, 10);
+  const hasMoreYearCounts = safeCounts.length > 10;
 
   const handleDelete = async (cid: string) => {
     if (!uid) return;
@@ -78,11 +100,6 @@ export default function MyPageOverviewPage({
   };
 
   const handleUpdate = (contentId: string, nextDate: string, nextPosterPath: string, nextRating: number) => {
-    if (!nextDate.startsWith(`${currentYear}-`)) {
-      setItems((prev) => prev.filter((item) => item._id !== contentId));
-      return;
-    }
-
     setItems((prev) =>
       prev.map((item) =>
         item._id === contentId
@@ -102,8 +119,22 @@ export default function MyPageOverviewPage({
     const fac = new FastAverageColor();
 
     const extractColors = async () => {
+      const recentItemsForColor = [...items]
+        .sort((a, b) => String(b.user_date || "").localeCompare(String(a.user_date || "")))
+        .slice(0, 8);
+      const topRatedItemsForColor = [...items]
+        .filter((item) => Number(item.user_rating) > 0)
+        .sort((a, b) => {
+          const ratingDiff = Number(b.user_rating || 0) - Number(a.user_rating || 0);
+          if (ratingDiff !== 0) return ratingDiff;
+          return String(b.user_date || "").localeCompare(String(a.user_date || ""));
+        })
+        .slice(0, 8);
+      const displayItems = [
+        ...new Map([...recentItemsForColor, ...topRatedItemsForColor].map((item) => [item._id, item])).values(),
+      ];
       const colorEntries = await Promise.all(
-        items.map(async (item) => {
+        displayItems.map(async (item) => {
           if (!item.poster_path) {
             return [item._id, "rgba(148, 163, 184, 0.16)"] as const;
           }
@@ -134,52 +165,139 @@ export default function MyPageOverviewPage({
 
   return (
     <>
-      <Title title="마이페이지" sub="저장한 기록과 월별 흐름을 한눈에 확인하세요." />
+      <Title title="마이페이지" sub="전체 저장 기록을 한 번에 보는 통계 페이지입니다." />
 
-      <div className="flex items-center justify-between gap-3 py-4">
-        <div />
-        <div className="flex items-center gap-3">
-          <p className="browse-card__meta text-sm">
-            올해 {items.length}개 / 총 {totalSaved}개
-          </p>
-          <Link
-            href={`/mypage/${currentYear}`}
-            className="inline-flex min-h-[2.75rem] items-center rounded-full border border-slate-300/80 bg-white px-4 text-sm font-medium text-slate-900 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-900"
-          >
-            연도별 보기
-          </Link>
+      <div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+            전체 {totalSaved}개 중 올해는 <span className="font-semibold">{thisYearCount}개</span>를 저장했습니다.
+          </div>
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+            관람날짜 기준 가장 많이 기록한 연도는{" "}
+            <span className="font-semibold">
+              {topYearByCount?._id ? `${topYearByCount._id}년` : "-"}
+            </span>
+            입니다.
+          </div>
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+            영화 {movieCount} / 시리즈 {tvCount}, 평균 평점 <span className="font-semibold">{averageRating}</span>입니다.
+          </div>
         </div>
       </div>
 
-      {groupedMonths.length ? (
-        <div className="flex flex-col gap-8 py-2">
-          {groupedMonths.map((group) => (
-            <section key={group.monthNumber} className="flex flex-col gap-4">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-3 dark:border-slate-800/80">
-                <h2 className="page-title text-lg font-semibold">{group.monthLabel}</h2>
-                <span className="browse-card__meta rounded-full bg-white/70 px-3 py-1 text-sm dark:bg-slate-900/70">
-                  {group.items.length}개
-                </span>
-              </div>
+      <div className="mt-6 grid gap-6 xl:grid-cols-2">
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-3 dark:border-slate-800/80">
+            <h2 className="page-title text-lg font-semibold">최근 저장</h2>
+            <Link
+              href={`/mypage/${currentYear}`}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-sky-700 transition hover:text-sky-600 dark:text-sky-300 dark:hover:text-sky-200"
+            >
+              자세히보기
+              <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+          {recentItems.length ? (
+            <div className="grid grid-cols-4 gap-1">
+              {recentItems.map((item) => (
+                <SavedMediaCard
+                  key={item._id}
+                  content={item}
+                  backgroundColor={posterColors[item._id] ?? "rgba(148, 163, 184, 0.16)"}
+                  showProvider
+                  showRating
+                  onDelete={handleDelete}
+                  onUpdate={handleUpdate}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-4 text-sm text-slate-500 dark:text-slate-400">아직 저장한 작품이 없습니다.</div>
+          )}
+        </section>
 
-              <div className="grid grid-cols-4 gap-2 min-[640px]:grid-cols-5 sm:gap-3 min-[960px]:grid-cols-6">
-                {group.items.map((item) => (
-                  <SavedMediaCard
-                    key={item._id}
-                    content={item}
-                    backgroundColor={posterColors[item._id] ?? "rgba(148, 163, 184, 0.16)"}
-                    showProvider
-                    onDelete={handleDelete}
-                    onUpdate={handleUpdate}
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-3 dark:border-slate-800/80">
+            <h2 className="page-title text-lg font-semibold">상위 평가</h2>
+          </div>
+          {topRatedItems.length ? (
+            <div className="grid grid-cols-4 gap-1">
+              {topRatedItems.map((item) => (
+                <SavedMediaCard
+                  key={item._id}
+                  content={item}
+                  backgroundColor={posterColors[item._id] ?? "rgba(148, 163, 184, 0.16)"}
+                  showProvider
+                  showRating
+                  onDelete={handleDelete}
+                  onUpdate={handleUpdate}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-4 text-sm text-slate-500 dark:text-slate-400">아직 평점 데이터가 없습니다.</div>
+          )}
+        </section>
+      </div>
+
+      <div className="mt-6 grid gap-4 xl:grid-cols-2">
+        <section className="browse-card rounded-[24px] border p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="page-title text-lg font-semibold">관람연도 분포</h2>
+            <span className="browse-card__meta text-sm">평균 {averagePerYear}개</span>
+          </div>
+          <div className="mt-5 flex flex-col gap-3">
+            {visibleYearCounts.map((item) => (
+              <Link key={item._id} href={`/mypage/${item._id}`} className="grid grid-cols-[4rem_1fr_3rem] items-center gap-3">
+                <span className="browse-card__meta text-sm">{item._id}</span>
+                <div className="h-2.5 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800/80">
+                  <div
+                    className="h-full rounded-full bg-slate-900 dark:bg-slate-100"
+                    style={{ width: `${((Number(item.count) || 0) / maxYearCount) * 100}%` }}
                   />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      ) : (
-        <div className="py-6 text-sm text-slate-500 dark:text-slate-400">아직 올해 저장한 작품이 없습니다.</div>
-      )}
+                </div>
+                <span className="browse-card__title text-right text-sm font-semibold">{item.count}</span>
+              </Link>
+            ))}
+          </div>
+          {hasMoreYearCounts ? (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                className="rounded-full border border-slate-300/80 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+                onClick={() => setIsYearStatsExpanded((prev) => !prev)}
+              >
+                {isYearStatsExpanded ? "▴ 접기" : "▾ 더보기"}
+              </button>
+            </div>
+          ) : null}
+        </section>
+
+        <section className="browse-card rounded-[24px] border p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="page-title text-lg font-semibold">평가점수 분포</h2>
+            <span className="browse-card__meta text-sm">평균 {averageRating}점</span>
+          </div>
+          <div className="mt-5 flex flex-col gap-3">
+            {ratingBuckets.length ? (
+              ratingBuckets.map((item) => (
+                <div key={item.label} className="grid grid-cols-[4rem_1fr_3rem] items-center gap-3">
+                  <span className="browse-card__meta text-sm">{item.label}</span>
+                  <div className="h-2.5 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800/80">
+                    <div
+                      className="h-full rounded-full bg-slate-900 dark:bg-slate-100"
+                      style={{ width: `${(item.count / maxRatingCount) * 100}%` }}
+                    />
+                  </div>
+                  <span className="browse-card__title text-right text-sm font-semibold">{item.count}</span>
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-slate-500 dark:text-slate-400">아직 평점을 남긴 작품이 없습니다.</div>
+            )}
+          </div>
+        </section>
+      </div>
     </>
   );
 }

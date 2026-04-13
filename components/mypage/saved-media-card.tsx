@@ -94,11 +94,11 @@ export default function SavedMediaCard({
   return (
     <>
       <div
-        className="group block overflow-hidden rounded-[14px] p-[1px] transition-transform hover:-translate-y-0.5 sm:rounded-[18px]"
+        className="group block overflow-hidden rounded-sm p-[1px] transition-transform hover:-translate-y-0.5"
         style={{ backgroundColor: "transparent" }}
       >
-        <div className="overflow-hidden rounded-[13px] bg-transparent backdrop-blur-none sm:rounded-[17px]">
-          <div className="relative aspect-[2/3] overflow-hidden rounded-[13px] bg-slate-200 dark:bg-slate-800 sm:rounded-[17px]">
+        <div className="overflow-hidden rounded-sm bg-transparent backdrop-blur-none">
+          <div className="relative aspect-[2/3] overflow-hidden rounded-sm bg-slate-200 dark:bg-slate-800">
             {posterImg ? (
               <Image alt={title} src={posterImg} fill className="object-cover transition duration-300 group-hover:scale-[1.03]" sizes="100%" />
             ) : (

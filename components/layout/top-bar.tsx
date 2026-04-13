@@ -180,7 +180,7 @@ function SettingsModal({
             onClick={onToggleTheme}
           >
             <FontAwesomeIcon icon={isDarkMode ? faCircleHalfStroke : faMoon} />
-            <span>{isDarkMode ? "Dark" : "Light"}</span>
+            <span>{isDarkMode ? "Light" : "Dark"}</span>
           </button>
         </div>
       </div>

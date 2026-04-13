@@ -13,7 +13,12 @@ export async function GET(req: NextRequest, { params }: { params: any }) {
     const results = await db
       .collection("contents")
       .aggregate([
-        { $match: { user_id: uid } },
+        {
+          $match: {
+            user_id: uid,
+            user_date: { $type: "string", $regex: /^\d{4}-\d{2}-\d{2}/ },
+          },
+        },
         {
           $group: {
             _id: { $substr: ["$user_date", 0, 4] },

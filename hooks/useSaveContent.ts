@@ -44,7 +44,7 @@ export function useSaveContent() {
       saveDate ??
       (mode === "today"
         ? new Date().toISOString().slice(0, 10)
-        : content.release_date || result.data?.nextDate || null);
+        : content.release_date || content.first_air_date || result.data?.nextDate || null);
 
     const action = await requestDuplicateAction({
       existingDate: result.data?.existingDate,

@@ -12,6 +12,7 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 		return NextResponse.json({ error: "Missing uid or isTodaySave" }, { status: 400 });
 	}
 	const today = dayjs().format('YYYY-MM-DD')
+	const releaseLikeDate = content.release_date || content.first_air_date || today
 	const resolvedMode =
 		saveDateMode === "release" || saveDateMode === "today" || saveDateMode === "custom"
 			? saveDateMode
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 			? today
 			: resolvedMode === "custom"
 				? saveDate || today
-				: content.release_date
+				: releaseLikeDate
 	let object = {} as any
 
 	//제목 정렬때문에 title로 통합

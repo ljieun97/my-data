@@ -3,11 +3,15 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 type SaveDateMode = "release" | "today" | "custom";
+type CustomSaveSelection = {
+  date: string;
+  rating: number;
+};
 
 type SaveDateContextValue = {
   mode: SaveDateMode;
   setMode: (mode: SaveDateMode) => void;
-  requestDate: (initialDate?: string) => Promise<string | null>;
+  requestDate: (initialDate?: string, initialRating?: number) => Promise<CustomSaveSelection | null>;
   requestDuplicateAction: (payload: { existingDate?: string | null; nextDate?: string | null }) => Promise<"keep" | "change" | null>;
 };
 
@@ -38,8 +42,9 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
+  const [selectedRating, setSelectedRating] = useState(2.5);
   const [duplicateDates, setDuplicateDates] = useState<{ existingDate?: string | null; nextDate?: string | null }>({});
-  const dateResolverRef = useRef<((value: string | null) => void) | null>(null);
+  const dateResolverRef = useRef<((value: CustomSaveSelection | null) => void) | null>(null);
   const duplicateResolverRef = useRef<((value: "keep" | "change" | null) => void) | null>(null);
 
   useEffect(() => {
@@ -52,23 +57,30 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(LEGACY_STORAGE_KEY, nextMode === "today" ? "true" : "false");
   }, []);
 
-  const closeDateModal = useCallback((value: string | null) => {
-    dateResolverRef.current?.(value);
+  const closeDateModal = useCallback((value: CustomSaveSelection | null) => {
+    const resolver = dateResolverRef.current;
     dateResolverRef.current = null;
     setIsDateModalOpen(false);
+    window.setTimeout(() => {
+      resolver?.(value);
+    }, 0);
   }, []);
 
   const closeDuplicateModal = useCallback((value: "keep" | "change" | null) => {
-    duplicateResolverRef.current?.(value);
+    const resolver = duplicateResolverRef.current;
     duplicateResolverRef.current = null;
     setIsDuplicateModalOpen(false);
+    window.setTimeout(() => {
+      resolver?.(value);
+    }, 0);
   }, []);
 
-  const requestDate = useCallback((initialDate?: string) => {
+  const requestDate = useCallback((initialDate?: string, initialRating?: number) => {
     setSelectedDate(initialDate || getTodayDate());
+    setSelectedRating(typeof initialRating === "number" && initialRating > 0 ? initialRating : 2.5);
     setIsDateModalOpen(true);
 
-    return new Promise<string | null>((resolve) => {
+    return new Promise<CustomSaveSelection | null>((resolve) => {
       dateResolverRef.current = resolve;
     });
   }, []);
@@ -103,7 +115,8 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
           >
             <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">Choose date</div>
             <div className="px-6 py-5">
-              <label className="flex flex-col gap-2">
+              <div className="flex flex-col gap-5">
+                <label className="flex flex-col gap-2">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Save date</span>
                 <input
                   type="date"
@@ -111,7 +124,32 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
                   onChange={(event) => setSelectedDate(event.target.value)}
                   className="min-h-[2.85rem] rounded-2xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                 />
-              </label>
+                </label>
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Rating</span>
+                  <div className="grid grid-cols-5 gap-2">
+                    {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((value) => {
+                      const isActive = Math.abs(selectedRating - value) < 0.001;
+
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setSelectedRating(value)}
+                          className={[
+                            "inline-flex min-h-[2.5rem] items-center justify-center rounded-xl border px-2 text-sm transition",
+                            isActive
+                              ? "border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-400 dark:bg-amber-500/15 dark:text-amber-200"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-slate-600",
+                          ].join(" ")}
+                        >
+                          {value.toFixed(1)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-4 dark:border-slate-800">
               <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => closeDateModal(null)}>
@@ -120,7 +158,7 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white dark:bg-slate-100 dark:text-slate-900"
-                onClick={() => closeDateModal(selectedDate)}
+                onClick={() => closeDateModal({ date: selectedDate, rating: selectedRating })}
               >
                 Save with this date
               </button>
@@ -136,7 +174,7 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
           >
             <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">이미 저장된 영화입니다</div>
             <div className="px-6 py-5 text-sm text-slate-600 dark:text-slate-300">
-              <p>기존 저장 날짜를 유지할지, 지금 선택한 날짜로 바꿀지 선택해주세요.</p>
+              <p>기존 저장 날짜를 유지할지, 새 날짜로 바꿀지 선택해주세요.</p>
               <div className="mt-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-medium text-slate-700 dark:text-slate-200">현재 날짜</span>
@@ -144,7 +182,7 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-medium text-slate-700 dark:text-slate-200">변경 날짜</span>
-                  <span>{duplicateDates.nextDate || "-"}</span>
+                  <span>{duplicateDates.nextDate || "직접 선택"}</span>
                 </div>
               </div>
             </div>

@@ -4,6 +4,44 @@ import dayjs from 'dayjs'
 import { ObjectId } from "mongodb";
 import { cookies, headers } from "next/headers";
 
+export async function GET(req: NextRequest, { params }: { params: any }) {
+	const headersList = headers()
+	const uid = (await headersList).get("authorization")
+	const { cid } = await params
+	const type = req.nextUrl.searchParams.get("type")
+
+	if (!uid || !cid || !type) {
+		return NextResponse.json({ error: "Missing uid, cid or type" }, { status: 400 });
+	}
+
+	let mongoClient
+	try {
+		const { client, db } = await connectMongo()
+		mongoClient = client
+		const existingItem = await db.collection("contents").findOne({
+			user_id: uid,
+			type,
+			id: Number.isNaN(Number(cid)) ? cid : Number(cid)
+		})
+
+		if (!existingItem) {
+			return NextResponse.json({ duplicate: false })
+		}
+
+		return NextResponse.json({
+			duplicate: true,
+			existingId: String(existingItem._id),
+			existingDate: existingItem.user_date ?? null,
+			existingRating: existingItem.user_rating ?? null,
+		})
+	} catch (e) {
+		console.log(e)
+		return NextResponse.json({ error: e })
+	} finally {
+		if (mongoClient) closeMongo()
+	}
+}
+
 
 export async function POST(req: NextRequest, { params }: { params: any }) {
 	const { uid, content, rating, isTodaySave, saveDateMode, saveDate } = await req.json()

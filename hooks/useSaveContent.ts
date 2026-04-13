@@ -8,25 +8,83 @@ import { saveContent } from "@/lib/actions/content";
 export function useSaveContent() {
   const { uid } = useUser();
   const { mode, requestDate, requestDuplicateAction } = useSaveDate();
+  const waitForModalClose = () => new Promise<void>((resolve) => window.setTimeout(resolve, 0));
 
   const saveWithPreference = async ({ id, content, rating }: { id: string; content: any; rating: number }) => {
     let saveDate: string | undefined;
+    let selectedRating = rating;
+    const contentType = content.type || (content.title ? "movie" : "tv");
+
+    if (uid && mode === "custom") {
+      const duplicateCheck = await fetch(`/api/mypage/content/${id}?type=${contentType}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: uid,
+        },
+      });
+
+      if (duplicateCheck.ok) {
+        const duplicateData = await duplicateCheck.json();
+
+        if (duplicateData?.duplicate) {
+          const action = await requestDuplicateAction({
+            existingDate: duplicateData.existingDate,
+            nextDate: null,
+          });
+
+          if (action === "keep" || action === null) {
+            if (action === "keep") {
+              Toast.toast("이미 저장된 영화입니다.");
+            }
+            return;
+          }
+
+          if (action === "change" && duplicateData.existingId) {
+            await waitForModalClose();
+            const selection = await requestDate(undefined, rating);
+
+            if (!selection) {
+              return;
+            }
+
+            const response = await fetch(`/api/mypage/content/${duplicateData.existingId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                uid,
+                poster_path: content.poster_path,
+                date: selection.date,
+                rating: selection.rating,
+              }),
+            });
+
+            if (response.ok) {
+              Toast.toast("저장 날짜를 변경했습니다.");
+            }
+
+            return;
+          }
+        }
+      }
+    }
 
     if (mode === "custom") {
-      const pickedDate = await requestDate();
+      const selection = await requestDate(undefined, rating);
 
-      if (!pickedDate) {
+      if (!selection) {
         return;
       }
 
-      saveDate = pickedDate;
+      saveDate = selection.date;
+      selectedRating = selection.rating;
     }
 
     const result = await saveContent({
       uid,
       id,
       content,
-      rating,
+      rating: selectedRating,
       saveDateMode: mode,
       saveDate,
       addToast: ({ title }: any) => Toast.toast(title),
@@ -64,6 +122,7 @@ export function useSaveContent() {
           uid,
           poster_path: content.poster_path,
           date: nextDate,
+          rating: selectedRating,
         }),
       });
 

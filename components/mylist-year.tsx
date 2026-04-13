@@ -169,6 +169,7 @@ export default function MylistYear({ year, list, counts }: { year: any; list: an
                 thisYear={year}
                 content={content}
                 isProvider={isSelectedProvider}
+                isRating
                 onUpdate={deleteItem}
                 onDelete={handleDelete}
               />

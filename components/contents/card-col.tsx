@@ -21,14 +21,14 @@ export default function CardCol({
   thisYear,
   content,
   isProvider,
-  isRating,
+  isRating = true,
   onUpdate,
   onDelete,
 }: {
   thisYear: string;
   content: any;
   isProvider: boolean;
-  isRating: boolean;
+  isRating?: boolean;
   onUpdate: any;
   onDelete: any;
 }) {

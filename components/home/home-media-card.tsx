@@ -15,7 +15,7 @@ const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w780";
 
 export default function HomeMediaCard({
   movie,
-  visibleSlots,
+  cardWidth,
   showRank,
   showDetail,
   showYear,
@@ -24,7 +24,7 @@ export default function HomeMediaCard({
   onPrefetch,
 }: {
   movie: HomeMovieCardItem;
-  visibleSlots: number;
+  cardWidth: number;
   showRank: boolean;
   showDetail: boolean;
   showYear: boolean;
@@ -62,7 +62,7 @@ export default function HomeMediaCard({
   };
 
   return (
-    <article className="shrink-0 pr-3" style={{ width: `${100 / visibleSlots}%` }}>
+    <article className="shrink-0" style={{ width: `${cardWidth}px` }}>
       <Link
         href={movie.tmdbId ? `/movie/${movie.tmdbId}` : "#"}
         scroll={false}

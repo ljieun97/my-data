@@ -29,12 +29,7 @@ export type HomeMovieCardItem = {
 type HomeSliderImageType = "poster" | "backdrop";
 
 const MAX_PAGE_SIZE = 5;
-const DESKTOP_VISIBLE_SLOTS = 5.22;
-const TABLET_VISIBLE_SLOTS = 4.12;
-const MOBILE_VISIBLE_SLOTS = 3.08;
-const DESKTOP_SIDE_PEEK_ITEMS = 0.12;
-const TABLET_SIDE_PEEK_ITEMS = 0.08;
-const MOBILE_SIDE_PEEK_ITEMS = 0.04;
+const SLIDER_GAP_PX = 12;
 const SWIPE_THRESHOLD = 40;
 
 export default function BoxOffice({
@@ -47,7 +42,6 @@ export default function BoxOffice({
   isLoading = false,
   isScoreLoading = false,
   desktopPageSize = MAX_PAGE_SIZE,
-  desktopVisibleSlots = DESKTOP_VISIBLE_SLOTS,
   imageType = "poster",
 }: {
   title: string;
@@ -59,13 +53,11 @@ export default function BoxOffice({
   isLoading?: boolean;
   isScoreLoading?: boolean;
   desktopPageSize?: number;
-  desktopVisibleSlots?: number;
   imageType?: HomeSliderImageType;
 }) {
   const router = useRouter();
   const safeResults = Array.isArray(results) ? results : [];
   const [pageSize, setPageSize] = useState<number | null>(null);
-  const [visibleSlots, setVisibleSlots] = useState<number | null>(null);
   const [startIndex, setStartIndex] = useState(0);
   const touchStartXRef = useRef<number | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -76,18 +68,15 @@ export default function BoxOffice({
     const updateVisibleItems = () => {
       if (window.innerWidth < 640) {
         setPageSize(3);
-        setVisibleSlots(MOBILE_VISIBLE_SLOTS);
         return;
       }
 
       if (window.innerWidth < 1024) {
         setPageSize(4);
-        setVisibleSlots(TABLET_VISIBLE_SLOTS);
         return;
       }
 
       setPageSize(desktopPageSize);
-      setVisibleSlots(desktopVisibleSlots);
     };
 
     updateVisibleItems();
@@ -96,9 +85,9 @@ export default function BoxOffice({
     return () => {
       window.removeEventListener("resize", updateVisibleItems);
     };
-  }, [desktopPageSize, desktopVisibleSlots]);
+  }, [desktopPageSize]);
 
-  const isViewportReady = pageSize !== null && visibleSlots !== null;
+  const isViewportReady = pageSize !== null;
 
   useEffect(() => {
     if (!isViewportReady) {
@@ -125,9 +114,9 @@ export default function BoxOffice({
 
     const updatePosterMidpoint = () => {
       const viewportWidth = element.clientWidth;
-      const cardWidth = viewportWidth / visibleSlots;
-      const cardHeight = imageType === "backdrop" ? cardWidth * (9 / 16) : cardWidth * 1.5;
-      setCardWidth(cardWidth);
+      const nextCardWidth = Math.max((viewportWidth - SLIDER_GAP_PX * (pageSize - 1)) / pageSize, 0);
+      const cardHeight = imageType === "backdrop" ? nextCardWidth * (9 / 16) : nextCardWidth * 1.5;
+      setCardWidth(nextCardWidth);
       setPosterMidpoint(cardHeight / 2);
     };
 
@@ -141,7 +130,7 @@ export default function BoxOffice({
       resizeObserver.disconnect();
       window.removeEventListener("resize", updatePosterMidpoint);
     };
-  }, [imageType, isViewportReady, visibleSlots]);
+  }, [imageType, isViewportReady, pageSize]);
 
   if (isLoading || !safeResults.length) {
     return (
@@ -179,13 +168,7 @@ export default function BoxOffice({
   const maxStartIndex = Math.max(0, safeResults.length - pageSize);
   const canGoPrevious = startIndex > 0;
   const canGoNext = startIndex + pageSize < safeResults.length;
-  const sidePeekItems =
-    pageSize === 3 ? MOBILE_SIDE_PEEK_ITEMS : pageSize === 4 ? TABLET_SIDE_PEEK_ITEMS : DESKTOP_SIDE_PEEK_ITEMS;
-  const outerPeekWidth = cardWidth * sidePeekItems;
-  const leftPeekWidth = outerPeekWidth;
-  const rightPeekWidth = outerPeekWidth;
-  const effectiveStartIndex = startIndex;
-  const translatePercentage = (effectiveStartIndex * 100) / visibleSlots;
+  const translateX = -(startIndex * (cardWidth + SLIDER_GAP_PX));
   const isTouchSwipeEnabled = pageSize <= 4;
   const buttonPositionStyle = posterMidpoint > 0 ? { top: `${posterMidpoint}px` } : undefined;
 
@@ -242,40 +225,30 @@ export default function BoxOffice({
         <div>
           <div className="relative">
             <HomeSliderNavButton direction="previous" onClick={handlePrevious} disabled={!canGoPrevious} style={buttonPositionStyle} />
-            <div ref={viewportRef} className="overflow-visible" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+            <div className="-mx-4 overflow-hidden px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
               <div
-                className="overflow-hidden"
-                style={
-                  leftPeekWidth > 0 || rightPeekWidth > 0
-                    ? {
-                        marginLeft: `-${leftPeekWidth}px`,
-                        width: `calc(100% + ${leftPeekWidth + rightPeekWidth}px)`,
-                      }
-                    : undefined
-                }
+                ref={viewportRef}
+                className="overflow-visible"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
               >
                 <div
                   className="flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                  style={{
-                    transform:
-                      leftPeekWidth > 0
-                        ? `translateX(calc(${leftPeekWidth}px - ${translatePercentage}%))`
-                        : `translateX(-${translatePercentage}%)`,
-                  }}
+                  style={{ gap: `${SLIDER_GAP_PX}px`, transform: `translateX(${translateX}px)` }}
                 >
                   {safeResults.map((movie) => (
                     <HomeMediaCard
                       key={movie.id}
-                    movie={movie}
-                    visibleSlots={visibleSlots}
-                    showRank={showRank}
-                    showDetail={showDetail}
-                    showYear={showYear}
-                    isRtLoading={isScoreLoading}
-                    imageType={imageType}
-                    onPrefetch={prefetchDetail}
-                  />
-                ))}
+                      movie={movie}
+                      cardWidth={cardWidth}
+                      showRank={showRank}
+                      showDetail={showDetail}
+                      showYear={showYear}
+                      isRtLoading={isScoreLoading}
+                      imageType={imageType}
+                      onPrefetch={prefetchDetail}
+                    />
+                  ))}
                 </div>
               </div>
             </div>

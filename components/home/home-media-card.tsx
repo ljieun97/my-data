@@ -159,7 +159,7 @@ export default function HomeMediaCard({
               variant="home"
             />
             {showDetail && !isBackdropCard ?
-              <div className="flex flex-col gap-px">
+              <div className="flex flex-col gap-px pt-2">
                 <p className="text-base font-semibold leading-snug tracking-[-0.03em] text-slate-900 dark:text-slate-50">{movie.title}</p>
                 {showYear && movie.year ? <p className="browse-card__meta text-sm leading-snug">{movie.year}</p> : null}
               </div> : null}

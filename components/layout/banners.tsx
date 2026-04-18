@@ -29,10 +29,10 @@ export function Banners({ movie }: { movie: any }) {
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4">
             <div>
-              <p className="p-1 text-xs font-bold text-white drop-shadow">2024 featured title</p>
+              <p className="p-1 text-xs font-bold text-white drop-shadow">박스오피스 1위</p>
               <p className="text-4xl font-bold text-white drop-shadow">{movie.title}</p>
             </div>
-            <p className="line-clamp-3 w-2/5 text-white drop-shadow sm:w-2/3 md:w-1/2 lg:w-1/2">{overview}</p>
+            <p className="line-clamp-4 w-2/5 text-white drop-shadow sm:w-2/3 md:w-1/2 lg:w-1/2">{overview}</p>
             <button
               type="button"
               className="flex w-fit items-center gap-2 rounded-sm bg-white px-4 py-2 text-black"

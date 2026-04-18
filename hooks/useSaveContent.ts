@@ -8,7 +8,6 @@ import { saveContent } from "@/lib/actions/content";
 export function useSaveContent() {
   const { uid } = useUser();
   const { mode, requestDate, requestDuplicateAction } = useSaveDate();
-  const waitForModalClose = () => new Promise<void>((resolve) => window.setTimeout(resolve, 0));
 
   const saveWithPreference = async ({ id, content, rating }: { id: string; content: any; rating: number }) => {
     let saveDate: string | undefined;
@@ -41,8 +40,10 @@ export function useSaveContent() {
           }
 
           if (action === "change" && duplicateData.existingId) {
-            await waitForModalClose();
-            const selection = await requestDate(undefined, rating);
+            const selection = await requestDate(
+              duplicateData.existingDate ?? undefined,
+              rating,
+            );
 
             if (!selection) {
               return;

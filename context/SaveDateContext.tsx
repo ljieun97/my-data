@@ -24,6 +24,10 @@ function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function normalizeDateInput(date?: string | null) {
+  return typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : getTodayDate();
+}
+
 function readInitialMode(): SaveDateMode {
   if (typeof window === "undefined") {
     return "release";
@@ -61,22 +65,26 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
     const resolver = dateResolverRef.current;
     dateResolverRef.current = null;
     setIsDateModalOpen(false);
-    window.setTimeout(() => {
-      resolver?.(value);
-    }, 0);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        resolver?.(value);
+      });
+    });
   }, []);
 
   const closeDuplicateModal = useCallback((value: "keep" | "change" | null) => {
     const resolver = duplicateResolverRef.current;
     duplicateResolverRef.current = null;
     setIsDuplicateModalOpen(false);
-    window.setTimeout(() => {
-      resolver?.(value);
-    }, 0);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        resolver?.(value);
+      });
+    });
   }, []);
 
   const requestDate = useCallback((initialDate?: string, initialRating?: number) => {
-    setSelectedDate(initialDate || getTodayDate());
+    setSelectedDate(normalizeDateInput(initialDate));
     setSelectedRating(typeof initialRating === "number" && initialRating > 0 ? initialRating : 2.5);
     setIsDateModalOpen(true);
 

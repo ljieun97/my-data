@@ -25,6 +25,8 @@ export type HomeMovieCardItem = {
   rottenPopcornmeter?: string | null;
 };
 
+type HomeSliderImageType = "poster" | "backdrop";
+
 const MAX_PAGE_SIZE = 5;
 const DESKTOP_VISIBLE_SLOTS = 5.22;
 const TABLET_VISIBLE_SLOTS = 4.12;
@@ -44,6 +46,7 @@ export default function BoxOffice({
   isScoreLoading = false,
   desktopPageSize = MAX_PAGE_SIZE,
   desktopVisibleSlots = DESKTOP_VISIBLE_SLOTS,
+  imageType = "poster",
 }: {
   title: string;
   emptyMessage?: string;
@@ -54,6 +57,7 @@ export default function BoxOffice({
   isScoreLoading?: boolean;
   desktopPageSize?: number;
   desktopVisibleSlots?: number;
+  imageType?: HomeSliderImageType;
 }) {
   const router = useRouter();
   const safeResults = Array.isArray(results) ? results : [];
@@ -63,6 +67,7 @@ export default function BoxOffice({
   const touchStartXRef = useRef<number | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [posterMidpoint, setPosterMidpoint] = useState(0);
+  const [cardWidth, setCardWidth] = useState(0);
 
   useEffect(() => {
     const updateVisibleItems = () => {
@@ -118,8 +123,9 @@ export default function BoxOffice({
     const updatePosterMidpoint = () => {
       const viewportWidth = element.clientWidth;
       const cardWidth = viewportWidth / visibleSlots;
-      const posterHeight = cardWidth * 1.5;
-      setPosterMidpoint(posterHeight / 2);
+      const cardHeight = imageType === "backdrop" ? cardWidth * (9 / 16) : cardWidth * 1.5;
+      setCardWidth(cardWidth);
+      setPosterMidpoint(cardHeight / 2);
     };
 
     updatePosterMidpoint();
@@ -132,7 +138,7 @@ export default function BoxOffice({
       resizeObserver.disconnect();
       window.removeEventListener("resize", updatePosterMidpoint);
     };
-  }, [isViewportReady, visibleSlots]);
+  }, [imageType, isViewportReady, visibleSlots]);
 
   if (isLoading || !safeResults.length) {
     return (
@@ -170,13 +176,12 @@ export default function BoxOffice({
   const maxStartIndex = Math.max(0, safeResults.length - pageSize);
   const canGoPrevious = startIndex > 0;
   const canGoNext = startIndex + pageSize < safeResults.length;
-  const maxTranslateIndex = Math.max(0, safeResults.length - visibleSlots);
   const sidePeekItems =
     pageSize === 3 ? MOBILE_SIDE_PEEK_ITEMS : pageSize === 4 ? TABLET_SIDE_PEEK_ITEMS : DESKTOP_SIDE_PEEK_ITEMS;
-  const effectiveStartIndex =
-    visibleSlots > pageSize && startIndex > 0
-      ? Math.max(0, Math.min(startIndex - sidePeekItems, maxTranslateIndex))
-      : startIndex;
+  const outerPeekWidth = cardWidth * sidePeekItems;
+  const leftPeekWidth = outerPeekWidth;
+  const rightPeekWidth = outerPeekWidth;
+  const effectiveStartIndex = startIndex;
   const translatePercentage = (effectiveStartIndex * 100) / visibleSlots;
   const isTouchSwipeEnabled = pageSize <= 4;
   const buttonPositionStyle = posterMidpoint > 0 ? { top: `${posterMidpoint}px` } : undefined;
@@ -234,22 +239,40 @@ export default function BoxOffice({
         <div>
           <div className="relative">
             <HomeSliderNavButton direction="previous" onClick={handlePrevious} disabled={!canGoPrevious} style={buttonPositionStyle} />
-            <div ref={viewportRef} className="overflow-hidden" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+            <div ref={viewportRef} className="overflow-visible" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
               <div
-                className="flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                style={{ transform: `translateX(-${translatePercentage}%)` }}
+                className="overflow-hidden"
+                style={
+                  leftPeekWidth > 0 || rightPeekWidth > 0
+                    ? {
+                        marginLeft: `-${leftPeekWidth}px`,
+                        width: `calc(100% + ${leftPeekWidth + rightPeekWidth}px)`,
+                      }
+                    : undefined
+                }
               >
-                {safeResults.map((movie) => (
-                  <HomeMediaCard
-                    key={movie.id}
+                <div
+                  className="flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                  style={{
+                    transform:
+                      leftPeekWidth > 0
+                        ? `translateX(calc(${leftPeekWidth}px - ${translatePercentage}%))`
+                        : `translateX(-${translatePercentage}%)`,
+                  }}
+                >
+                  {safeResults.map((movie) => (
+                    <HomeMediaCard
+                      key={movie.id}
                     movie={movie}
                     visibleSlots={visibleSlots}
                     showRank={showRank}
                     showDetail={showDetail}
                     isRtLoading={isScoreLoading}
+                    imageType={imageType}
                     onPrefetch={prefetchDetail}
                   />
                 ))}
+                </div>
               </div>
             </div>
             <HomeSliderNavButton direction="next" onClick={handleNext} disabled={!canGoNext} style={buttonPositionStyle} />

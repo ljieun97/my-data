@@ -139,8 +139,7 @@ export default function HomeBoxOfficeSections({
         isScoreLoading={isRtLoading}
         showRank={false}
         showDetail={false}
-        desktopPageSize={7}
-        desktopVisibleSlots={7.3}
+        imageType="backdrop"
       />
       <CardSlider
         title="인기 영화"
@@ -149,8 +148,7 @@ export default function HomeBoxOfficeSections({
         isScoreLoading={isRtLoading}
         showRank={false}
         showDetail={false}
-        desktopPageSize={7}
-        desktopVisibleSlots={7.3}
+        imageType="backdrop"
       />
     </div>
   )

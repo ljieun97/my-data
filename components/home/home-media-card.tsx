@@ -11,6 +11,7 @@ import { useSaveContent } from "@/hooks/useSaveContent";
 import { useRouter } from "next/navigation";
 
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
+const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w780";
 
 export default function HomeMediaCard({
   movie,
@@ -18,6 +19,7 @@ export default function HomeMediaCard({
   showRank,
   showDetail,
   isRtLoading,
+  imageType = "poster",
   onPrefetch,
 }: {
   movie: HomeMovieCardItem;
@@ -25,10 +27,18 @@ export default function HomeMediaCard({
   showRank: boolean;
   showDetail: boolean;
   isRtLoading: boolean;
+  imageType?: "poster" | "backdrop";
   onPrefetch: (tmdbId?: number | null) => void;
 }) {
   const router = useRouter();
   const { saveWithPreference } = useSaveContent();
+  const isBackdropCard = imageType === "backdrop";
+  const imagePath = isBackdropCard ? movie.backdropPath ?? movie.posterPath : movie.posterPath;
+  const imageBaseUrl = isBackdropCard ? TMDB_BACKDROP_BASE_URL : TMDB_POSTER_BASE_URL;
+  const imageAlt = `${movie.title} ${isBackdropCard ? "backdrop" : "poster"}`;
+  const imageSizes = isBackdropCard
+    ? "(min-width: 1280px) 20vw, (min-width: 640px) 24vw, 45vw"
+    : "(min-width: 1280px) 18vw, (min-width: 640px) 24vw, 33vw";
 
   const handleSave = async () => {
     if (!movie.tmdbId) return;
@@ -66,7 +76,7 @@ export default function HomeMediaCard({
         className={["group block rounded-2xl transition", movie.tmdbId ? "cursor-pointer" : "cursor-default"].join(" ")}
       >
         <div className="flex min-w-0 flex-col">
-          <div className="relative mb-2 aspect-[2/3]">
+          <div className={`relative mb-2 ${isBackdropCard ? "aspect-video" : "aspect-[2/3]"}`}>
             {showRank ? (
               <div className="absolute bottom-0 -left-2 z-10 lg:bottom-1 lg:-left-6">
                 <span className="text-6xl font-black italic leading-none tracking-[-0.08em] text-white drop-shadow-[0_3px_10px_rgba(15,23,42,0.85)] lg:text-7xl xl:text-8xl">
@@ -96,6 +106,13 @@ export default function HomeMediaCard({
               {movie.tmdbId ? (
                 <div className="pointer-events-none absolute inset-0 z-[1] bg-slate-950/0 opacity-0 transition duration-200 group-hover:bg-slate-950/18 group-hover:opacity-100" />
               ) : null}
+              {isBackdropCard ? (
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent px-3 py-3">
+                  <p className="truncate text-sm font-semibold tracking-[-0.03em] text-white sm:text-[15px]">
+                    {movie.title}
+                  </p>
+                </div>
+              ) : null}
               {movie.tmdbId ? (
                 <PosterHoverActions
                   overlayClassName="group-hover:visible"
@@ -115,12 +132,12 @@ export default function HomeMediaCard({
                   ]}
                 />
               ) : null}
-              {movie.posterPath ? (
+              {imagePath ? (
                 <Image
-                  src={`${TMDB_POSTER_BASE_URL}${movie.posterPath}`}
-                  alt={`${movie.title} poster`}
+                  src={`${imageBaseUrl}${imagePath}`}
+                  alt={imageAlt}
                   fill
-                  sizes="(min-width: 1280px) 18vw, (min-width: 640px) 24vw, 33vw"
+                  sizes={imageSizes}
                   className="object-cover"
                 />
               ) : (
@@ -138,7 +155,7 @@ export default function HomeMediaCard({
               isLoading={isRtLoading}
               variant="home"
             />
-            {showDetail ?
+            {showDetail && !isBackdropCard ?
               <>
                 <p className="text-base font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-50">{movie.title}</p>
                 {movie.year ? <p className="browse-card__meta text-sm">{movie.year}</p> : null}

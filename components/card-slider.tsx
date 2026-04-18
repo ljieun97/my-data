@@ -39,6 +39,7 @@ export default function BoxOffice({
   emptyMessage,
   results,
   showRank = true,
+  showDetail = true,
   isLoading = false,
   isScoreLoading = false,
   desktopPageSize = MAX_PAGE_SIZE,
@@ -48,6 +49,7 @@ export default function BoxOffice({
   emptyMessage?: string;
   results?: HomeMovieCardItem[];
   showRank?: boolean;
+  showDetail?: boolean;
   isLoading?: boolean;
   isScoreLoading?: boolean;
   desktopPageSize?: number;
@@ -243,6 +245,7 @@ export default function BoxOffice({
                     movie={movie}
                     visibleSlots={visibleSlots}
                     showRank={showRank}
+                    showDetail={showDetail}
                     isRtLoading={isScoreLoading}
                     onPrefetch={prefetchDetail}
                   />

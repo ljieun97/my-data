@@ -138,6 +138,7 @@ export default function HomeBoxOfficeSections({
         results={data.upcomingCards}
         isScoreLoading={isRtLoading}
         showRank={false}
+        showDetail={false}
         desktopPageSize={7}
         desktopVisibleSlots={7.3}
       />
@@ -147,6 +148,7 @@ export default function HomeBoxOfficeSections({
         results={data.topRatedCards}
         isScoreLoading={isRtLoading}
         showRank={false}
+        showDetail={false}
         desktopPageSize={7}
         desktopVisibleSlots={7.3}
       />

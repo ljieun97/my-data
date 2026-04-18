@@ -16,12 +16,14 @@ export default function HomeMediaCard({
   movie,
   visibleSlots,
   showRank,
+  showDetail,
   isRtLoading,
   onPrefetch,
 }: {
   movie: HomeMovieCardItem;
   visibleSlots: number;
   showRank: boolean;
+  showDetail: boolean;
   isRtLoading: boolean;
   onPrefetch: (tmdbId?: number | null) => void;
 }) {
@@ -130,14 +132,17 @@ export default function HomeMediaCard({
           </div>
 
           <div className="flex flex-1 flex-col">
-            <p className="text-base font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-50">{movie.title}</p>
-            {movie.year ? <p className="browse-card__meta text-sm">{movie.year}</p> : null}
             <MediaScoreBadges
               tomatometer={movie.rottenTomatometer}
               popcornmeter={movie.rottenPopcornmeter}
               isLoading={isRtLoading}
               variant="home"
             />
+            {showDetail ?
+              <>
+                <p className="text-base font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-50">{movie.title}</p>
+                {movie.year ? <p className="browse-card__meta text-sm">{movie.year}</p> : null}
+              </> : null}
             {movie.detailLine ? (
               <div className="mt-2 px-0">
                 <p className="browse-card__meta text-sm">{movie.detailLine}</p>

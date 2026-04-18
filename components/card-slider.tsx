@@ -23,6 +23,7 @@ export type HomeMovieCardItem = {
   rottenTomatoesUrl?: string | null;
   rottenTomatometer?: string | null;
   rottenPopcornmeter?: string | null;
+  userRating?: number | null;
 };
 
 type HomeSliderImageType = "poster" | "backdrop";

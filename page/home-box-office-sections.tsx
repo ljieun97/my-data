@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import CardSlider, { type HomeMovieCardItem } from "@/components/card-slider"
+import { useUser } from "@/context/UserContext"
 
 type HomeSectionsResponse = {
   boxOfficeCards: HomeMovieCardItem[]
@@ -21,6 +22,11 @@ type RottenTomatoesResponse = {
   boxOfficeUpdates: RottenTomatoesUpdate[]
   upcomingUpdates: RottenTomatoesUpdate[]
   topRatedUpdates: RottenTomatoesUpdate[]
+}
+
+type UserRatingUpdate = {
+  id: number
+  rating: number
 }
 
 function applyRottenTomatoesUpdates(cards: HomeMovieCardItem[], updates: RottenTomatoesUpdate[]) {
@@ -72,11 +78,19 @@ function buildRtRequestPayload(data: HomeSectionsResponse) {
   }
 }
 
+function applyUserRatingUpdates(cards: HomeMovieCardItem[], ratingsByTmdbId: Map<number, number>) {
+  return cards.map((card) => ({
+    ...card,
+    userRating: card.tmdbId ? ratingsByTmdbId.get(card.tmdbId) ?? null : null,
+  }))
+}
+
 export default function HomeBoxOfficeSections({
   initialData,
 }: {
   initialData: HomeSectionsResponse
 }) {
+  const { uid } = useUser()
   const [data, setData] = useState<HomeSectionsResponse>(initialData)
   const [error] = useState(false)
   const [isRtLoading, setIsRtLoading] = useState(true)
@@ -84,29 +98,67 @@ export default function HomeBoxOfficeSections({
   useEffect(() => {
     let cancelled = false
 
-    const loadRottenTomatoes = async () => {
-      try {
-        const response = await fetch("/api/home/rottentomatoes", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          cache: "no-store",
-          body: JSON.stringify(buildRtRequestPayload(initialData)),
-        })
+    const loadHomeCardMeta = async () => {
+      const ids = uid
+        ? Array.from(
+            new Set(
+              [initialData.boxOfficeCards, initialData.upcomingCards, initialData.topRatedCards]
+                .flat()
+                .map((card) => card.tmdbId)
+                .filter((tmdbId): tmdbId is number => Number.isFinite(tmdbId)),
+            ),
+          )
+        : []
 
-        if (!response.ok) {
-          throw new Error(`Failed to load Rotten Tomatoes sections: ${response.status}`)
+      try {
+        const [rtResponse, ratingsResponse] = await Promise.all([
+          fetch("/api/home/rottentomatoes", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            cache: "no-store",
+            body: JSON.stringify(buildRtRequestPayload(initialData)),
+          }),
+          uid && ids.length
+            ? fetch("/api/mypage/ratings", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: uid,
+                },
+                body: JSON.stringify({ ids }),
+              })
+            : Promise.resolve(null),
+        ])
+
+        if (!rtResponse.ok) {
+          throw new Error(`Failed to load Rotten Tomatoes sections: ${rtResponse.status}`)
         }
 
-        const payload = (await response.json()) as RottenTomatoesResponse
+        const rtPayload = (await rtResponse.json()) as RottenTomatoesResponse
+        const ratingsPayload = ratingsResponse?.ok ? ((await ratingsResponse.json()) as UserRatingUpdate[]) : []
+        const ratingsByTmdbId = new Map(
+          ratingsPayload
+            .filter((item) => Number.isFinite(item.id) && Number.isFinite(item.rating) && item.rating > 0)
+            .map((item) => [item.id, item.rating]),
+        )
 
         if (!cancelled) {
-          setData((prev) => ({
-            boxOfficeCards: applyRottenTomatoesUpdates(prev.boxOfficeCards, payload.boxOfficeUpdates),
-            upcomingCards: applyRottenTomatoesUpdates(prev.upcomingCards, payload.upcomingUpdates),
-            topRatedCards: applyRottenTomatoesUpdates(prev.topRatedCards, payload.topRatedUpdates),
-          }))
+          setData({
+            boxOfficeCards: applyUserRatingUpdates(
+              applyRottenTomatoesUpdates(initialData.boxOfficeCards, rtPayload.boxOfficeUpdates),
+              ratingsByTmdbId,
+            ),
+            upcomingCards: applyUserRatingUpdates(
+              applyRottenTomatoesUpdates(initialData.upcomingCards, rtPayload.upcomingUpdates),
+              ratingsByTmdbId,
+            ),
+            topRatedCards: applyUserRatingUpdates(
+              applyRottenTomatoesUpdates(initialData.topRatedCards, rtPayload.topRatedUpdates),
+              ratingsByTmdbId,
+            ),
+          })
         }
       } catch (loadError) {
         console.error(loadError)
@@ -117,12 +169,12 @@ export default function HomeBoxOfficeSections({
       }
     }
 
-    loadRottenTomatoes()
+    void loadHomeCardMeta()
 
     return () => {
       cancelled = true
     }
-  }, [initialData])
+  }, [initialData, uid])
 
   return (
     <div className="flex flex-col gap-12">

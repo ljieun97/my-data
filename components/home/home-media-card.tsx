@@ -39,6 +39,7 @@ export default function HomeMediaCard({
   const imageSizes = isBackdropCard
     ? "(min-width: 1280px) 20vw, (min-width: 640px) 24vw, 45vw"
     : "(min-width: 1280px) 18vw, (min-width: 640px) 24vw, 33vw";
+  const savedRating = Number(movie.userRating);
 
   const handleSave = async () => {
     if (!movie.tmdbId) return;
@@ -165,6 +166,9 @@ export default function HomeMediaCard({
                 <p className="browse-card__meta text-sm">{movie.detailLine}</p>
                 {movie.subdetailLine ? <p className="browse-card__meta mt-1 text-sm">{movie.subdetailLine}</p> : null}
               </div>
+            ) : null}
+            {Number.isFinite(savedRating) && savedRating > 0 ? (
+              <p className="mt-auto pt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">⭐ {savedRating.toFixed(1)}</p>
             ) : null}
           </div>
         </div>

@@ -259,7 +259,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
   return (
     <>
       <Title title={`마이페이지 > ${year}`} sub="" />
-      <div className="flex flex-wrap justify-end gap-2 pb-2">
+      <div className="flex flex-wrap justify-end gap-2 pb-1.5">
         {viewMode === "poster" ? (
           <select
             className="min-h-[2.5rem] rounded-full border border-slate-300/80 bg-white px-3 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
@@ -344,10 +344,10 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
         {uid ? (
           viewMode === "list" ? (
             groupedRatings.length ? (
-              <div className="flex flex-col gap-8 py-2">
+              <div className="flex flex-col gap-6 py-1.5">
                 {groupedRatings.map((group) => (
-                  <section key={group.ratingValue} className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-3 dark:border-slate-800/80">
+                  <section key={group.ratingValue} className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-2 dark:border-slate-800/80">
                       <h2 className="page-title text-lg font-semibold">{group.ratingLabel}</h2>
                       <span className="browse-card__meta rounded-full bg-white/70 px-3 py-1 text-sm dark:bg-slate-900/70">
                         {group.items.length}개
@@ -373,10 +373,10 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
             ) : null
           ) : viewMode === "stats" ? (
             groupedMonths.length ? (
-              <div className="flex flex-col gap-8 py-2">
+              <div className="flex flex-col gap-6 py-1.5">
                 {groupedMonths.map((group) => (
-                  <section key={group.monthNumber} className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-3 dark:border-slate-800/80">
+                  <section key={group.monthNumber} className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-2 dark:border-slate-800/80">
                       <h2 className="page-title text-lg font-semibold">{group.monthLabel}</h2>
                       <span className="browse-card__meta rounded-full bg-white/70 px-3 py-1 text-sm dark:bg-slate-900/70">
                         {group.items.length}개

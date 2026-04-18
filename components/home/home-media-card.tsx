@@ -18,6 +18,7 @@ export default function HomeMediaCard({
   visibleSlots,
   showRank,
   showDetail,
+  showYear,
   isRtLoading,
   imageType = "poster",
   onPrefetch,
@@ -26,6 +27,7 @@ export default function HomeMediaCard({
   visibleSlots: number;
   showRank: boolean;
   showDetail: boolean;
+  showYear: boolean;
   isRtLoading: boolean;
   imageType?: "poster" | "backdrop";
   onPrefetch: (tmdbId?: number | null) => void;
@@ -77,7 +79,7 @@ export default function HomeMediaCard({
         className={["group block rounded-2xl transition", movie.tmdbId ? "cursor-pointer" : "cursor-default"].join(" ")}
       >
         <div className="flex min-w-0 flex-col">
-          <div className={`relative mb-2 ${isBackdropCard ? "aspect-video" : "aspect-[2/3]"}`}>
+          <div className={`relative mb-1.5 ${isBackdropCard ? "aspect-video" : "aspect-[2/3]"}`}>
             {showRank ? (
               <div className="absolute bottom-0 -left-2 z-10 lg:bottom-1 lg:-left-6">
                 <span className="text-6xl font-black italic leading-none tracking-[-0.08em] text-white drop-shadow-[0_3px_10px_rgba(15,23,42,0.85)] lg:text-7xl xl:text-8xl">
@@ -149,7 +151,7 @@ export default function HomeMediaCard({
             </div>
           </div>
 
-          <div className="flex flex-1 flex-col">
+          <div className="flex flex-1 flex-col gap-1">
             <MediaScoreBadges
               tomatometer={movie.rottenTomatometer}
               popcornmeter={movie.rottenPopcornmeter}
@@ -157,18 +159,18 @@ export default function HomeMediaCard({
               variant="home"
             />
             {showDetail && !isBackdropCard ?
-              <>
-                <p className="text-base font-semibold tracking-[-0.03em] text-slate-900 dark:text-slate-50">{movie.title}</p>
-                {movie.year ? <p className="browse-card__meta text-sm">{movie.year}</p> : null}
-              </> : null}
+              <div className="flex flex-col gap-px">
+                <p className="text-base font-semibold leading-snug tracking-[-0.03em] text-slate-900 dark:text-slate-50">{movie.title}</p>
+                {showYear && movie.year ? <p className="browse-card__meta text-sm leading-snug">{movie.year}</p> : null}
+              </div> : null}
             {movie.detailLine ? (
-              <div className="mt-2 px-0">
-                <p className="browse-card__meta text-sm">{movie.detailLine}</p>
-                {movie.subdetailLine ? <p className="browse-card__meta mt-1 text-sm">{movie.subdetailLine}</p> : null}
+              <div className="flex flex-col gap-px px-0">
+                <p className="browse-card__meta text-sm leading-snug">{movie.detailLine}</p>
+                {movie.subdetailLine ? <p className="browse-card__meta text-sm leading-snug">{movie.subdetailLine}</p> : null}
               </div>
             ) : null}
             {Number.isFinite(savedRating) && savedRating > 0 ? (
-              <p className="mt-auto pt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">⭐ {savedRating.toFixed(1)}</p>
+              <p className="mt-auto pt-0.5 text-sm font-semibold text-amber-500 dark:text-amber-300">⭐ {savedRating.toFixed(1)}</p>
             ) : null}
           </div>
         </div>

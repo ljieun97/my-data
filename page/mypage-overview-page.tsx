@@ -185,9 +185,9 @@ export default function MyPageOverviewPage({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-3 dark:border-slate-800/80">
+      <div className="mt-5 grid gap-5 xl:grid-cols-2">
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-2 dark:border-slate-800/80">
             <h2 className="page-title text-lg font-semibold">최근 저장</h2>
             <Link
               href={`/mypage/${currentYear}`}
@@ -216,8 +216,8 @@ export default function MyPageOverviewPage({
           )}
         </section>
 
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-3 dark:border-slate-800/80">
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3 border-b border-slate-200/70 pb-2 dark:border-slate-800/80">
             <h2 className="page-title text-lg font-semibold">상위 평가</h2>
           </div>
           {topRatedItems.length ? (
@@ -240,13 +240,13 @@ export default function MyPageOverviewPage({
         </section>
       </div>
 
-      <div className="mt-6 grid gap-4 xl:grid-cols-2">
+      <div className="mt-5 grid gap-3 xl:grid-cols-2">
         <section className="browse-card rounded-[24px] border p-5">
           <div className="flex items-center justify-between gap-3">
             <h2 className="page-title text-lg font-semibold">관람연도 분포</h2>
             <span className="browse-card__meta text-sm">평균 {averagePerYear}개</span>
           </div>
-          <div className="mt-5 flex flex-col gap-3">
+          <div className="mt-4 flex flex-col gap-2.5">
             {visibleYearCounts.map((item) => (
               <Link key={item._id} href={`/mypage/${item._id}`} className="grid grid-cols-[4rem_1fr_3rem] items-center gap-3">
                 <span className="browse-card__meta text-sm">{item._id}</span>
@@ -261,7 +261,7 @@ export default function MyPageOverviewPage({
             ))}
           </div>
           {hasMoreYearCounts ? (
-            <div className="mt-5 flex justify-center">
+            <div className="mt-4 flex justify-center">
               <button
                 type="button"
                 className="rounded-full border border-slate-300/80 bg-white px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
@@ -278,7 +278,7 @@ export default function MyPageOverviewPage({
             <h2 className="page-title text-lg font-semibold">평가점수 분포</h2>
             <span className="browse-card__meta text-sm">평균 {averageRating}점</span>
           </div>
-          <div className="mt-5 flex flex-col gap-3">
+          <div className="mt-4 flex flex-col gap-2.5">
             {ratingBuckets.length ? (
               ratingBuckets.map((item) => (
                 <div key={item.label} className="grid grid-cols-[4rem_1fr_3rem] items-center gap-3">

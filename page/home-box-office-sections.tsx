@@ -177,11 +177,12 @@ export default function HomeBoxOfficeSections({
   }, [initialData, uid])
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-10">
       <CardSlider
         title="박스오피스 순위"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
         results={data.boxOfficeCards}
+        showYear={false}
         isScoreLoading={isRtLoading}
       />
       <CardSlider

@@ -87,7 +87,7 @@ export default function MediaScoreBadges({
   }
 
   return (
-    <div className="mb-2 grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap sm:gap-2">
+    <div className="grid grid-cols-2 gap-1 sm:flex sm:flex-wrap sm:gap-1.5">
       <ScoreChip
         value={tomatometer}
         icon="🍅"

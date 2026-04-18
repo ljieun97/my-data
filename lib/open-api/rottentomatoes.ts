@@ -1,3 +1,4 @@
+import "@/lib/server-polyfills/file";
 import * as cheerio from "cheerio";
 
 type RottenTomatoesMatch = {
@@ -45,19 +46,24 @@ function scoreCandidate(match: RottenTomatoesMatch, queryTitle: string, queryYea
 }
 
 async function fetchHtml(url: string) {
-  const response = await fetch(url, {
-    headers: {
-      "user-agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-    },
-    next: { revalidate: 86400 },
-  });
+  try {
+    const response = await fetch(url, {
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+      },
+      next: { revalidate: 86400 },
+    });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return null;
+    }
+
+    return response.text();
+  } catch (error) {
+    console.error("Failed to fetch Rotten Tomatoes HTML", { url, error });
     return null;
   }
-
-  return response.text();
 }
 
 async function searchRottenTomatoesMovie(title: string, year?: string) {

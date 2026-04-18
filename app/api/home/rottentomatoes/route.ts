@@ -25,6 +25,16 @@ type RottenTomatoesUpdate = {
   rottenTomatoesUrl?: string | null
 }
 
+function emptyUpdate(card: RottenTomatoesCardSeed): RottenTomatoesUpdate {
+  return {
+    id: card.id,
+    englishTitle: card.englishTitle ?? card.originalTitle ?? card.title ?? null,
+    rottenTomatometer: null,
+    rottenPopcornmeter: null,
+    rottenTomatoesUrl: null,
+  }
+}
+
 async function mapWithConcurrency<T, R>(
   items: T[],
   limit: number,
@@ -46,19 +56,29 @@ async function mapWithConcurrency<T, R>(
 }
 
 async function enrichCard(card: RottenTomatoesCardSeed): Promise<RottenTomatoesUpdate> {
-  const englishTitle = await getMovieEnglishTitleById(
-    card.tmdbId,
-    card.originalTitle ?? card.englishTitle,
-    card.title,
-  )
-  const rottenTomatoes = await getRottenTomatoesScore(englishTitle ?? card.title, card.year)
+  try {
+    const englishTitle = await getMovieEnglishTitleById(
+      card.tmdbId,
+      card.originalTitle ?? card.englishTitle,
+      card.title,
+    )
+    const rottenTomatoes = await getRottenTomatoesScore(englishTitle ?? card.title, card.year)
 
-  return {
-    id: card.id,
-    englishTitle,
-    rottenTomatometer: rottenTomatoes?.tomatometer ?? null,
-    rottenPopcornmeter: rottenTomatoes?.popcornmeter ?? null,
-    rottenTomatoesUrl: rottenTomatoes?.url ?? null,
+    return {
+      id: card.id,
+      englishTitle,
+      rottenTomatometer: rottenTomatoes?.tomatometer ?? null,
+      rottenPopcornmeter: rottenTomatoes?.popcornmeter ?? null,
+      rottenTomatoesUrl: rottenTomatoes?.url ?? null,
+    }
+  } catch (error) {
+    console.error("Failed to enrich card with Rotten Tomatoes data", {
+      cardId: card.id,
+      title: card.title,
+      tmdbId: card.tmdbId,
+      error,
+    })
+    return emptyUpdate(card)
   }
 }
 
@@ -80,10 +100,10 @@ export async function POST(request: NextRequest) {
       { headers: { "Cache-Control": "s-maxage=86400, stale-while-revalidate=3600" } },
     )
   } catch (error) {
-    console.error(error)
+    console.error("Failed to load Rotten Tomatoes data for home sections", error)
     return NextResponse.json(
       { boxOfficeUpdates: [], upcomingUpdates: [], topRatedUpdates: [], error: "Failed to load Rotten Tomatoes data" },
-      { status: 500 },
+      { headers: { "Cache-Control": "no-store" } },
     )
   }
 }

@@ -17,6 +17,48 @@ function filterDisplayableTitles(results: any[]) {
 
 //home
 
+async function getTvSeasons(id: number) {
+  const URL = `${BASE_URL}/tv/${id}?language=ko&api_key=${API_KEY}`
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
+  const results = await response.json()
+  return results.seasons ?? []
+}
+
+async function normalizeContent(content: any): Promise<any[]> {
+  // 👤 person
+  if (content.media_type === "person") {
+    // const knownFor = content.known_for ?? []
+
+    // const results = await Promise.all(
+    //   knownFor.map((item: any) => normalizeContent(item)) // 🔥 재귀
+    // )
+
+    // return results.flat().filter((item) => item.overview)
+    return []
+  }
+
+  // 📺 tv → 시즌 분해
+  if (content.media_type === "tv") {
+    const seasons = await getTvSeasons(content.id)
+
+    return seasons
+      .map((season: any) => ({
+        // id: `${content.id}_season_${season.season_number}`, // 🔥 유니크 키
+        id: content.id,
+        media_type: "tv",
+        name: `${content.name} ${season.name}`,
+        // season_number: season.season_number,
+        overview: season.overview || content.overview,
+        poster_path: season.poster_path || content.poster_path,
+        vote_average: content.vote_average,
+        first_air_date: season.air_date,
+      }))
+  }
+
+  // 🎬 movie 등
+  return [content]
+}
+
 export async function getDetail(type: string, id: any) {
   const URL = `${BASE_URL}/${type}/${id}?language=ko&api_key=${API_KEY}`
   const response = await fetch(URL, { next: { revalidate: 3600 } })
@@ -56,16 +98,18 @@ export async function getPosters(type: string, id: string) {
 }
 
 export async function getSearchMulti(keyword: string, pageNum: number) {
-  const URL = `${BASE_URL}/search/multi?query=${keyword}&language=ko&api_key=${API_KEY}`
-    + `&page=${pageNum}`
+  const URL =
+    `${BASE_URL}/search/multi?query=${keyword}&language=ko&api_key=${API_KEY}` +
+    `&page=${pageNum}`
+
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   let data = await response.json()
-  data.results = data.results.flatMap((content: any) => {
-    if (content.media_type === "person") {
-      return content.known_for
-    }
-    return [content]
-  })
+
+  const results = await Promise.all(
+    data.results.map((content: any) => normalizeContent(content))
+  )
+
+  data.results = results.flat()
   return data
 }
 

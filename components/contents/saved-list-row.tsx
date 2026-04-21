@@ -55,6 +55,11 @@ export default function SavedListRow({
   const [posterImg, setPosterImg] = useState(`https://image.tmdb.org/t/p/w500${content.poster_path}`);
 
   const typeLabel = content.type === "movie" ? "영화" : content.type === "tv" ? "TV" : content.type;
+  const baseTitle = content.title || content.name || "Untitled";
+  const displayTitle =
+    content.type === "tv" && content.season_number
+      ? `${baseTitle.replace(/\s*시즌\s*\d+$/i, "")} 시즌 ${content.season_number}`
+      : baseTitle;
   const releaseDate = content.release_date || content.first_air_date || "-";
   const genres = Array.isArray(content.genre_ids)
     ? content.genre_ids.map((genreId: number) => genreLabels[genreId] || `Genre ${genreId}`)
@@ -96,14 +101,14 @@ export default function SavedListRow({
         ) : null}
         <div className="flex items-start gap-3 p-3 sm:gap-4 sm:p-4">
           <div className="relative h-[7rem] w-[4.8rem] shrink-0 overflow-hidden rounded-[18px] bg-slate-200/70 shadow-[0_12px_24px_rgba(15,23,42,0.16)]">
-            <Image fill alt={`${content.title} poster`} src={posterImg} className="object-cover" sizes="120px" />
+            <Image fill alt={`${displayTitle} poster`} src={posterImg} className="object-cover" sizes="120px" />
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <div className="flex flex-col gap-3 pr-16 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <h3 className="browse-card__title line-clamp-2 text-base font-semibold leading-6 tracking-[-0.03em]">
-                  {content.title}
+                  {displayTitle}
                 </h3>
                 <div className="browse-card__meta mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
                   <span>{typeLabel}</span>

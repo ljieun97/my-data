@@ -9,6 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: any }) {
 	const uid = (await headersList).get("authorization")
 	const { cid } = await params
 	const type = req.nextUrl.searchParams.get("type")
+	const seasonNumber = Number(req.nextUrl.searchParams.get("season_number") || "1")
 
 	if (!uid || !cid || !type) {
 		return NextResponse.json({ error: "Missing uid, cid or type" }, { status: 400 });
@@ -18,11 +19,13 @@ export async function GET(req: NextRequest, { params }: { params: any }) {
 	try {
 		const { client, db } = await connectMongo()
 		mongoClient = client
-		const existingItem = await db.collection("contents").findOne({
+		const query: any = {
 			user_id: uid,
 			type,
 			id: Number.isNaN(Number(cid)) ? cid : Number(cid)
-		})
+		}
+		if (type === "tv") query.season_number = seasonNumber
+		const existingItem = await db.collection("contents").findOne(query)
 
 		if (!existingItem) {
 			return NextResponse.json({ duplicate: false })
@@ -76,10 +79,12 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 				genre_ids: content.genre_ids
 			}
 		} else {
+			const seasonNumber = Number(content.season_number || 1)
 			object = {
 				type: "tv",
 				title: content.name,
 				id: content.id,
+				season_number: seasonNumber,
 				poster_path: content.poster_path,
 				genre_ids: content.genre_ids
 			}
@@ -114,11 +119,13 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 	try {
 		const { client, db } = await connectMongo()
 		mongoClient = client
-		const existingItem = await db.collection("contents").findOne({
+		const duplicateQuery: any = {
 			user_id: object.user_id,
 			type: object.type,
 			id: object.id
-		})
+		}
+		if (object.type === "tv") duplicateQuery.season_number = object.season_number ?? 1
+		const existingItem = await db.collection("contents").findOne(duplicateQuery)
 
 		if (existingItem) {
 			return NextResponse.json(
@@ -139,7 +146,8 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 				{
 					user_id: object.user_id,
 					type: object.type,
-					id: object.id
+					id: object.id,
+					...(object.type === "tv" ? { season_number: object.season_number ?? 1 } : {})
 				},
 				{
 					// $set: content,

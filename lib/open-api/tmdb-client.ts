@@ -47,7 +47,7 @@ async function normalizeContent(content: any): Promise<any[]> {
         id: content.id,
         media_type: "tv",
         name: `${content.name} ${season.name}`,
-        // season_number: season.season_number,
+        season_number: season.season_number,
         overview: season.overview || content.overview,
         poster_path: season.poster_path || content.poster_path,
         vote_average: content.vote_average,

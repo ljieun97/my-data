@@ -13,9 +13,13 @@ export function useSaveContent() {
     let saveDate: string | undefined;
     let selectedRating = rating;
     const contentType = content.type || (content.title ? "movie" : "tv");
+    const seasonParam =
+      contentType === "tv"
+        ? `&season_number=${encodeURIComponent(String(content.season_number || 1))}`
+        : "";
 
     if (uid && mode === "custom") {
-      const duplicateCheck = await fetch(`/api/mypage/content/${id}?type=${contentType}`, {
+      const duplicateCheck = await fetch(`/api/mypage/content/${id}?type=${contentType}${seasonParam}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

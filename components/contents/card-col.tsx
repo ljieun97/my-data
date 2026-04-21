@@ -41,7 +41,11 @@ export default function CardCol({
   const [rating, setRating] = useState(Number(content.user_rating) > 0 ? Number(content.user_rating) : 2.5);
   const [posterImg, setPosterImg] = useState(`https://image.tmdb.org/t/p/w500${content.poster_path}`);
 
-  const title = content.title || content.name || "Untitled";
+  const baseTitle = content.title || content.name || "Untitled";
+  const title =
+    content.type === "tv" && content.season_number
+      ? `${baseTitle.replace(/\s*시즌\s*\d+$/i, "")} 시즌 ${content.season_number}`
+      : baseTitle;
 
   const handleOpen = async () => {
     setPosters(await getPosters(content.type, content.id));

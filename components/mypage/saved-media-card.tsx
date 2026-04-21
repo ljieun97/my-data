@@ -21,6 +21,7 @@ export type SavedMediaItem = {
   poster_path?: string | null;
   user_date?: string;
   user_rating?: number | null;
+  season_number?: number | null;
 };
 
 function formatRating(value?: number | null) {
@@ -54,7 +55,11 @@ export default function SavedMediaCard({
     content.poster_path ? `https://image.tmdb.org/t/p/w500${content.poster_path}` : "",
   );
 
-  const title = content.title || content.name || "Untitled";
+  const baseTitle = content.title || content.name || "Untitled";
+  const title =
+    content.type === "tv" && content.season_number
+      ? `${baseTitle.replace(/\s*시즌\s*\d+$/i, "")} 시즌 ${content.season_number}`
+      : baseTitle;
   const href = content.type ? `/${content.type}/${content.id}` : "#";
 
   const handleOpen = async () => {

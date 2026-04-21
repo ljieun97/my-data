@@ -401,7 +401,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
               </div>
             ) : null
           ) : (
-            <div className="grid grid-cols-8 gap-1 p-2">
+            <div className="grid grid-cols-4 gap-1 p-2 lg:grid-cols-8">
               {currentList.map((content: any) => (
                 <CardCol
                   key={content._id}
@@ -416,7 +416,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
             </div>
           )
         ) : (
-          <div className="grid grid-cols-8 gap-1 p-2">
+          <div className="grid grid-cols-4 gap-1 p-2 lg:grid-cols-8">
             {currentList.map((poster: any, index: number) => (
               <Image
                 alt="sorted posters"

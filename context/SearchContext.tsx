@@ -12,13 +12,17 @@ type SearchContextValue = {
 
 const SearchContext = createContext<SearchContextValue | undefined>(undefined);
 
+function isDetailPath(pathname: string) {
+  return /^\/(?:movie|tv)\/[^/]+$/.test(pathname);
+}
+
 export function SearchProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [keyword, setKeyword] = useState("");
   const [lastNonSearchPath, setLastNonSearchPath] = useState("/");
 
   useEffect(() => {
-    if (pathname && pathname !== "/search") {
+    if (pathname && pathname !== "/search" && !isDetailPath(pathname)) {
       setLastNonSearchPath(pathname);
     }
   }, [pathname]);

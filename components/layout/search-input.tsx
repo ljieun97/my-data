@@ -5,6 +5,10 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useCallback, useRef } from "react";
 import { useSearchKeyword } from "@/context/SearchContext";
 
+function isDetailPath(pathname: string) {
+  return /^\/(?:movie|tv)\/[^/]+$/.test(pathname);
+}
+
 export default function SearchInput({
   className = "topbar-search h-11",
   autoFocus = false,
@@ -25,7 +29,7 @@ export default function SearchInput({
     setKeyword(nextKeyword);
 
     if (path === "/search" && !nextKeyword.trim()) {
-      router.push(lastNonSearchPath || "/");
+      router.push(lastNonSearchPath && !isDetailPath(lastNonSearchPath) ? lastNonSearchPath : "/");
       return;
     }
 
@@ -35,7 +39,7 @@ export default function SearchInput({
   }, [lastNonSearchPath, path, router, setKeyword]);
 
   useEffect(() => {
-    if (previousPathRef.current === "/search" && path !== "/search") {
+    if (previousPathRef.current === "/search" && path !== "/search" && !isDetailPath(path)) {
       setKeyword("");
     }
 

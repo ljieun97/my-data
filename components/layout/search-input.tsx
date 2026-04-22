@@ -6,7 +6,7 @@ import { useEffect, useCallback, useRef } from "react";
 import { useSearchKeyword } from "@/context/SearchContext";
 
 function isDetailPath(pathname: string) {
-  return /^\/(?:movie|tv)\/[^/]+$/.test(pathname);
+  return /^\/(?:movie|tv|person)\/[^/]+$/.test(pathname);
 }
 
 export default function SearchInput({

@@ -51,7 +51,7 @@ async function normalizeContent(content: any): Promise<any[]> {
         overview: season.overview || content.overview,
         poster_path: season.poster_path || content.poster_path,
         vote_average: content.vote_average,
-        first_air_date: season.air_date,
+        first_air_date: season.air_date || content.first_air_date,
       }))
   }
 

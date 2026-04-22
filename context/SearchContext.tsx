@@ -13,7 +13,7 @@ type SearchContextValue = {
 const SearchContext = createContext<SearchContextValue | undefined>(undefined);
 
 function isDetailPath(pathname: string) {
-  return /^\/(?:movie|tv)\/[^/]+$/.test(pathname);
+  return /^\/(?:movie|tv|person)\/[^/]+$/.test(pathname);
 }
 
 export function SearchProvider({ children }: { children: React.ReactNode }) {

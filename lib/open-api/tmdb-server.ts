@@ -90,6 +90,37 @@ export async function getCasts(type: string, id: string) {
   return results.cast
 }
 
+export async function getPersonDetail(id: string) {
+  const URL = `https://api.themoviedb.org/3/person/${id}?language=ko&api_key=${API_KEY}`
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
+  return response.json()
+}
+
+export async function getPersonCredits(id: string) {
+  const URL = `https://api.themoviedb.org/3/person/${id}/combined_credits?language=ko&api_key=${API_KEY}`
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
+  const results = await response.json()
+  const credits = [...(results.cast ?? []), ...(results.crew ?? [])]
+  const uniqueCredits = new Map<string, any>()
+
+  for (const credit of credits) {
+    if (!["movie", "tv"].includes(credit.media_type) || !credit.poster_path) {
+      continue
+    }
+
+    const key = `${credit.media_type}:${credit.id}`
+    if (!uniqueCredits.has(key)) {
+      uniqueCredits.set(key, credit)
+    }
+  }
+
+  return Array.from(uniqueCredits.values()).sort((a, b) => {
+    const aDate = a.release_date || a.first_air_date || ""
+    const bDate = b.release_date || b.first_air_date || ""
+    return bDate.localeCompare(aDate)
+  })
+}
+
 export async function getSimilars(type: string, id: string) {
   const URL = `https://api.themoviedb.org/3/${type}/${id}/similar?language=ko&watch_region=KR&api_key=${API_KEY}`
   const response = await fetch(URL, { next: { revalidate: 3600 } })

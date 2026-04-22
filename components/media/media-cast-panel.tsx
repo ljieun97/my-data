@@ -2,6 +2,7 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link";
 
 export default function MediaCastPanel({
   casts,
@@ -18,7 +19,12 @@ export default function MediaCastPanel({
       {cutCasts.length > 0 ? (
         <div className="media-cast-grid grid gap-3">
           {cutCasts.map((item: any, index: number) => (
-            <div key={index} className="overflow-hidden rounded-2xl bg-white/90 shadow-sm dark:bg-slate-950/80">
+            <Link
+              key={`${item.id ?? item.name}-${index}`}
+              href={item.id ? `/person/${item.id}` : "#"}
+              className="overflow-hidden rounded-2xl bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-950/80"
+              aria-disabled={!item.id}
+            >
               <div className="overflow-hidden">
                 {item.profile_path ? (
                   <img
@@ -37,7 +43,7 @@ export default function MediaCastPanel({
                 <p className="line-clamp-1 text-sm font-medium text-slate-800 dark:text-slate-100">{item.name}</p>
                 <p className="line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{item.character || "-"}</p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (

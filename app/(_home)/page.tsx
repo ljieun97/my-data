@@ -1,4 +1,4 @@
-import HomeBoxOfficeSections from "@/page/home-box-office-sections"
+import HomeBoxOfficeSections from "@/features/home/home-sections"
 import { Banners } from "@/components/layout/banners"
 import { getHomeSectionsSeed } from "@/lib/home/home-sections"
 

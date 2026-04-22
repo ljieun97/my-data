@@ -6,7 +6,7 @@ import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import Flatrates from "@/components/contents/flatrates";
 import MediaScoreBadges from "@/components/media/media-score-badges";
 import PosterHoverActions from "@/components/media/poster-hover-actions";
-import type { HomeMovieCardItem } from "@/components/card-slider";
+import type { HomeMovieCardItem } from "@/components/home/card-slider";
 import { useSaveContent } from "@/hooks/useSaveContent";
 import { useRouter } from "next/navigation";
 

@@ -7,7 +7,7 @@ import { Toast } from "@heroui/react";
 import { faCircleInfo, faPen, faStar } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { parseDate } from "@internationalized/date";
-import Flatrates from "./flatrates";
+import Flatrates from "@/components/contents/flatrates";
 import { useUser } from "@/context/UserContext";
 import { getPosters } from "@/lib/open-api/tmdb-client";
 import PosterHoverActions from "@/components/media/poster-hover-actions";

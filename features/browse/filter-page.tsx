@@ -1,10 +1,10 @@
 "use client"
 
 import { getFilterMovies } from "@/lib/open-api/tmdb-client"
-import InfiniteImages from "../components/common/infinite-images"
+import InfiniteImages from "@/components/common/infinite-images"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
-import SelectFilter from "../components/common/select-filter"
+import SelectFilter from "@/components/common/select-filter"
 
 type FilterResponse = {
   results?: any[]

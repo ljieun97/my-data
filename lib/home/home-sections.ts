@@ -1,4 +1,4 @@
-import type { HomeMovieCardItem } from "@/components/card-slider";
+import type { HomeMovieCardItem } from "@/components/home/card-slider";
 import { getKobisBoxoffice } from "@/lib/open-api/kobis";
 import { getTopRatedMovies, searchMovieMetaByTitleAndDate } from "@/lib/open-api/tmdb-server";
 import { unstable_cache } from "next/cache";

@@ -1,7 +1,7 @@
 import { deployUrl } from "@/lib/config"
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken"
-import MylistPage from "@/page/mylist-page";
+import MylistPage from "@/features/mypage/year-page";
 
 const JWT_SECRET = process.env.JWT_SECRET!
 

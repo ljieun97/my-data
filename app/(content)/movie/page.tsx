@@ -1,4 +1,4 @@
-import FilterPage from "@/page/filter-page"
+import FilterPage from "@/features/browse/filter-page"
 import { getDiscoverTitles } from "@/lib/open-api/tmdb-server"
 
 export const dynamic = "force-dynamic"

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import CardSlider, { type HomeMovieCardItem } from "@/components/card-slider"
+import CardSlider, { type HomeMovieCardItem } from "@/components/home/card-slider"
 import { useUser } from "@/context/UserContext"
 
 type HomeSectionsResponse = {

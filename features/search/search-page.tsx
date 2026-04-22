@@ -1,7 +1,7 @@
 "use client"
 
 import { useSearchParams } from "next/navigation"
-import Title from "../components/common/title"
+import Title from "@/components/common/title"
 import { RefObject, useEffect, useState } from "react";
 import { useAsyncList } from "@react-stately/data";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";

@@ -1,6 +1,6 @@
 "use client";
 
-import Flatrates from "./flatrates";
+import Flatrates from "@/components/contents/flatrates";
 import Image from "next/image";
 import { Toast } from "@heroui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

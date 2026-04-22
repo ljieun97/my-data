@@ -1,4 +1,4 @@
-import YearWorldcup from "@/components/year-worldcup";
+import YearWorldcup from "@/components/worldcup/year-worldcup";
 import { getFilterMovies } from "@/lib/open-api/tmdb-server";
 
 export const dynamic = "force-dynamic";

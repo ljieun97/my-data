@@ -1,6 +1,6 @@
 "use client"
 
-import MylistYear from "@/components/mylist-year"
+import MylistYear from "@/components/mypage/mylist-year"
 import { useEffect, useState } from "react"
 
 

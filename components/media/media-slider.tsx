@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import HomeMediaCard from "@/components/home/home-media-card";
-import HomeSliderNavButton from "@/components/home/home-slider-nav-button";
+import MediaSliderCard from "@/components/media/media-slider-card";
+import MediaSliderNavButton from "@/components/media/media-slider-nav-button";
 
-export type HomeMovieCardItem = {
+export type MediaSliderItem = {
   id: string;
   title: string;
   year?: string;
@@ -26,13 +26,13 @@ export type HomeMovieCardItem = {
   userRating?: number | null;
 };
 
-type HomeSliderImageType = "poster" | "backdrop";
+type MediaSliderImageType = "poster" | "backdrop";
 
 const MAX_PAGE_SIZE = 5;
 const SLIDER_GAP_PX = 12;
 const SWIPE_THRESHOLD = 40;
 
-export default function BoxOffice({
+export default function MediaSlider({
   title,
   emptyMessage,
   results,
@@ -46,14 +46,14 @@ export default function BoxOffice({
 }: {
   title: string;
   emptyMessage?: string;
-  results?: HomeMovieCardItem[];
+  results?: MediaSliderItem[];
   showRank?: boolean;
   showDetail?: boolean;
   showYear?: boolean;
   isLoading?: boolean;
   isScoreLoading?: boolean;
   desktopPageSize?: number;
-  imageType?: HomeSliderImageType;
+  imageType?: MediaSliderImageType;
 }) {
   const router = useRouter();
   const safeResults = Array.isArray(results) ? results : [];
@@ -224,7 +224,7 @@ export default function BoxOffice({
 
         <div>
           <div className="relative">
-            <HomeSliderNavButton direction="previous" onClick={handlePrevious} disabled={!canGoPrevious} style={buttonPositionStyle} />
+            <MediaSliderNavButton direction="previous" onClick={handlePrevious} disabled={!canGoPrevious} style={buttonPositionStyle} />
             <div className="-mx-4 overflow-hidden px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
               <div
                 ref={viewportRef}
@@ -237,7 +237,7 @@ export default function BoxOffice({
                   style={{ gap: `${SLIDER_GAP_PX}px`, transform: `translateX(${translateX}px)` }}
                 >
                   {safeResults.map((movie) => (
-                    <HomeMediaCard
+                    <MediaSliderCard
                       key={movie.id}
                       movie={movie}
                       cardWidth={cardWidth}
@@ -252,7 +252,7 @@ export default function BoxOffice({
                 </div>
               </div>
             </div>
-            <HomeSliderNavButton direction="next" onClick={handleNext} disabled={!canGoNext} style={buttonPositionStyle} />
+            <MediaSliderNavButton direction="next" onClick={handleNext} disabled={!canGoNext} style={buttonPositionStyle} />
           </div>
         </div>
       </div>

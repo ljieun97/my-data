@@ -1,6 +1,6 @@
 "use client";
 
-export default function HomeSliderNavButton({
+export default function MediaSliderNavButton({
   direction,
   onClick,
   disabled,

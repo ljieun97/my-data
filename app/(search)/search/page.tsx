@@ -1,4 +1,4 @@
-import SearchPage from "@/features/search/search-page";
+import SearchPage from "@/components/layout/search-page";
 
 export const dynamic = "force-dynamic"
 const Search = () => {

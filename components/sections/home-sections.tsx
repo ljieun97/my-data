@@ -1,13 +1,13 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import CardSlider, { type HomeMovieCardItem } from "@/components/home/card-slider"
+import MediaSlider, { type MediaSliderItem } from "@/components/media/media-slider"
 import { useUser } from "@/context/UserContext"
 
 type HomeSectionsResponse = {
-  boxOfficeCards: HomeMovieCardItem[]
-  upcomingCards: HomeMovieCardItem[]
-  topRatedCards: HomeMovieCardItem[]
+  boxOfficeCards: MediaSliderItem[]
+  upcomingCards: MediaSliderItem[]
+  topRatedCards: MediaSliderItem[]
 }
 
 type RottenTomatoesUpdate = {
@@ -29,7 +29,7 @@ type UserRatingUpdate = {
   rating: number
 }
 
-function applyRottenTomatoesUpdates(cards: HomeMovieCardItem[], updates: RottenTomatoesUpdate[]) {
+function applyRottenTomatoesUpdates(cards: MediaSliderItem[], updates: RottenTomatoesUpdate[]) {
   const updatesById = new Map(updates.map((item) => [item.id, item]))
 
   return cards.map((card) => {
@@ -78,7 +78,7 @@ function buildRtRequestPayload(data: HomeSectionsResponse) {
   }
 }
 
-function applyUserRatingUpdates(cards: HomeMovieCardItem[], ratingsByTmdbId: Map<number, number>) {
+function applyUserRatingUpdates(cards: MediaSliderItem[], ratingsByTmdbId: Map<number, number>) {
   return cards.map((card) => ({
     ...card,
     userRating: card.tmdbId ? ratingsByTmdbId.get(card.tmdbId) ?? null : null,
@@ -188,14 +188,14 @@ export default function HomeBoxOfficeSections({
 
   return (
     <div className="flex flex-col gap-10">
-      <CardSlider
+      <MediaSlider
         title="박스오피스 순위"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
         results={data.boxOfficeCards}
         showYear={false}
         isScoreLoading={isRtLoading}
       />
-      <CardSlider
+      <MediaSlider
         title="개봉예정작"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
         results={data.upcomingCards}
@@ -204,7 +204,7 @@ export default function HomeBoxOfficeSections({
         showDetail={false}
         imageType="backdrop"
       />
-      <CardSlider
+      <MediaSlider
         title="인기 영화"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
         results={data.topRatedCards}

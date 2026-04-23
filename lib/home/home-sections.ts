@@ -1,4 +1,4 @@
-import type { HomeMovieCardItem } from "@/components/home/card-slider";
+import type { MediaSliderItem } from "@/components/media/media-slider";
 import { getKobisBoxoffice } from "@/lib/open-api/kobis";
 import { getTopRatedMovies, searchMovieMetaByTitleAndDate } from "@/lib/open-api/tmdb-server";
 import { unstable_cache } from "next/cache";
@@ -6,7 +6,7 @@ import { unstable_cache } from "next/cache";
 const TMDB_API_KEY = process.env.API_KEY_TMDB || process.env.NEXT_PUBLIC_API_KEY_TMDB;
 const numberFormatter = new Intl.NumberFormat("ko-KR");
 
-export type HomeMovieCardSeed = HomeMovieCardItem & {
+export type HomeMovieCardSeed = MediaSliderItem & {
   originalTitle?: string | null;
 };
 

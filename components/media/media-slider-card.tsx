@@ -6,14 +6,14 @@ import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import Flatrates from "@/components/contents/flatrates";
 import MediaScoreBadges from "@/components/media/media-score-badges";
 import PosterHoverActions from "@/components/media/poster-hover-actions";
-import type { HomeMovieCardItem } from "@/components/home/card-slider";
+import type { MediaSliderItem } from "@/components/media/media-slider";
 import { useSaveContent } from "@/hooks/useSaveContent";
 import { useRouter } from "next/navigation";
 
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
 const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w780";
 
-export default function HomeMediaCard({
+export default function MediaSliderCard({
   movie,
   cardWidth,
   showRank,
@@ -23,7 +23,7 @@ export default function HomeMediaCard({
   imageType = "poster",
   onPrefetch,
 }: {
-  movie: HomeMovieCardItem;
+  movie: MediaSliderItem;
   cardWidth: number;
   showRank: boolean;
   showDetail: boolean;

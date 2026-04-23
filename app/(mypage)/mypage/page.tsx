@@ -1,4 +1,4 @@
-import MyPageOverviewPage from "@/features/mypage/overview-page"
+import MyPageOverviewPage from "@/components/mypage/overview-page"
 import { deployUrl } from "@/lib/config"
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken"

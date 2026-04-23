@@ -1,4 +1,4 @@
-import { getCasts, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/open-api/tmdb-server"
+import { getCredits, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/open-api/tmdb-server"
 import DetailModal from "@/components/modal/detail-modal"
 
 export const metadata = {
@@ -8,10 +8,10 @@ export const metadata = {
 export default async function Page({ params }: { params: any }) {
   const { id } = await params
   const type = 'movie'
-  const [content, video, casts, rcm, simFallback, providers] = await Promise.all([
+  const [content, video, credits, rcm, simFallback, providers] = await Promise.all([
     getDetail(type, id),
     getVideo(type, id),
-    getCasts(type, id),
+    getCredits(type, id),
     getRecommendations(type, id),
     getSimilars(type, id),
     getProviders(type, id),
@@ -21,7 +21,8 @@ export default async function Page({ params }: { params: any }) {
   return (
     <DetailModal
       content={content}
-      casts={casts}
+      casts={credits.cast}
+      crew={credits.crew}
       sim={sim}
       providers={providers}
       videoKey={video?.key}

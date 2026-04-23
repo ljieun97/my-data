@@ -13,6 +13,7 @@ import MediaOverviewPanel from "@/components/media/media-overview-panel";
 import MediaCastPanel from "@/components/media/media-cast-panel";
 import MediaDetailsPanel from "@/components/media/media-details-panel";
 import TvSeasonsPanel from "@/components/media/tv-seasons-panel";
+import MediaCrewPanel from "@/components/media/media-crew-panel";
 
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
@@ -28,6 +29,7 @@ export default function DetailModal(props: any) {
   const {
     content,
     casts = [],
+    crew = [],
     sim = [],
     providers,
     videoKey,
@@ -261,6 +263,8 @@ export default function DetailModal(props: any) {
               </div>
 
               <TvSeasonsPanel content={content} />
+
+              <MediaCrewPanel crew={crew} />
 
               <MediaCastPanel casts={casts} castsRef={castsRef} />
 

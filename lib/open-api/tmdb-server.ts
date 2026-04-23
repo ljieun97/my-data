@@ -90,6 +90,17 @@ export async function getCasts(type: string, id: string) {
   return results.cast
 }
 
+export async function getCredits(type: string, id: string) {
+  const URL = `https://api.themoviedb.org/3/${type}/${id}/credits?language=ko&api_key=${API_KEY}`
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
+  const results = await response.json()
+
+  return {
+    cast: results.cast ?? [],
+    crew: results.crew ?? [],
+  }
+}
+
 export async function getPersonDetail(id: string) {
   const URL = `https://api.themoviedb.org/3/person/${id}?language=ko&api_key=${API_KEY}`
   const response = await fetch(URL, { next: { revalidate: 3600 } })

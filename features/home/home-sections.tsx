@@ -97,47 +97,36 @@ export default function HomeBoxOfficeSections({
 
   useEffect(() => {
     let cancelled = false
+    setData(initialData)
+    setIsRtLoading(true)
 
-    const loadHomeCardMeta = async () => {
-      const ids = uid
-        ? Array.from(
-            new Set(
-              [initialData.boxOfficeCards, initialData.upcomingCards, initialData.topRatedCards]
-                .flat()
-                .map((card) => card.tmdbId)
-                .filter((tmdbId): tmdbId is number => Number.isFinite(tmdbId)),
-            ),
-          )
-        : []
+    const ids = uid
+      ? Array.from(
+          new Set(
+            [initialData.boxOfficeCards, initialData.upcomingCards, initialData.topRatedCards]
+              .flat()
+              .map((card) => card.tmdbId)
+              .filter((tmdbId): tmdbId is number => Number.isFinite(tmdbId)),
+          ),
+        )
+      : []
+
+    const loadUserRatings = async () => {
+      if (!uid || !ids.length) {
+        return
+      }
 
       try {
-        const [rtResponse, ratingsResponse] = await Promise.all([
-          fetch("/api/home/rottentomatoes", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            cache: "no-store",
-            body: JSON.stringify(buildRtRequestPayload(initialData)),
-          }),
-          uid && ids.length
-            ? fetch("/api/mypage/ratings", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: uid,
-                },
-                body: JSON.stringify({ ids }),
-              })
-            : Promise.resolve(null),
-        ])
+        const ratingsResponse = await fetch("/api/mypage/ratings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: uid,
+          },
+          body: JSON.stringify({ ids }),
+        })
 
-        if (!rtResponse.ok) {
-          throw new Error(`Failed to load Rotten Tomatoes sections: ${rtResponse.status}`)
-        }
-
-        const rtPayload = (await rtResponse.json()) as RottenTomatoesResponse
-        const ratingsPayload = ratingsResponse?.ok ? ((await ratingsResponse.json()) as UserRatingUpdate[]) : []
+        const ratingsPayload = ratingsResponse.ok ? ((await ratingsResponse.json()) as UserRatingUpdate[]) : []
         const ratingsByTmdbId = new Map(
           ratingsPayload
             .filter((item) => Number.isFinite(item.id) && Number.isFinite(item.rating) && item.rating > 0)
@@ -145,20 +134,40 @@ export default function HomeBoxOfficeSections({
         )
 
         if (!cancelled) {
-          setData({
-            boxOfficeCards: applyUserRatingUpdates(
-              applyRottenTomatoesUpdates(initialData.boxOfficeCards, rtPayload.boxOfficeUpdates),
-              ratingsByTmdbId,
-            ),
-            upcomingCards: applyUserRatingUpdates(
-              applyRottenTomatoesUpdates(initialData.upcomingCards, rtPayload.upcomingUpdates),
-              ratingsByTmdbId,
-            ),
-            topRatedCards: applyUserRatingUpdates(
-              applyRottenTomatoesUpdates(initialData.topRatedCards, rtPayload.topRatedUpdates),
-              ratingsByTmdbId,
-            ),
-          })
+          setData((currentData) => ({
+            boxOfficeCards: applyUserRatingUpdates(currentData.boxOfficeCards, ratingsByTmdbId),
+            upcomingCards: applyUserRatingUpdates(currentData.upcomingCards, ratingsByTmdbId),
+            topRatedCards: applyUserRatingUpdates(currentData.topRatedCards, ratingsByTmdbId),
+          }))
+        }
+      } catch (loadError) {
+        console.error(loadError)
+      }
+    }
+
+    const loadRottenTomatoes = async () => {
+      try {
+        const rtResponse = await fetch("/api/home/rottentomatoes", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+          body: JSON.stringify(buildRtRequestPayload(initialData)),
+        })
+
+        if (!rtResponse.ok) {
+          throw new Error(`Failed to load Rotten Tomatoes sections: ${rtResponse.status}`)
+        }
+
+        const rtPayload = (await rtResponse.json()) as RottenTomatoesResponse
+
+        if (!cancelled) {
+          setData((currentData) => ({
+            boxOfficeCards: applyRottenTomatoesUpdates(currentData.boxOfficeCards, rtPayload.boxOfficeUpdates),
+            upcomingCards: applyRottenTomatoesUpdates(currentData.upcomingCards, rtPayload.upcomingUpdates),
+            topRatedCards: applyRottenTomatoesUpdates(currentData.topRatedCards, rtPayload.topRatedUpdates),
+          }))
         }
       } catch (loadError) {
         console.error(loadError)
@@ -169,7 +178,8 @@ export default function HomeBoxOfficeSections({
       }
     }
 
-    void loadHomeCardMeta()
+    void loadUserRatings()
+    void loadRottenTomatoes()
 
     return () => {
       cancelled = true

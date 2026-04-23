@@ -67,7 +67,7 @@ export default function PersonDetailContent({
         </div>
 
         {credits.length > 0 ? (
-          <InfiniteImages contents={credits} />
+          <InfiniteImages contents={credits} type="info" />
         ) : (
           <div className="browse-card rounded-[24px] border p-6 text-sm text-slate-500 dark:text-slate-400">
             현재 등록된 작품 정보가 없습니다.

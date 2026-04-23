@@ -1,11 +1,10 @@
 "use client";
 
 import Flatrates from "./flatrates";
-import { faCircleInfo, faPlus, faEye, faStar } from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { useSaveContent } from "@/hooks/useSaveContent";
 import PosterHoverActions from "@/components/media/poster-hover-actions";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function CardInfo({ content }: { content: any }) {
   const router = useRouter();
@@ -16,8 +15,7 @@ export default function CardInfo({ content }: { content: any }) {
   const img = content.poster_path ? `https://image.tmdb.org/t/p/w500/${content.poster_path}` : "/images/no-image.jpg";
   const title = content.title ? content.title : content.name;
   const releaseDate = type === "movie" ? content.release_date : content.first_air_date;
-  const voteAverage = content.vote_average ? Number(content.vote_average).toFixed(1) : "-";
-  const voteCount = content.vote_count ? Number(content.vote_count).toLocaleString() : "0";
+  const savedRating = Number(content.userRating);
 
   const handleClick = async (rating: number) => {
     await saveWithPreference({ id, content, rating });
@@ -66,18 +64,14 @@ export default function CardInfo({ content }: { content: any }) {
           </div>
         </div>
 
-        <div className="browse-card__footer flex items-center justify-between gap-2 border-t px-3 py-2">
-          <div className="flex flex-wrap gap-2">
-            <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-              <FontAwesomeIcon icon={faStar} className="mr-1.5" />
-              {voteAverage}
-            </span>
-            <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
-              <FontAwesomeIcon icon={faEye} className="mr-1.5" />
-              {voteCount}
+        {Number.isFinite(savedRating) && savedRating > 0 ? (
+          <div className="browse-card__footer flex items-center justify-end border-t px-3 py-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-400/12 dark:text-amber-200">
+              <span aria-hidden="true">{"\u2B50"}</span>
+              {savedRating.toFixed(1)}
             </span>
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );

@@ -66,18 +66,20 @@ export default function TvSeasonsPanel({ content }: { content: any }) {
 
           return (
             <article key={season.id || season.season_number} className="group/season min-w-0">
-              <div className="relative overflow-hidden rounded-[18px] bg-slate-200 shadow-[0_12px_26px_rgba(15,23,42,0.14)] dark:bg-slate-800">
-                {posterPath ? (
-                  <img
-                    src={`${TMDB_POSTER_BASE_URL}${posterPath}`}
-                    alt={seasonTitle}
-                    className="aspect-[2/3] w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex aspect-[2/3] items-center justify-center px-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400">
-                    No poster
-                  </div>
-                )}
+              <div className="relative flex min-h-[7.25rem] overflow-hidden rounded-[18px] bg-slate-200 shadow-[0_12px_26px_rgba(15,23,42,0.14)] dark:bg-slate-800">
+                <div className="w-24 shrink-0 bg-slate-300 dark:bg-slate-700">
+                  {posterPath ? (
+                    <img
+                      src={`${TMDB_POSTER_BASE_URL}${posterPath}`}
+                      alt={seasonTitle}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-3 text-center text-xs font-medium text-slate-500 dark:text-slate-400">
+                      No poster
+                    </div>
+                  )}
+                </div>
                 <PosterHoverActions
                   overlayClassName="rounded-[18px] bg-slate-950/28 group-hover/season:visible dark:bg-slate-950/48"
                   actions={[
@@ -89,16 +91,20 @@ export default function TvSeasonsPanel({ content }: { content: any }) {
                     },
                   ]}
                 />
-              </div>
-
-              <div className="mt-2 min-w-0 space-y-1">
-                <h5 className="line-clamp-2 text-sm font-semibold leading-snug tracking-[-0.03em] text-slate-900 dark:text-slate-50">
-                  {seasonTitle}
-                </h5>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {airDate}
-                  {Number.isFinite(episodeCount) && episodeCount > 0 ? ` \u00B7 ${episodeCount} episodes` : ""}
-                </p>
+                <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-3">
+                  <h5 className="line-clamp-2 text-sm font-semibold leading-snug tracking-[-0.03em] text-slate-900 dark:text-slate-50">
+                    {seasonTitle}
+                  </h5>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {airDate}
+                    {Number.isFinite(episodeCount) && episodeCount > 0 ? ` \u00B7 ${episodeCount} episodes` : ""}
+                  </p>
+                  {season.overview ? (
+                    <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                      {season.overview}
+                    </p>
+                  ) : null}
+                </div>
               </div>
             </article>
           );

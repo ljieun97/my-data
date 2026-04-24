@@ -354,7 +354,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-1 sm:grid-cols-8">
+                    <div className="mypage-poster-grid">
                       {group.items.map((item) => (
                         <SavedMediaCard
                           key={item._id}
@@ -383,7 +383,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-1 sm:grid-cols-8">
+                    <div className="mypage-poster-grid">
                       {group.items.map((item) => (
                         <SavedMediaCard
                           key={item._id}
@@ -401,7 +401,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
               </div>
             ) : null
           ) : (
-            <div className="grid grid-cols-4 gap-1 p-2 sm:grid-cols-8">
+            <div className="mypage-poster-grid p-2">
               {currentList.map((content: any) => (
                 <CardCol
                   key={content._id}
@@ -416,7 +416,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
             </div>
           )
         ) : (
-          <div className="grid grid-cols-4 gap-1 p-2 sm:grid-cols-8">
+          <div className="mypage-poster-grid p-2">
             {currentList.map((poster: any, index: number) => (
               <Image
                 alt="sorted posters"

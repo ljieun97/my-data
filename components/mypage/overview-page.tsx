@@ -198,7 +198,7 @@ export default function MyPageOverviewPage({
             </Link>
           </div>
           {recentItems.length ? (
-            <div className="grid grid-cols-4 gap-1">
+            <div className="grid grid-cols-4 gap-1 sm:grid-cols-8">
               {recentItems.map((item) => (
                 <SavedMediaCard
                   key={item._id}
@@ -221,7 +221,7 @@ export default function MyPageOverviewPage({
             <h2 className="page-title text-lg font-semibold">상위 평가</h2>
           </div>
           {topRatedItems.length ? (
-            <div className="grid grid-cols-4 gap-1">
+            <div className="grid grid-cols-4 gap-1 sm:grid-cols-8">
               {topRatedItems.map((item) => (
                 <SavedMediaCard
                   key={item._id}

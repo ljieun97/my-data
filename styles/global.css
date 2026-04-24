@@ -437,6 +437,18 @@ html.dark-theme .user-rating-chip {
   }
 }
 
+.mypage-poster-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .mypage-poster-grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
+
 .topbar-shell {
   position: fixed !important;
   top: 0 !important;

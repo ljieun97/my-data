@@ -57,7 +57,7 @@ export default function ThumbMediaCard({ content }: { content: any }) {
       </div>
       {Number.isFinite(savedRating) && savedRating > 0 ? (
         <div className="pt-1">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-400/12 dark:text-amber-200">
+          <span className="user-rating-chip rounded-full px-2.5 py-1 text-xs font-semibold">
             <span aria-hidden="true">{"\u2B50"}</span>
             {savedRating.toFixed(1)}
           </span>

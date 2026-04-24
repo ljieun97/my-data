@@ -1,3 +1,5 @@
+'use client'
+
 import InfiniteImages from "@/components/common/infinite-images";
 import Title from "@/components/common/title";
 import PersonWatchStat from "@/components/person/person-watch-stat";

@@ -372,7 +372,7 @@ html.dark-theme .home-mood {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  border: 1px solid rgba(226, 232, 240, 0.86);
+  border: none;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 8px 20px rgba(148, 163, 184, 0.12);
   color: #475569;
@@ -408,10 +408,27 @@ html.dark-theme .home-mood {
 }
 
 html.dark-theme .home-score-chip {
-  border-color: rgba(71, 85, 105, 0.76);
+  border: none;
   background: rgba(30, 41, 59, 0.92);
   box-shadow: 0 10px 24px rgba(2, 6, 23, 0.22);
   color: #cbd5e1;
+}
+
+.user-rating-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(250, 204, 21, 0.9);
+  background: rgba(10, 10, 10, 0.92);
+  color: #facc15;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.22);
+}
+
+html.dark-theme .user-rating-chip {
+  border-color: rgba(250, 204, 21, 0.9);
+  background: rgba(2, 6, 23, 0.96);
+  color: #fde047;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.3);
 }
 
 @media (max-width: 639px) {

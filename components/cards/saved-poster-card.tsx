@@ -58,7 +58,7 @@ export default function SavedPosterCard({
   const baseTitle = content.title || content.name || "Untitled";
   const title =
     content.type === "tv" && content.season_number && Number(content.season_number) > 1
-      ? `${baseTitle.replace(/\s*시즌\s*\d+$/i, "")} 시즌 ${content.season_number}`
+      ? `${baseTitle.replace(/\s*?쒖쫵\s*\d+$/i, "")} ?쒖쫵 ${content.season_number}`
       : baseTitle;
   const href = content.type ? `/${content.type}/${content.id}` : "#";
 
@@ -86,12 +86,12 @@ export default function SavedPosterCard({
         setPosterImg(`https://image.tmdb.org/t/p/w500${selectPoster}`);
       }
       onUpdate(content._id, date.toString(), selectPoster, rating);
-      Toast.toast("수정했습니다.");
+      Toast.toast("?섏젙?덉뒿?덈떎.");
     }
   };
 
   const handleDeleteFromModal = () => {
-    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    if (!window.confirm("?뺣쭚 ??젣?섏떆寃좎뒿?덇퉴?")) return;
     setIsEditOpen(false);
     void onDelete(content._id);
   };
@@ -100,7 +100,7 @@ export default function SavedPosterCard({
     <>
       <div
         className="group block overflow-hidden rounded-sm p-[1px] transition-transform hover:-translate-y-0.5"
-        style={{ backgroundColor: "transparent" }}
+        style={{ backgroundColor: backgroundColor ?? "transparent" }}
       >
         <div className="overflow-hidden rounded-sm bg-transparent backdrop-blur-none">
           <div className="relative aspect-[2/3] overflow-hidden rounded-sm bg-slate-200 dark:bg-slate-800">
@@ -120,7 +120,7 @@ export default function SavedPosterCard({
 
             {showRating ? (
               <div className="absolute bottom-2 right-2 z-20 sm:bottom-3 sm:right-3">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold text-amber-700 shadow-lg sm:px-3 sm:py-1.5 sm:text-xs dark:bg-amber-400/12 dark:text-amber-200">
+                <span className="user-rating-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold shadow-lg sm:px-3 sm:py-1.5 sm:text-xs">
                   <span aria-hidden="true">{"\u2B50"}</span>
                   {formatRating(content.user_rating)}
                 </span>
@@ -133,13 +133,13 @@ export default function SavedPosterCard({
               actions={[
                 {
                   icon: faPen,
-                  label: "수정하기",
+                  label: "?섏젙?섍린",
                   onClick: handleOpen,
                   className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
                 },
                 {
                   icon: faCircleInfo,
-                  label: "상세보기",
+                  label: "?곸꽭蹂닿린",
                   onClick: () => {
                     if (content.type) router.push(href);
                   },
@@ -154,9 +154,9 @@ export default function SavedPosterCard({
       {isEditOpen ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-2xl rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
-            <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">수정하기</div>
+            <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">?섏젙?섍린</div>
             <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-6 py-5">
-              <h2 className="mb-2 text-sm font-semibold">날짜</h2>
+              <h2 className="mb-2 text-sm font-semibold">?좎쭨</h2>
               <input
                 type="date"
                 value={typeof date?.toString === "function" ? date.toString() : ""}
@@ -164,7 +164,7 @@ export default function SavedPosterCard({
                 className="min-h-[2.75rem] w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
 
-              <h2 className="mb-2 mt-5 text-sm font-semibold">별점</h2>
+              <h2 className="mb-2 mt-5 text-sm font-semibold">蹂꾩젏</h2>
               <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
                 {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((value) => {
                   const isActive = Math.abs(rating - value) < 0.001;
@@ -188,7 +188,7 @@ export default function SavedPosterCard({
                 })}
               </div>
 
-              <h2 className="mb-2 mt-5 text-sm font-semibold">사진 ({posters.length})</h2>
+              <h2 className="mb-2 mt-5 text-sm font-semibold">?ъ쭊 ({posters.length})</h2>
               <div className="grid grid-cols-4 gap-1">
                 {posters.map((poster: any, index: number) => (
                   <button
@@ -215,14 +215,14 @@ export default function SavedPosterCard({
                 className="rounded-full border border-red-200 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 dark:border-red-900/70 dark:text-red-300 dark:hover:bg-red-950/40"
                 onClick={handleDeleteFromModal}
               >
-                삭제하기
+                ??젣?섍린
               </button>
               <div className="flex justify-end gap-2">
                 <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={handleSubmit}>
-                  완료
+                  ?꾨즺
                 </button>
                 <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => setIsEditOpen(false)}>
-                  닫기
+                  ?リ린
                 </button>
               </div>
             </div>

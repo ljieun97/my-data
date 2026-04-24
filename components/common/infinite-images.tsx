@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useMemo, useState } from "react"
 import CardInfo from "../contents/card-info"
 import CardThumb from "../contents/card-thumb"

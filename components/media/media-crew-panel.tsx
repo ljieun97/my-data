@@ -98,11 +98,11 @@ export default function MediaCrewPanel({ crew }: { crew: any[] }) {
         {"\uC81C\uC791\uC9C4"}
       </h4>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="space-y-5">
         {groups.map((group) => (
           <div key={group.key} className="space-y-2">
             <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">{group.label}</p>
-            <div className="grid gap-2">
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {group.people.map((person: any) => (
                 <CrewPersonCard key={`${group.key}-${person.id ?? person.name}`} person={person} />
               ))}

@@ -48,7 +48,6 @@ export default function PersonDetailContent({
   const deathday = person?.deathday ? formatDate(person.deathday) : null;
   const placeOfBirth = person?.place_of_birth || "-";
   const biography = typeof person?.biography === "string" ? person.biography.trim() : "";
-  const popularity = Number(person?.popularity);
   const creditYears = credits.map(getCreditYear).filter((year): year is number => year !== null);
   const activityRange = creditYears.length > 0 ? `${Math.min(...creditYears)} - ${Math.max(...creditYears)}` : "-";
   const movieCount = credits.filter((credit) => credit.media_type === "movie" || credit.title).length;
@@ -86,8 +85,7 @@ export default function PersonDetailContent({
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-              <StatCard label={"\uC778\uAE30\uB3C4"} value={Number.isFinite(popularity) ? popularity.toFixed(1) : "-"} />
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <StatCard label={"\uD65C\uB3D9 \uAE30\uAC04"} value={activityRange} />
               <StatCard label={"\uC601\uD654"} value={`${movieCount}\uAC1C`} />
               <StatCard label={"\uC2DC\uB9AC\uC988"} value={`${tvCount}\uAC1C`} />

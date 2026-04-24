@@ -17,31 +17,30 @@ export default function MediaCastPanel({
     <section className="space-y-4 rounded-[26px] bg-slate-50/80 p-5 dark:bg-slate-900/70">
       <h4 className="text-base font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-50">Cast</h4>
       {cutCasts.length > 0 ? (
-        <div className="media-cast-grid grid gap-3">
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {cutCasts.map((item: any, index: number) => (
             <Link
               key={`${item.id ?? item.name}-${index}`}
               href={item.id ? `/person/${item.id}` : "#"}
-              className="overflow-hidden rounded-2xl bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-950/80"
+              className="flex min-w-0 items-center gap-3 rounded-2xl bg-white/90 p-2 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-950/80"
               aria-disabled={!item.id}
             >
-              <div className="overflow-hidden">
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800">
                 {item.profile_path ? (
                   <img
-                    width="100%"
                     alt={item.name}
-                    className="aspect-[26/37] w-full object-cover"
+                    className="h-full w-full object-cover"
                     src={`https://image.tmdb.org/t/p/w500/${item.profile_path}`}
                   />
                 ) : (
-                  <div className="flex aspect-[26/37] w-full items-center justify-center bg-slate-200 dark:bg-slate-800">
+                  <div className="flex h-full w-full items-center justify-center text-slate-400">
                     <FontAwesomeIcon icon={faImage} />
                   </div>
                 )}
               </div>
-              <div className="px-3 py-3 text-center">
-                <p className="line-clamp-1 text-sm font-medium text-slate-800 dark:text-slate-100">{item.name}</p>
-                <p className="line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{item.character || "-"}</p>
+              <div className="min-w-0">
+                <p className="line-clamp-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{item.name}</p>
+                <p className="line-clamp-1 text-xs text-slate-500 dark:text-slate-400">{item.character || "-"}</p>
               </div>
             </Link>
           ))}

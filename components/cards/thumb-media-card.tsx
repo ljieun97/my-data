@@ -14,6 +14,8 @@ export default function ThumbMediaCard({ content }: { content: any }) {
   const id = content.id;
   const img = content.backdrop_path ? `https://image.tmdb.org/t/p/w500/${content.backdrop_path}` : "/images/no-image.jpg";
   const savedRating = Number(content.userRating);
+  const contributionLabel =
+    content.contribution_type === "cast" ? "\uCD9C\uC5F0" : content.contribution_type === "crew" ? "\uC81C\uC791" : null;
 
   const handleClick = async (rating: number) => {
     await saveWithPreference({ id, content, rating });
@@ -27,6 +29,11 @@ export default function ThumbMediaCard({ content }: { content: any }) {
           <Flatrates type={type} provider={content.id} />
         </div>
         <div className="absolute inset-x-0 bottom-0 z-10 p-3">
+          {contributionLabel ? (
+            <span className="mb-2 inline-flex rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-semibold text-slate-700 backdrop-blur-sm">
+              {contributionLabel}
+            </span>
+          ) : null}
           <div className="line-clamp-3 text-sm font-bold text-white">{content.title ? content.title : content.name}</div>
         </div>
         <PosterHoverActions

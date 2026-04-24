@@ -7,7 +7,7 @@ function getCreditType(credit: any) {
   return credit?.media_type || (credit?.title ? "movie" : "tv");
 }
 
-export default function PersonWatchStat({ credits }: { credits: any[] }) {
+export default function PersonWatchStat({ credits, label }: { credits: any[]; label: string }) {
   const { uid } = useUser();
   const [watchedCount, setWatchedCount] = useState(0);
   const items = useMemo(() => {
@@ -78,7 +78,7 @@ export default function PersonWatchStat({ credits }: { credits: any[] }) {
 
   return (
     <div className="rounded-[20px] bg-slate-100/80 px-4 py-3 dark:bg-slate-900/70">
-      <p className="text-xs font-medium text-slate-400 dark:text-slate-500">{"\uBCF8 \uC791\uD488"}</p>
+      <p className="text-xs font-medium text-slate-400 dark:text-slate-500">{label}</p>
       <div className="mt-1 flex items-end justify-between gap-2">
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
           {watchedCount} / {totalCount}

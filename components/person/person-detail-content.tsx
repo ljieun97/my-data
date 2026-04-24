@@ -52,6 +52,8 @@ export default function PersonDetailContent({
   const activityRange = creditYears.length > 0 ? `${Math.min(...creditYears)} - ${Math.max(...creditYears)}` : "-";
   const movieCount = credits.filter((credit) => credit.media_type === "movie" || credit.title).length;
   const tvCount = credits.filter((credit) => credit.media_type === "tv" || credit.name).length;
+  const castCredits = credits.filter((credit) => credit.contribution_type === "cast");
+  const crewCredits = credits.filter((credit) => credit.contribution_type === "crew");
 
   return (
     <div className="flex flex-col gap-6">
@@ -85,11 +87,12 @@ export default function PersonDetailContent({
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               <StatCard label={"\uD65C\uB3D9 \uAE30\uAC04"} value={activityRange} />
               <StatCard label={"\uC601\uD654"} value={`${movieCount}\uAC1C`} />
               <StatCard label={"\uC2DC\uB9AC\uC988"} value={`${tvCount}\uAC1C`} />
-              <PersonWatchStat credits={credits} />
+              <PersonWatchStat credits={castCredits} label={"\uCD9C\uC5F0 \uAD00\uB78C"} />
+              <PersonWatchStat credits={crewCredits} label={"\uC81C\uC791 \uAD00\uB78C"} />
             </div>
 
             {biography ? (

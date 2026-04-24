@@ -86,7 +86,7 @@ export default function SavedPosterCard({
         setPosterImg(`https://image.tmdb.org/t/p/w500${selectPoster}`);
       }
       onUpdate(content._id, date.toString(), selectPoster, rating);
-      Toast.toast("수정되었습니다.");
+      Toast.toast("수정했습니다.");
     }
   };
 
@@ -120,8 +120,9 @@ export default function SavedPosterCard({
 
             {showRating ? (
               <div className="absolute bottom-2 right-2 z-20 sm:bottom-3 sm:right-3">
-                <span className="rounded-full bg-black/72 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.04em] text-white shadow-lg backdrop-blur-sm sm:px-3 sm:py-1.5 sm:text-xs">
-                  ⭐ {formatRating(content.user_rating)}
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold text-amber-700 shadow-lg sm:px-3 sm:py-1.5 sm:text-xs dark:bg-amber-400/12 dark:text-amber-200">
+                  <span aria-hidden="true">{"\u2B50"}</span>
+                  {formatRating(content.user_rating)}
                 </span>
               </div>
             ) : null}

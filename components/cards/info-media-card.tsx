@@ -16,6 +16,8 @@ export default function InfoMediaCard({ content }: { content: any }) {
   const title = content.title ? content.title : content.name;
   const releaseDate = type === "movie" ? content.release_date : content.first_air_date;
   const savedRating = Number(content.userRating);
+  const contributionLabel =
+    content.contribution_type === "cast" ? "\uCD9C\uC5F0" : content.contribution_type === "crew" ? "\uC81C\uC791" : null;
 
   const handleClick = async (rating: number) => {
     await saveWithPreference({ id, content, rating });
@@ -55,6 +57,11 @@ export default function InfoMediaCard({ content }: { content: any }) {
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2 md:py-1">
             <div>
+              {contributionLabel ? (
+                <span className="mb-1 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500 dark:bg-slate-900 dark:text-slate-300">
+                  {contributionLabel}
+                </span>
+              ) : null}
               <h3 className="browse-card__title line-clamp-2 text-base font-semibold leading-6 tracking-[-0.03em]">{title}</h3>
               <p className="browse-card__meta text-sm">{releaseDate || "Release date unavailable"}</p>
             </div>

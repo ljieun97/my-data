@@ -158,11 +158,12 @@ export default function MediaSliderCard({
               isLoading={isRtLoading}
               variant="home"
             />
-            {showDetail && !isBackdropCard ?
+            {showDetail && !isBackdropCard ? (
               <div className="flex flex-col gap-px pt-2">
                 <p className="text-base font-semibold leading-snug tracking-[-0.03em] text-slate-900 dark:text-slate-50">{movie.title}</p>
                 {showYear && movie.year ? <p className="browse-card__meta text-sm leading-snug">{movie.year}</p> : null}
-              </div> : null}
+              </div>
+            ) : null}
             {movie.detailLine ? (
               <div className="flex flex-col gap-px px-0">
                 <p className="browse-card__meta text-sm leading-snug">{movie.detailLine}</p>
@@ -170,7 +171,12 @@ export default function MediaSliderCard({
               </div>
             ) : null}
             {Number.isFinite(savedRating) && savedRating > 0 ? (
-              <p className="mt-auto pt-0.5 text-sm font-semibold text-amber-500 dark:text-amber-300">⭐ {savedRating.toFixed(1)}</p>
+              <div className="mt-auto pt-1">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-400/12 dark:text-amber-200">
+                  <span aria-hidden="true">{"\u2B50"}</span>
+                  {savedRating.toFixed(1)}
+                </span>
+              </div>
             ) : null}
           </div>
         </div>

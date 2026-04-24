@@ -111,7 +111,10 @@ export async function getPersonCredits(id: string) {
   const URL = `https://api.themoviedb.org/3/person/${id}/combined_credits?language=ko&api_key=${API_KEY}`
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   const results = await response.json()
-  const credits = [...(results.cast ?? []), ...(results.crew ?? [])]
+  const credits = [
+    ...(results.cast ?? []).map((credit: any) => ({ ...credit, contribution_type: "cast" })),
+    ...(results.crew ?? []).map((credit: any) => ({ ...credit, contribution_type: "crew" })),
+  ]
   const uniqueCredits = new Map<string, any>()
 
   for (const credit of credits) {
@@ -120,7 +123,7 @@ export async function getPersonCredits(id: string) {
     }
 
     const key = `${credit.media_type}:${credit.id}`
-    if (!uniqueCredits.has(key)) {
+    if (!uniqueCredits.has(key) || uniqueCredits.get(key)?.contribution_type !== "cast") {
       uniqueCredits.set(key, credit)
     }
   }

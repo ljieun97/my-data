@@ -69,7 +69,7 @@ export default function YearPosterCard({
       } else {
         setPosterImg(`https://image.tmdb.org/t/p/w500${selectPoster}`);
       }
-      Toast.toast("수정되었습니다.");
+      Toast.toast("수정했습니다.");
     }
   };
 
@@ -92,8 +92,9 @@ export default function YearPosterCard({
 
         {isRating ? (
           <div className="absolute bottom-2 right-2 z-20 sm:bottom-3 sm:right-3">
-            <span className="rounded-full bg-black/72 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.04em] text-white shadow-lg backdrop-blur-sm sm:px-3 sm:py-1.5 sm:text-xs">
-              ⭐ {formatRating(content.user_rating)}
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold text-amber-700 shadow-lg sm:px-3 sm:py-1.5 sm:text-xs dark:bg-amber-400/12 dark:text-amber-200">
+              <span aria-hidden="true">{"\u2B50"}</span>
+              {formatRating(content.user_rating)}
             </span>
           </div>
         ) : null}
@@ -130,7 +131,7 @@ export default function YearPosterCard({
                 className="min-h-[2.75rem] w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
 
-              <h2 className="mb-2 mt-5 text-sm font-semibold">평점</h2>
+              <h2 className="mb-2 mt-5 text-sm font-semibold">별점</h2>
               <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
                 {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((value) => {
                   const isActive = Math.abs(rating - value) < 0.001;

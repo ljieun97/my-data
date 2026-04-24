@@ -57,7 +57,7 @@ export default function SavedPosterCard({
 
   const baseTitle = content.title || content.name || "Untitled";
   const title =
-    content.type === "tv" && content.season_number
+    content.type === "tv" && content.season_number && Number(content.season_number) > 1
       ? `${baseTitle.replace(/\s*시즌\s*\d+$/i, "")} 시즌 ${content.season_number}`
       : baseTitle;
   const href = content.type ? `/${content.type}/${content.id}` : "#";

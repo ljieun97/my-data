@@ -4,7 +4,7 @@ import { SetStateAction, useState } from "react";
 import { Toast } from "@heroui/react";
 import Image from "next/image";
 import Title from "@/components/common/title";
-import CardCol from "@/components/mypage/year-poster-card";
+import CardCol from "@/components/cards/year-poster-card";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import { FastAverageColor } from "fast-average-color";

@@ -29,7 +29,7 @@ function formatRating(value?: number | null) {
   return Number.isFinite(rating) && rating > 0 ? rating.toFixed(1) : "-";
 }
 
-export default function SavedMediaCard({
+export default function SavedPosterCard({
   content,
   backgroundColor = "rgba(148, 163, 184, 0.16)",
   showProvider = false,

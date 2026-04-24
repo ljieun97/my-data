@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import MediaSliderCard from "@/components/media/media-slider-card";
+import MediaSliderCard from "@/components/cards/slider-media-card";
 import MediaSliderNavButton from "@/components/media/media-slider-nav-button";
 
 export type MediaSliderItem = {

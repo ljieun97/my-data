@@ -1,6 +1,6 @@
 import { getDetail } from "@/lib/open-api/tmdb-server"
-import CardInfo from "@/components/contents/card-info";
-import ImageCard from "@/components/contents/image-card";
+import CardInfo from "@/components/cards/info-media-card";
+import ImageCard from "@/components/cards/backdrop-media-card";
 
 export const dynamic = "force-dynamic";
 export const metadata = {

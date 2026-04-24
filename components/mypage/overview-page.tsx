@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FastAverageColor } from "fast-average-color";
 import { Toast } from "@heroui/react";
 import Title from "@/components/common/title";
-import SavedMediaCard, { type SavedMediaItem } from "@/components/mypage/saved-media-card";
+import SavedMediaCard, { type SavedMediaItem } from "@/components/cards/saved-poster-card";
 import { useUser } from "@/context/UserContext";
 
 type YearCount = {

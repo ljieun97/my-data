@@ -5,8 +5,8 @@ import { Toast } from "@heroui/react";
 import Image from "next/image";
 import Link from "next/link";
 import Title from "@/components/common/title";
-import CardCol from "@/components/mypage/year-poster-card";
-import SavedMediaCard, { type SavedMediaItem } from "@/components/mypage/saved-media-card";
+import CardCol from "@/components/cards/year-poster-card";
+import SavedMediaCard, { type SavedMediaItem } from "@/components/cards/saved-poster-card";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import { FastAverageColor } from "fast-average-color";
@@ -354,7 +354,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-1 min-[640px]:grid-cols-5 min-[960px]:grid-cols-8">
+                    <div className="grid grid-cols-4 gap-1 sm:grid-cols-8">
                       {group.items.map((item) => (
                         <SavedMediaCard
                           key={item._id}
@@ -383,7 +383,7 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-1 min-[640px]:grid-cols-5 min-[960px]:grid-cols-8">
+                    <div className="grid grid-cols-4 gap-1 sm:grid-cols-8">
                       {group.items.map((item) => (
                         <SavedMediaCard
                           key={item._id}

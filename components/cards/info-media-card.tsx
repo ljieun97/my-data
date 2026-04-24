@@ -1,12 +1,12 @@
 "use client";
 
-import Flatrates from "./flatrates";
+import Flatrates from "@/components/contents/flatrates";
 import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { useSaveContent } from "@/hooks/useSaveContent";
 import PosterHoverActions from "@/components/media/poster-hover-actions";
 
-export default function CardInfo({ content }: { content: any }) {
+export default function InfoMediaCard({ content }: { content: any }) {
   const router = useRouter();
   const { saveWithPreference } = useSaveContent();
 

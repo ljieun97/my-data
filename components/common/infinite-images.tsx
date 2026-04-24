@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import CardInfo from "../contents/card-info"
-import CardThumb from "../contents/card-thumb"
+import CardInfo from "@/components/cards/info-media-card"
+import CardThumb from "@/components/cards/thumb-media-card"
 import { useUser } from "@/context/UserContext"
 
 type RatingUpdate = {

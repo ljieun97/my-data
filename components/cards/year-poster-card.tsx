@@ -17,7 +17,7 @@ function formatRating(value?: number | null) {
   return Number.isFinite(normalized) && normalized > 0 ? normalized.toFixed(1) : "-";
 }
 
-export default function CardCol({
+export default function YearPosterCard({
   thisYear,
   content,
   isProvider,

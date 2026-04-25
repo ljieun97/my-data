@@ -30,7 +30,6 @@ export function UiProvider({
     } else if (!isHomePage) {
       setDetailOriginIsHome(false);
     }
-
     previousPathRef.current = pathname;
   }, [isDetailRoute, isHomePage, pathname]);
 

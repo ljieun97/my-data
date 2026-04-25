@@ -29,7 +29,7 @@ export type MediaSliderItem = {
 type MediaSliderImageType = "poster" | "backdrop";
 
 const MAX_PAGE_SIZE = 5;
-const SLIDER_GAP_PX = 12;
+const SLIDER_GAP_PX = 16;
 const SWIPE_THRESHOLD = 40;
 
 export default function MediaSlider({
@@ -43,6 +43,7 @@ export default function MediaSlider({
   isScoreLoading = false,
   desktopPageSize = MAX_PAGE_SIZE,
   imageType = "poster",
+  gapPx = SLIDER_GAP_PX,
 }: {
   title: string;
   emptyMessage?: string;
@@ -54,6 +55,7 @@ export default function MediaSlider({
   isScoreLoading?: boolean;
   desktopPageSize?: number;
   imageType?: MediaSliderImageType;
+  gapPx?: number;
 }) {
   const router = useRouter();
   const safeResults = Array.isArray(results) ? results : [];
@@ -114,7 +116,7 @@ export default function MediaSlider({
 
     const updatePosterMidpoint = () => {
       const viewportWidth = element.clientWidth;
-      const nextCardWidth = Math.max((viewportWidth - SLIDER_GAP_PX * (pageSize - 1)) / pageSize, 0);
+      const nextCardWidth = Math.max((viewportWidth - gapPx * (pageSize - 1)) / pageSize, 0);
       const cardHeight = imageType === "backdrop" ? nextCardWidth * (9 / 16) : nextCardWidth * 1.5;
       setCardWidth(nextCardWidth);
       setPosterMidpoint(cardHeight / 2);
@@ -130,7 +132,7 @@ export default function MediaSlider({
       resizeObserver.disconnect();
       window.removeEventListener("resize", updatePosterMidpoint);
     };
-  }, [imageType, isViewportReady, pageSize]);
+  }, [gapPx, imageType, isViewportReady, pageSize]);
 
   if (isLoading || !safeResults.length) {
     return (
@@ -168,7 +170,7 @@ export default function MediaSlider({
   const maxStartIndex = Math.max(0, safeResults.length - pageSize);
   const canGoPrevious = startIndex > 0;
   const canGoNext = startIndex + pageSize < safeResults.length;
-  const translateX = -(startIndex * (cardWidth + SLIDER_GAP_PX));
+  const translateX = -(startIndex * (cardWidth + gapPx));
   const isTouchSwipeEnabled = pageSize <= 4;
   const buttonPositionStyle = posterMidpoint > 0 ? { top: `${posterMidpoint}px` } : undefined;
 
@@ -234,7 +236,7 @@ export default function MediaSlider({
               >
                 <div
                   className="flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                  style={{ gap: `${SLIDER_GAP_PX}px`, transform: `translateX(${translateX}px)` }}
+                  style={{ gap: `${gapPx}px`, transform: `translateX(${translateX}px)` }}
                 >
                   {safeResults.map((movie) => (
                     <MediaSliderCard

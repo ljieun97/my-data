@@ -37,6 +37,14 @@ export default function InfoMediaCard({ content }: { content: any }) {
               src={img}
               className="h-auto w-full rounded-lg object-cover shadow-[0_12px_24px_rgba(15,23,42,0.16)] aspect-[2/3] md:h-[6.8rem] md:w-[4.7rem] md:shrink-0"
             />
+            {Number.isFinite(savedRating) && savedRating > 0 ? (
+              <div className="absolute bottom-2 right-2 z-20">
+                <span className="user-rating-chip inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold shadow-lg">
+                  <span aria-hidden="true">{"\u2B50"}</span>
+                  {savedRating.toFixed(1)}
+                </span>
+              </div>
+            ) : null}
             <PosterHoverActions
               overlayClassName="bg-slate-950/24 group-hover/poster:visible dark:bg-slate-950/42"
               actions={[
@@ -70,15 +78,6 @@ export default function InfoMediaCard({ content }: { content: any }) {
             </p>
           </div>
         </div>
-
-        {Number.isFinite(savedRating) && savedRating > 0 ? (
-          <div className="browse-card__footer flex items-center justify-end border-t px-3 py-2">
-            <span className="user-rating-chip rounded-full px-2.5 py-1 text-xs font-semibold">
-              <span aria-hidden="true">{"\u2B50"}</span>
-              {savedRating.toFixed(1)}
-            </span>
-          </div>
-        ) : null}
       </div>
     </div>
   );

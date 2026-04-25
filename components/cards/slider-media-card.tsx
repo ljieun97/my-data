@@ -22,15 +22,17 @@ export default function MediaSliderCard({
   isRtLoading,
   imageType = "poster",
   onPrefetch,
+  className = "",
 }: {
   movie: MediaSliderItem;
-  cardWidth: number;
+  cardWidth?: number;
   showRank: boolean;
   showDetail: boolean;
   showYear: boolean;
   isRtLoading: boolean;
   imageType?: "poster" | "backdrop";
   onPrefetch: (tmdbId?: number | null) => void;
+  className?: string;
 }) {
   const router = useRouter();
   const { saveWithPreference } = useSaveContent();
@@ -62,7 +64,7 @@ export default function MediaSliderCard({
   };
 
   return (
-    <article className="shrink-0" style={{ width: `${cardWidth}px` }}>
+    <article className={["min-w-0", cardWidth ? "shrink-0" : "", className].filter(Boolean).join(" ")} style={cardWidth ? { width: `${cardWidth}px` } : undefined}>
       <Link
         href={movie.tmdbId ? `/movie/${movie.tmdbId}` : "#"}
         scroll={false}
@@ -79,18 +81,11 @@ export default function MediaSliderCard({
         className={["group block rounded-2xl transition", movie.tmdbId ? "cursor-pointer" : "cursor-default"].join(" ")}
       >
         <div className="flex min-w-0 flex-col">
-          <div className={`relative mb-1.5 ${isBackdropCard ? "aspect-video" : "aspect-[2/3]"}`}>
+          <div className={`relative ${isBackdropCard ? "aspect-video" : "aspect-[2/3]"}`}>
             {showRank ? (
               <div className="absolute bottom-0 -left-2 z-10 lg:bottom-1 lg:-left-6">
                 <span className="text-6xl font-black italic leading-none tracking-[-0.08em] text-white drop-shadow-[0_3px_10px_rgba(15,23,42,0.85)] lg:text-7xl xl:text-8xl">
                   {movie.rank}
-                </span>
-              </div>
-            ) : null}
-            {showRank && movie.rankChangeLabel ? (
-              <div className="absolute bottom-2 right-2 z-10 lg:bottom-4 lg:right-3">
-                <span className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-[0.04em] shadow-lg sm:px-3 sm:py-1.5 sm:text-xs ${movie.rankChangeTone ?? ""}`}>
-                  {movie.rankChangeLabel}
                 </span>
               </div>
             ) : null}
@@ -108,13 +103,6 @@ export default function MediaSliderCard({
             <div className="relative h-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
               {movie.tmdbId ? (
                 <div className="pointer-events-none absolute inset-0 z-[1] bg-slate-950/0 opacity-0 transition duration-200 group-hover:bg-slate-950/18 group-hover:opacity-100" />
-              ) : null}
-              {isBackdropCard ? (
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent px-3 py-3">
-                  <p className="truncate text-sm font-semibold tracking-[-0.03em] text-white sm:text-[15px]">
-                    {movie.title}
-                  </p>
-                </div>
               ) : null}
               {movie.tmdbId ? (
                 <PosterHoverActions
@@ -134,6 +122,14 @@ export default function MediaSliderCard({
                     },
                   ]}
                 />
+              ) : null}
+              {Number.isFinite(savedRating) && savedRating > 0 ? (
+                <div className="absolute bottom-2 right-2 z-[2] sm:bottom-3 sm:right-3">
+                  <span className="user-rating-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-lg">
+                    <span aria-hidden="true">{"\u2B50"}</span>
+                    {savedRating.toFixed(1)}
+                  </span>
+                </div>
               ) : null}
               {imagePath ? (
                 <Image
@@ -158,24 +154,10 @@ export default function MediaSliderCard({
               isLoading={isRtLoading}
               variant="home"
             />
-            {showDetail && !isBackdropCard ? (
-              <div className="flex flex-col gap-px pt-2">
-                <p className="text-base font-semibold leading-snug tracking-[-0.03em] text-slate-900 dark:text-slate-50">{movie.title}</p>
-                {showYear && movie.year ? <p className="browse-card__meta text-sm leading-snug">{movie.year}</p> : null}
-              </div>
-            ) : null}
             {movie.detailLine ? (
               <div className="flex flex-col gap-px px-0">
                 <p className="browse-card__meta text-sm leading-snug">{movie.detailLine}</p>
                 {movie.subdetailLine ? <p className="browse-card__meta text-sm leading-snug">{movie.subdetailLine}</p> : null}
-              </div>
-            ) : null}
-            {Number.isFinite(savedRating) && savedRating > 0 ? (
-              <div className="mt-auto pt-1">
-                <span className="user-rating-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
-                  <span aria-hidden="true">{"\u2B50"}</span>
-                  {savedRating.toFixed(1)}
-                </span>
               </div>
             ) : null}
           </div>

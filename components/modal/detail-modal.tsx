@@ -1,6 +1,5 @@
 "use client";
 
-import InfiniteImages from "../common/infinite-images";
 import Title from "../common/title";
 import { usePathname, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,6 +13,7 @@ import MediaCastPanel from "@/components/media/media-cast-panel";
 import MediaDetailsPanel from "@/components/media/media-details-panel";
 import TvSeasonsPanel from "@/components/media/tv-seasons-panel";
 import MediaCrewPanel from "@/components/media/media-crew-panel";
+import DetailRecommendations from "@/components/modal/detail-recommendations";
 
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
@@ -50,6 +50,7 @@ export default function DetailModal(props: any) {
   const pathname = usePathname();
 
   const title = content.title || content.name || "";
+  const mediaType = content.title ? "movie" : "tv";
   const releaseDate = content.release_date || content.first_air_date || "-";
   const releaseYear = releaseDate !== "-" ? releaseDate.slice(0, 4) : "";
   const runtime =
@@ -271,7 +272,7 @@ export default function DetailModal(props: any) {
               <section className="space-y-4 rounded-[26px] bg-slate-50/80 p-5 dark:bg-slate-900/70">
                 <h4 className="text-base font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-50">More like this</h4>
                 {sim?.length > 0 ? (
-                  <InfiniteImages contents={sim} />
+                  <DetailRecommendations contents={sim} mediaType={mediaType} />
                 ) : (
                   <p className="text-sm text-slate-500 dark:text-slate-400">Currently this title does not have recommendation information.</p>
                 )}

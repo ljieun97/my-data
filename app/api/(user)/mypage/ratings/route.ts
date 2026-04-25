@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { closeMongo, connectMongo } from "@/lib/mongo/mongodb";
-import { headers } from "next/headers";
+import { connectMongo } from "@/lib/mongo/mongodb";
 
 export async function POST(req: NextRequest) {
-  let mongoClient;
-
   try {
-    const headersList = headers();
-    const uid = (await headersList).get("authorization");
+    const uid = req.headers.get("authorization");
     const payload = await req.json();
     const items = Array.isArray(payload?.items)
       ? payload.items
@@ -41,7 +37,6 @@ export async function POST(req: NextRequest) {
           };
 
     const { client, db } = await connectMongo();
-    mongoClient = client;
 
     const results = await db
       .collection("contents")
@@ -65,9 +60,7 @@ export async function POST(req: NextRequest) {
       })),
     );
   } catch (e) {
-    console.log(e);
-    return NextResponse.json({ error: e });
-  } finally {
-    if (mongoClient) closeMongo();
+    console.error("Failed to load saved ratings", e);
+    return NextResponse.json([]);
   }
 }

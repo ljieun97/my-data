@@ -50,8 +50,9 @@ export default function PersonWatchStat({ credits, label }: { credits: any[]; la
           throw new Error(`Failed to load watched credits: ${response.status}`);
         }
 
-        const payload = (await response.json()) as { rating?: number }[];
-        const nextWatchedCount = payload.filter((item) => Number(item.rating) > 0).length;
+        const payload = await response.json();
+        const ratings = Array.isArray(payload) ? (payload as { rating?: number }[]) : [];
+        const nextWatchedCount = ratings.filter((item) => Number(item.rating) > 0).length;
 
         if (!cancelled) {
           setWatchedCount(nextWatchedCount);

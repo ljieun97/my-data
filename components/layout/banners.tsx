@@ -26,13 +26,15 @@ export function Banners({ movie }: { movie: any }) {
         />
       ) : null}
       <div className="absolute inset-x-0 bottom-2 z-10 lg:bottom-16">
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="app-frame">
           <div className="flex flex-col gap-4">
             <div>
               <p className="p-1 text-xs font-bold text-white drop-shadow">박스오피스 1위</p>
               <p className="text-4xl font-bold text-white drop-shadow">{movie.title}</p>
             </div>
-            <p className="line-clamp-4 w-2/5 text-white drop-shadow sm:w-2/3 md:w-1/2 lg:w-1/2">{overview}</p>
+            <p className="line-clamp-4 w-full text-white drop-shadow sm:w-5/6 md:w-[33.333%] md:max-w-[33.333%] lg:w-[33.333%] lg:max-w-[33.333%]">
+              {overview}
+            </p>
             <button
               type="button"
               className="flex w-fit items-center gap-2 rounded-sm bg-white px-4 py-2 text-black"

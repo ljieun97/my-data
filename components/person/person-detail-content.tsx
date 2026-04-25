@@ -22,13 +22,6 @@ function formatDate(value?: string) {
   return value || "-";
 }
 
-function getCreditYear(value: any) {
-  const date = value?.release_date || value?.first_air_date || "";
-  const year = Number(String(date).slice(0, 4));
-
-  return Number.isFinite(year) && year > 0 ? year : null;
-}
-
 function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="rounded-[20px] bg-slate-100/80 px-4 py-3 dark:bg-slate-900/70">
@@ -50,8 +43,6 @@ export default function PersonDetailContent({
   const deathday = person?.deathday ? formatDate(person.deathday) : null;
   const placeOfBirth = person?.place_of_birth || "-";
   const biography = typeof person?.biography === "string" ? person.biography.trim() : "";
-  const creditYears = credits.map(getCreditYear).filter((year): year is number => year !== null);
-  const activityRange = creditYears.length > 0 ? `${Math.min(...creditYears)} - ${Math.max(...creditYears)}` : "-";
   const movieCount = credits.filter((credit) => credit.media_type === "movie" || credit.title).length;
   const tvCount = credits.filter((credit) => credit.media_type === "tv" || credit.name).length;
   const castCredits = credits.filter((credit) => credit.contribution_type === "cast");
@@ -89,8 +80,7 @@ export default function PersonDetailContent({
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-              <StatCard label={"\uD65C\uB3D9 \uAE30\uAC04"} value={activityRange} />
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <StatCard label={"\uC601\uD654"} value={`${movieCount}\uAC1C`} />
               <StatCard label={"\uC2DC\uB9AC\uC988"} value={`${tvCount}\uAC1C`} />
               <PersonWatchStat credits={castCredits} label={"\uCD9C\uC5F0 \uAD00\uB78C"} />

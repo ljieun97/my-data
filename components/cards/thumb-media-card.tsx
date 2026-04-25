@@ -16,6 +16,7 @@ export default function ThumbMediaCard({ content }: { content: any }) {
   const savedRating = Number(content.userRating);
   const contributionLabel =
     content.contribution_type === "cast" ? "\uCD9C\uC5F0" : content.contribution_type === "crew" ? "\uC81C\uC791" : null;
+  const title = content.title ? content.title : content.name;
 
   const handleClick = async (rating: number) => {
     await saveWithPreference({ id, content, rating });
@@ -28,41 +29,43 @@ export default function ThumbMediaCard({ content }: { content: any }) {
         <div className="absolute right-0 top-0 z-20 p-2">
           <Flatrates type={type} provider={content.id} />
         </div>
-        <div className="absolute inset-x-0 bottom-0 z-10 p-3">
-          {contributionLabel ? (
-            <span className="mb-2 inline-flex rounded-full bg-white/85 px-2 py-0.5 text-[10px] font-semibold text-slate-700 backdrop-blur-sm">
-              {contributionLabel}
+        {Number.isFinite(savedRating) && savedRating > 0 ? (
+          <div className="absolute bottom-2 right-2 z-20">
+            <span className="user-rating-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-lg">
+              <span aria-hidden="true">{"\u2B50"}</span>
+              {savedRating.toFixed(1)}
             </span>
-          ) : null}
-          <div className="line-clamp-3 text-sm font-bold text-white">{content.title ? content.title : content.name}</div>
-        </div>
+          </div>
+        ) : null}
         <PosterHoverActions
           overlayClassName="rounded-sm bg-black/25 group-hover/footer:visible"
           groupClassName="absolute bottom-3 right-3"
           actions={[
             {
               icon: faPlus,
-              label: `${content.title ? content.title : content.name} save`,
+              label: `${title} save`,
               onClick: () => handleClick(2.5),
               className: "browse-card__action rounded-full px-2 py-1 text-sm shadow-sm transition",
             },
             {
               icon: faCircleInfo,
-              label: `${content.title ? content.title : content.name} details`,
+              label: `${title} details`,
               onClick: () => router.push(`/${type}/${id}`),
               className: "browse-card__detail rounded-full px-2 py-1 text-sm shadow-sm transition",
             },
           ]}
         />
       </div>
-      {Number.isFinite(savedRating) && savedRating > 0 ? (
-        <div className="pt-1">
-          <span className="user-rating-chip rounded-full px-2.5 py-1 text-xs font-semibold">
-            <span aria-hidden="true">{"\u2B50"}</span>
-            {savedRating.toFixed(1)}
+      <div className="flex flex-col gap-1 pt-2">
+        {contributionLabel ? (
+          <span className="inline-flex w-fit rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-slate-900 dark:text-slate-300">
+            {contributionLabel}
           </span>
-        </div>
-      ) : null}
+        ) : null}
+        <p className="line-clamp-2 text-sm font-semibold leading-snug tracking-[-0.03em] text-slate-900 dark:text-slate-50">
+          {title}
+        </p>
+      </div>
     </div>
   );
 }

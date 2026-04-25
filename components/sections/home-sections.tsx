@@ -187,7 +187,7 @@ export default function HomeBoxOfficeSections({
   }, [initialData, uid])
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-14">
       <MediaSlider
         title="박스오피스 순위"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
@@ -201,8 +201,8 @@ export default function HomeBoxOfficeSections({
         results={data.upcomingCards}
         isScoreLoading={isRtLoading}
         showRank={false}
-        showDetail={false}
-        imageType="backdrop"
+        showDetail
+        showYear={false}
       />
       <MediaSlider
         title="인기 영화"
@@ -210,8 +210,8 @@ export default function HomeBoxOfficeSections({
         results={data.topRatedCards}
         isScoreLoading={isRtLoading}
         showRank={false}
-        showDetail={false}
-        imageType="backdrop"
+        showDetail
+        showYear={false}
       />
     </div>
   )

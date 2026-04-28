@@ -30,46 +30,43 @@ export function useSaveContent() {
       if (duplicateCheck.ok) {
         const duplicateData = await duplicateCheck.json();
 
-        if (duplicateData?.duplicate) {
+        if (duplicateData?.duplicate && duplicateData.existingId) {
           const action = await requestDuplicateAction({
             existingDate: duplicateData.existingDate,
             nextDate: null,
+            existingRating: duplicateData.existingRating,
+            nextRating: rating,
           });
 
-          if (action === "keep" || action === null) {
-            if (action === "keep") {
-              Toast.toast("이미 저장된 영화입니다.");
-            }
+          if (!action) {
             return;
           }
 
-          if (action === "change" && duplicateData.existingId) {
-            const selection = await requestDate(
-              duplicateData.existingDate ?? undefined,
-              rating,
-            );
+          const selection = await requestDate(
+            action.dateChoice === "keep" ? duplicateData.existingDate ?? undefined : undefined,
+            action.ratingChoice === "keep" ? Number(duplicateData.existingRating) || rating : rating,
+          );
 
-            if (!selection) {
-              return;
-            }
-
-            const response = await fetch(`/api/mypage/content/${duplicateData.existingId}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                uid,
-                poster_path: content.poster_path,
-                date: selection.date,
-                rating: selection.rating,
-              }),
-            });
-
-            if (response.ok) {
-              Toast.toast("저장 날짜를 변경했습니다.");
-            }
-
+          if (!selection) {
             return;
           }
+
+          const response = await fetch(`/api/mypage/content/${duplicateData.existingId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              uid,
+              poster_path: content.poster_path,
+              date: selection.date,
+              rating: selection.rating,
+            }),
+          });
+
+          if (response.ok) {
+            Toast.toast("저장 정보를 변경했습니다");
+          }
+
+          return;
         }
       }
     }
@@ -99,7 +96,7 @@ export function useSaveContent() {
       return;
     }
 
-    if (result.status !== 409 || !result.data?.duplicate) {
+    if (result.status !== 409 || !result.data?.duplicate || !result.data?.existingId) {
       return;
     }
 
@@ -112,28 +109,31 @@ export function useSaveContent() {
     const action = await requestDuplicateAction({
       existingDate: result.data?.existingDate,
       nextDate,
+      existingRating: result.data?.existingRating,
+      nextRating: selectedRating,
     });
 
-    if (action === "keep") {
-      Toast.toast("이미 저장된 영화입니다.");
+    if (!action) {
       return;
     }
 
-    if (action === "change" && result.data?.existingId && nextDate) {
-      const response = await fetch(`/api/mypage/content/${result.data.existingId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uid,
-          poster_path: content.poster_path,
-          date: nextDate,
-          rating: selectedRating,
-        }),
-      });
+    const resolvedDate = action.dateChoice === "keep" ? result.data?.existingDate ?? nextDate : nextDate;
+    const resolvedRating =
+      action.ratingChoice === "keep" ? Number(result.data?.existingRating) || selectedRating : selectedRating;
 
-      if (response.ok) {
-        Toast.toast("저장 날짜를 변경했습니다.");
-      }
+    const response = await fetch(`/api/mypage/content/${result.data.existingId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid,
+        poster_path: content.poster_path,
+        date: resolvedDate,
+        rating: resolvedRating,
+      }),
+    });
+
+    if (response.ok) {
+      Toast.toast("저장 정보를 변경했습니다");
     }
   };
 

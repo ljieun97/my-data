@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faVolumeHigh, faVolumeXmark, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { useUser } from "@/context/UserContext";
 import { useSaveContent } from "@/hooks/useSaveContent";
 import MediaScoreBadges from "@/components/media/media-score-badges";
 import WatchProvidersPanel from "@/components/media/watch-providers-panel";
@@ -101,16 +100,6 @@ function RatingStars({
   );
 }
 
-function RatingStarsLoading() {
-  return (
-    <span className="inline-flex items-center gap-1 py-1" aria-label="평점 불러오는 중" role="status">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-300 dark:bg-slate-600" />
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-300 [animation-delay:120ms] dark:bg-slate-600" />
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-300 [animation-delay:240ms] dark:bg-slate-600" />
-    </span>
-  );
-}
-
 export default function DetailModal(props: any) {
   const {
     content,
@@ -121,6 +110,7 @@ export default function DetailModal(props: any) {
     videoKey,
     rottenTomatometer,
     rottenPopcornmeter,
+    initialUserRating = 0,
   } = props;
   const videoPath = videoKey ? `https://www.youtube.com/watch?v=${videoKey}` : "";
   const [isMute, setIsMute] = useState(true);
@@ -129,10 +119,8 @@ export default function DetailModal(props: any) {
     rottenPopcornmeter: rottenPopcornmeter ?? null,
   });
   const [isRtLoading, setIsRtLoading] = useState(!(rottenTomatometer || rottenPopcornmeter));
-  const [userRating, setUserRating] = useState(0);
+  const [userRating, setUserRating] = useState(Number(initialUserRating) || 0);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
-  const [isUserRatingLoading, setIsUserRatingLoading] = useState(false);
-  const { uid } = useUser();
   const { saveWithPreference } = useSaveContent();
   const router = useRouter();
   const pathname = usePathname();
@@ -163,57 +151,6 @@ export default function DetailModal(props: any) {
     setUserRating(rating);
     await saveWithPreference({ id: String(content.id), content, rating });
   };
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadUserRating = async () => {
-      if (!uid || mediaType !== "movie" || !Number.isFinite(Number(content?.id))) {
-        setIsUserRatingLoading(false);
-        setUserRating(0);
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/mypage/ratings", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: uid,
-          },
-          body: JSON.stringify({
-            items: [{ id: Number(content.id), type: "movie" }],
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load saved rating: ${response.status}`);
-        }
-
-        const payload = await response.json();
-        const rating = Array.isArray(payload) && payload[0] ? Number(payload[0].rating) || 0 : 0;
-
-        if (!cancelled) {
-          setUserRating(rating);
-          setIsUserRatingLoading(false);
-        }
-      } catch (error) {
-        console.error(error);
-
-        if (!cancelled) {
-          setUserRating(0);
-          setIsUserRatingLoading(false);
-        }
-      }
-    };
-
-    setIsUserRatingLoading(mediaType === "movie");
-    void loadUserRating();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [content?.id, mediaType, uid]);
 
   const closeAllDetailModals = () => {
     const isDetailPath = (value: string) => /^\/(?:movie|tv)\/[^/]+\/?$/.test(value);
@@ -389,17 +326,15 @@ export default function DetailModal(props: any) {
                     title={title}
                     compact={false}
                     adornment={
-                      isUserRatingLoading ? (
-                        <RatingStarsLoading />
-                      ) : (
+                      mediaType === "movie" ? (
                         <RatingStars
                           value={displayedRating}
-                          interactive={mediaType === "movie"}
+                          interactive
                           onPreview={setHoverRating}
                           onPreviewEnd={() => setHoverRating(null)}
                           onSelect={handleRatingSelect}
                         />
-                      )
+                      ) : null
                     }
                   />
 

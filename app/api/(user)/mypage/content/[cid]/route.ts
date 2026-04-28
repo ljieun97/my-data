@@ -134,6 +134,7 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 					duplicate: true,
 					existingId: String(existingItem._id),
 					existingDate: existingItem.user_date ?? null,
+					existingRating: existingItem.user_rating ?? null,
 					nextDate: date ?? null,
 				},
 				{ status: 409 },

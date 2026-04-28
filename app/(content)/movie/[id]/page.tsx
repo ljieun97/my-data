@@ -1,4 +1,5 @@
 import { getCredits, getDetail, getProviders, getRecommendations, getSimilars, getVideo } from "@/lib/open-api/tmdb-server"
+import { getMovieUserRating } from "@/lib/server/user-rating";
 
 import DetailModal from "@/components/modal/detail-modal"
 
@@ -9,13 +10,14 @@ export const metadata = {
 export default async function Page({ params }: { params: any }) {
   const { id } = await params
   const type = 'movie'
-  const [content, video, credits, rcm, simFallback, providers] = await Promise.all([
+  const [content, video, credits, rcm, simFallback, providers, initialUserRating] = await Promise.all([
     getDetail(type, id),
     getVideo(type, id),
     getCredits(type, id),
     getRecommendations(type, id),
     getSimilars(type, id),
     getProviders(type, id),
+    getMovieUserRating(Number(id)),
   ])
   const sim = rcm?.length > 0 ? rcm : simFallback
 
@@ -27,6 +29,7 @@ export default async function Page({ params }: { params: any }) {
       sim={sim}
       providers={providers}
       videoKey={video?.key}
+      initialUserRating={initialUserRating}
     />
   )
 }

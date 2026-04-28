@@ -7,12 +7,23 @@ type CustomSaveSelection = {
   date: string;
   rating: number;
 };
+type DuplicateFieldChoice = "keep" | "change";
+type DuplicateActionSelection = {
+  dateChoice: DuplicateFieldChoice;
+  ratingChoice: DuplicateFieldChoice;
+};
+type DuplicateActionPayload = {
+  existingDate?: string | null;
+  nextDate?: string | null;
+  existingRating?: number | null;
+  nextRating?: number | null;
+};
 
 type SaveDateContextValue = {
   mode: SaveDateMode;
   setMode: (mode: SaveDateMode) => void;
   requestDate: (initialDate?: string, initialRating?: number) => Promise<CustomSaveSelection | null>;
-  requestDuplicateAction: (payload: { existingDate?: string | null; nextDate?: string | null }) => Promise<"keep" | "change" | null>;
+  requestDuplicateAction: (payload: DuplicateActionPayload) => Promise<DuplicateActionSelection | null>;
 };
 
 const SaveDateContext = createContext<SaveDateContextValue | null>(null);
@@ -47,9 +58,11 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
   const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
   const [selectedRating, setSelectedRating] = useState(2.5);
-  const [duplicateDates, setDuplicateDates] = useState<{ existingDate?: string | null; nextDate?: string | null }>({});
+  const [duplicatePayload, setDuplicatePayload] = useState<DuplicateActionPayload>({});
+  const [dateChoice, setDateChoice] = useState<DuplicateFieldChoice>("change");
+  const [ratingChoice, setRatingChoice] = useState<DuplicateFieldChoice>("change");
   const dateResolverRef = useRef<((value: CustomSaveSelection | null) => void) | null>(null);
-  const duplicateResolverRef = useRef<((value: "keep" | "change" | null) => void) | null>(null);
+  const duplicateResolverRef = useRef<((value: DuplicateActionSelection | null) => void) | null>(null);
 
   useEffect(() => {
     setModeState(readInitialMode());
@@ -72,7 +85,7 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const closeDuplicateModal = useCallback((value: "keep" | "change" | null) => {
+  const closeDuplicateModal = useCallback((value: DuplicateActionSelection | null) => {
     const resolver = duplicateResolverRef.current;
     duplicateResolverRef.current = null;
     setIsDuplicateModalOpen(false);
@@ -93,11 +106,13 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const requestDuplicateAction = useCallback((payload: { existingDate?: string | null; nextDate?: string | null }) => {
-    setDuplicateDates(payload);
+  const requestDuplicateAction = useCallback((payload: DuplicateActionPayload) => {
+    setDuplicatePayload(payload);
+    setDateChoice("change");
+    setRatingChoice("change");
     setIsDuplicateModalOpen(true);
 
-    return new Promise<"keep" | "change" | null>((resolve) => {
+    return new Promise<DuplicateActionSelection | null>((resolve) => {
       duplicateResolverRef.current = resolve;
     });
   }, []);
@@ -121,20 +136,20 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
             className="w-full max-w-sm rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">Choose date</div>
+            <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">날짜 선택</div>
             <div className="px-6 py-5">
               <div className="flex flex-col gap-5">
                 <label className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Save date</span>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(event) => setSelectedDate(event.target.value)}
-                  className="min-h-[2.85rem] rounded-2xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">저장 날짜</span>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(event) => setSelectedDate(event.target.value)}
+                    className="min-h-[2.85rem] rounded-2xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  />
                 </label>
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Rating</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">별점</span>
                   <div className="grid grid-cols-5 gap-2">
                     {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((value) => {
                       const isActive = Math.abs(selectedRating - value) < 0.001;
@@ -161,14 +176,14 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-4 dark:border-slate-800">
               <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => closeDateModal(null)}>
-                Cancel
+                취소
               </button>
               <button
                 type="button"
                 className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white dark:bg-slate-100 dark:text-slate-900"
                 onClick={() => closeDateModal({ date: selectedDate, rating: selectedRating })}
               >
-                Save with this date
+                이 날짜로 저장
               </button>
             </div>
           </div>
@@ -177,33 +192,99 @@ export function SaveDateProvider({ children }: { children: React.ReactNode }) {
       {isDuplicateModalOpen ? (
         <div className="fixed inset-0 z-[131] flex items-center justify-center bg-slate-950/72 p-4 backdrop-blur-sm" onClick={() => closeDuplicateModal(null)}>
           <div
-            className="w-full max-w-sm rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950"
+            className="w-full max-w-md rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">이미 저장된 영화입니다</div>
             <div className="px-6 py-5 text-sm text-slate-600 dark:text-slate-300">
-              <p>기존 저장 날짜를 유지할지, 새 날짜로 바꿀지 선택해주세요.</p>
-              <div className="mt-4 flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-medium text-slate-700 dark:text-slate-200">현재 날짜</span>
-                  <span>{duplicateDates.existingDate || "-"}</span>
+              <p>날짜와 별점을 각각 선택해 저장할 수 있습니다.</p>
+              <div className="mt-4 flex flex-col gap-5">
+                <div className="flex flex-col gap-2">
+                  <span className="font-medium text-slate-700 dark:text-slate-200">날짜 선택</span>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setDateChoice("keep")}
+                      className={[
+                        "rounded-2xl border p-4 text-left transition",
+                        dateChoice === "keep"
+                          ? "border-amber-400 bg-amber-50 dark:bg-amber-500/10"
+                          : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600",
+                      ].join(" ")}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">이전 날짜</span>
+                        <span className="text-xs text-slate-400">{dateChoice === "keep" ? "선택됨" : ""}</span>
+                      </div>
+                      <p className="mt-3">{duplicatePayload.existingDate || "-"}</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDateChoice("change")}
+                      className={[
+                        "rounded-2xl border p-4 text-left transition",
+                        dateChoice === "change"
+                          ? "border-amber-400 bg-amber-50 dark:bg-amber-500/10"
+                          : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600",
+                      ].join(" ")}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">현재 날짜</span>
+                        <span className="text-xs text-slate-400">{dateChoice === "change" ? "선택됨" : ""}</span>
+                      </div>
+                      <p className="mt-3">{duplicatePayload.nextDate || "직접 선택"}</p>
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-medium text-slate-700 dark:text-slate-200">변경 날짜</span>
-                  <span>{duplicateDates.nextDate || "직접 선택"}</span>
+                <div className="flex flex-col gap-2">
+                  <span className="font-medium text-slate-700 dark:text-slate-200">별점 선택</span>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setRatingChoice("keep")}
+                      className={[
+                        "rounded-2xl border p-4 text-left transition",
+                        ratingChoice === "keep"
+                          ? "border-amber-400 bg-amber-50 dark:bg-amber-500/10"
+                          : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600",
+                      ].join(" ")}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">이전 별점</span>
+                        <span className="text-xs text-slate-400">{ratingChoice === "keep" ? "선택됨" : ""}</span>
+                      </div>
+                      <p className="mt-3">{typeof duplicatePayload.existingRating === "number" ? duplicatePayload.existingRating.toFixed(1) : "-"}</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRatingChoice("change")}
+                      className={[
+                        "rounded-2xl border p-4 text-left transition",
+                        ratingChoice === "change"
+                          ? "border-amber-400 bg-amber-50 dark:bg-amber-500/10"
+                          : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600",
+                      ].join(" ")}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-semibold text-slate-900 dark:text-slate-100">현재 별점</span>
+                        <span className="text-xs text-slate-400">{ratingChoice === "change" ? "선택됨" : ""}</span>
+                      </div>
+                      <p className="mt-3">{typeof duplicatePayload.nextRating === "number" ? duplicatePayload.nextRating.toFixed(1) : "-"}</p>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
             <div className="flex justify-end gap-2 border-t border-slate-200/70 px-6 py-4 dark:border-slate-800">
-              <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => closeDuplicateModal("keep")}>
-                유지
+              <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => closeDuplicateModal(null)}>
+                취소
               </button>
               <button
                 type="button"
                 className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white dark:bg-slate-100 dark:text-slate-900"
-                onClick={() => closeDuplicateModal("change")}
+                onClick={() => closeDuplicateModal({ dateChoice, ratingChoice })}
               >
-                날짜 변경
+                저장
               </button>
             </div>
           </div>

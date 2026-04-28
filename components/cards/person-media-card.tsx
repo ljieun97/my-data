@@ -26,8 +26,8 @@ export default function PersonMediaCard({ content }: { content: any }) {
 
   return (
     <div className="browse-card group/footer relative overflow-hidden rounded-[18px] border p-2 shadow-none">
-      <div className="relative aspect-[2/3] overflow-hidden rounded-[12px] bg-slate-200 dark:bg-slate-800">
-        <img alt="poster" src={img} className="absolute inset-0 h-full w-full object-cover" />
+      <div className="relative overflow-hidden rounded-[12px] bg-slate-200 dark:bg-slate-800">
+        <img alt="poster" src={img} className="h-auto w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/20 to-transparent" />
         <div className="absolute right-3 top-3 z-20">
           <Flatrates type={type} provider={content.id} />

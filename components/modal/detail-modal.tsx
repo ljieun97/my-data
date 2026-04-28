@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faVolumeHigh, faVolumeXmark, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useUser } from "@/context/UserContext";
+import { useSaveContent } from "@/hooks/useSaveContent";
 import MediaScoreBadges from "@/components/media/media-score-badges";
 import WatchProvidersPanel from "@/components/media/watch-providers-panel";
 import MediaOverviewPanel from "@/components/media/media-overview-panel";
@@ -26,24 +28,87 @@ function MetaChip({ children }: { children: React.ReactNode }) {
 
 function formatLanguageLabel(value?: string) {
   const labels: Record<string, string> = {
-    ko: "\uD55C\uAD6D\uC5B4",
-    en: "\uC601\uC5B4",
-    ja: "\uC77C\uBCF8\uC5B4",
-    zh: "\uC911\uAD6D\uC5B4",
-    cn: "\uC911\uAD6D\uC5B4",
-    fr: "\uD504\uB791\uC2A4\uC5B4",
-    de: "\uB3C5\uC77C\uC5B4",
-    es: "\uC2A4\uD398\uC778\uC5B4",
-    it: "\uC774\uD0C8\uB9AC\uC544\uC5B4",
-    pt: "\uD3EC\uB974\uD22C\uAC08\uC5B4",
-    ru: "\uB7EC\uC2DC\uC544\uC5B4",
-    hi: "\uD78C\uB514\uC5B4",
-    th: "\uD0DC\uAD6D\uC5B4",
+    ko: "한국어",
+    en: "영어",
+    ja: "일본어",
+    zh: "중국어",
+    cn: "중국어",
+    fr: "프랑스어",
+    de: "독일어",
+    es: "스페인어",
+    it: "이탈리아어",
+    pt: "포르투갈어",
+    ru: "러시아어",
+    hi: "힌디어",
+    th: "태국어",
   };
 
   if (!value) return "-";
 
   return labels[value.toLowerCase()] ?? value.toUpperCase();
+}
+
+function RatingStars({
+  value,
+  interactive = false,
+  onSelect,
+  onPreview,
+  onPreviewEnd,
+}: {
+  value: number;
+  interactive?: boolean;
+  onSelect?: (rating: number) => void;
+  onPreview?: (rating: number) => void;
+  onPreviewEnd?: () => void;
+}) {
+  const safeValue = Number.isFinite(value) ? value : 0;
+  const clampedValue = Math.max(0, Math.min(5, safeValue));
+  const fillWidth = `${(clampedValue / 5) * 100}%`;
+
+  return (
+    <span
+      className="relative inline-block text-2xl font-semibold leading-none sm:text-3xl"
+      aria-label={`내 평점 ${safeValue}`}
+      onMouseLeave={interactive ? onPreviewEnd : undefined}
+    >
+      <span className="tracking-[0.08em] text-slate-300/80 dark:text-slate-700">★★★★★</span>
+      <span
+        className="absolute inset-y-0 left-0 overflow-hidden whitespace-nowrap tracking-[0.08em] text-amber-400"
+        style={{ width: fillWidth }}
+      >
+        ★★★★★
+      </span>
+      {interactive ? (
+        <span className="absolute inset-0 grid grid-cols-10">
+          {Array.from({ length: 10 }, (_, index) => {
+            const nextRating = (index + 1) * 0.5;
+
+            return (
+              <button
+                key={nextRating}
+                type="button"
+                className="h-full w-full cursor-pointer"
+                aria-label={`${nextRating}점 저장`}
+                onMouseEnter={() => onPreview?.(nextRating)}
+                onFocus={() => onPreview?.(nextRating)}
+                onClick={() => onSelect?.(nextRating)}
+              />
+            );
+          })}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+function RatingStarsLoading() {
+  return (
+    <span className="inline-flex items-center gap-1 py-1" aria-label="평점 불러오는 중" role="status">
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-300 dark:bg-slate-600" />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-300 [animation-delay:120ms] dark:bg-slate-600" />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-300 [animation-delay:240ms] dark:bg-slate-600" />
+    </span>
+  );
 }
 
 export default function DetailModal(props: any) {
@@ -64,6 +129,11 @@ export default function DetailModal(props: any) {
     rottenPopcornmeter: rottenPopcornmeter ?? null,
   });
   const [isRtLoading, setIsRtLoading] = useState(!(rottenTomatometer || rottenPopcornmeter));
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [isUserRatingLoading, setIsUserRatingLoading] = useState(false);
+  const { uid } = useUser();
+  const { saveWithPreference } = useSaveContent();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -73,7 +143,7 @@ export default function DetailModal(props: any) {
   const releaseYear = releaseDate !== "-" ? releaseDate.slice(0, 4) : "";
   const runtime =
     typeof content.runtime === "number" && content.runtime > 0
-      ? `${content.runtime}\uBD84`
+      ? `${content.runtime}분`
       : typeof content.number_of_episodes === "number" && content.number_of_episodes > 0
         ? `${content.number_of_episodes} episodes`
         : "-";
@@ -86,6 +156,64 @@ export default function DetailModal(props: any) {
         ? content.origin_country.join(", ")
         : "-";
   const overview = content.overview || content.about || "Currently this title does not have overview information.";
+  const displayedRating = hoverRating ?? userRating;
+
+  const handleRatingSelect = async (rating: number) => {
+    setHoverRating(null);
+    setUserRating(rating);
+    await saveWithPreference({ id: String(content.id), content, rating });
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadUserRating = async () => {
+      if (!uid || mediaType !== "movie" || !Number.isFinite(Number(content?.id))) {
+        setIsUserRatingLoading(false);
+        setUserRating(0);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/mypage/ratings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: uid,
+          },
+          body: JSON.stringify({
+            items: [{ id: Number(content.id), type: "movie" }],
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load saved rating: ${response.status}`);
+        }
+
+        const payload = await response.json();
+        const rating = Array.isArray(payload) && payload[0] ? Number(payload[0].rating) || 0 : 0;
+
+        if (!cancelled) {
+          setUserRating(rating);
+          setIsUserRatingLoading(false);
+        }
+      } catch (error) {
+        console.error(error);
+
+        if (!cancelled) {
+          setUserRating(0);
+          setIsUserRatingLoading(false);
+        }
+      }
+    };
+
+    setIsUserRatingLoading(mediaType === "movie");
+    void loadUserRating();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [content?.id, mediaType, uid]);
 
   const closeAllDetailModals = () => {
     const isDetailPath = (value: string) => /^\/(?:movie|tv)\/[^/]+\/?$/.test(value);
@@ -257,7 +385,23 @@ export default function DetailModal(props: any) {
             <div className="px-5 pb-10 pt-6 sm:px-6 lg:px-8">
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <Title title={title} compact={false} />
+                  <Title
+                    title={title}
+                    compact={false}
+                    adornment={
+                      isUserRatingLoading ? (
+                        <RatingStarsLoading />
+                      ) : (
+                        <RatingStars
+                          value={displayedRating}
+                          interactive={mediaType === "movie"}
+                          onPreview={setHoverRating}
+                          onPreviewEnd={() => setHoverRating(null)}
+                          onSelect={handleRatingSelect}
+                        />
+                      )
+                    }
+                  />
 
                   <div className="flex flex-wrap gap-2">
                     <MetaChip>{releaseYear || "-"}</MetaChip>

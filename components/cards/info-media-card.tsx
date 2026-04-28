@@ -31,11 +31,11 @@ export default function InfoMediaCard({ content }: { content: any }) {
 
       <div className="p-0">
         <div className="flex flex-col gap-3 p-3 pb-2 md:flex-row md:items-start">
-          <div className="group/poster relative w-full overflow-hidden rounded-lg bg-slate-200 shadow-[0_12px_24px_rgba(15,23,42,0.16)] aspect-[2/3] dark:bg-slate-800 md:h-[6.8rem] md:w-[4.7rem] md:shrink-0">
+          <div className="group/poster relative">
             <img
               alt="poster"
               src={img}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="h-auto w-full rounded-lg object-cover shadow-[0_12px_24px_rgba(15,23,42,0.16)] aspect-[2/3] md:h-[6.8rem] md:w-[4.7rem] md:shrink-0"
             />
             {Number.isFinite(savedRating) && savedRating > 0 ? (
               <div className="absolute bottom-2 right-2 z-20">

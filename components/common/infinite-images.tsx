@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import CardInfo from "@/components/cards/info-media-card"
+import PersonMediaCard from "@/components/cards/person-media-card"
 import CardThumb from "@/components/cards/thumb-media-card"
 import { useUser } from "@/context/UserContext"
 
@@ -94,7 +95,9 @@ export default function InfiniteImages(props: any) {
   }, [contents, uid])
 
   let style
-  if (props.type == "info")
+  if (props.type == "person")
+    style = "media-recommendation-grid media-recommendation-grid--info grid gap-2.5"
+  else if (props.type == "info")
     style = "media-recommendation-grid media-recommendation-grid--info grid gap-4"
   else
     style = "media-recommendation-grid grid gap-4"
@@ -107,7 +110,9 @@ export default function InfiniteImages(props: any) {
             userRating: ratingsByKey.get(getRatingKey(content)) ?? null,
           }
 
-          return props.type == "info" ? (
+          return props.type == "person" ? (
+            <PersonMediaCard key={index} content={contentWithRating}></PersonMediaCard>
+          ) : props.type == "info" ? (
             <CardInfo key={index} content={contentWithRating}></CardInfo>
           ) : (
             <CardThumb key={index} content={contentWithRating}></CardThumb>

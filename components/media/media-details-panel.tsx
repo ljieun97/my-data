@@ -30,7 +30,7 @@ export default function MediaDetailsPanel({
         <DetailRow label="Country" value={countries} />
         <DetailRow label="Language" value={language} />
         <DetailRow
-          label="Cast list"
+          label="배우 목록"
           value={
             casts.length > 0 ? (
               <span ref={castsRef}>{casts.map((item: any) => item.original_name || item.name).join(", ")}</span>

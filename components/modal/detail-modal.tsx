@@ -4,13 +4,12 @@ import Title from "../common/title";
 import { usePathname, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faVolumeHigh, faVolumeXmark, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import MediaScoreBadges from "@/components/media/media-score-badges";
 import WatchProvidersPanel from "@/components/media/watch-providers-panel";
 import MediaOverviewPanel from "@/components/media/media-overview-panel";
 import MediaCastPanel from "@/components/media/media-cast-panel";
-import MediaDetailsPanel from "@/components/media/media-details-panel";
 import TvSeasonsPanel from "@/components/media/tv-seasons-panel";
 import MediaCrewPanel from "@/components/media/media-crew-panel";
 import DetailRecommendations from "@/components/modal/detail-recommendations";
@@ -25,6 +24,28 @@ function MetaChip({ children }: { children: React.ReactNode }) {
   );
 }
 
+function formatLanguageLabel(value?: string) {
+  const labels: Record<string, string> = {
+    ko: "\uD55C\uAD6D\uC5B4",
+    en: "\uC601\uC5B4",
+    ja: "\uC77C\uBCF8\uC5B4",
+    zh: "\uC911\uAD6D\uC5B4",
+    cn: "\uC911\uAD6D\uC5B4",
+    fr: "\uD504\uB791\uC2A4\uC5B4",
+    de: "\uB3C5\uC77C\uC5B4",
+    es: "\uC2A4\uD398\uC778\uC5B4",
+    it: "\uC774\uD0C8\uB9AC\uC544\uC5B4",
+    pt: "\uD3EC\uB974\uD22C\uAC08\uC5B4",
+    ru: "\uB7EC\uC2DC\uC544\uC5B4",
+    hi: "\uD78C\uB514\uC5B4",
+    th: "\uD0DC\uAD6D\uC5B4",
+  };
+
+  if (!value) return "-";
+
+  return labels[value.toLowerCase()] ?? value.toUpperCase();
+}
+
 export default function DetailModal(props: any) {
   const {
     content,
@@ -35,17 +56,14 @@ export default function DetailModal(props: any) {
     videoKey,
     rottenTomatometer,
     rottenPopcornmeter,
-    rottenTomatoesUrl,
   } = props;
   const videoPath = videoKey ? `https://www.youtube.com/watch?v=${videoKey}` : "";
   const [isMute, setIsMute] = useState(true);
   const [rtState, setRtState] = useState({
     rottenTomatometer: rottenTomatometer ?? null,
     rottenPopcornmeter: rottenPopcornmeter ?? null,
-    rottenTomatoesUrl: rottenTomatoesUrl ?? null,
   });
   const [isRtLoading, setIsRtLoading] = useState(!(rottenTomatometer || rottenPopcornmeter));
-  const castsRef = useRef<HTMLSpanElement>(null!);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -55,7 +73,7 @@ export default function DetailModal(props: any) {
   const releaseYear = releaseDate !== "-" ? releaseDate.slice(0, 4) : "";
   const runtime =
     typeof content.runtime === "number" && content.runtime > 0
-      ? `${content.runtime} min`
+      ? `${content.runtime}\uBD84`
       : typeof content.number_of_episodes === "number" && content.number_of_episodes > 0
         ? `${content.number_of_episodes} episodes`
         : "-";
@@ -68,7 +86,6 @@ export default function DetailModal(props: any) {
         ? content.origin_country.join(", ")
         : "-";
   const overview = content.overview || content.about || "Currently this title does not have overview information.";
-  const tmdbLabel = content.vote_average ? `TMDB ${Number(content.vote_average).toFixed(1)}` : "TMDB -";
 
   const closeAllDetailModals = () => {
     const isDetailPath = (value: string) => /^\/(?:movie|tv)\/[^/]+\/?$/.test(value);
@@ -153,7 +170,6 @@ export default function DetailModal(props: any) {
           setRtState({
             rottenTomatometer: payload.rottenTomatometer ?? null,
             rottenPopcornmeter: payload.rottenPopcornmeter ?? null,
-            rottenTomatoesUrl: payload.rottenTomatoesUrl ?? null,
           });
           setIsRtLoading(false);
         }
@@ -216,77 +232,69 @@ export default function DetailModal(props: any) {
           ) : null}
 
           <div className="h-full overflow-y-auto">
-
-          {videoPath ? (
-            <div className="relative">
-              <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                <ReactPlayer
-                  width="100%"
-                  height="100%"
-                  url={videoPath}
-                  playing
-                  muted={isMute}
-                  loop
-                  style={{ position: "absolute", top: 0, left: 0 }}
-                />
-              </div>
-            </div>
-          ) : content.backdrop_path ? (
-            <img
-              alt="Card background"
-              className="aspect-video w-full object-cover brightness-110"
-              src={`https://image.tmdb.org/t/p/original/${content.backdrop_path}`}
-            />
-          ) : null}
-
-          <div className="px-5 pb-10 pt-6 sm:px-6 lg:px-8">
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <Title title={title} sub={releaseYear} compact={false} />
-
-                <div className="flex flex-wrap gap-2">
-                  <MetaChip>{releaseDate}</MetaChip>
-                  <MetaChip>{runtime}</MetaChip>
-                  <MediaScoreBadges
-                    tmdbLabel={tmdbLabel}
-                    tomatometer={rtState.rottenTomatometer}
-                    popcornmeter={rtState.rottenPopcornmeter}
-                    rottenTomatoesUrl={rtState.rottenTomatoesUrl}
-                    isLoading={isRtLoading}
-                    variant="detail"
+            {videoPath ? (
+              <div className="relative">
+                <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                  <ReactPlayer
+                    width="100%"
+                    height="100%"
+                    url={videoPath}
+                    playing
+                    muted={isMute}
+                    loop
+                    style={{ position: "absolute", top: 0, left: 0 }}
                   />
                 </div>
               </div>
-
-              <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]">
-                <MediaOverviewPanel overview={overview} />
-                <WatchProvidersPanel providers={providers} />
-              </div>
-
-              <TvSeasonsPanel content={content} />
-
-              <MediaCrewPanel crew={crew} />
-
-              <MediaCastPanel casts={casts} castsRef={castsRef} />
-
-              <section className="space-y-4 rounded-[26px] bg-slate-50/80 p-5 dark:bg-slate-900/70">
-                <h4 className="text-base font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-50">More like this</h4>
-                {sim?.length > 0 ? (
-                  <DetailRecommendations contents={sim} mediaType={mediaType} />
-                ) : (
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Currently this title does not have recommendation information.</p>
-                )}
-              </section>
-
-              <MediaDetailsPanel
-                genres={genres}
-                countries={countries}
-                language={content.original_language?.toUpperCase?.() || "-"}
-                casts={casts}
-                castsRef={castsRef}
+            ) : content.backdrop_path ? (
+              <img
+                alt="Card background"
+                className="aspect-video w-full object-cover brightness-110"
+                src={`https://image.tmdb.org/t/p/original/${content.backdrop_path}`}
               />
+            ) : null}
+
+            <div className="px-5 pb-10 pt-6 sm:px-6 lg:px-8">
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  <Title title={title} compact={false} />
+
+                  <div className="flex flex-wrap gap-2">
+                    <MetaChip>{releaseYear || "-"}</MetaChip>
+                    <MetaChip>{runtime}</MetaChip>
+                    <MetaChip>{genres}</MetaChip>
+                    <MetaChip>{countries}</MetaChip>
+                    <MetaChip>{formatLanguageLabel(content.original_language)}</MetaChip>
+                    <MediaScoreBadges
+                      tomatometer={rtState.rottenTomatometer}
+                      popcornmeter={rtState.rottenPopcornmeter}
+                      isLoading={isRtLoading}
+                      variant="detail"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]">
+                  <MediaOverviewPanel overview={overview} />
+                  <WatchProvidersPanel providers={providers} />
+                </div>
+
+                <TvSeasonsPanel content={content} />
+
+                <MediaCastPanel casts={casts} />
+
+                <MediaCrewPanel crew={crew} />
+
+                <section className="space-y-4 rounded-[26px] bg-slate-50/80 p-5 dark:bg-slate-900/70">
+                  <h4 className="text-base font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-50">추천 영화</h4>
+                  {sim?.length > 0 ? (
+                    <DetailRecommendations contents={sim} mediaType={mediaType} />
+                  ) : (
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Currently this title does not have recommendation information.</p>
+                  )}
+                </section>
+              </div>
             </div>
-          </div>
           </div>
         </div>
       </div>

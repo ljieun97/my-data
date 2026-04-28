@@ -3,7 +3,6 @@
 type MediaScoreBadgesProps = {
   tomatometer?: string | null;
   popcornmeter?: string | null;
-  rottenTomatoesUrl?: string | null;
   tmdbLabel?: string | null;
   isLoading?: boolean;
   variant?: "home" | "detail";
@@ -22,17 +21,15 @@ function ScoreLoading() {
 function ScoreChip({
   value,
   icon,
-  href,
   isLoading = false,
   className = "",
 }: {
   value?: string | null;
   icon: string;
-  href?: string | null;
   isLoading?: boolean;
   className?: string;
 }) {
-  const content = (
+  return (
     <span className={className}>
       <span className="home-score-chip__icon" aria-hidden="true">
         {icon}
@@ -40,45 +37,26 @@ function ScoreChip({
       {isLoading && !value ? <ScoreLoading /> : <span>{value ?? "-"}</span>}
     </span>
   );
-
-  if (!href) {
-    return content;
-  }
-
-  return (
-    <a href={href} target="_blank" rel="noreferrer" className="inline-flex">
-      {content}
-    </a>
-  );
 }
 
 export default function MediaScoreBadges({
   tomatometer,
   popcornmeter,
-  rottenTomatoesUrl,
-  tmdbLabel,
   isLoading = false,
   variant = "home",
 }: MediaScoreBadgesProps) {
   if (variant === "detail") {
     return (
       <div className="flex flex-wrap gap-2">
-        {tmdbLabel ? (
-          <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 dark:bg-slate-900 dark:text-slate-300">
-            {tmdbLabel}
-          </span>
-        ) : null}
         <ScoreChip
           value={tomatometer}
           icon="🍅"
-          href={rottenTomatoesUrl}
           isLoading={isLoading}
           className="inline-flex min-h-[2rem] items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:bg-slate-900 dark:text-slate-200"
         />
         <ScoreChip
           value={popcornmeter}
           icon="🍿"
-          href={rottenTomatoesUrl}
           isLoading={isLoading}
           className="inline-flex min-h-[2rem] items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:bg-slate-900 dark:text-slate-200"
         />

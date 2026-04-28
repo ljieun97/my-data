@@ -23,6 +23,20 @@ export default function InfiniteImages(props: any) {
   const { uid } = useUser()
   const [ratingsByKey, setRatingsByKey] = useState<Map<string, number>>(new Map())
   const contents = useMemo(() => props.contents ?? [], [props.contents])
+  const sortedContents = useMemo(() => {
+    if (!props.prioritizeRated) {
+      return contents
+    }
+
+    return [...contents].sort((a: any, b: any) => {
+      const aRating = ratingsByKey.get(getRatingKey(a)) ?? 0
+      const bRating = ratingsByKey.get(getRatingKey(b)) ?? 0
+      const aRated = aRating > 0 ? 1 : 0
+      const bRated = bRating > 0 ? 1 : 0
+
+      return bRated - aRated
+    })
+  }, [contents, props.prioritizeRated, ratingsByKey])
 
   useEffect(() => {
     let cancelled = false
@@ -87,7 +101,7 @@ export default function InfiniteImages(props: any) {
   return (
     <>
       <div className={style}>
-        {contents.map((content: any, index: number) => {
+        {sortedContents.map((content: any, index: number) => {
           const contentWithRating = {
             ...content,
             userRating: ratingsByKey.get(getRatingKey(content)) ?? null,

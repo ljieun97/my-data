@@ -102,7 +102,7 @@ export default function PersonDetailContent({
         </div>
 
         {credits.length > 0 ? (
-          <InfiniteImages contents={credits} type="info" />
+          <InfiniteImages contents={credits} type="info" prioritizeRated />
         ) : (
           <div className="browse-card rounded-[24px] border p-6 text-sm text-slate-500 dark:text-slate-400">
             {"\uD604\uC7AC \uB4F1\uB85D\uB41C \uC791\uD488 \uC815\uBCF4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."}

@@ -3,6 +3,11 @@ type CountryLike = {
   name?: string | null;
 };
 
+type NormalizedCountry = {
+  code: string | null;
+  name: string | null;
+};
+
 function normalizeCountryCode(value?: string | null) {
   return typeof value === "string" && value.trim() ? value.trim().toUpperCase() : null;
 }
@@ -12,13 +17,13 @@ function normalizeCountryName(value?: string | null) {
 }
 
 export function extractCountryMetadata(content: any) {
-  const productionCountries = Array.isArray(content?.production_countries)
+  const productionCountries: NormalizedCountry[] = Array.isArray(content?.production_countries)
     ? content.production_countries
         .map((item: CountryLike) => ({
           code: normalizeCountryCode(item?.iso_3166_1),
           name: normalizeCountryName(item?.name),
         }))
-        .filter((item) => item.code || item.name)
+        .filter((item: NormalizedCountry) => Boolean(item.code || item.name))
     : [];
 
   const originCountries = Array.isArray(content?.origin_country)

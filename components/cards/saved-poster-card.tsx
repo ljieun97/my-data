@@ -22,6 +22,9 @@ export type SavedMediaItem = {
   user_date?: string;
   user_rating?: number | null;
   season_number?: number | null;
+  primary_country_code?: string | null;
+  primary_country_name?: string | null;
+  genre_ids?: number[] | null;
 };
 
 function formatRating(value?: number | null) {

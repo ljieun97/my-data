@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { closeMongo, connectMongo } from "@/lib/mongo/mongodb"
+import { extractCountryMetadata } from "@/lib/content-metadata";
 import dayjs from 'dayjs'
 import { ObjectId } from "mongodb";
 import { cookies, headers } from "next/headers";
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 				? saveDate || today
 				: releaseLikeDate
 	let object = {} as any
+	const countryMetadata = extractCountryMetadata(content)
 
 	//제목 정렬때문에 title로 통합
 	// if (content.genre_ids) {
@@ -76,7 +78,8 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 				title: content.title,
 				id: content.id,
 				poster_path: content.poster_path,
-				genre_ids: content.genre_ids
+				genre_ids: content.genre_ids,
+				...countryMetadata,
 			}
 		} else {
 			const seasonNumber = Number(content.season_number || 1)
@@ -86,7 +89,8 @@ export async function POST(req: NextRequest, { params }: { params: any }) {
 				id: content.id,
 				season_number: seasonNumber,
 				poster_path: content.poster_path,
-				genre_ids: content.genre_ids
+				genre_ids: content.genre_ids,
+				...countryMetadata,
 			}
 		}
 	// } else if (content.webtoonId) {

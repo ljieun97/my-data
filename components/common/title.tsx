@@ -7,7 +7,7 @@ const Title = ({
   compact = true,
 }: {
   title: string,
-  sub: any,
+  sub?: React.ReactNode,
   adornment?: React.ReactNode,
   compact?: boolean,
 }) => {

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import MediaSliderCard from "@/components/cards/slider-media-card";
 import type { MediaSliderItem } from "@/components/media/media-slider";
-import { useUser } from "@/context/UserContext";
+import { useUserRatings } from "@/context/UserRatingsContext";
 
 type RecommendationItem = {
   id: number;
@@ -16,12 +16,6 @@ type RecommendationItem = {
   poster_path?: string | null;
   backdrop_path?: string | null;
   overview?: string | null;
-};
-
-type RatingUpdate = {
-  id: number;
-  type?: string;
-  rating: number;
 };
 
 type RottenTomatoesUpdate = {
@@ -71,13 +65,6 @@ function applyRottenTomatoesUpdates(cards: MediaSliderItem[], updates: RottenTom
   });
 }
 
-function applyUserRatingUpdates(cards: MediaSliderItem[], ratingsByTmdbId: Map<number, number>) {
-  return cards.map((card) => ({
-    ...card,
-    userRating: card.tmdbId ? ratingsByTmdbId.get(card.tmdbId) ?? null : null,
-  }));
-}
-
 export default function DetailRecommendations({
   contents,
   mediaType,
@@ -85,61 +72,26 @@ export default function DetailRecommendations({
   contents: RecommendationItem[];
   mediaType: "movie" | "tv";
 }) {
-  const { uid } = useUser();
+  const { ensureRatings, getRating } = useUserRatings();
   const baseCards = useMemo(() => mapRecommendations(contents), [contents]);
   const [cards, setCards] = useState<MediaSliderItem[]>(baseCards);
   const [isRtLoading, setIsRtLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
     setCards(baseCards);
     setIsRtLoading(true);
+  }, [baseCards]);
 
-    const ids = uid
-      ? Array.from(
-          new Set(
-            baseCards
-              .map((card) => card.tmdbId)
-              .filter((tmdbId): tmdbId is number => Number.isFinite(tmdbId)),
-          ),
-        )
-      : [];
+  useEffect(() => {
+    const items = baseCards
+      .map((card) => ({ id: Number(card.tmdbId), type: mediaType }))
+      .filter((item) => Number.isFinite(item.id));
 
-    const loadUserRatings = async () => {
-      if (!uid || !ids.length) {
-        return;
-      }
+    void ensureRatings(items);
+  }, [baseCards, ensureRatings, mediaType]);
 
-      try {
-        const response = await fetch("/api/mypage/ratings", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: uid,
-          },
-          body: JSON.stringify({
-            items: ids.map((id) => ({ id, type: mediaType })),
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load saved ratings: ${response.status}`);
-        }
-
-        const payload = (await response.json()) as RatingUpdate[];
-        const ratingsByTmdbId = new Map(
-          payload
-            .filter((item) => Number.isFinite(item.id) && Number.isFinite(item.rating) && item.rating > 0)
-            .map((item) => [item.id, item.rating]),
-        );
-
-        if (!cancelled) {
-          setCards((currentCards) => applyUserRatingUpdates(currentCards, ratingsByTmdbId));
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
+  useEffect(() => {
+    let cancelled = false;
 
     const loadRottenTomatoes = async () => {
       try {
@@ -179,17 +131,25 @@ export default function DetailRecommendations({
       }
     };
 
-    void loadUserRatings();
     void loadRottenTomatoes();
 
     return () => {
       cancelled = true;
     };
-  }, [baseCards, mediaType, uid]);
+  }, [baseCards]);
+
+  const cardsWithRating = useMemo(
+    () =>
+      cards.map((card) => ({
+        ...card,
+        userRating: card.tmdbId ? getRating({ id: card.tmdbId, type: mediaType }) || null : null,
+      })),
+    [cards, getRating, mediaType],
+  );
 
   return (
     <div className="detail-recommendation-grid grid gap-4">
-      {cards.map((card) => (
+      {cardsWithRating.map((card) => (
         <MediaSliderCard
           key={card.id}
           movie={card}

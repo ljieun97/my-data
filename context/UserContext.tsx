@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext } from "react";
+import { UserRatingsProvider } from "@/context/UserRatingsContext";
 
 interface UserContextType {
   uid: string | null;
@@ -11,7 +12,7 @@ const UserContext = createContext<UserContextType | null>(null);
 export function UserProvider({ children, uid }: { children: React.ReactNode; uid: string }) {
   return (
     <UserContext.Provider value={{ uid }}>
-      {children}
+      <UserRatingsProvider uid={uid}>{children}</UserRatingsProvider>
     </UserContext.Provider>
   );
 }

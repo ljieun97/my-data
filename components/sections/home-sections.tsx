@@ -1,42 +1,37 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import MediaSlider, { type MediaSliderItem } from "@/components/media/media-slider"
-import { useUser } from "@/context/UserContext"
+import { useEffect, useMemo, useState } from "react";
+import MediaSlider, { type MediaSliderItem } from "@/components/media/media-slider";
+import { useUserRatings } from "@/context/UserRatingsContext";
 
 type HomeSectionsResponse = {
-  boxOfficeCards: MediaSliderItem[]
-  upcomingCards: MediaSliderItem[]
-  topRatedCards: MediaSliderItem[]
-}
+  boxOfficeCards: MediaSliderItem[];
+  upcomingCards: MediaSliderItem[];
+  topRatedCards: MediaSliderItem[];
+};
 
 type RottenTomatoesUpdate = {
-  id: string
-  englishTitle?: string | null
-  rottenTomatometer?: string | null
-  rottenPopcornmeter?: string | null
-  rottenTomatoesUrl?: string | null
-}
+  id: string;
+  englishTitle?: string | null;
+  rottenTomatometer?: string | null;
+  rottenPopcornmeter?: string | null;
+  rottenTomatoesUrl?: string | null;
+};
 
 type RottenTomatoesResponse = {
-  boxOfficeUpdates: RottenTomatoesUpdate[]
-  upcomingUpdates: RottenTomatoesUpdate[]
-  topRatedUpdates: RottenTomatoesUpdate[]
-}
-
-type UserRatingUpdate = {
-  id: number
-  rating: number
-}
+  boxOfficeUpdates: RottenTomatoesUpdate[];
+  upcomingUpdates: RottenTomatoesUpdate[];
+  topRatedUpdates: RottenTomatoesUpdate[];
+};
 
 function applyRottenTomatoesUpdates(cards: MediaSliderItem[], updates: RottenTomatoesUpdate[]) {
-  const updatesById = new Map(updates.map((item) => [item.id, item]))
+  const updatesById = new Map(updates.map((item) => [item.id, item]));
 
   return cards.map((card) => {
-    const update = updatesById.get(card.id)
+    const update = updatesById.get(card.id);
 
     if (!update) {
-      return card
+      return card;
     }
 
     return {
@@ -45,8 +40,8 @@ function applyRottenTomatoesUpdates(cards: MediaSliderItem[], updates: RottenTom
       rottenTomatometer: update.rottenTomatometer ?? null,
       rottenPopcornmeter: update.rottenPopcornmeter ?? null,
       rottenTomatoesUrl: update.rottenTomatoesUrl ?? null,
-    }
-  })
+    };
+  });
 }
 
 function buildRtRequestPayload(data: HomeSectionsResponse) {
@@ -75,75 +70,46 @@ function buildRtRequestPayload(data: HomeSectionsResponse) {
       englishTitle: card.englishTitle,
       originalTitle: card.originalTitle,
     })),
-  }
+  };
 }
 
-function applyUserRatingUpdates(cards: MediaSliderItem[], ratingsByTmdbId: Map<number, number>) {
+function applyUserRatings(cards: MediaSliderItem[], getRating: (item: { id: number; type: string }) => number) {
   return cards.map((card) => ({
     ...card,
-    userRating: card.tmdbId ? ratingsByTmdbId.get(card.tmdbId) ?? null : null,
-  }))
+    userRating: card.tmdbId ? getRating({ id: card.tmdbId, type: "movie" }) || null : null,
+  }));
 }
 
 export default function HomeBoxOfficeSections({
   initialData,
 }: {
-  initialData: HomeSectionsResponse
+  initialData: HomeSectionsResponse;
 }) {
-  const { uid } = useUser()
-  const [data, setData] = useState<HomeSectionsResponse>(initialData)
-  const [error] = useState(false)
-  const [isRtLoading, setIsRtLoading] = useState(true)
+  const { ensureRatings, getRating } = useUserRatings();
+  const [data, setData] = useState<HomeSectionsResponse>(initialData);
+  const [error] = useState(false);
+  const [isRtLoading, setIsRtLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false
-    setData(initialData)
-    setIsRtLoading(true)
+    setData(initialData);
+    setIsRtLoading(true);
+  }, [initialData]);
 
-    const ids = uid
-      ? Array.from(
-          new Set(
-            [initialData.boxOfficeCards, initialData.upcomingCards, initialData.topRatedCards]
-              .flat()
-              .map((card) => card.tmdbId)
-              .filter((tmdbId): tmdbId is number => Number.isFinite(tmdbId)),
-          ),
-        )
-      : []
+  useEffect(() => {
+    const items = Array.from(
+      new Set(
+        [initialData.boxOfficeCards, initialData.upcomingCards, initialData.topRatedCards]
+          .flat()
+          .map((card) => card.tmdbId)
+          .filter((tmdbId): tmdbId is number => Number.isFinite(tmdbId)),
+      ),
+    ).map((id) => ({ id, type: "movie" }));
 
-    const loadUserRatings = async () => {
-      if (!uid || !ids.length) {
-        return
-      }
+    void ensureRatings(items);
+  }, [ensureRatings, initialData]);
 
-      try {
-        const ratingsResponse = await fetch("/api/mypage/ratings", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: uid,
-          },
-          body: JSON.stringify({ ids }),
-        })
-
-        const ratingsPayload = ratingsResponse.ok ? ((await ratingsResponse.json()) as UserRatingUpdate[]) : []
-        const ratingsByTmdbId = new Map(
-          ratingsPayload
-            .filter((item) => Number.isFinite(item.id) && Number.isFinite(item.rating) && item.rating > 0)
-            .map((item) => [item.id, item.rating]),
-        )
-
-        if (!cancelled) {
-          setData((currentData) => ({
-            boxOfficeCards: applyUserRatingUpdates(currentData.boxOfficeCards, ratingsByTmdbId),
-            upcomingCards: applyUserRatingUpdates(currentData.upcomingCards, ratingsByTmdbId),
-            topRatedCards: applyUserRatingUpdates(currentData.topRatedCards, ratingsByTmdbId),
-          }))
-        }
-      } catch (loadError) {
-        console.error(loadError)
-      }
-    }
+  useEffect(() => {
+    let cancelled = false;
 
     const loadRottenTomatoes = async () => {
       try {
@@ -154,51 +120,59 @@ export default function HomeBoxOfficeSections({
           },
           cache: "no-store",
           body: JSON.stringify(buildRtRequestPayload(initialData)),
-        })
+        });
 
         if (!rtResponse.ok) {
-          throw new Error(`Failed to load Rotten Tomatoes sections: ${rtResponse.status}`)
+          throw new Error(`Failed to load Rotten Tomatoes sections: ${rtResponse.status}`);
         }
 
-        const rtPayload = (await rtResponse.json()) as RottenTomatoesResponse
+        const rtPayload = (await rtResponse.json()) as RottenTomatoesResponse;
 
         if (!cancelled) {
           setData((currentData) => ({
             boxOfficeCards: applyRottenTomatoesUpdates(currentData.boxOfficeCards, rtPayload.boxOfficeUpdates),
             upcomingCards: applyRottenTomatoesUpdates(currentData.upcomingCards, rtPayload.upcomingUpdates),
             topRatedCards: applyRottenTomatoesUpdates(currentData.topRatedCards, rtPayload.topRatedUpdates),
-          }))
+          }));
         }
       } catch (loadError) {
-        console.error(loadError)
+        console.error(loadError);
       } finally {
         if (!cancelled) {
-          setIsRtLoading(false)
+          setIsRtLoading(false);
         }
       }
-    }
+    };
 
-    void loadUserRatings()
-    void loadRottenTomatoes()
+    void loadRottenTomatoes();
 
     return () => {
-      cancelled = true
-    }
-  }, [initialData, uid])
+      cancelled = true;
+    };
+  }, [initialData]);
+
+  const displayData = useMemo(
+    () => ({
+      boxOfficeCards: applyUserRatings(data.boxOfficeCards, getRating),
+      upcomingCards: applyUserRatings(data.upcomingCards, getRating),
+      topRatedCards: applyUserRatings(data.topRatedCards, getRating),
+    }),
+    [data, getRating],
+  );
 
   return (
     <div className="flex flex-col gap-14">
       <MediaSlider
         title="박스오피스 순위"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
-        results={data.boxOfficeCards}
+        results={displayData.boxOfficeCards}
         showYear={false}
         isScoreLoading={isRtLoading}
       />
       <MediaSlider
         title="개봉예정작"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
-        results={data.upcomingCards}
+        results={displayData.upcomingCards}
         isScoreLoading={isRtLoading}
         showRank={false}
         showDetail
@@ -207,12 +181,12 @@ export default function HomeBoxOfficeSections({
       <MediaSlider
         title="인기 영화"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
-        results={data.topRatedCards}
+        results={displayData.topRatedCards}
         isScoreLoading={isRtLoading}
         showRank={false}
         showDetail
         showYear={false}
       />
     </div>
-  )
+  );
 }

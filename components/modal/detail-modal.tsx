@@ -7,6 +7,7 @@ import { faArrowLeft, faVolumeHigh, faVolumeXmark, faXmark } from "@fortawesome/
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useSaveContent } from "@/hooks/useSaveContent";
+import { buildRatingKey, useUserRatings } from "@/context/UserRatingsContext";
 import MediaScoreBadges from "@/components/media/media-score-badges";
 import WatchProvidersPanel from "@/components/media/watch-providers-panel";
 import MediaOverviewPanel from "@/components/media/media-overview-panel";
@@ -122,6 +123,7 @@ export default function DetailModal(props: any) {
   const [userRating, setUserRating] = useState(Number(initialUserRating) || 0);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const { saveWithPreference } = useSaveContent();
+  const { ensureRatings, getRating, ratings } = useUserRatings();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -144,6 +146,9 @@ export default function DetailModal(props: any) {
         ? content.origin_country.join(", ")
         : "-";
   const overview = content.overview || content.about || "Currently this title does not have overview information.";
+  const ratingKey = buildRatingKey({ id: Number(content.id), type: mediaType });
+  const hasCachedRating = Object.prototype.hasOwnProperty.call(ratings, ratingKey);
+  const cachedUserRating = Number(content?.id) ? getRating({ id: Number(content.id), type: mediaType }) : 0;
   const displayedRating = hoverRating ?? userRating;
 
   const handleRatingSelect = async (rating: number) => {
@@ -204,6 +209,32 @@ export default function DetailModal(props: any) {
       window.scrollTo(0, scrollY);
     };
   }, []);
+
+  useEffect(() => {
+    setUserRating(Number(initialUserRating) || 0);
+  }, [initialUserRating, content.id]);
+
+  useEffect(() => {
+    if (!content?.id) {
+      return;
+    }
+
+    void ensureRatings([
+      {
+        id: Number(content.id),
+        type: mediaType,
+      },
+    ]);
+  }, [content?.id, ensureRatings, mediaType]);
+
+  useEffect(() => {
+    if (!hasCachedRating) {
+      return;
+    }
+
+    setHoverRating(null);
+    setUserRating(cachedUserRating);
+  }, [cachedUserRating, hasCachedRating, ratingKey]);
 
   useEffect(() => {
     let cancelled = false;

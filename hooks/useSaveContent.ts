@@ -1,22 +1,33 @@
 "use client";
 
 import { Toast } from "@heroui/react";
-import { useUser } from "@/context/UserContext";
 import { useSaveDate } from "@/context/SaveDateContext";
+import { useUserRatings } from "@/context/UserRatingsContext";
+import { useUser } from "@/context/UserContext";
 import { saveContent } from "@/lib/actions/content";
 
 export function useSaveContent() {
   const { uid } = useUser();
+  const { setRatingForItem } = useUserRatings();
   const { mode, requestDate, requestDuplicateAction } = useSaveDate();
 
   const saveWithPreference = async ({ id, content, rating }: { id: string; content: any; rating: number }) => {
     let saveDate: string | undefined;
     let selectedRating = rating;
     const contentType = content.type || (content.title ? "movie" : "tv");
+    const numericId = Number(id);
     const seasonParam =
       contentType === "tv"
         ? `&season_number=${encodeURIComponent(String(content.season_number || 1))}`
         : "";
+
+    const syncUserRating = (nextRating: number) => {
+      if (!Number.isFinite(numericId)) {
+        return;
+      }
+
+      setRatingForItem({ id: numericId, type: contentType }, nextRating);
+    };
 
     if (uid && mode === "custom") {
       const duplicateCheck = await fetch(`/api/mypage/content/${id}?type=${contentType}${seasonParam}`, {
@@ -63,7 +74,8 @@ export function useSaveContent() {
           });
 
           if (response.ok) {
-            Toast.toast("저장 정보를 변경했습니다");
+            syncUserRating(selection.rating);
+            Toast.toast("저장 정보를 변경했습니다.");
           }
 
           return;
@@ -93,6 +105,10 @@ export function useSaveContent() {
     });
 
     if (result.ok || !uid) {
+      if (result.ok) {
+        syncUserRating(selectedRating);
+      }
+
       return;
     }
 
@@ -133,7 +149,8 @@ export function useSaveContent() {
     });
 
     if (response.ok) {
-      Toast.toast("저장 정보를 변경했습니다");
+      syncUserRating(resolvedRating);
+      Toast.toast("저장 정보를 변경했습니다.");
     }
   };
 

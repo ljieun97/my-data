@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useUser } from "@/context/UserContext";
+import { useEffect, useMemo } from "react";
+import { useUserRatings } from "@/context/UserRatingsContext";
 
 function getCreditType(credit: any) {
   return credit?.media_type || (credit?.title ? "movie" : "tv");
 }
 
 export default function PersonWatchStat({ credits, label }: { credits: any[]; label: string }) {
-  const { uid } = useUser();
-  const [watchedCount, setWatchedCount] = useState(0);
+  const { ensureRatings, getRating } = useUserRatings();
   const items = useMemo(() => {
     const uniqueItems = new Map<string, { id: number; type: string }>();
 
@@ -28,50 +27,13 @@ export default function PersonWatchStat({ credits, label }: { credits: any[]; la
   }, [credits]);
 
   useEffect(() => {
-    let cancelled = false;
+    void ensureRatings(items);
+  }, [ensureRatings, items]);
 
-    const loadWatchedCount = async () => {
-      if (!uid || !items.length) {
-        setWatchedCount(0);
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/mypage/ratings", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: uid,
-          },
-          body: JSON.stringify({ items }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to load watched credits: ${response.status}`);
-        }
-
-        const payload = await response.json();
-        const ratings = Array.isArray(payload) ? (payload as { rating?: number }[]) : [];
-        const nextWatchedCount = ratings.filter((item) => Number(item.rating) > 0).length;
-
-        if (!cancelled) {
-          setWatchedCount(nextWatchedCount);
-        }
-      } catch (error) {
-        console.error(error);
-
-        if (!cancelled) {
-          setWatchedCount(0);
-        }
-      }
-    };
-
-    void loadWatchedCount();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [items, uid]);
+  const watchedCount = useMemo(
+    () => items.filter((item) => getRating(item) > 0).length,
+    [getRating, items],
+  );
 
   const totalCount = items.length;
   const watchedRatio = totalCount > 0 ? watchedCount / totalCount : 0;

@@ -6,9 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 type KobisMovie = {
   movieCd: string;
   movieNm: string;
-  openDt: string;
-  rank: string;
-  rankOldAndNew: string;
 };
 
 type ShowtimeItem = {
@@ -114,24 +111,14 @@ export default function TimetablePlanner() {
   const [selectedDate, setSelectedDate] = useState(() => toDateInputValue(new Date()));
   const [selectedMovieCd, setSelectedMovieCd] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
-  const [searchedMovie, setSearchedMovie] = useState<KobisMovie | null>(null);
   const [movies, setMovies] = useState<KobisMovie[]>([]);
   const [plans, setPlans] = useState<PlannedItem[]>([]);
   const [showtimeMap, setShowtimeMap] = useState<Record<string, LoadState>>({});
-  const [isMoviesLoading, setIsMoviesLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const week = useMemo(() => buildWeek(selectedDate), [selectedDate]);
-  const displayedMovies = useMemo(() => {
-    if (!searchedMovie) {
-      return movies;
-    }
-
-    return [searchedMovie, ...movies.filter((movie) => movie.movieNm !== searchedMovie.movieNm)];
-  }, [movies, searchedMovie]);
   const selectedMovie = useMemo(
-    () => displayedMovies.find((movie) => movie.movieCd === selectedMovieCd) ?? null,
-    [displayedMovies, selectedMovieCd],
+    () => movies.find((movie) => movie.movieCd === selectedMovieCd) ?? null,
+    [movies, selectedMovieCd],
   );
   const selectedState = selectedMovieCd ? showtimeMap[selectedMovieCd] : undefined;
   const selectedShowtimes = selectedState?.data ? sortShowtimes(selectedState.data.items) : [];
@@ -163,45 +150,8 @@ export default function TimetablePlanner() {
   }, [plans]);
 
   useEffect(() => {
-    let ignore = false;
-
-    async function loadMovies() {
-      setIsMoviesLoading(true);
-      setError(null);
-      setShowtimeMap({});
-      setSelectedMovieCd(null);
-
-      try {
-        const response = await fetch(`/api/timetable/movies?date=${selectedDate}`, {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch KOBIS movies.");
-        }
-
-        const data = (await response.json()) as { movies: KobisMovie[] };
-        if (!ignore) {
-          setMovies(data.movies);
-        }
-      } catch (fetchError) {
-        console.error(fetchError);
-        if (!ignore) {
-          setMovies([]);
-          setError("영화 목록을 못 가져왔어요.");
-        }
-      } finally {
-        if (!ignore) {
-          setIsMoviesLoading(false);
-        }
-      }
-    }
-
-    loadMovies();
-
-    return () => {
-      ignore = true;
-    };
+    setShowtimeMap({});
+    setSelectedMovieCd(null);
   }, [selectedDate]);
 
   const loadMovieShowtimes = async (movie: KobisMovie) => {
@@ -279,12 +229,9 @@ export default function TimetablePlanner() {
     const movie = {
       movieCd: `search:${movieName}`,
       movieNm: movieName,
-      openDt: "",
-      rank: "검색",
-      rankOldAndNew: "OLD",
     };
 
-    setSearchedMovie(movie);
+    setMovies((current) => [movie, ...current.filter((item) => item.movieNm !== movie.movieNm)]);
     setSelectedMovieCd(movie.movieCd);
     void loadMovieShowtimes(movie);
   };
@@ -373,8 +320,6 @@ export default function TimetablePlanner() {
           </button>
         </div>
 
-        {error ? <div className="mb-2 rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">{error}</div> : null}
-
         <form onSubmit={searchMovie} className="mb-3 flex gap-2">
           <input
             type="search"
@@ -392,9 +337,8 @@ export default function TimetablePlanner() {
         </form>
 
         <div className="flex max-h-[calc(100vh-230px)] flex-col gap-1 overflow-y-auto pr-1">
-          {isMoviesLoading ? <div className="px-3 py-8 text-center text-sm text-slate-500">불러오는 중</div> : null}
-          {!isMoviesLoading && !displayedMovies.length ? <div className="px-3 py-8 text-center text-sm text-slate-500">영화 없음</div> : null}
-          {displayedMovies.map((movie) => {
+          {!movies.length ? <div className="px-3 py-8 text-center text-sm text-slate-500">검색해서 시작</div> : null}
+          {movies.map((movie) => {
             const isSelected = movie.movieCd === selectedMovieCd;
 
             return (
@@ -408,7 +352,6 @@ export default function TimetablePlanner() {
                     : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
                 }`}
               >
-                <span className="mr-2 text-xs opacity-55">{movie.rank}</span>
                 <span className="font-semibold">{movie.movieNm}</span>
               </button>
             );

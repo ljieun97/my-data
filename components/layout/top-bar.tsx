@@ -50,7 +50,6 @@ function OverlayModal({
 
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/worldcup", label: "Worldcup" },
   { href: "/calendar", label: "Calendar" },
   { href: "/timetable", label: "Timetable" },
   { href: "/awards", label: "Awards" },
@@ -58,73 +57,6 @@ const navItems = [
   { href: "/tv", label: "Series" },
   { href: "/guest", label: "Guest" },
 ];
-
-function WorldcupModal({
-  open,
-  selectedSource,
-  selectedYear,
-  setSelectedSource,
-  setSelectedYear,
-  yearOptions,
-  onSubmit,
-  onClose,
-}: {
-  open: boolean;
-  selectedSource: string;
-  selectedYear: string;
-  setSelectedSource: (value: string) => void;
-  setSelectedYear: (value: string) => void;
-  yearOptions: string[];
-  onSubmit: () => void;
-  onClose: () => void;
-}) {
-  return (
-    <OverlayModal
-      open={open}
-      title="Worldcup"
-      onClose={onClose}
-      footer={
-        <>
-          <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={onClose}>
-            Cancel
-          </button>
-          <button type="button" className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white dark:bg-slate-100 dark:text-slate-900" onClick={onSubmit}>
-            Start worldcup
-          </button>
-        </>
-      }
-    >
-      <div className="flex flex-col gap-5">
-        <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Year</span>
-          <select
-            value={selectedYear}
-            onChange={(event) => setSelectedYear(event.target.value)}
-            className="min-h-[2.85rem] rounded-2xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          >
-            {yearOptions.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="text-sm font-medium text-slate-700 dark:text-slate-200">Source</div>
-        <div className="flex flex-col gap-3">
-          <label className="inline-flex items-center gap-2">
-            <input type="radio" name="worldcup-source" checked={selectedSource === "kobis"} onChange={() => setSelectedSource("kobis")} />
-            <span>Box Office (KOBIS)</span>
-          </label>
-          <label className="inline-flex items-center gap-2">
-            <input type="radio" name="worldcup-source" checked={selectedSource === "tmdb"} onChange={() => setSelectedSource("tmdb")} />
-            <span>OTT (TMDB)</span>
-          </label>
-        </div>
-      </div>
-    </OverlayModal>
-  );
-}
 
 function LoginModal({ open, onLogin, onClose }: { open: boolean; onLogin: () => void; onClose: () => void }) {
   return (
@@ -189,8 +121,6 @@ function SettingsModal({
 }
 
 export default function TopBar() {
-  const currentYear = new Date().getFullYear();
-  const defaultWorldcupYear = String(currentYear - 1);
   const { uid } = useUser();
   const { mode: saveDateMode, setMode: setSaveDateMode } = useSaveDate();
   const path = usePathname();
@@ -199,13 +129,9 @@ export default function TopBar() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedSet, setSelectedSet] = useState<"release" | "today" | "custom">("release");
-  const [selectedSource, setSelectedSource] = useState("kobis");
-  const [selectedYear, setSelectedYear] = useState(defaultWorldcupYear);
-  const yearOptions = useMemo(() => Array.from({ length: 26 }, (_, index) => String(currentYear - index)), [currentYear]);
 
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isWorldcupOpen, setIsWorldcupOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const isActivePath = (href: string) => path === href || path.startsWith(`${href}/`);
@@ -277,18 +203,6 @@ export default function TopBar() {
     setSaveDateMode(value);
   };
 
-  const handleOpenWorldcup = () => {
-    setSelectedSource("kobis");
-    setSelectedYear(defaultWorldcupYear);
-    setIsWorldcupOpen(true);
-    setMobileOpen(false);
-  };
-
-  const handleNavigateWorldcup = () => {
-    router.push(`/worldcup?year=${selectedYear}&source=${selectedSource}`);
-    setIsWorldcupOpen(false);
-  };
-
   const toggleTheme = () => {
     const nextIsDark = !isDarkMode;
     setIsDarkMode(nextIsDark);
@@ -331,32 +245,18 @@ export default function TopBar() {
             </Link>
 
             <div className="topbar-desktop-nav items-center gap-2">
-              {navItems.map((item) =>
-                item.href === "/worldcup" ? (
-                  <button
-                    key={item.href}
-                    type="button"
-                    onClick={handleOpenWorldcup}
-                    className={[
-                      "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </button>
-                ) : (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={[
-                      "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </Link>
-                ),
-              )}
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={[
+                    "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
+                    isActivePath(item.href) ? "topbar-link--active" : "",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -411,31 +311,17 @@ export default function TopBar() {
           <div className="topbar-menu topbar-menu--mobile border-t backdrop-blur-xl">
             <div className="app-frame topbar-inner pb-4 pt-4">
               {navItems.map((item) =>
-                item.href === "/worldcup" ? (
-                  <button
-                    key={item.href}
-                    type="button"
-                    onClick={handleOpenWorldcup}
-                    className={[
-                      "topbar-mobile-link mt-1 block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-mobile-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </button>
-                ) : (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={[
-                      "topbar-mobile-link mt-1 block rounded-2xl px-4 py-3 text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-mobile-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </Link>
-                ),
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={[
+                    "topbar-mobile-link mt-1 block rounded-2xl px-4 py-3 text-sm font-medium transition",
+                    isActivePath(item.href) ? "topbar-mobile-link--active" : "",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </Link>
               )}
             </div>
           </div>
@@ -450,16 +336,6 @@ export default function TopBar() {
         isDarkMode={isDarkMode}
         onToggleTheme={toggleTheme}
         onClose={() => setIsSettingsOpen(false)}
-      />
-      <WorldcupModal
-        open={isWorldcupOpen}
-        selectedSource={selectedSource}
-        selectedYear={selectedYear}
-        setSelectedSource={setSelectedSource}
-        setSelectedYear={setSelectedYear}
-        yearOptions={yearOptions}
-        onSubmit={handleNavigateWorldcup}
-        onClose={() => setIsWorldcupOpen(false)}
       />
     </>
   );

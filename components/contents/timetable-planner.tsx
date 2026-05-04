@@ -6,6 +6,9 @@ import { useEffect, useMemo, useState } from "react";
 type KobisMovie = {
   movieCd: string;
   movieNm: string;
+  openDt?: string;
+  rank?: string;
+  rankOldAndNew?: string;
 };
 
 type ShowtimeItem = {
@@ -114,6 +117,8 @@ export default function TimetablePlanner() {
   const [movies, setMovies] = useState<KobisMovie[]>([]);
   const [plans, setPlans] = useState<PlannedItem[]>([]);
   const [showtimeMap, setShowtimeMap] = useState<Record<string, LoadState>>({});
+  const [isMoviesLoading, setIsMoviesLoading] = useState(true);
+  const [moviesError, setMoviesError] = useState<string | null>(null);
 
   const week = useMemo(() => buildWeek(selectedDate), [selectedDate]);
   const selectedMovie = useMemo(
@@ -148,6 +153,46 @@ export default function TimetablePlanner() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(plans));
   }, [plans]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadMovies() {
+      setIsMoviesLoading(true);
+      setMoviesError(null);
+
+      try {
+        const response = await fetch("/api/timetable/movies", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch KOBIS movies.");
+        }
+
+        const data = (await response.json()) as { movies: KobisMovie[] };
+        if (!ignore) {
+          setMovies(Array.isArray(data.movies) ? data.movies : []);
+        }
+      } catch (fetchError) {
+        console.error(fetchError);
+        if (!ignore) {
+          setMovies([]);
+          setMoviesError("영화 목록을 못 가져왔어요.");
+        }
+      } finally {
+        if (!ignore) {
+          setIsMoviesLoading(false);
+        }
+      }
+    }
+
+    void loadMovies();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   useEffect(() => {
     setShowtimeMap({});
@@ -233,6 +278,7 @@ export default function TimetablePlanner() {
 
     setMovies((current) => [movie, ...current.filter((item) => item.movieNm !== movie.movieNm)]);
     setSelectedMovieCd(movie.movieCd);
+    setSearchText("");
     void loadMovieShowtimes(movie);
   };
 
@@ -336,8 +382,11 @@ export default function TimetablePlanner() {
           </button>
         </form>
 
+        {moviesError ? <div className="mb-2 rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">{moviesError}</div> : null}
+
         <div className="flex max-h-[calc(100vh-230px)] flex-col gap-1 overflow-y-auto pr-1">
-          {!movies.length ? <div className="px-3 py-8 text-center text-sm text-slate-500">검색해서 시작</div> : null}
+          {isMoviesLoading ? <div className="px-3 py-8 text-center text-sm text-slate-500">불러오는 중</div> : null}
+          {!isMoviesLoading && !movies.length ? <div className="px-3 py-8 text-center text-sm text-slate-500">영화 없음</div> : null}
           {movies.map((movie) => {
             const isSelected = movie.movieCd === selectedMovieCd;
 
@@ -352,6 +401,7 @@ export default function TimetablePlanner() {
                     : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
                 }`}
               >
+                {movie.rank ? <span className="mr-2 text-xs opacity-55">{movie.rank}</span> : null}
                 <span className="font-semibold">{movie.movieNm}</span>
               </button>
             );

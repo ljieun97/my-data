@@ -89,12 +89,12 @@ export default function SavedPosterCard({
         setPosterImg(`https://image.tmdb.org/t/p/w500${selectPoster}`);
       }
       onUpdate(content._id, date.toString(), selectPoster, rating);
-      Toast.toast("?섏젙?덉뒿?덈떎.");
+      Toast.toast("저장되었습니다.");
     }
   };
 
   const handleDeleteFromModal = () => {
-    if (!window.confirm("?뺣쭚 ??젣?섏떆寃좎뒿?덇퉴?")) return;
+    if (!window.confirm("삭제하시겠습니까?")) return;
     setIsEditOpen(false);
     void onDelete(content._id);
   };
@@ -136,7 +136,7 @@ export default function SavedPosterCard({
               actions={[
                 {
                   icon: faPen,
-                  label: "?섏젙?섍린",
+                  label: "save",
                   onClick: handleOpen,
                   className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
                 },
@@ -157,9 +157,9 @@ export default function SavedPosterCard({
       {isEditOpen ? (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
           <div className="w-full max-w-2xl rounded-[28px] border border-slate-200/70 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-950">
-            <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">?섏젙?섍린</div>
+            <div className="border-b border-slate-200/70 px-6 py-4 text-lg font-semibold dark:border-slate-800">save</div>
             <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-6 py-5">
-              <h2 className="mb-2 text-sm font-semibold">?좎쭨</h2>
+              <h2 className="mb-2 text-sm font-semibold">date</h2>
               <input
                 type="date"
                 value={typeof date?.toString === "function" ? date.toString() : ""}
@@ -167,7 +167,7 @@ export default function SavedPosterCard({
                 className="min-h-[2.75rem] w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               />
 
-              <h2 className="mb-2 mt-5 text-sm font-semibold">蹂꾩젏</h2>
+              <h2 className="mb-2 mt-5 text-sm font-semibold">rate</h2>
               <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
                 {Array.from({ length: 10 }, (_, index) => (index + 1) / 2).map((value) => {
                   const isActive = Math.abs(rating - value) < 0.001;
@@ -191,7 +191,7 @@ export default function SavedPosterCard({
                 })}
               </div>
 
-              <h2 className="mb-2 mt-5 text-sm font-semibold">?ъ쭊 ({posters.length})</h2>
+              <h2 className="mb-2 mt-5 text-sm font-semibold">poster ({posters.length})</h2>
               <div className="grid grid-cols-4 gap-1">
                 {posters.map((poster: any, index: number) => (
                   <button
@@ -218,14 +218,14 @@ export default function SavedPosterCard({
                 className="rounded-full border border-red-200 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 dark:border-red-900/70 dark:text-red-300 dark:hover:bg-red-950/40"
                 onClick={handleDeleteFromModal}
               >
-                ??젣?섍린
+                delete
               </button>
               <div className="flex justify-end gap-2">
                 <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={handleSubmit}>
-                  ?꾨즺
+                  submit
                 </button>
                 <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={() => setIsEditOpen(false)}>
-                  ?リ린
+                  cancel
                 </button>
               </div>
             </div>

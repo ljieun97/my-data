@@ -2,11 +2,11 @@
 
 import { faCircleHalfStroke, faMoon, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Avatar, Button, Dropdown, Toast } from "@heroui/react";
 import SearchInput from "./search-input";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 import { useSaveDate } from "@/context/SaveDateContext";
 
@@ -55,7 +55,6 @@ const navItems = [
   { href: "/awards", label: "Awards" },
   { href: "/movie", label: "Movies" },
   { href: "/tv", label: "Series" },
-  { href: "/guest", label: "Guest" },
 ];
 
 function LoginModal({ open, onLogin, onClose }: { open: boolean; onLogin: () => void; onClose: () => void }) {
@@ -124,7 +123,6 @@ export default function TopBar() {
   const { uid } = useUser();
   const { mode: saveDateMode, setMode: setSaveDateMode } = useSaveDate();
   const path = usePathname();
-  const router = useRouter();
   const [isScroll, setIsScroll] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);

@@ -122,6 +122,7 @@ export default function DetailModal(props: any) {
   const [isRtLoading, setIsRtLoading] = useState(!(rottenTomatometer || rottenPopcornmeter));
   const [userRating, setUserRating] = useState(Number(initialUserRating) || 0);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [isMobileLayout, setIsMobileLayout] = useState(false);
   const { saveWithPreference } = useSaveContent();
   const { ensureRatings, getRating, ratings } = useUserRatings();
   const router = useRouter();
@@ -188,6 +189,22 @@ export default function DetailModal(props: any) {
   };
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+    const updateLayout = () => setIsMobileLayout(mediaQuery.matches);
+
+    updateLayout();
+    mediaQuery.addEventListener("change", updateLayout);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateLayout);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isMobileLayout) {
+      return;
+    }
+
     const scrollY = window.scrollY;
 
     document.documentElement.classList.add("modal-scroll-lock");
@@ -208,7 +225,7 @@ export default function DetailModal(props: any) {
       document.body.style.width = "";
       window.scrollTo(0, scrollY);
     };
-  }, []);
+  }, [isMobileLayout]);
 
   useEffect(() => {
     setUserRating(Number(initialUserRating) || 0);
@@ -289,15 +306,23 @@ export default function DetailModal(props: any) {
 
   return (
     <div
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/36 p-3 backdrop-blur-[2px] sm:p-8 lg:p-12 xl:p-16"
-      onClick={() => router.back()}
+      className={
+        isMobileLayout
+          ? "relative min-h-screen w-full bg-white dark:bg-slate-950"
+          : "fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/36 p-3 backdrop-blur-[2px] sm:p-8 lg:p-12 xl:p-16"
+      }
+      onClick={isMobileLayout ? undefined : () => router.back()}
     >
       <div
-        className="h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-hidden rounded-[28px] border border-white/60 bg-white shadow-[0_28px_72px_rgba(15,23,42,0.28)] dark:border-slate-800 dark:bg-slate-950 dark:shadow-[0_32px_80px_rgba(2,6,23,0.48)] sm:h-[calc(100dvh-7rem)] sm:max-w-4xl lg:h-[calc(100dvh-9rem)] lg:max-w-[68rem] xl:h-[calc(100dvh-11rem)] xl:max-w-[72rem]"
+        className={
+          isMobileLayout
+            ? "w-full min-h-screen overflow-visible bg-white dark:bg-slate-950"
+            : "h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-hidden rounded-[28px] border border-white/60 bg-white shadow-[0_28px_72px_rgba(15,23,42,0.28)] dark:border-slate-800 dark:bg-slate-950 dark:shadow-[0_32px_80px_rgba(2,6,23,0.48)] sm:h-[calc(100dvh-7rem)] sm:max-w-4xl lg:h-[calc(100dvh-9rem)] lg:max-w-[68rem] xl:h-[calc(100dvh-11rem)] xl:max-w-[72rem]"
+        }
         onClick={(event) => event.stopPropagation()}
       >
         <div className="relative h-full">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between p-4">
+          <div className={`pointer-events-none inset-x-0 top-0 z-20 flex items-start justify-between p-4 ${isMobileLayout ? "sticky" : "absolute"}`}>
             <button
               type="button"
               className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-sm text-slate-900 shadow-lg"
@@ -316,7 +341,7 @@ export default function DetailModal(props: any) {
             </button>
           </div>
           {videoPath ? (
-            <div className="pointer-events-none absolute bottom-0 right-0 z-20 p-4">
+            <div className={`pointer-events-none right-0 z-20 p-4 ${isMobileLayout ? "sticky bottom-4 ml-auto w-fit" : "absolute bottom-0"}`}>
               <button
                 type="button"
                 className="pointer-events-auto rounded-full bg-white/90 px-3 py-2 text-sm text-slate-900 shadow-lg"
@@ -327,7 +352,7 @@ export default function DetailModal(props: any) {
             </div>
           ) : null}
 
-          <div className="h-full overflow-y-auto">
+          <div className={isMobileLayout ? "min-h-screen" : "h-full overflow-y-auto"}>
             {videoPath ? (
               <div className="relative">
                 <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
@@ -350,7 +375,7 @@ export default function DetailModal(props: any) {
               />
             ) : null}
 
-            <div className="px-5 pb-10 pt-6 sm:px-6 lg:px-8">
+            <div className={isMobileLayout ? "px-5 pb-10 pt-4" : "px-5 pb-10 pt-6 sm:px-6 lg:px-8"}>
               <div className="space-y-6">
                 <div className="space-y-4">
                   <Title

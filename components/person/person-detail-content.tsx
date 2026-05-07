@@ -52,7 +52,7 @@ export default function PersonDetailContent({
     <div className="flex flex-col gap-6">
       <section className="browse-card overflow-hidden rounded-[30px] border p-4 sm:p-6">
         <div className="grid gap-5 md:grid-cols-[12rem_1fr] md:items-start">
-          <div className="overflow-hidden rounded-[24px] bg-slate-200 shadow-[0_18px_40px_rgba(15,23,42,0.18)] dark:bg-slate-800">
+          <div className="mx-auto w-full max-w-[9.5rem] overflow-hidden rounded-[24px] bg-slate-200 shadow-[0_18px_40px_rgba(15,23,42,0.18)] dark:bg-slate-800 sm:max-w-[11rem] md:mx-0 md:max-w-none">
             {profilePath ? (
               <img src={profilePath} alt={person?.name ?? "person profile"} className="aspect-[2/3] w-full object-cover" />
             ) : (

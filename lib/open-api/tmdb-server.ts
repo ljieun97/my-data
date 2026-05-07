@@ -59,7 +59,14 @@ async function fetchMovies(endpoint: string, page: number) {
 }
 
 export async function fetchAllMovies(endpoint: string) {
-  const { total_pages, results: firstPageResults } = await fetchMovies(endpoint, 1)
+  const firstPageData = await fetchMovies(endpoint, 1)
+
+  if (!firstPageData || !Array.isArray(firstPageData.results)) {
+    return []
+  }
+
+  const total_pages = Number(firstPageData.total_pages) || 0
+  const firstPageResults = firstPageData.results
 
   const requests = [];
   for (let page = 2; page <= total_pages; page++) {
@@ -69,7 +76,7 @@ export async function fetchAllMovies(endpoint: string) {
   const otherPagesData = await Promise.all(requests);
   const allResults = [
     ...firstPageResults,
-    ...otherPagesData.flatMap(data => data.results),
+    ...otherPagesData.flatMap((data) => (Array.isArray(data?.results) ? data.results : [])),
   ]
 
   return allResults;

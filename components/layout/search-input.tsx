@@ -5,6 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useCallback, useRef } from "react";
 import { useSearchKeyword } from "@/context/SearchContext";
 
+const SEARCH_DEBOUNCE_MS = 250;
+
 function isDetailPath(pathname: string) {
   return /^\/(?:movie|tv|person)\/[^/]+$/.test(pathname);
 }
@@ -23,19 +25,36 @@ export default function SearchInput({
   const { keyword, setKeyword, lastNonSearchPath } = useSearchKeyword();
   const previousPathRef = useRef(path);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const nextKeyword = e.target.value;
     setKeyword(nextKeyword);
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
 
     if (path === "/search" && !nextKeyword.trim()) {
       router.push(lastNonSearchPath && !isDetailPath(lastNonSearchPath) ? lastNonSearchPath : "/");
       return;
     }
 
-    if (path !== "/search" && nextKeyword.trim()) {
-      router.push(`/search?keyword=${encodeURIComponent(nextKeyword)}`);
+    if (!nextKeyword.trim()) {
+      return;
     }
+
+    debounceTimerRef.current = setTimeout(() => {
+      const nextUrl = `/search?keyword=${encodeURIComponent(nextKeyword)}`;
+
+      if (path === "/search") {
+        router.replace(nextUrl, { scroll: false });
+        return;
+      }
+
+      router.push(nextUrl);
+    }, SEARCH_DEBOUNCE_MS);
   }, [lastNonSearchPath, path, router, setKeyword]);
 
   useEffect(() => {
@@ -60,6 +79,14 @@ export default function SearchInput({
       window.cancelAnimationFrame(frameId);
     };
   }, [autoFocus]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <Input

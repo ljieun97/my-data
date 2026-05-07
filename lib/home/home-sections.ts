@@ -110,45 +110,53 @@ export async function getHomeSectionsSeed(): Promise<HomeSectionsSeed> {
     .slice(0, 10)
     .replaceAll("-", "");
 
-  const [boxOfficeCards, upcomingMovies, topRatedMovies] = await Promise.all([
-    getCachedBoxOfficeCards(targetDate),
-    fetchUpcomingMoviesPage(),
-    getTopRatedMovies(),
-  ]);
-
-  const upcomingCards: HomeMovieCardSeed[] = upcomingMovies
-    .filter((movie: any) => movie.poster_path)
-    .map((movie: any, index: number) => ({
-      id: `upcoming-${movie.id}`,
-      title: movie.title ?? movie.original_title ?? "Untitled",
-      year: movie.release_date?.slice(0, 4),
-      rank: String(index + 1),
-      tmdbId: movie.id,
-      posterPath: movie.poster_path,
-      backdropPath: movie.backdrop_path ?? null,
-      overview: movie.overview ?? null,
-      englishTitle: movie.original_title ?? movie.title ?? null,
-      originalTitle: movie.original_title ?? null,
-    }));
-
-  const topRatedCards: HomeMovieCardSeed[] = (Array.isArray(topRatedMovies) ? topRatedMovies : [])
-    .filter((movie: any) => movie.poster_path)
-    .map((movie: any, index: number) => ({
-      id: `top-rated-${movie.id}`,
-      title: movie.title ?? movie.original_title ?? "Untitled",
-      year: movie.release_date?.slice(0, 4),
-      rank: String(index + 1),
-      tmdbId: movie.id,
-      posterPath: movie.poster_path,
-      backdropPath: movie.backdrop_path ?? null,
-      overview: movie.overview ?? null,
-      englishTitle: movie.original_title ?? movie.title ?? null,
-      originalTitle: movie.original_title ?? null,
-    }));
-
-  return {
-    boxOfficeCards,
-    upcomingCards,
-    topRatedCards,
-  };
+  return getCachedHomeSectionsSeed(targetDate);
 }
+
+const getCachedHomeSectionsSeed = unstable_cache(
+  async (targetDate: string): Promise<HomeSectionsSeed> => {
+    const [boxOfficeCards, upcomingMovies, topRatedMovies] = await Promise.all([
+      getCachedBoxOfficeCards(targetDate),
+      fetchUpcomingMoviesPage(),
+      getTopRatedMovies(),
+    ]);
+
+    const upcomingCards: HomeMovieCardSeed[] = upcomingMovies
+      .filter((movie: any) => movie.poster_path)
+      .map((movie: any, index: number) => ({
+        id: `upcoming-${movie.id}`,
+        title: movie.title ?? movie.original_title ?? "Untitled",
+        year: movie.release_date?.slice(0, 4),
+        rank: String(index + 1),
+        tmdbId: movie.id,
+        posterPath: movie.poster_path,
+        backdropPath: movie.backdrop_path ?? null,
+        overview: movie.overview ?? null,
+        englishTitle: movie.original_title ?? movie.title ?? null,
+        originalTitle: movie.original_title ?? null,
+      }));
+
+    const topRatedCards: HomeMovieCardSeed[] = (Array.isArray(topRatedMovies) ? topRatedMovies : [])
+      .filter((movie: any) => movie.poster_path)
+      .map((movie: any, index: number) => ({
+        id: `top-rated-${movie.id}`,
+        title: movie.title ?? movie.original_title ?? "Untitled",
+        year: movie.release_date?.slice(0, 4),
+        rank: String(index + 1),
+        tmdbId: movie.id,
+        posterPath: movie.poster_path,
+        backdropPath: movie.backdrop_path ?? null,
+        overview: movie.overview ?? null,
+        englishTitle: movie.original_title ?? movie.title ?? null,
+        originalTitle: movie.original_title ?? null,
+      }));
+
+    return {
+      boxOfficeCards,
+      upcomingCards,
+      topRatedCards,
+    };
+  },
+  ["home-sections-seed"],
+  { revalidate: 3600 },
+);

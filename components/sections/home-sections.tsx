@@ -118,7 +118,6 @@ export default function HomeBoxOfficeSections({
           headers: {
             "Content-Type": "application/json",
           },
-          cache: "no-store",
           body: JSON.stringify(buildRtRequestPayload(initialData)),
         });
 

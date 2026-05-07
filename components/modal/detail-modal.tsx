@@ -269,9 +269,7 @@ export default function DetailModal(props: any) {
         if (originalTitleParam) query.set("originalTitle", originalTitleParam);
         if (year) query.set("year", year);
 
-        const response = await fetch(`/api/rottentomatoes/${type}/${tmdbId}?${query.toString()}`, {
-          cache: "no-store",
-        });
+        const response = await fetch(`/api/rottentomatoes/${type}/${tmdbId}?${query.toString()}`);
 
         if (!response.ok) {
           return;

@@ -100,7 +100,6 @@ export default function DetailRecommendations({
           headers: {
             "Content-Type": "application/json",
           },
-          cache: "no-store",
           body: JSON.stringify({
             upcomingCards: baseCards.map((card) => ({
               id: card.id,

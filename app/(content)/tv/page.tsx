@@ -1,7 +1,7 @@
 import FilterPage from "@/components/contents/filter-page"
 import { getDiscoverTitles } from "@/lib/open-api/tmdb-server"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 3600
 export const metadata = {
   title: "시리즈"
 }

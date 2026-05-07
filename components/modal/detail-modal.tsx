@@ -4,7 +4,7 @@ import Title from "../common/title";
 import { usePathname, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faVolumeHigh, faVolumeXmark, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useSaveContent } from "@/hooks/useSaveContent";
 import { buildRatingKey, useUserRatings } from "@/context/UserRatingsContext";
@@ -188,7 +188,7 @@ export default function DetailModal(props: any) {
     window.history.back();
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 639px)");
     const updateLayout = () => setIsMobileLayout(mediaQuery.matches);
 
@@ -200,7 +200,7 @@ export default function DetailModal(props: any) {
     };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isMobileLayout) {
       return;
     }

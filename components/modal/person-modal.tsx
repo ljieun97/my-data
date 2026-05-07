@@ -3,13 +3,13 @@
 import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 
 export default function PersonModal({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [isMobileLayout, setIsMobileLayout] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 639px)");
     const updateLayout = () => setIsMobileLayout(mediaQuery.matches);
 
@@ -21,7 +21,7 @@ export default function PersonModal({ children }: { children: React.ReactNode })
     };
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isMobileLayout) {
       return;
     }

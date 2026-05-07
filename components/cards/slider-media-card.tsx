@@ -81,79 +81,84 @@ export default function MediaSliderCard({
         className={["group block rounded-2xl transition", movie.tmdbId ? "cursor-pointer" : "cursor-default"].join(" ")}
       >
         <div className="flex min-w-0 flex-col">
-          <div className={`relative ${isBackdropCard ? "aspect-video" : "aspect-[2/3]"}`}>
-            {showRank ? (
-              <div className="absolute bottom-0 -left-2 z-10 lg:bottom-1 lg:-left-6">
-                <span className="text-6xl font-black italic leading-none tracking-[-0.08em] text-white drop-shadow-[0_3px_10px_rgba(15,23,42,0.85)] lg:text-7xl xl:text-8xl">
-                  {movie.rank}
-                </span>
-              </div>
-            ) : null}
-            {movie.tmdbId ? (
-              <div
-                className="absolute right-2 top-2 z-10"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }}
-              >
-                <Flatrates type="movie" provider={movie.tmdbId} />
-              </div>
-            ) : null}
-            <div className="relative h-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
-              {movie.tmdbId ? (
-                <div className="pointer-events-none absolute inset-0 z-[1] bg-slate-950/0 opacity-0 transition duration-200 group-hover:bg-slate-950/18 group-hover:opacity-100" />
-              ) : null}
-              {movie.tmdbId ? (
-                <PosterHoverActions
-                  overlayClassName="group-hover:visible"
-                  actions={[
-                    {
-                      icon: faPlus,
-                      label: `${movie.title} save`,
-                      onClick: handleSave,
-                      className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
-                    },
-                    {
-                      icon: faCircleInfo,
-                      label: `${movie.title} details`,
-                      onClick: () => router.push(`/movie/${movie.tmdbId}`),
-                      className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
-                    },
-                  ]}
-                />
-              ) : null}
-              {Number.isFinite(savedRating) && savedRating > 0 ? (
-                <div className="absolute bottom-2 right-2 z-[2] sm:bottom-3 sm:right-3">
-                  <span className="user-rating-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-lg">
-                    <span aria-hidden="true">{"\u2B50"}</span>
-                    {savedRating.toFixed(1)}
+          <div className="overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-900">
+            <div className={`relative ${isBackdropCard ? "aspect-video" : "aspect-[2/3]"}`}>
+              {showRank ? (
+                <div className="absolute bottom-0 -left-2 z-10 lg:bottom-1 lg:-left-6">
+                  <span className="text-6xl font-black italic leading-none tracking-[-0.08em] text-white drop-shadow-[0_3px_10px_rgba(15,23,42,0.85)] lg:text-7xl xl:text-8xl">
+                    {movie.rank}
                   </span>
                 </div>
               ) : null}
-              {imagePath ? (
-                <Image
-                  src={`${imageBaseUrl}${imagePath}`}
-                  alt={imageAlt}
-                  fill
-                  sizes={imageSizes}
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center px-2 text-center text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
-                  No poster
+              {movie.tmdbId ? (
+                <div
+                  className="absolute right-2 top-2 z-10"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                >
+                  <Flatrates type="movie" provider={movie.tmdbId} />
                 </div>
-              )}
+              ) : null}
+              <div className="relative h-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+                {movie.tmdbId ? (
+                  <div className="pointer-events-none absolute inset-0 z-[1] bg-slate-950/0 opacity-0 transition duration-200 group-hover:bg-slate-950/18 group-hover:opacity-100" />
+                ) : null}
+                {movie.tmdbId ? (
+                  <PosterHoverActions
+                    overlayClassName="group-hover:visible"
+                    actions={[
+                      {
+                        icon: faPlus,
+                        label: `${movie.title} save`,
+                        onClick: handleSave,
+                        className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
+                      },
+                      {
+                        icon: faCircleInfo,
+                        label: `${movie.title} details`,
+                        onClick: () => router.push(`/movie/${movie.tmdbId}`),
+                        className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
+                      },
+                    ]}
+                  />
+                ) : null}
+                {Number.isFinite(savedRating) && savedRating > 0 ? (
+                  <div className="absolute bottom-2 right-2 z-[2] sm:bottom-3 sm:right-3">
+                    <span className="user-rating-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-lg">
+                      <span aria-hidden="true">{"\u2B50"}</span>
+                      {savedRating.toFixed(1)}
+                    </span>
+                  </div>
+                ) : null}
+                {imagePath ? (
+                  <Image
+                    src={`${imageBaseUrl}${imagePath}`}
+                    alt={imageAlt}
+                    fill
+                    sizes={imageSizes}
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center px-2 text-center text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+                    No poster
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="border-t border-slate-200/70 bg-white/95 px-2 py-1.5 dark:border-slate-800 dark:bg-slate-950/90">
+              <MediaScoreBadges
+                tomatometer={movie.rottenTomatometer}
+                popcornmeter={movie.rottenPopcornmeter}
+                isLoading={isRtLoading}
+                variant="home"
+              />
             </div>
           </div>
 
-          <div className="flex flex-1 flex-col gap-1">
-            <MediaScoreBadges
-              tomatometer={movie.rottenTomatometer}
-              popcornmeter={movie.rottenPopcornmeter}
-              isLoading={isRtLoading}
-              variant="home"
-            />
+          <div className="flex flex-1 flex-col gap-1 pt-2">
             {movie.detailLine ? (
               <div className="flex flex-col gap-px px-0">
                 <p className="browse-card__meta text-sm leading-snug">{movie.detailLine}</p>

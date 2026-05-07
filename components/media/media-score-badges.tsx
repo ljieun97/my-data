@@ -70,13 +70,13 @@ export default function MediaScoreBadges({
         value={tomatometer}
         icon="🍅"
         isLoading={isLoading}
-        className="home-score-chip min-h-[1.5rem] min-w-0 justify-center whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-semibold sm:min-h-[1.75rem] sm:px-2.5 sm:text-[11px]"
+        className="home-score-chip min-h-[1.5rem] min-w-0 justify-center whitespace-nowrap rounded-none px-2 py-1 text-[10px] font-semibold sm:min-h-[1.75rem] sm:px-2.5 sm:text-[11px]"
       />
       <ScoreChip
         value={popcornmeter}
         icon="🍿"
         isLoading={isLoading}
-        className="home-score-chip min-h-[1.5rem] min-w-0 justify-center whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-semibold sm:min-h-[1.75rem] sm:px-2.5 sm:text-[11px]"
+        className="home-score-chip min-h-[1.5rem] min-w-0 justify-center whitespace-nowrap rounded-none px-2 py-1 text-[10px] font-semibold sm:min-h-[1.75rem] sm:px-2.5 sm:text-[11px]"
       />
     </div>
   );

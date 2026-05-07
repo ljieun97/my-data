@@ -162,9 +162,7 @@ export default function TimetablePlanner() {
       setMoviesError(null);
 
       try {
-        const response = await fetch("/api/timetable/movies", {
-          cache: "no-store",
-        });
+        const response = await fetch("/api/timetable/movies");
 
         if (!response.ok) {
           throw new Error("Failed to fetch KOBIS movies.");

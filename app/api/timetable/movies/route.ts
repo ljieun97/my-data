@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const url = `${KOBIS_BASE_URL}?key=${KOBIS_API_KEY}&targetDt=${toKobisDate(candidate)}`;
 
     try {
-      const response = await fetch(url, { cache: "no-store" });
+      const response = await fetch(url, { next: { revalidate: 300 } });
       if (!response.ok) {
         continue;
       }
@@ -36,10 +36,13 @@ export async function GET(request: NextRequest) {
       const movies = (data?.boxOfficeResult?.dailyBoxOfficeList ?? []) as KobisMovie[];
 
       if (movies.length) {
-        return NextResponse.json({
-          date: candidate,
-          movies,
-        });
+        return NextResponse.json(
+          {
+            date: candidate,
+            movies,
+          },
+          { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=60" } },
+        );
       }
     } catch (error) {
       console.error(error);
@@ -51,6 +54,6 @@ export async function GET(request: NextRequest) {
       date: targetDate,
       movies: [],
     },
-    { status: 200 },
+    { status: 200, headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=60" } },
   );
 }

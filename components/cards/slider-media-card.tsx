@@ -148,7 +148,7 @@ export default function MediaSliderCard({
               </div>
             </div>
 
-            <div className="bg-white/95 dark:bg-slate-950/90">
+            <div className="bg-slate-100 dark:bg-slate-900">
               <MediaScoreBadges
                 tomatometer={movie.rottenTomatometer}
                 popcornmeter={movie.rottenPopcornmeter}

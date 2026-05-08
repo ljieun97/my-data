@@ -228,7 +228,7 @@ export default function TopBar() {
           <div className="flex flex-1 items-center gap-2">
             <button
               type="button"
-              className="topbar-toggle topbar-toggle--mobile inline-flex h-10 w-10 items-center justify-center rounded-full"
+              className="topbar-toggle topbar-toggle--mobile inline-flex h-10 w-10 items-center justify-center border-r border-slate-200/70 text-slate-700 dark:border-slate-800 dark:text-slate-200"
               onClick={() => setMobileOpen((prev) => !prev)}
               aria-label="Toggle menu"
             >
@@ -237,19 +237,21 @@ export default function TopBar() {
 
             <Link
               href="/"
-              className="topbar-brand topbar-brand--desktop rounded-full px-4 py-2 text-sm font-semibold tracking-[0.28em] transition"
+              className="topbar-brand topbar-brand--desktop px-4 py-2 text-sm font-semibold tracking-[0.28em] text-slate-900 transition dark:text-slate-100"
             >
               TOVIE
             </Link>
 
-            <div className="topbar-desktop-nav items-center gap-2">
+            <div className="topbar-desktop-nav items-center gap-1 border-l border-slate-200/70 pl-3 dark:border-slate-800">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={[
-                    "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
-                    isActivePath(item.href) ? "topbar-link--active" : "",
+                    "topbar-link relative px-3 py-2 text-sm font-medium text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100",
+                    isActivePath(item.href)
+                      ? "topbar-link--active text-slate-950 after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px after:bg-slate-950 dark:text-white dark:after:bg-white"
+                      : "",
                   ].join(" ")}
                 >
                   {item.label}
@@ -274,7 +276,7 @@ export default function TopBar() {
             <Button
               variant="secondary"
               onPress={handleToggleSearch}
-              className="topbar-theme h-11 w-11 min-w-0 rounded-full px-0 text-sm font-medium"
+              className="topbar-theme h-11 w-11 min-w-0 border-l border-slate-200/70 px-0 text-sm font-medium text-slate-600 dark:border-slate-800 dark:text-slate-300"
               aria-label={isSearchOpen ? "Close search" : "Open search"}
             >
               <FontAwesomeIcon icon={faMagnifyingGlass} />
@@ -283,7 +285,7 @@ export default function TopBar() {
               <Button
                 onPress={() => setIsLoginOpen(true)}
                 variant="primary"
-                className="topbar-login h-11 w-11 min-w-0 rounded-full px-0 text-sm font-medium"
+                className="topbar-login h-11 w-11 min-w-0 border-l border-slate-200/70 px-0 text-sm font-medium text-slate-700 dark:border-slate-800 dark:text-slate-200"
                 aria-label="Open login"
               >
                 <FontAwesomeIcon icon={faUser} />
@@ -307,20 +309,22 @@ export default function TopBar() {
 
         {mobileOpen ? (
           <div className="topbar-menu topbar-menu--mobile border-t backdrop-blur-xl">
-            <div className="app-frame topbar-inner pb-4 pt-4">
-              {navItems.map((item) =>
+            <div className="app-frame topbar-inner pb-2 pt-3">
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileOpen(false)}
                   className={[
-                    "topbar-mobile-link mt-1 block rounded-2xl px-4 py-3 text-sm font-medium transition",
-                    isActivePath(item.href) ? "topbar-mobile-link--active" : "",
+                    "topbar-mobile-link block border-b border-slate-200/60 px-1 py-3 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:border-slate-800 dark:text-slate-300 dark:hover:text-slate-50",
+                    isActivePath(item.href)
+                      ? "topbar-mobile-link--active border-slate-950 text-slate-950 dark:border-slate-100 dark:text-slate-50"
+                      : "",
                   ].join(" ")}
                 >
                   {item.label}
                 </Link>
-              )}
+              ))}
             </div>
           </div>
         ) : null}

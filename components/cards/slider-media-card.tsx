@@ -148,7 +148,7 @@ export default function MediaSliderCard({
               </div>
             </div>
 
-            <div className="border-t border-slate-200/70 bg-white/95 px-2 py-1.5 dark:border-slate-800 dark:bg-slate-950/90">
+            <div className="bg-white/95 dark:bg-slate-950/90">
               <MediaScoreBadges
                 tomatometer={movie.rottenTomatometer}
                 popcornmeter={movie.rottenPopcornmeter}

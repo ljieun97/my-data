@@ -228,7 +228,7 @@ export default function TopBar() {
           <div className="flex flex-1 items-center gap-2">
             <button
               type="button"
-              className="topbar-toggle topbar-toggle--mobile inline-flex h-10 w-10 items-center justify-center border-r border-slate-200/70 text-slate-700 dark:border-slate-800 dark:text-slate-200"
+              className="topbar-toggle topbar-toggle--mobile inline-flex h-10 w-10 items-center justify-center text-slate-700 dark:text-slate-200"
               onClick={() => setMobileOpen((prev) => !prev)}
               aria-label="Toggle menu"
             >

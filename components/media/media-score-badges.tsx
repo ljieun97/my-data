@@ -65,18 +65,18 @@ export default function MediaScoreBadges({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-1 sm:flex sm:flex-wrap sm:gap-1.5">
+    <div className="grid grid-cols-2 gap-0 sm:flex sm:flex-wrap sm:gap-0">
       <ScoreChip
         value={tomatometer}
         icon="🍅"
         isLoading={isLoading}
-        className="home-score-chip min-h-[1.5rem] min-w-0 justify-center whitespace-nowrap rounded-none px-2 py-1 text-[10px] font-semibold sm:min-h-[1.75rem] sm:px-2.5 sm:text-[11px]"
+        className="home-score-chip min-h-[1.5rem] min-w-0 justify-center whitespace-nowrap rounded-none px-0 py-0 text-[10px] font-semibold sm:min-h-[1.75rem] sm:text-[11px]"
       />
       <ScoreChip
         value={popcornmeter}
         icon="🍿"
         isLoading={isLoading}
-        className="home-score-chip min-h-[1.5rem] min-w-0 justify-center whitespace-nowrap rounded-none px-2 py-1 text-[10px] font-semibold sm:min-h-[1.75rem] sm:px-2.5 sm:text-[11px]"
+        className="home-score-chip min-h-[1.5rem] min-w-0 justify-center whitespace-nowrap rounded-none px-0 py-0 text-[10px] font-semibold sm:min-h-[1.75rem] sm:text-[11px]"
       />
     </div>
   );

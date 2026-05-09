@@ -237,18 +237,18 @@ export default function TopBar() {
 
             <Link
               href="/"
-              className="topbar-brand topbar-brand--desktop px-4 py-2 text-sm font-semibold tracking-[0.28em] text-slate-900 transition dark:text-slate-100"
+              className="topbar-brand topbar-brand--desktop py-2 text-slate-900 transition dark:text-slate-100"
             >
-              TOVIE
+              <span className="topbar-brand__word">TOVIE</span>
             </Link>
 
-            <div className="topbar-desktop-nav items-center gap-1 border-l border-slate-200/70 pl-3 dark:border-slate-800">
+            <div className="topbar-desktop-nav ml-5 items-center gap-0">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={[
-                    "topbar-link relative px-3 py-2 text-sm font-medium text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100",
+                    "topbar-link relative px-3 py-3 text-[12px] font-medium uppercase tracking-[0.08em] text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100",
                     isActivePath(item.href)
                       ? "topbar-link--active text-slate-950 after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px after:bg-slate-950 dark:text-white dark:after:bg-white"
                       : "",
@@ -260,7 +260,7 @@ export default function TopBar() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3 sm:gap-3">
             <div
               className={[
                 "overflow-hidden transition-all duration-200 ease-out",
@@ -268,7 +268,7 @@ export default function TopBar() {
               ].join(" ")}
             >
               <SearchInput
-                className="topbar-search h-11"
+                className="topbar-search h-11 rounded-none [&_*]:rounded-none"
                 autoFocus={isSearchOpen}
                 onBlur={() => setIsSearchOpen(false)}
               />
@@ -276,7 +276,7 @@ export default function TopBar() {
             <Button
               variant="secondary"
               onPress={handleToggleSearch}
-              className="topbar-theme h-11 w-11 min-w-0 border-l border-slate-200/70 px-0 text-sm font-medium text-slate-600 dark:border-slate-800 dark:text-slate-300"
+              className="topbar-theme h-10 w-10 min-w-0 rounded-none border-none px-0 text-sm font-medium text-slate-600 dark:text-slate-300"
               aria-label={isSearchOpen ? "Close search" : "Open search"}
             >
               <FontAwesomeIcon icon={faMagnifyingGlass} />
@@ -285,7 +285,7 @@ export default function TopBar() {
               <Button
                 onPress={() => setIsLoginOpen(true)}
                 variant="primary"
-                className="topbar-login h-11 w-11 min-w-0 border-l border-slate-200/70 px-0 text-sm font-medium text-slate-700 dark:border-slate-800 dark:text-slate-200"
+                className="topbar-login h-10 w-10 min-w-0 rounded-none border-none px-0 text-sm font-medium text-slate-700 dark:text-slate-200"
                 aria-label="Open login"
               >
                 <FontAwesomeIcon icon={faUser} />
@@ -293,10 +293,10 @@ export default function TopBar() {
             ) : (
               <Dropdown>
                 <Dropdown.Trigger>
-                  <AvatarButton className="topbar-avatar cursor-pointer" src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
+                  <AvatarButton className="topbar-avatar cursor-pointer rounded-none" src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
                 </Dropdown.Trigger>
                 <Dropdown.Popover placement="bottom end">
-                  <Dropdown.Menu className="topbar-dropdown min-w-44 rounded-2xl p-2">
+                  <Dropdown.Menu className="topbar-dropdown min-w-44 p-2">
                     <Dropdown.Item href="/mypage">My Page</Dropdown.Item>
                     <Dropdown.Item onAction={handleOpenSet}>Settings</Dropdown.Item>
                     <Dropdown.Item onAction={clickLogout}>Logout</Dropdown.Item>

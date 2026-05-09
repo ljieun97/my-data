@@ -1,0 +1,576 @@
+import * as cheerio from "cheerio";
+import type { AwardCategory, AwardCeremony, AwardsSourceSummary } from "@/lib/awards/types";
+import { searchMovieLocalizedTitle } from "@/lib/open-api/tmdb-server";
+
+type AwardsSourceAdapter = AwardsSourceSummary & {
+  getCeremony: (year: number) => Promise<AwardCeremony>;
+};
+
+const BLUE_DRAGON_CATEGORY_LABELS: Array<{ key: string; name: string; companionKey?: string }> = [
+  { key: "Best Film", name: "최우수작품상" },
+  { key: "Best Director", name: "감독상", companionKey: "Best Director Film" },
+  { key: "Best Actor", name: "남우주연상", companionKey: "Best Actor Film" },
+  { key: "Best Actress", name: "여우주연상", companionKey: "Best Actress Film" },
+  { key: "Most Wins", name: "최다 수상작" },
+  { key: "Most Nominations", name: "최다 노미네이트" },
+];
+
+function normalizeLines(value: string) {
+  return value
+    .split("\n")
+    .map((line) => line.replace(/\u00a0/g, " ").replace(/^#+\s*/, "").trim())
+    .filter(Boolean);
+}
+
+function parseBaftaCategories(html: string) {
+  const $ = cheerio.load(html);
+  const lines = normalizeLines($.root().text());
+  const resultsHeaderIndex = lines.findIndex((line) => /^\d{4}\s+Results$/i.test(line));
+
+  if (resultsHeaderIndex < 0) {
+    return [] as AwardCategory[];
+  }
+
+  const summaryPattern = /^(.+?)\s+Number of items:\(\d+\)\s+Winner:/;
+  const baftaStopPatterns = [
+    /^Search awards database$/i,
+    /^Awards$/i,
+    /^\d{4}\s*-\s*results$/i,
+    /^\d{4}\s+Results$/i,
+    /^\d{4}\s+Film$/i,
+    /^EE BAFTA Film Awards$/i,
+    /^Awards Number of items shown:\(\d+\)$/i,
+  ];
+  const categories: AwardCategory[] = [];
+  let currentCategory: AwardCategory | null = null;
+  let index = resultsHeaderIndex + 1;
+  let seenFirstCategory = false;
+
+  while (index < lines.length) {
+    const summaryMatch = lines[index].match(summaryPattern);
+
+    if (summaryMatch) {
+      seenFirstCategory = true;
+      if (currentCategory?.entries.length) {
+        categories.push(currentCategory);
+      }
+
+      currentCategory = {
+        name: summaryMatch[1].replace(/^\*\s*/, "").trim(),
+        entries: [],
+      };
+      index += 1;
+      continue;
+    }
+
+    if (seenFirstCategory && baftaStopPatterns.some((pattern) => pattern.test(lines[index]))) {
+      break;
+    }
+
+    if (!currentCategory) {
+      index += 1;
+      continue;
+    }
+
+    const marker = lines[index];
+
+    if (marker !== "Winner" && marker !== "Nominee") {
+      index += 1;
+      continue;
+    }
+
+    index += 1;
+    const block: string[] = [];
+
+    while (index < lines.length) {
+      if (
+        lines[index] === "Winner" ||
+        lines[index] === "Nominee" ||
+        summaryPattern.test(lines[index]) ||
+        baftaStopPatterns.some((pattern) => pattern.test(lines[index]))
+      ) {
+        break;
+      }
+
+      block.push(lines[index].replace(/^###\s*/, "").replace(/^\*\s*/, "").trim());
+      index += 1;
+    }
+
+    const currentCategoryName = currentCategory.name;
+    const filtered = block.filter(
+      (line) =>
+        line &&
+        line !== currentCategoryName &&
+        line !== "Publicly Voted" &&
+        !baftaStopPatterns.some((pattern) => pattern.test(line)),
+    );
+
+    if (!filtered.length) {
+      continue;
+    }
+
+    currentCategory.entries.push({
+      status: marker === "Winner" ? "winner" : "nominee",
+      primary: filtered[0],
+      details: filtered.slice(1),
+    });
+  }
+
+  if (currentCategory?.entries.length) {
+    categories.push(currentCategory);
+  }
+
+  return categories;
+}
+
+function looksLikeCannesAwardLine(value: string) {
+  return (
+    /palme|grand prix|prize|award|distinction|caméra|cinef/i.test(value) ||
+    value === "Special Prize"
+  );
+}
+
+function parseOscarCategories(html: string) {
+  const $ = cheerio.load(html);
+  const categoryRoot = $(
+    ".field--name-field-award-categories.field--type-entity-reference-revisions.field--label-hidden.field__items",
+  ).first();
+
+  if (!categoryRoot.length) {
+    return [] as AwardCategory[];
+  }
+
+  const categories: AwardCategory[] = [];
+  categoryRoot.children(".field__item").each((_, element) => {
+    const item = $(element);
+    const lines = normalizeLines(item.text());
+    const categoryName =
+      item.find("h1, h2, h3, h4, h5, h6").first().text().replace(/\[\d+\]/g, "").trim() ||
+      lines.find((line) => line && !/^(Winner|Nominee|Nominees|Awards|Winners and nominees|View by Category|Select a Category)/i.test(line)) ||
+      "";
+
+    if (!categoryName) {
+      return;
+    }
+
+    const category: AwardCategory = {
+      name: categoryName,
+      entries: [],
+    };
+
+    let index = lines.findIndex((line) => line === categoryName);
+    if (index < 0) {
+      index = 0;
+    } else {
+      index += 1;
+    }
+
+    while (index < lines.length) {
+      const marker = lines[index];
+
+      if (marker !== "Winner" && marker !== "Nominee" && marker !== "Nominees") {
+        index += 1;
+        continue;
+      }
+
+      const status = marker === "Winner" ? "winner" : "nominee";
+      index += 1;
+      const block: string[] = [];
+
+      while (index < lines.length) {
+        const next = lines[index];
+
+        if (next === "Winner" || next === "Nominee" || next === "Nominees") {
+          break;
+        }
+
+        block.push(next);
+        index += 1;
+      }
+
+      const filtered = block.filter(
+        (line) =>
+          line &&
+          line !== categoryName &&
+          line !== "Awards" &&
+          line !== "Winners and nominees" &&
+          line !== "View by Category" &&
+          !/^Select a Category/i.test(line),
+      );
+
+      if (!filtered.length) {
+        continue;
+      }
+
+      category.entries.push({
+        status,
+        primary: filtered[0],
+        details: filtered.slice(1),
+      });
+    }
+
+    if (category.entries.length) {
+      categories.push(category);
+    }
+  });
+
+  const bestPictureIndex = categories.findIndex((category) => /^Best Picture$/i.test(category.name));
+
+  if (bestPictureIndex > 0) {
+    const [bestPicture] = categories.splice(bestPictureIndex, 1);
+    categories.unshift(bestPicture);
+  }
+
+  return categories;
+}
+
+function parseCannesCategories(html: string) {
+  const $ = cheerio.load(html);
+  const listContainer = $(".list_container").first();
+  const categories: AwardCategory[] = [];
+
+  if (!listContainer.length) {
+    return [] as AwardCategory[];
+  }
+
+  listContainer.children("div").each((_, element) => {
+    const item = $(element);
+    const title = item
+      .find("p")
+      .first()
+      .text()
+      .replace(/\u00a0/g, " ")
+      .trim();
+
+    if (!title) {
+      return;
+    }
+
+    const spanTexts = item
+      .find("span")
+      .map((__, span) => $(span).text().replace(/\u00a0/g, " ").trim())
+      .get()
+      .filter(Boolean);
+
+    const byText = spanTexts.find((text) => /^by\s+/i.test(text) || /^for\s+/i.test(text)) ?? null;
+    const awardText = spanTexts.find((text) => looksLikeCannesAwardLine(text)) ?? null;
+
+    if (!awardText) {
+      return;
+    }
+
+    categories.push({
+      name: awardText,
+      section: undefined,
+      entries: [
+        {
+          status: "winner" as const,
+          primary: title,
+          details: byText ? [byText] : [],
+        },
+      ],
+    });
+  });
+
+  return categories;
+}
+
+function parseWikipediaInfobox(html: string) {
+  const $ = cheerio.load(html);
+  const data = new Map<string, string>();
+
+  $("table.infobox tr").each((_, row) => {
+    const header = $(row).find("th").first().text().replace(/\u00a0/g, " ").trim();
+    const value = $(row).find("td").first().text().replace(/\u00a0/g, " ").replace(/\[\d+\]/g, "").trim();
+
+    if (header && value) {
+      data.set(header, value);
+    }
+  });
+
+  return data;
+}
+
+function shouldLocalizePrimary(categoryName: string) {
+  const normalized = categoryName.toLowerCase();
+
+  return (
+    normalized.includes("best picture") ||
+    normalized.includes("best film") ||
+    normalized.includes("animated feature") ||
+    normalized.includes("documentary feature") ||
+    normalized.includes("international feature") ||
+    normalized.includes("palme") ||
+    normalized.includes("grand prix") ||
+    normalized.includes("jury prize") ||
+    normalized.includes("camera d'or") ||
+    normalized.includes("caméra d'or") ||
+    normalized.includes("최우수작품상") ||
+    normalized.includes("최다 수상작") ||
+    normalized.includes("최다 노미네이트")
+  );
+}
+
+function shouldLocalizeDetail(detail: string) {
+  const normalized = detail.toLowerCase();
+
+  if (!detail.trim()) {
+    return false;
+  }
+
+  if (
+    normalized === "in competition" ||
+    normalized === "un certain regard" ||
+    normalized === "feature films" ||
+    normalized === "short films" ||
+    normalized === "la cinef"
+  ) {
+    return false;
+  }
+
+  return !/[A-Z][a-z]+\s[A-Z][a-z]+/.test(detail);
+}
+
+async function localizeAwardCeremonyTitles(ceremony: AwardCeremony) {
+  const yearHints =
+    ceremony.slug === "cannes"
+      ? [ceremony.ceremonyYear]
+      : [ceremony.ceremonyYear - 1, ceremony.ceremonyYear, ceremony.ceremonyYear - 2];
+
+  const categories = await Promise.all(
+    ceremony.categories.map(async (category) => {
+      const entries = await Promise.all(
+        category.entries.map(async (entry) => {
+          const localizedPrimary =
+            ceremony.slug === "cannes"
+              ? entry.primary
+              : shouldLocalizePrimary(category.name)
+                ? await searchMovieLocalizedTitle(entry.primary, yearHints)
+                : entry.primary;
+          const localizedDetails =
+            ceremony.slug === "cannes"
+              ? entry.details
+              : await Promise.all(
+                  entry.details.map(async (detail) =>
+                    shouldLocalizeDetail(detail) ? searchMovieLocalizedTitle(detail, yearHints) : detail,
+                  ),
+                );
+
+          return {
+            ...entry,
+            primary: localizedPrimary,
+            details: localizedDetails,
+          };
+        }),
+      );
+
+      return {
+        ...category,
+        entries,
+      };
+    }),
+  );
+
+  return {
+    ...ceremony,
+    categories,
+  };
+}
+
+function parseBlueDragonCategories(html: string) {
+  const infobox = parseWikipediaInfobox(html);
+
+  return BLUE_DRAGON_CATEGORY_LABELS.flatMap((label) => {
+    const primary = infobox.get(label.key);
+
+    if (!primary) {
+      return [];
+    }
+
+    const companion = label.companionKey ? infobox.get(label.companionKey) : null;
+
+    return [
+      {
+        name: label.name,
+        entries: [
+          {
+            status: "winner" as const,
+            primary,
+            details: companion ? [companion] : [],
+          },
+        ],
+      },
+    ];
+  });
+}
+
+function getBlueDragonEditionNumber(year: number) {
+  if (year < 1990) {
+    return null;
+  }
+
+  return year - 1979;
+}
+
+function formatOrdinal(value: number) {
+  const mod100 = value % 100;
+
+  if (mod100 >= 11 && mod100 <= 13) {
+    return `${value}th`;
+  }
+
+  const mod10 = value % 10;
+
+  if (mod10 === 1) return `${value}st`;
+  if (mod10 === 2) return `${value}nd`;
+  if (mod10 === 3) return `${value}rd`;
+  return `${value}th`;
+}
+
+async function fetchHtml(url: string) {
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; awards-bot/1.0)",
+    },
+    next: { revalidate: 86400 },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch awards source: ${response.status} ${url}`);
+  }
+
+  return response.text();
+}
+
+const awardsSourceAdapters: AwardsSourceAdapter[] = [
+  {
+    slug: "oscar",
+    name: "Academy Awards",
+    country: "미국",
+    description: "Official Academy Awards ceremony pages.",
+    sourceType: "official",
+    latestYear: 2026,
+    sourceBaseUrl: "https://www.oscars.org/oscars/ceremonies",
+    getCeremony: async (year: number) => {
+      const sourceUrl = `https://www.oscars.org/oscars/ceremonies/${year}`;
+      const html = await fetchHtml(sourceUrl);
+      const categories = parseOscarCategories(html);
+
+      return localizeAwardCeremonyTitles({
+        slug: "oscar",
+        name: "Academy Awards",
+        ceremonyYear: year,
+        country: "미국",
+        sourceType: "official",
+        sourceUrl,
+        headline: `${year} Academy Awards`,
+        subheadline: "Official Academy Awards archive",
+        categories,
+      });
+    },
+  },
+  {
+    slug: "bafta",
+    name: "BAFTA Film Awards",
+    country: "영국",
+    description: "BAFTA official film awards results archive.",
+    sourceType: "official",
+    latestYear: 2026,
+    sourceBaseUrl: "https://www.bafta.org/awards/film",
+    getCeremony: async (year: number) => {
+      const sourceUrl = "https://www.bafta.org/awards/film/";
+      const html = await fetchHtml(sourceUrl);
+      const categories = parseBaftaCategories(html);
+
+      return localizeAwardCeremonyTitles({
+        slug: "bafta",
+        name: "BAFTA Film Awards",
+        ceremonyYear: year,
+        country: "영국",
+        sourceType: "official",
+        sourceUrl,
+        headline: `${year} BAFTA Film Awards`,
+        subheadline: "Official BAFTA results archive",
+        categories,
+      });
+    },
+  },
+  {
+    slug: "bluedragon",
+    name: "Blue Dragon Film Awards",
+    country: "대한민국",
+    description: "Wikipedia-backed Blue Dragon Film Awards ceremony pages.",
+    sourceType: "wikipedia",
+    latestYear: 2025,
+    sourceBaseUrl: "https://en.wikipedia.org/wiki/Blue_Dragon_Film_Awards",
+    getCeremony: async (year: number) => {
+      const editionNumber = getBlueDragonEditionNumber(year);
+
+      if (!editionNumber) {
+        throw new Error(`Blue Dragon ceremony year is not supported: ${year}`);
+      }
+
+      const ordinalEdition = formatOrdinal(editionNumber);
+      const sourceUrl = `https://en.wikipedia.org/wiki/${ordinalEdition}_Blue_Dragon_Film_Awards`;
+      const html = await fetchHtml(sourceUrl);
+      const categories = parseBlueDragonCategories(html);
+
+      return localizeAwardCeremonyTitles({
+        slug: "bluedragon",
+        name: "Blue Dragon Film Awards",
+        ceremonyYear: year,
+        country: "대한민국",
+        sourceType: "wikipedia",
+        sourceUrl,
+        headline: `${ordinalEdition} Blue Dragon Film Awards`,
+        subheadline: "Wikipedia ceremony summary, to be enriched with TMDB localization",
+        categories,
+      });
+    },
+  },
+  {
+    slug: "cannes",
+    name: "Festival de Cannes",
+    country: "프랑스",
+    description: "Festival de Cannes official competition archive.",
+    sourceType: "official",
+    latestYear: 2025,
+    sourceBaseUrl: "https://www.festival-cannes.com/en/retrospective",
+    getCeremony: async (year: number) => {
+      const sourceUrl = `https://www.festival-cannes.com/en/retrospective/${year}/awards/`;
+      const awardsHtml = await fetchHtml(sourceUrl);
+      const categories = parseCannesCategories(awardsHtml);
+
+      return localizeAwardCeremonyTitles({
+        slug: "cannes",
+        name: "Festival de Cannes",
+        ceremonyYear: year,
+        country: "프랑스",
+        sourceType: "official",
+        sourceUrl,
+        headline: `${year} Festival de Cannes`,
+        subheadline: "Official Cannes competition archive",
+        categories,
+      });
+    },
+  },
+];
+
+export function getAwardsSources() {
+  return awardsSourceAdapters.map(({ getCeremony, ...summary }) => summary);
+}
+
+export function getAwardsSource(slug: string) {
+  return awardsSourceAdapters.find((source) => source.slug === slug) ?? null;
+}
+
+export async function getAwardCeremony(slug: string, year?: number) {
+  const source = getAwardsSource(slug);
+
+  if (!source) {
+    return null;
+  }
+
+  const targetYear = Number.isFinite(year) ? Number(year) : source.latestYear;
+  return source.getCeremony(targetYear);
+}

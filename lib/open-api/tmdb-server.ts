@@ -351,6 +351,73 @@ export async function searchMovieMetaByTitleAndDate(title: string, openDt: strin
   return cachedSearchMovieMetaByTitleAndDate(title, openDt)
 }
 
+async function searchMovieLocalizedTitleInternal(title: string, yearHints: number[] = []) {
+  if (!API_KEY) {
+    return title
+  }
+
+  const trimmedTitle = title.trim()
+
+  if (!trimmedTitle) {
+    return title
+  }
+
+  const uniqueYearHints = Array.from(new Set(yearHints.filter((year) => Number.isFinite(year) && year > 1900)))
+  const attempts = [...uniqueYearHints, null] as Array<number | null>
+
+  for (const yearHint of attempts) {
+    const query = new URLSearchParams({
+      query: trimmedTitle,
+      language: "ko",
+      api_key: API_KEY,
+      region: "KR",
+    })
+
+    if (yearHint) {
+      query.set("year", String(yearHint))
+    }
+
+    const URL = `https://api.themoviedb.org/3/search/movie?${query.toString()}`
+    const response = await fetch(URL, { next: { revalidate: 86400 } })
+
+    if (!response.ok) {
+      continue
+    }
+
+    const data = await response.json()
+    const results = Array.isArray(data.results) ? (data.results as TmdbSearchMovie[]) : []
+
+    if (!results.length) {
+      continue
+    }
+
+    const matchedMovie = results.find((movie) => {
+      const candidates = [movie.title, movie.original_title].filter(Boolean) as string[]
+      return candidates.some((candidate) => normalizeTitle(candidate) === normalizeTitle(trimmedTitle))
+    }) ?? results[0]
+
+    return matchedMovie.title ?? title
+  }
+
+  return title
+}
+
+const cachedSearchMovieLocalizedTitle = unstable_cache(
+  async (title: string, yearHintsKey: string) => {
+    const yearHints = yearHintsKey
+      ? yearHintsKey.split(",").map((value) => Number(value)).filter((value) => Number.isFinite(value))
+      : []
+    return searchMovieLocalizedTitleInternal(title, yearHints)
+  },
+  ["tmdb-localized-title"],
+  { revalidate: 86400 },
+)
+
+export async function searchMovieLocalizedTitle(title: string, yearHints: number[] = []) {
+  const key = Array.from(new Set(yearHints.filter((year) => Number.isFinite(year)))).join(",")
+  return cachedSearchMovieLocalizedTitle(title, key)
+}
+
 export async function getMovieEnglishTitleById(
   movieId?: number | null,
   fallbackOriginalTitle?: string | null,

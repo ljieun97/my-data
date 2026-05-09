@@ -7,7 +7,7 @@ import { useUserRatings } from "@/context/UserRatingsContext";
 type HomeSectionsResponse = {
   boxOfficeCards: MediaSliderItem[];
   upcomingCards: MediaSliderItem[];
-  topRatedCards: MediaSliderItem[];
+  recentCards: MediaSliderItem[];
 };
 
 type RottenTomatoesUpdate = {
@@ -21,7 +21,7 @@ type RottenTomatoesUpdate = {
 type RottenTomatoesResponse = {
   boxOfficeUpdates: RottenTomatoesUpdate[];
   upcomingUpdates: RottenTomatoesUpdate[];
-  topRatedUpdates: RottenTomatoesUpdate[];
+  recentUpdates: RottenTomatoesUpdate[];
 };
 
 function applyRottenTomatoesUpdates(cards: MediaSliderItem[], updates: RottenTomatoesUpdate[]) {
@@ -62,7 +62,7 @@ function buildRtRequestPayload(data: HomeSectionsResponse) {
       englishTitle: card.englishTitle,
       originalTitle: card.originalTitle,
     })),
-    topRatedCards: data.topRatedCards.map((card) => ({
+    recentCards: data.recentCards.map((card) => ({
       id: card.id,
       title: card.title,
       year: card.year,
@@ -98,7 +98,7 @@ export default function HomeBoxOfficeSections({
   useEffect(() => {
     const items = Array.from(
       new Set(
-        [initialData.boxOfficeCards, initialData.upcomingCards, initialData.topRatedCards]
+        [initialData.boxOfficeCards, initialData.upcomingCards, initialData.recentCards]
           .flat()
           .map((card) => card.tmdbId)
           .filter((tmdbId): tmdbId is number => Number.isFinite(tmdbId)),
@@ -131,7 +131,7 @@ export default function HomeBoxOfficeSections({
           setData((currentData) => ({
             boxOfficeCards: applyRottenTomatoesUpdates(currentData.boxOfficeCards, rtPayload.boxOfficeUpdates),
             upcomingCards: applyRottenTomatoesUpdates(currentData.upcomingCards, rtPayload.upcomingUpdates),
-            topRatedCards: applyRottenTomatoesUpdates(currentData.topRatedCards, rtPayload.topRatedUpdates),
+            recentCards: applyRottenTomatoesUpdates(currentData.recentCards, rtPayload.recentUpdates),
           }));
         }
       } catch (loadError) {
@@ -154,7 +154,7 @@ export default function HomeBoxOfficeSections({
     () => ({
       boxOfficeCards: applyUserRatings(data.boxOfficeCards, getRating),
       upcomingCards: applyUserRatings(data.upcomingCards, getRating),
-      topRatedCards: applyUserRatings(data.topRatedCards, getRating),
+      recentCards: applyUserRatings(data.recentCards, getRating),
     }),
     [data, getRating],
   );
@@ -178,9 +178,9 @@ export default function HomeBoxOfficeSections({
         showYear={false}
       />
       <MediaSlider
-        title="인기 영화"
+        title="최근개봉작"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}
-        results={displayData.topRatedCards}
+        results={displayData.recentCards}
         isScoreLoading={isRtLoading}
         showRank={false}
         showDetail

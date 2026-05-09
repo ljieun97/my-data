@@ -12,7 +12,7 @@ export default async function Home() {
   const featuredMovie =
     initialData.boxOfficeCards.find((card) => card.rank === "1" && card.backdropPath && card.tmdbId) ??
     initialData.boxOfficeCards.find((card) => card.backdropPath && card.tmdbId) ??
-    initialData.topRatedCards.find((card) => card.backdropPath && card.tmdbId) ??
+    initialData.recentCards.find((card) => card.backdropPath && card.tmdbId) ??
     initialData.upcomingCards.find((card) => card.backdropPath && card.tmdbId) ??
     null
 

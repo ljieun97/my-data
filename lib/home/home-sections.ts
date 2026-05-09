@@ -1,6 +1,6 @@
 import type { MediaSliderItem } from "@/components/media/media-slider";
 import { getKobisBoxoffice } from "@/lib/open-api/kobis";
-import { getTopRatedMovies, searchMovieMetaByTitleAndDate } from "@/lib/open-api/tmdb-server";
+import { searchMovieMetaByTitleAndDate } from "@/lib/open-api/tmdb-server";
 import { unstable_cache } from "next/cache";
 
 const TMDB_API_KEY = process.env.API_KEY_TMDB || process.env.NEXT_PUBLIC_API_KEY_TMDB;
@@ -13,7 +13,7 @@ export type HomeMovieCardSeed = MediaSliderItem & {
 export type HomeSectionsSeed = {
   boxOfficeCards: HomeMovieCardSeed[];
   upcomingCards: HomeMovieCardSeed[];
-  topRatedCards: HomeMovieCardSeed[];
+  recentCards: HomeMovieCardSeed[];
 };
 
 function formatCompactNumber(value?: string) {
@@ -58,9 +58,19 @@ async function fetchUpcomingMoviesPage() {
     return [];
   }
 
-  const url = new URL("https://api.themoviedb.org/3/movie/upcoming");
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const endDate = new Date(tomorrow);
+  endDate.setDate(endDate.getDate() + 30);
+
+  const formatDate = (value: Date) => value.toISOString().slice(0, 10);
+  const url = new URL("https://api.themoviedb.org/3/discover/movie");
   url.searchParams.set("language", "ko");
   url.searchParams.set("region", "KR");
+  url.searchParams.set("release_date.gte", formatDate(tomorrow));
+  url.searchParams.set("release_date.lte", formatDate(endDate));
+  url.searchParams.set("with_release_type", "3");
+  url.searchParams.set("sort_by", "release_date.asc");
   url.searchParams.set("page", "1");
   url.searchParams.set("api_key", TMDB_API_KEY);
 
@@ -68,6 +78,36 @@ async function fetchUpcomingMoviesPage() {
 
   if (!response.ok) {
     throw new Error(`Failed to fetch upcoming movies: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return Array.isArray(data.results) ? data.results : [];
+}
+
+async function fetchNowPlayingMoviesPage() {
+  if (!TMDB_API_KEY) {
+    return [];
+  }
+
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - 30);
+
+  const formatDate = (value: Date) => value.toISOString().slice(0, 10);
+  const url = new URL("https://api.themoviedb.org/3/discover/movie");
+  url.searchParams.set("language", "ko");
+  url.searchParams.set("region", "KR");
+  url.searchParams.set("release_date.gte", formatDate(startDate));
+  url.searchParams.set("release_date.lte", formatDate(today));
+  url.searchParams.set("with_release_type", "3");
+  url.searchParams.set("sort_by", "release_date.desc");
+  url.searchParams.set("page", "1");
+  url.searchParams.set("api_key", TMDB_API_KEY);
+
+  const response = await fetch(url.toString(), { next: { revalidate: 3600 } });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch recent movies: ${response.status}`);
   }
 
   const data = await response.json();
@@ -115,10 +155,10 @@ export async function getHomeSectionsSeed(): Promise<HomeSectionsSeed> {
 
 const getCachedHomeSectionsSeed = unstable_cache(
   async (targetDate: string): Promise<HomeSectionsSeed> => {
-    const [boxOfficeCards, upcomingMovies, topRatedMovies] = await Promise.all([
+    const [boxOfficeCards, upcomingMovies, recentMovies] = await Promise.all([
       getCachedBoxOfficeCards(targetDate),
       fetchUpcomingMoviesPage(),
-      getTopRatedMovies(),
+      fetchNowPlayingMoviesPage(),
     ]);
 
     const upcomingCards: HomeMovieCardSeed[] = upcomingMovies
@@ -134,12 +174,13 @@ const getCachedHomeSectionsSeed = unstable_cache(
         overview: movie.overview ?? null,
         englishTitle: movie.original_title ?? movie.title ?? null,
         originalTitle: movie.original_title ?? null,
+        detailLine: movie.release_date ? `개봉일 ${movie.release_date}` : undefined,
       }));
 
-    const topRatedCards: HomeMovieCardSeed[] = (Array.isArray(topRatedMovies) ? topRatedMovies : [])
+    const recentCards: HomeMovieCardSeed[] = (Array.isArray(recentMovies) ? recentMovies : [])
       .filter((movie: any) => movie.poster_path)
       .map((movie: any, index: number) => ({
-        id: `top-rated-${movie.id}`,
+        id: `recent-${movie.id}`,
         title: movie.title ?? movie.original_title ?? "Untitled",
         year: movie.release_date?.slice(0, 4),
         rank: String(index + 1),
@@ -149,12 +190,13 @@ const getCachedHomeSectionsSeed = unstable_cache(
         overview: movie.overview ?? null,
         englishTitle: movie.original_title ?? movie.title ?? null,
         originalTitle: movie.original_title ?? null,
+        detailLine: movie.release_date ? `개봉일 ${movie.release_date}` : undefined,
       }));
 
     return {
       boxOfficeCards,
       upcomingCards,
-      topRatedCards,
+      recentCards,
     };
   },
   ["home-sections-seed"],

@@ -14,7 +14,7 @@ type RottenTomatoesCardSeed = {
 type RottenTomatoesRequest = {
   boxOfficeCards?: RottenTomatoesCardSeed[]
   upcomingCards?: RottenTomatoesCardSeed[]
-  topRatedCards?: RottenTomatoesCardSeed[]
+  recentCards?: RottenTomatoesCardSeed[]
 }
 
 type RottenTomatoesUpdate = {
@@ -87,22 +87,22 @@ export async function POST(request: NextRequest) {
     const payload = (await request.json()) as RottenTomatoesRequest
     const boxOfficeCards = Array.isArray(payload.boxOfficeCards) ? payload.boxOfficeCards : []
     const upcomingCards = Array.isArray(payload.upcomingCards) ? payload.upcomingCards : []
-    const topRatedCards = Array.isArray(payload.topRatedCards) ? payload.topRatedCards : []
+    const recentCards = Array.isArray(payload.recentCards) ? payload.recentCards : []
 
-    const [boxOfficeUpdates, upcomingUpdates, topRatedUpdates] = await Promise.all([
+    const [boxOfficeUpdates, upcomingUpdates, recentUpdates] = await Promise.all([
       mapWithConcurrency(boxOfficeCards, 4, enrichCard),
       mapWithConcurrency(upcomingCards, 4, enrichCard),
-      mapWithConcurrency(topRatedCards, 4, enrichCard),
+      mapWithConcurrency(recentCards, 4, enrichCard),
     ])
 
     return NextResponse.json(
-      { boxOfficeUpdates, upcomingUpdates, topRatedUpdates },
+      { boxOfficeUpdates, upcomingUpdates, recentUpdates },
       { headers: { "Cache-Control": "s-maxage=86400, stale-while-revalidate=3600" } },
     )
   } catch (error) {
     console.error("Failed to load Rotten Tomatoes data for home sections", error)
     return NextResponse.json(
-      { boxOfficeUpdates: [], upcomingUpdates: [], topRatedUpdates: [], error: "Failed to load Rotten Tomatoes data" },
+      { boxOfficeUpdates: [], upcomingUpdates: [], recentUpdates: [], error: "Failed to load Rotten Tomatoes data" },
       { headers: { "Cache-Control": "no-store" } },
     )
   }

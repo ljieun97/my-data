@@ -2,7 +2,7 @@ import { getDetail } from "@/lib/open-api/tmdb-server"
 import CardInfo from "@/components/cards/info-media-card";
 import ImageCard from "@/components/cards/backdrop-media-card";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400;
 export const metadata = {
   title: "수상"
 }

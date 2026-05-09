@@ -2,7 +2,7 @@ import HomeBoxOfficeSections from "@/components/sections/home-sections"
 import { Banners } from "@/components/layout/banners"
 import { getHomeSectionsSeed } from "@/lib/home/home-sections"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 3600
 export const metadata = {
   title: "Home",
 }

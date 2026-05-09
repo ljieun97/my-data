@@ -1,7 +1,7 @@
 import PersonDetailContent from "@/components/person/person-detail-content";
 import { getPersonCredits, getPersonDetail } from "@/lib/open-api/tmdb-server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

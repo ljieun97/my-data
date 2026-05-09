@@ -2,11 +2,11 @@
 
 import { faCircleHalfStroke, faMoon, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Avatar, Button, Dropdown, Toast } from "@heroui/react";
 import SearchInput from "./search-input";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
 import { useSaveDate } from "@/context/SaveDateContext";
 
@@ -50,81 +50,12 @@ function OverlayModal({
 
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/worldcup", label: "Worldcup" },
   { href: "/calendar", label: "Calendar" },
   { href: "/timetable", label: "Timetable" },
   { href: "/awards", label: "Awards" },
   { href: "/movie", label: "Movies" },
   { href: "/tv", label: "Series" },
-  { href: "/guest", label: "Guest" },
 ];
-
-function WorldcupModal({
-  open,
-  selectedSource,
-  selectedYear,
-  setSelectedSource,
-  setSelectedYear,
-  yearOptions,
-  onSubmit,
-  onClose,
-}: {
-  open: boolean;
-  selectedSource: string;
-  selectedYear: string;
-  setSelectedSource: (value: string) => void;
-  setSelectedYear: (value: string) => void;
-  yearOptions: string[];
-  onSubmit: () => void;
-  onClose: () => void;
-}) {
-  return (
-    <OverlayModal
-      open={open}
-      title="Worldcup"
-      onClose={onClose}
-      footer={
-        <>
-          <button type="button" className="rounded-full border px-4 py-2 text-sm" onClick={onClose}>
-            Cancel
-          </button>
-          <button type="button" className="rounded-full bg-slate-900 px-4 py-2 text-sm text-white dark:bg-slate-100 dark:text-slate-900" onClick={onSubmit}>
-            Start worldcup
-          </button>
-        </>
-      }
-    >
-      <div className="flex flex-col gap-5">
-        <label className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Year</span>
-          <select
-            value={selectedYear}
-            onChange={(event) => setSelectedYear(event.target.value)}
-            className="min-h-[2.85rem] rounded-2xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          >
-            {yearOptions.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="text-sm font-medium text-slate-700 dark:text-slate-200">Source</div>
-        <div className="flex flex-col gap-3">
-          <label className="inline-flex items-center gap-2">
-            <input type="radio" name="worldcup-source" checked={selectedSource === "kobis"} onChange={() => setSelectedSource("kobis")} />
-            <span>Box Office (KOBIS)</span>
-          </label>
-          <label className="inline-flex items-center gap-2">
-            <input type="radio" name="worldcup-source" checked={selectedSource === "tmdb"} onChange={() => setSelectedSource("tmdb")} />
-            <span>OTT (TMDB)</span>
-          </label>
-        </div>
-      </div>
-    </OverlayModal>
-  );
-}
 
 function LoginModal({ open, onLogin, onClose }: { open: boolean; onLogin: () => void; onClose: () => void }) {
   return (
@@ -189,23 +120,16 @@ function SettingsModal({
 }
 
 export default function TopBar() {
-  const currentYear = new Date().getFullYear();
-  const defaultWorldcupYear = String(currentYear - 1);
   const { uid } = useUser();
   const { mode: saveDateMode, setMode: setSaveDateMode } = useSaveDate();
   const path = usePathname();
-  const router = useRouter();
   const [isScroll, setIsScroll] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedSet, setSelectedSet] = useState<"release" | "today" | "custom">("release");
-  const [selectedSource, setSelectedSource] = useState("kobis");
-  const [selectedYear, setSelectedYear] = useState(defaultWorldcupYear);
-  const yearOptions = useMemo(() => Array.from({ length: 26 }, (_, index) => String(currentYear - index)), [currentYear]);
 
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isWorldcupOpen, setIsWorldcupOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const isActivePath = (href: string) => path === href || path.startsWith(`${href}/`);
@@ -277,18 +201,6 @@ export default function TopBar() {
     setSaveDateMode(value);
   };
 
-  const handleOpenWorldcup = () => {
-    setSelectedSource("kobis");
-    setSelectedYear(defaultWorldcupYear);
-    setIsWorldcupOpen(true);
-    setMobileOpen(false);
-  };
-
-  const handleNavigateWorldcup = () => {
-    router.push(`/worldcup?year=${selectedYear}&source=${selectedSource}`);
-    setIsWorldcupOpen(false);
-  };
-
   const toggleTheme = () => {
     const nextIsDark = !isDarkMode;
     setIsDarkMode(nextIsDark);
@@ -316,7 +228,7 @@ export default function TopBar() {
           <div className="flex flex-1 items-center gap-2">
             <button
               type="button"
-              className="topbar-toggle topbar-toggle--mobile inline-flex h-10 w-10 items-center justify-center rounded-full"
+              className="topbar-toggle topbar-toggle--mobile inline-flex h-10 w-10 items-center justify-center text-slate-700 dark:text-slate-200"
               onClick={() => setMobileOpen((prev) => !prev)}
               aria-label="Toggle menu"
             >
@@ -325,38 +237,26 @@ export default function TopBar() {
 
             <Link
               href="/"
-              className="topbar-brand topbar-brand--desktop rounded-full px-4 py-2 text-sm font-semibold tracking-[0.28em] transition"
+              className="topbar-brand topbar-brand--desktop px-4 py-2 text-sm font-semibold tracking-[0.28em] text-slate-900 transition dark:text-slate-100"
             >
               TOVIE
             </Link>
 
-            <div className="topbar-desktop-nav items-center gap-2">
-              {navItems.map((item) =>
-                item.href === "/worldcup" ? (
-                  <button
-                    key={item.href}
-                    type="button"
-                    onClick={handleOpenWorldcup}
-                    className={[
-                      "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </button>
-                ) : (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={[
-                      "topbar-link rounded-full px-4 py-2 text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </Link>
-                ),
-              )}
+            <div className="topbar-desktop-nav items-center gap-1 border-l border-slate-200/70 pl-3 dark:border-slate-800">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={[
+                    "topbar-link relative px-3 py-2 text-sm font-medium text-slate-500 transition hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100",
+                    isActivePath(item.href)
+                      ? "topbar-link--active text-slate-950 after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px after:bg-slate-950 dark:text-white dark:after:bg-white"
+                      : "",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
 
@@ -376,7 +276,7 @@ export default function TopBar() {
             <Button
               variant="secondary"
               onPress={handleToggleSearch}
-              className="topbar-theme h-11 w-11 min-w-0 rounded-full px-0 text-sm font-medium"
+              className="topbar-theme h-11 w-11 min-w-0 border-l border-slate-200/70 px-0 text-sm font-medium text-slate-600 dark:border-slate-800 dark:text-slate-300"
               aria-label={isSearchOpen ? "Close search" : "Open search"}
             >
               <FontAwesomeIcon icon={faMagnifyingGlass} />
@@ -385,7 +285,7 @@ export default function TopBar() {
               <Button
                 onPress={() => setIsLoginOpen(true)}
                 variant="primary"
-                className="topbar-login h-11 w-11 min-w-0 rounded-full px-0 text-sm font-medium"
+                className="topbar-login h-11 w-11 min-w-0 border-l border-slate-200/70 px-0 text-sm font-medium text-slate-700 dark:border-slate-800 dark:text-slate-200"
                 aria-label="Open login"
               >
                 <FontAwesomeIcon icon={faUser} />
@@ -409,34 +309,22 @@ export default function TopBar() {
 
         {mobileOpen ? (
           <div className="topbar-menu topbar-menu--mobile border-t backdrop-blur-xl">
-            <div className="app-frame topbar-inner pb-4 pt-4">
-              {navItems.map((item) =>
-                item.href === "/worldcup" ? (
-                  <button
-                    key={item.href}
-                    type="button"
-                    onClick={handleOpenWorldcup}
-                    className={[
-                      "topbar-mobile-link mt-1 block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-mobile-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </button>
-                ) : (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={[
-                      "topbar-mobile-link mt-1 block rounded-2xl px-4 py-3 text-sm font-medium transition",
-                      isActivePath(item.href) ? "topbar-mobile-link--active" : "",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </Link>
-                ),
-              )}
+            <div className="app-frame topbar-inner pb-2 pt-3">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={[
+                    "topbar-mobile-link block border-b border-slate-200/60 px-1 py-3 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:border-slate-800 dark:text-slate-300 dark:hover:text-slate-50",
+                    isActivePath(item.href)
+                      ? "topbar-mobile-link--active border-slate-950 text-slate-950 dark:border-slate-100 dark:text-slate-50"
+                      : "",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
         ) : null}
@@ -450,16 +338,6 @@ export default function TopBar() {
         isDarkMode={isDarkMode}
         onToggleTheme={toggleTheme}
         onClose={() => setIsSettingsOpen(false)}
-      />
-      <WorldcupModal
-        open={isWorldcupOpen}
-        selectedSource={selectedSource}
-        selectedYear={selectedYear}
-        setSelectedSource={setSelectedSource}
-        setSelectedYear={setSelectedYear}
-        yearOptions={yearOptions}
-        onSubmit={handleNavigateWorldcup}
-        onClose={() => setIsWorldcupOpen(false)}
       />
     </>
   );

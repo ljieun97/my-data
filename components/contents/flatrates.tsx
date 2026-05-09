@@ -1,6 +1,5 @@
 "use client";
 
-import { getProviders } from "@/lib/open-api/tmdb-server";
 import { useEffect, useMemo, useState } from "react";
 
 type ProviderItem = {
@@ -9,8 +8,20 @@ type ProviderItem = {
   logo_path?: string | null;
 };
 
+type ProviderRequestItem = {
+  id: string | number;
+  type: string;
+};
+
 const flatratesCache = new Map<string, ProviderItem[]>();
 const pendingRequests = new Map<string, Promise<ProviderItem[]>>();
+const queuedItems = new Map<string, ProviderRequestItem>();
+const queuedResolvers = new Map<string, Array<(value: ProviderItem[]) => void>>();
+let batchTimer: ReturnType<typeof setTimeout> | null = null;
+
+function getCacheKey(type: string, providerId: string | number) {
+  return `${type}:${providerId}`;
+}
 
 function ProviderAvatar({ src, alt, index = 0 }: { src: string; alt: string; index?: number }) {
   return (
@@ -26,8 +37,75 @@ function ProviderAvatar({ src, alt, index = 0 }: { src: string; alt: string; ind
   );
 }
 
+async function flushBatchQueue() {
+  const items = Array.from(queuedItems.values());
+  const resolvers = new Map(queuedResolvers);
+
+  queuedItems.clear();
+  queuedResolvers.clear();
+  batchTimer = null;
+
+  if (!items.length) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/providers", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ items }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to load providers: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as {
+      results?: Array<{ key: string; flatrates?: ProviderItem[] }>;
+    };
+    const resultsMap = new Map(
+      (payload.results ?? []).map((entry) => [entry.key, Array.isArray(entry.flatrates) ? entry.flatrates : []]),
+    );
+
+    for (const item of items) {
+      const key = getCacheKey(item.type, item.id);
+      const flatrates = resultsMap.get(key) ?? [];
+      flatratesCache.set(key, flatrates);
+      pendingRequests.delete(key);
+
+      for (const resolve of resolvers.get(key) ?? []) {
+        resolve(flatrates);
+      }
+    }
+  } catch (error) {
+    console.error(error);
+
+    for (const item of items) {
+      const key = getCacheKey(item.type, item.id);
+      flatratesCache.set(key, []);
+      pendingRequests.delete(key);
+
+      for (const resolve of resolvers.get(key) ?? []) {
+        resolve([]);
+      }
+    }
+  }
+}
+
+function scheduleBatchFlush() {
+  if (batchTimer !== null) {
+    return;
+  }
+
+  batchTimer = setTimeout(() => {
+    void flushBatchQueue();
+  }, 0);
+}
+
 async function loadFlatrates(type: string, providerId: string | number) {
-  const cacheKey = `${type}:${providerId}`;
+  const cacheKey = getCacheKey(type, providerId);
 
   if (flatratesCache.has(cacheKey)) {
     return flatratesCache.get(cacheKey) ?? [];
@@ -37,16 +115,11 @@ async function loadFlatrates(type: string, providerId: string | number) {
     return pendingRequests.get(cacheKey) ?? [];
   }
 
-  const request = (async () => {
-    const results = await getProviders(type, providerId);
-    const nextFlatrates = Array.isArray(results?.flatrate)
-      ? results.flatrate.filter((content: ProviderItem) => content.provider_id !== 1796 && content.logo_path)
-      : [];
-
-    flatratesCache.set(cacheKey, nextFlatrates);
-    pendingRequests.delete(cacheKey);
-    return nextFlatrates;
-  })();
+  const request = new Promise<ProviderItem[]>((resolve) => {
+    queuedItems.set(cacheKey, { id: providerId, type });
+    queuedResolvers.set(cacheKey, [...(queuedResolvers.get(cacheKey) ?? []), resolve]);
+    scheduleBatchFlush();
+  });
 
   pendingRequests.set(cacheKey, request);
   return request;
@@ -54,7 +127,7 @@ async function loadFlatrates(type: string, providerId: string | number) {
 
 export default function Flatrates({ type, provider }: { type: string; provider: any }) {
   const [flatrates, setFlatrates] = useState<ProviderItem[] | null>(() => {
-    const cacheKey = `${type}:${provider}`;
+    const cacheKey = getCacheKey(type, provider);
     return flatratesCache.get(cacheKey) ?? null;
   });
 

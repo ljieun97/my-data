@@ -27,10 +27,13 @@ export async function POST(request: Request) {
 
     const showtime = await fetchNaverMovieShowtimes(movie, date);
 
-    return NextResponse.json({
-      date,
-      showtime,
-    });
+    return NextResponse.json(
+      {
+        date,
+        showtime,
+      },
+      { headers: { "Cache-Control": "s-maxage=600, stale-while-revalidate=120" } },
+    );
   } catch (error) {
     console.error(error);
 

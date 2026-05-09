@@ -4,6 +4,7 @@ export type AwardEntry = {
   status: "winner" | "nominee";
   primary: string;
   details: string[];
+  relation?: "by" | "for";
 };
 
 export type AwardCategory = {

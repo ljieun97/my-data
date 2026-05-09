@@ -24,7 +24,7 @@ export default async function AwardSourcePage({
   const resolvedSearchParams = (await searchParams) ?? {};
   const requestedYear = Number(resolvedSearchParams.year);
   const ceremony = await getAwardCeremony(type, requestedYear);
-console.log(ceremony)
+  
   if (!ceremony) {
     notFound();
   }

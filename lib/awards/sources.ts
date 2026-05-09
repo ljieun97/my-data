@@ -130,6 +130,40 @@ function looksLikeCannesAwardLine(value: string) {
   );
 }
 
+function parseCannesEntry(title: string, byText: string | null) {
+  if (!byText) {
+    return {
+      primary: title,
+      details: [] as string[],
+      relation: undefined,
+    };
+  }
+
+  const normalized = byText.replace(/\u00a0/g, " ").trim();
+
+  if (/^by\s+/i.test(normalized)) {
+    return {
+      primary: title,
+      details: [normalized.replace(/^by\s+/i, "").trim()],
+      relation: "by" as const,
+    };
+  }
+
+  if (/^for\s+/i.test(normalized)) {
+    return {
+      primary: normalized.replace(/^for\s+/i, "").trim(),
+      details: [title],
+      relation: "for" as const,
+    };
+  }
+
+  return {
+    primary: title,
+    details: [normalized],
+    relation: undefined,
+  };
+}
+
 function parseOscarCategories(html: string) {
   const $ = cheerio.load(html);
   const categoryRoot = $(
@@ -259,14 +293,17 @@ function parseCannesCategories(html: string) {
       return;
     }
 
+    const entry = parseCannesEntry(title, byText);
+
     categories.push({
       name: awardText,
       section: undefined,
       entries: [
         {
           status: "winner" as const,
-          primary: title,
-          details: byText ? [byText] : [],
+          primary: entry.primary,
+          details: entry.details,
+          relation: entry.relation,
         },
       ],
     });
@@ -342,11 +379,9 @@ async function localizeAwardCeremonyTitles(ceremony: AwardCeremony) {
       const entries = await Promise.all(
         category.entries.map(async (entry) => {
           const localizedPrimary =
-            ceremony.slug === "cannes"
-              ? entry.primary
-              : shouldLocalizePrimary(category.name)
-                ? await searchMovieLocalizedTitle(entry.primary, yearHints)
-                : entry.primary;
+            shouldLocalizePrimary(category.name) || (ceremony.slug === "cannes" && entry.relation === "for")
+              ? await searchMovieLocalizedTitle(entry.primary, yearHints)
+              : entry.primary;
           const localizedDetails =
             ceremony.slug === "cannes"
               ? entry.details

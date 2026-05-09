@@ -6,15 +6,6 @@ type AwardsSourceAdapter = AwardsSourceSummary & {
   getCeremony: (year: number) => Promise<AwardCeremony>;
 };
 
-const BLUE_DRAGON_CATEGORY_LABELS: Array<{ key: string; name: string; companionKey?: string }> = [
-  { key: "Best Film", name: "최우수작품상" },
-  { key: "Best Director", name: "감독상", companionKey: "Best Director Film" },
-  { key: "Best Actor", name: "남우주연상", companionKey: "Best Actor Film" },
-  { key: "Best Actress", name: "여우주연상", companionKey: "Best Actress Film" },
-  { key: "Most Wins", name: "최다 수상작" },
-  { key: "Most Nominations", name: "최다 노미네이트" },
-];
-
 function normalizeLines(value: string) {
   return value
     .split("\n")
@@ -412,31 +403,70 @@ async function localizeAwardCeremonyTitles(ceremony: AwardCeremony) {
   };
 }
 
+function normalizeBlueDragonText(value: string) {
+  return value
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\s*-\s*$/, "")
+    .trim();
+}
+
 function parseBlueDragonCategories(html: string) {
-  const infobox = parseWikipediaInfobox(html);
+  const $ = cheerio.load(html);
+  const awardSection = $("section.awardH").first();
 
-  return BLUE_DRAGON_CATEGORY_LABELS.flatMap((label) => {
-    const primary = infobox.get(label.key);
+  if (!awardSection.length) {
+    return [] as AwardCategory[];
+  }
 
-    if (!primary) {
-      return [];
-    }
+  return awardSection
+    .find(".award-box")
+    .map((_, element) => {
+      const item = $(element);
+      const categoryName = normalizeBlueDragonText(item.find("h5").first().text());
 
-    const companion = label.companionKey ? infobox.get(label.companionKey) : null;
+      if (!categoryName) {
+        return null;
+      }
 
-    return [
-      {
-        name: label.name,
-        entries: [
-          {
-            status: "winner" as const,
-            primary,
-            details: companion ? [companion] : [],
-          },
-        ],
-      },
-    ];
-  });
+      const entries = item
+        .find("li")
+        .map((__, li) => {
+          const entry = $(li);
+          const movieTitle = normalizeBlueDragonText(entry.find("em").first().text());
+          const cloned = entry.clone();
+          cloned.find("img, em").remove();
+          const personOrLabel = normalizeBlueDragonText(cloned.text());
+          const isWinner = entry.hasClass("red_c");
+
+          if (movieTitle && (!personOrLabel || personOrLabel === movieTitle)) {
+            return {
+              status: isWinner ? "winner" : "nominee",
+              primary: movieTitle,
+              details: [],
+            };
+          }
+
+          return {
+            status: isWinner ? "winner" : "nominee",
+            primary: personOrLabel || movieTitle,
+            details: movieTitle ? [movieTitle] : [],
+          };
+        })
+        .get()
+        .filter((entry) => entry.primary);
+
+      if (!entries.length) {
+        return null;
+      }
+
+      return {
+        name: categoryName,
+        entries,
+      };
+    })
+    .get()
+    .filter(Boolean) as AwardCategory[];
 }
 
 function getBlueDragonEditionNumber(year: number) {
@@ -534,19 +564,19 @@ const awardsSourceAdapters: AwardsSourceAdapter[] = [
     slug: "bluedragon",
     name: "Blue Dragon Film Awards",
     country: "대한민국",
-    description: "Wikipedia-backed Blue Dragon Film Awards ceremony pages.",
-    sourceType: "wikipedia",
+    description: "Blue Dragon Awards official history pages.",
+    sourceType: "official",
     latestYear: 2025,
-    sourceBaseUrl: "https://en.wikipedia.org/wiki/Blue_Dragon_Film_Awards",
+    sourceBaseUrl: "http://www.blueaward.co.kr/bbs/board.php?bo_table=blue_2021_awards",
     getCeremony: async (year: number) => {
-      const editionNumber = getBlueDragonEditionNumber(year);
+      const historyNumber = getBlueDragonEditionNumber(year);
 
-      if (!editionNumber) {
+      if (!historyNumber) {
         throw new Error(`Blue Dragon ceremony year is not supported: ${year}`);
       }
 
-      const ordinalEdition = formatOrdinal(editionNumber);
-      const sourceUrl = `https://en.wikipedia.org/wiki/${ordinalEdition}_Blue_Dragon_Film_Awards`;
+      const ordinalEdition = formatOrdinal(historyNumber);
+      const sourceUrl = `http://www.blueaward.co.kr/bbs/board.php?bo_table=blue_2021_awards&history_no=${historyNumber}`;
       const html = await fetchHtml(sourceUrl);
       const categories = parseBlueDragonCategories(html);
 
@@ -555,10 +585,10 @@ const awardsSourceAdapters: AwardsSourceAdapter[] = [
         name: "Blue Dragon Film Awards",
         ceremonyYear: year,
         country: "대한민국",
-        sourceType: "wikipedia",
+        sourceType: "official",
         sourceUrl,
         headline: `${ordinalEdition} Blue Dragon Film Awards`,
-        subheadline: "Wikipedia ceremony summary, to be enriched with TMDB localization",
+        subheadline: "Official Blue Dragon Awards nominees and winners",
         categories,
       });
     },

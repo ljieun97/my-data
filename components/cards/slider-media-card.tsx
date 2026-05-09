@@ -81,7 +81,7 @@ export default function MediaSliderCard({
         className={["group block rounded-2xl transition", movie.tmdbId ? "cursor-pointer" : "cursor-default"].join(" ")}
       >
         <div className="flex min-w-0 flex-col">
-          <div className="overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-900">
+          <div className="overflow-visible rounded-xs bg-slate-100 dark:bg-slate-900">
             <div className={`relative ${isBackdropCard ? "aspect-video" : "aspect-[2/3]"}`}>
               {showRank ? (
                 <div className="absolute bottom-0 -left-2 z-10 lg:bottom-1 lg:-left-6">
@@ -101,7 +101,7 @@ export default function MediaSliderCard({
                   <Flatrates type="movie" provider={movie.tmdbId} />
                 </div>
               ) : null}
-              <div className="relative h-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+              <div className="relative h-full overflow-hidden rounded-xs bg-slate-100 dark:bg-slate-800">
                 {movie.tmdbId ? (
                   <div className="pointer-events-none absolute inset-0 z-[1] bg-slate-950/0 opacity-0 transition duration-200 group-hover:bg-slate-950/18 group-hover:opacity-100" />
                 ) : null}
@@ -161,7 +161,7 @@ export default function MediaSliderCard({
           <div className="flex flex-1 flex-col gap-1 pt-2">
             {movie.detailLine ? (
               <div className="flex flex-col gap-px px-0">
-                <p className="browse-card__meta text-sm leading-snug">{movie.detailLine}</p>
+                <p className="browse-card__meta text-sm leading-snug text-slate-700 dark:text-slate-300">{movie.detailLine}</p>
                 {movie.subdetailLine ? <p className="browse-card__meta text-sm leading-snug">{movie.subdetailLine}</p> : null}
               </div>
             ) : null}

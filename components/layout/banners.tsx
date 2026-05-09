@@ -32,7 +32,7 @@ export function Banners({ movie }: { movie: any }) {
               <p className="p-1 text-xs font-bold text-white drop-shadow">박스오피스 1위</p>
               <p className="text-4xl font-bold text-white drop-shadow">{movie.title}</p>
             </div>
-            <p className="line-clamp-4 w-full text-white drop-shadow sm:w-5/6 md:w-[33.333%] md:max-w-[33.333%] lg:w-[33.333%] lg:max-w-[33.333%]">
+            <p className="line-clamp-3 w-full text-white drop-shadow sm:w-5/6 md:w-[33.333%] md:max-w-[33.333%] lg:w-[33.333%] lg:max-w-[33.333%]">
               {overview}
             </p>
             <button

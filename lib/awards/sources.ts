@@ -370,11 +370,12 @@ async function localizeAwardCeremonyTitles(ceremony: AwardCeremony) {
       const entries = await Promise.all(
         category.entries.map(async (entry) => {
           const localizedPrimary =
-            shouldLocalizePrimary(category.name) || (ceremony.slug === "cannes" && entry.relation === "for")
+            ceremony.slug !== "bluedragon" &&
+            (shouldLocalizePrimary(category.name) || (ceremony.slug === "cannes" && entry.relation === "for"))
               ? await searchMovieLocalizedTitle(entry.primary, yearHints)
               : entry.primary;
           const localizedDetails =
-            ceremony.slug === "cannes"
+            ceremony.slug === "cannes" || ceremony.slug === "bluedragon"
               ? entry.details
               : await Promise.all(
                   entry.details.map(async (detail) =>

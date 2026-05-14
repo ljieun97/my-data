@@ -5,6 +5,7 @@ import PosterHoverActions from "@/components/media/poster-hover-actions";
 import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { useSaveContent } from "@/hooks/useSaveContent";
+import { navigateToDetail } from "@/lib/detail-navigation";
 
 export default function PersonMediaCard({ content }: { content: any }) {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function PersonMediaCard({ content }: { content: any }) {
 
   const type = content.title ? "movie" : "tv";
   const id = content.id;
+  const detailHref = `/${type}/${id}`;
   const img = content.poster_path ? `https://image.tmdb.org/t/p/w500/${content.poster_path}` : "/images/no-image.jpg";
   const title = content.title ? content.title : content.name;
   const releaseDate = type === "movie" ? content.release_date : content.first_air_date;
@@ -52,7 +54,7 @@ export default function PersonMediaCard({ content }: { content: any }) {
             {
               icon: faCircleInfo,
               label: `${title} details`,
-              onClick: () => router.push(`/${type}/${id}`),
+              onClick: () => navigateToDetail(detailHref, router),
               className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
             },
           ]}

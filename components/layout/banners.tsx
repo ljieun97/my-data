@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import { navigateToDetail } from "@/lib/detail-navigation";
 
 export function Banners({ movie }: { movie: any }) {
   const router = useRouter();
@@ -43,7 +44,7 @@ export function Banners({ movie }: { movie: any }) {
                   return;
                 }
 
-                router.push(`/movie/${tmdbId}`);
+                navigateToDetail(`/movie/${tmdbId}`, router);
               }}
             >
               <FontAwesomeIcon icon={faCircleInfo} />

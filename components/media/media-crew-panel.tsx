@@ -3,6 +3,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
+import { handleDetailLinkClick } from "@/lib/detail-navigation";
 
 const ROLE_GROUPS = [
   {
@@ -55,11 +56,14 @@ function uniquePeople(items: any[]) {
 }
 
 function CrewPersonCard({ person }: { person: any }) {
+  const detailHref = person.id ? `/person/${person.id}` : null;
+
   return (
     <Link
-      href={person.id ? `/person/${person.id}` : "#"}
+      href={detailHref ?? "#"}
       className="flex min-w-0 items-center gap-3 rounded-2xl bg-white/90 p-2 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-950/80"
       aria-disabled={!person.id}
+      onClick={(event) => handleDetailLinkClick(event, detailHref)}
     >
       <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800">
         {person.profile_path ? (

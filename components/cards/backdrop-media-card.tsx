@@ -5,6 +5,7 @@ import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { useSaveContent } from "@/hooks/useSaveContent";
 import PosterHoverActions from "@/components/media/poster-hover-actions";
+import { navigateToDetail } from "@/lib/detail-navigation";
 
 export default function BackdropMediaCard({ content, desc }: { content: any; desc: String }) {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function BackdropMediaCard({ content, desc }: { content: any; des
 
   const type = content.title ? "movie" : "tv";
   const id = content.id;
+  const detailHref = `/${type}/${id}`;
   const img = content.backdrop_path ? `https://image.tmdb.org/t/p/w1280/${content.backdrop_path}` : "/images/no-image.jpg";
 
   const handleClick = async (rating: number) => {
@@ -49,7 +51,7 @@ export default function BackdropMediaCard({ content, desc }: { content: any; des
           {
             icon: faCircleInfo,
             label: `${content.title} details`,
-            onClick: () => router.push(`/${type}/${id}`),
+            onClick: () => navigateToDetail(detailHref, router),
             className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
           },
         ]}

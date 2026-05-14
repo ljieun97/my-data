@@ -11,6 +11,7 @@ import Flatrates from "@/components/contents/flatrates";
 import { useUser } from "@/context/UserContext";
 import { getPosters } from "@/lib/open-api/tmdb-client";
 import PosterHoverActions from "@/components/media/poster-hover-actions";
+import { navigateToDetail } from "@/lib/detail-navigation";
 
 export type SavedMediaItem = {
   _id: string;
@@ -144,7 +145,7 @@ export default function SavedPosterCard({
                   icon: faCircleInfo,
                   label: "?곸꽭蹂닿린",
                   onClick: () => {
-                    if (content.type) router.push(href);
+                    if (content.type) navigateToDetail(href, router);
                   },
                   className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
                 },

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TooltipDetail } from "./tooltip-detail";
+import { navigateToDetail } from "@/lib/detail-navigation";
 
 export const PopupList = ({ type, list }: { type: string; list: any[] }) => {
   const router = useRouter();
@@ -34,7 +35,7 @@ export const PopupList = ({ type, list }: { type: string; list: any[] }) => {
                 className="w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
                 onClick={() => {
                   setIsOpen(false);
-                  router.push(`/${type}/${entry.id}`);
+                  navigateToDetail(`/${type}/${entry.id}`, router);
                 }}
               >
                 {entry.title}

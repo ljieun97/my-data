@@ -5,6 +5,7 @@ import { faCircleInfo, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { useSaveContent } from "@/hooks/useSaveContent";
 import PosterHoverActions from "@/components/media/poster-hover-actions";
+import { navigateToDetail } from "@/lib/detail-navigation";
 
 export default function ThumbMediaCard({ content }: { content: any }) {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function ThumbMediaCard({ content }: { content: any }) {
 
   const type = content.title ? "movie" : "tv";
   const id = content.id;
+  const detailHref = `/${type}/${id}`;
   const img = content.backdrop_path ? `https://image.tmdb.org/t/p/w500/${content.backdrop_path}` : "/images/no-image.jpg";
   const savedRating = Number(content.userRating);
   const contributionLabel =
@@ -50,7 +52,7 @@ export default function ThumbMediaCard({ content }: { content: any }) {
             {
               icon: faCircleInfo,
               label: `${title} details`,
-              onClick: () => router.push(`/${type}/${id}`),
+              onClick: () => navigateToDetail(detailHref, router),
               className: "browse-card__detail rounded-full px-2 py-1 text-sm shadow-sm transition",
             },
           ]}

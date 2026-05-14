@@ -9,6 +9,7 @@ import PosterHoverActions from "@/components/media/poster-hover-actions";
 import type { MediaSliderItem } from "@/components/media/media-slider";
 import { useSaveContent } from "@/hooks/useSaveContent";
 import { useRouter } from "next/navigation";
+import { handleDetailLinkClick, navigateToDetail } from "@/lib/detail-navigation";
 
 const TMDB_POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
 const TMDB_BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w780";
@@ -44,6 +45,7 @@ export default function MediaSliderCard({
     ? "(min-width: 1280px) 20vw, (min-width: 640px) 24vw, 45vw"
     : "(min-width: 1280px) 18vw, (min-width: 640px) 24vw, 33vw";
   const savedRating = Number(movie.userRating);
+  const detailHref = movie.tmdbId ? `/movie/${movie.tmdbId}` : null;
 
   const handleSave = async () => {
     if (!movie.tmdbId) return;
@@ -66,7 +68,7 @@ export default function MediaSliderCard({
   return (
     <article className={["min-w-0", cardWidth ? "shrink-0" : "", className].filter(Boolean).join(" ")} style={cardWidth ? { width: `${cardWidth}px` } : undefined}>
       <Link
-        href={movie.tmdbId ? `/movie/${movie.tmdbId}` : "#"}
+        href={detailHref ?? "#"}
         scroll={false}
         prefetch={movie.tmdbId ? true : false}
         aria-disabled={!movie.tmdbId}
@@ -76,7 +78,10 @@ export default function MediaSliderCard({
         onClick={(event) => {
           if (!movie.tmdbId) {
             event.preventDefault();
+            return;
           }
+
+          handleDetailLinkClick(event, detailHref);
         }}
         className={["group block rounded-2xl transition", movie.tmdbId ? "cursor-pointer" : "cursor-default"].join(" ")}
       >
@@ -118,7 +123,7 @@ export default function MediaSliderCard({
                       {
                         icon: faCircleInfo,
                         label: `${movie.title} details`,
-                        onClick: () => router.push(`/movie/${movie.tmdbId}`),
+                        onClick: () => detailHref && navigateToDetail(detailHref, router),
                         className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
                       },
                     ]}

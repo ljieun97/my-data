@@ -10,6 +10,7 @@ import { useUser } from "@/context/UserContext";
 import { useState } from "react";
 import { getPosters } from "@/lib/open-api/tmdb-client";
 import { parseDate } from "@internationalized/date";
+import { navigateToDetail } from "@/lib/detail-navigation";
 
 const genreLabels: Record<number, string> = {
   16: "애니메이션",
@@ -155,7 +156,11 @@ export default function SavedListRow({
                     </div>
                   ) : null}
                 </div>
-                <button type="button" className="browse-card__detail rounded-full px-3 py-2" onClick={() => router.push(`/${content.type}/${content.id}`)}>
+                <button
+                  type="button"
+                  className="browse-card__detail rounded-full px-3 py-2"
+                  onClick={() => navigateToDetail(`/${content.type}/${content.id}`, router)}
+                >
                   <FontAwesomeIcon icon={faCircleInfo} />
                 </button>
               </div>

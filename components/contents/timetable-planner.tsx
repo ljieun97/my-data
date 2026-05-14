@@ -366,27 +366,11 @@ export default function TimetablePlanner() {
           </button>
         </div>
 
-        <form onSubmit={searchMovie} className="mb-3 flex gap-2">
-          <input
-            type="search"
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-            placeholder="영화 검색"
-            className="min-h-10 min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-amber-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          />
-          <button
-            type="submit"
-            className="rounded-2xl bg-slate-950 px-3 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
-          >
-            검색
-          </button>
-        </form>
-
         {moviesError ? <div className="mb-2 rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-200">{moviesError}</div> : null}
 
         <div className="mb-2 px-1 text-xs font-semibold text-slate-500 dark:text-slate-400">오늘 탑10 + 검색</div>
 
-        <div className="flex max-h-[calc(100vh-230px)] flex-col gap-1 overflow-y-auto pr-1">
+        <div className="flex max-h-[calc(100vh-190px)] flex-col gap-1 overflow-y-auto pr-1">
           {isMoviesLoading ? <div className="px-3 py-8 text-center text-sm text-slate-500">불러오는 중</div> : null}
           {!isMoviesLoading && !movies.length ? <div className="px-3 py-8 text-center text-sm text-slate-500">영화 없음</div> : null}
           {movies.map((movie) => {
@@ -409,6 +393,22 @@ export default function TimetablePlanner() {
             );
           })}
         </div>
+
+        <form onSubmit={searchMovie} className="mt-3 flex gap-2">
+          <input
+            type="search"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            placeholder="영화 검색"
+            className="min-h-10 min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-amber-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          />
+          <button
+            type="submit"
+            className="rounded-2xl bg-slate-950 px-3 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
+          >
+            검색
+          </button>
+        </form>
       </aside>
 
       <main className="rounded-3xl border border-slate-200 bg-white/80 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/60">

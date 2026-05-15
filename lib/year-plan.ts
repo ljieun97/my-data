@@ -99,11 +99,16 @@ function sortEntries(entries: YearPlanEntry[]) {
 
 const getCachedAllYearPlanEntries = unstable_cache(
   async () => {
-    const { db } = await connectMongo();
-    return (await db
-      .collection("yearPlans")
-      .find({ type: { $ne: "개봉" } })
-      .toArray()) as unknown as YearPlanEntry[];
+    try {
+      const { db } = await connectMongo();
+      return (await db
+        .collection("yearPlans")
+        .find({ type: { $ne: "개봉" } })
+        .toArray()) as unknown as YearPlanEntry[];
+    } catch (error) {
+      console.error("Failed to load year plan entries from MongoDB.", error);
+      return [] as YearPlanEntry[];
+    }
   },
   ["year-plan-entries"],
   { revalidate: 3600 },

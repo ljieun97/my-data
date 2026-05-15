@@ -1,6 +1,7 @@
 import type { MediaSliderItem } from "@/components/media/media-slider";
 import { getKobisBoxoffice } from "@/lib/open-api/kobis";
 import { searchMovieMetaByTitleAndDate } from "@/lib/open-api/tmdb-server";
+import { getLatestYearPlanPreview, type YearPlanPreview } from "@/lib/year-plan";
 import { unstable_cache } from "next/cache";
 
 const TMDB_API_KEY = process.env.API_KEY_TMDB || process.env.NEXT_PUBLIC_API_KEY_TMDB;
@@ -14,6 +15,7 @@ export type HomeSectionsSeed = {
   boxOfficeCards: HomeMovieCardSeed[];
   upcomingCards: HomeMovieCardSeed[];
   recentCards: HomeMovieCardSeed[];
+  yearPlanPreview: YearPlanPreview | null;
 };
 
 function formatCompactNumber(value?: string) {
@@ -155,10 +157,11 @@ export async function getHomeSectionsSeed(): Promise<HomeSectionsSeed> {
 
 const getCachedHomeSectionsSeed = unstable_cache(
   async (targetDate: string): Promise<HomeSectionsSeed> => {
-    const [boxOfficeCards, upcomingMovies, recentMovies] = await Promise.all([
+    const [boxOfficeCards, upcomingMovies, recentMovies, yearPlanPreview] = await Promise.all([
       getCachedBoxOfficeCards(targetDate),
       fetchUpcomingMoviesPage(),
       fetchNowPlayingMoviesPage(),
+      getLatestYearPlanPreview(),
     ]);
 
     const upcomingCards: HomeMovieCardSeed[] = upcomingMovies
@@ -197,6 +200,7 @@ const getCachedHomeSectionsSeed = unstable_cache(
       boxOfficeCards,
       upcomingCards,
       recentCards,
+      yearPlanPreview,
     };
   },
   ["home-sections-seed"],

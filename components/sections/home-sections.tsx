@@ -3,11 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import MediaSlider, { type MediaSliderItem } from "@/components/media/media-slider";
 import { useUserRatings } from "@/context/UserRatingsContext";
+import type { YearPlanPreview } from "@/lib/year-plan";
+import HomeYearPlanCard from "@/components/year-plan/home-year-plan-card";
 
 type HomeSectionsResponse = {
   boxOfficeCards: MediaSliderItem[];
   upcomingCards: MediaSliderItem[];
   recentCards: MediaSliderItem[];
+  yearPlanPreview: YearPlanPreview | null;
 };
 
 type RottenTomatoesUpdate = {
@@ -132,6 +135,7 @@ export default function HomeBoxOfficeSections({
             boxOfficeCards: applyRottenTomatoesUpdates(currentData.boxOfficeCards, rtPayload.boxOfficeUpdates),
             upcomingCards: applyRottenTomatoesUpdates(currentData.upcomingCards, rtPayload.upcomingUpdates),
             recentCards: applyRottenTomatoesUpdates(currentData.recentCards, rtPayload.recentUpdates),
+            yearPlanPreview: currentData.yearPlanPreview,
           }));
         }
       } catch (loadError) {
@@ -155,12 +159,14 @@ export default function HomeBoxOfficeSections({
       boxOfficeCards: applyUserRatings(data.boxOfficeCards, getRating),
       upcomingCards: applyUserRatings(data.upcomingCards, getRating),
       recentCards: applyUserRatings(data.recentCards, getRating),
+      yearPlanPreview: data.yearPlanPreview,
     }),
     [data, getRating],
   );
 
   return (
     <div className="flex flex-col gap-14">
+      {displayData.yearPlanPreview ? <HomeYearPlanCard plan={displayData.yearPlanPreview} /> : null}
       <MediaSlider
         title="박스오피스 순위"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}

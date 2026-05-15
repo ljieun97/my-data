@@ -166,7 +166,7 @@ export default function HomeBoxOfficeSections({
 
   return (
     <div className="flex flex-col gap-14">
-      {displayData.yearPlanPreview ? <HomeYearPlanCard plan={displayData.yearPlanPreview} /> : null}
+      {/* {displayData.yearPlanPreview ? <HomeYearPlanCard plan={displayData.yearPlanPreview} /> : null} */}
       <MediaSlider
         title="박스오피스 순위"
         emptyMessage={error ? "문제가 발생했습니다." : "잠시만 기다려주세요."}

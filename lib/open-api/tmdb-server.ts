@@ -1,9 +1,5 @@
 const API_KEY = process.env.API_KEY_TMDB || process.env.NEXT_PUBLIC_API_KEY_TMDB
 
-if (!API_KEY) {
-  throw new Error("API key for TMDB is not defined");
-}
-
 import { unstable_cache } from "next/cache";
 import { format } from "date-fns-tz";
 

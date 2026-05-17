@@ -5,10 +5,6 @@ const month = dayjs().subtract(1, "month").format('YYYY-MM-DD')
 const BASE_URL = 'https://api.themoviedb.org/3'
 const API_KEY = process.env.API_KEY_TMDB || process.env.NEXT_PUBLIC_API_KEY_TMDB
 
-if (!API_KEY) {
-  throw new Error("API key for TMDB is not defined");
-}
-
 function filterDisplayableTitles(results: any[]) {
   return Array.isArray(results)
     ? results.filter((content: any) => content?.poster_path && content?.overview)

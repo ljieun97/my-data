@@ -39,6 +39,11 @@ export type YearPlanYearGroup = {
   months: YearPlanMonthGroup[];
 };
 
+type MonthTarget = {
+  year: number;
+  month: number;
+};
+
 function toDate(value?: string | null) {
   if (!value) {
     return null;
@@ -97,6 +102,39 @@ function sortEntries(entries: YearPlanEntry[]) {
   });
 }
 
+function buildMonthTargets(referenceDate: Date, monthOffsets: number[]) {
+  const year = referenceDate.getFullYear();
+  const baseMonth = referenceDate.getMonth() + 1;
+
+  return monthOffsets.map((offset) => {
+    const anchor = new Date(year, baseMonth - 1 + offset, 1);
+    return {
+      year: anchor.getFullYear(),
+      month: anchor.getMonth() + 1,
+    } satisfies MonthTarget;
+  });
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  mapper: (item: T, index: number) => Promise<R>,
+) {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+    }
+  });
+
+  await Promise.all(workers);
+  return results;
+}
+
 const getCachedAllYearPlanEntries = unstable_cache(
   async () => {
     try {
@@ -118,28 +156,24 @@ const getCachedKobisReleaseEntries = unstable_cache(
   async (year: number) => {
     const movies = await getKobisYearlyMovieList(year);
 
-    const normalized = await Promise.all(
-      movies
-        .filter((movie: any) => typeof movie?.movieNm === "string" && /^\d{8}$/.test(movie?.openDt ?? ""))
-        .map(async (movie: any) => {
-          const openDate = `${movie.openDt.slice(0, 4)}-${movie.openDt.slice(4, 6)}-${movie.openDt.slice(6, 8)}`;
-          const meta = await searchMovieMetaByTitleAndDate(movie.movieNm, openDate);
-
-          return {
-            title: movie.movieNm,
-            summary: meta.overview ?? null,
-            type: "개봉",
-            date: openDate,
-            tmdbId: meta.tmdbId,
-            tmdbType: meta.tmdbId ? ("movie" as const) : null,
-          } satisfies YearPlanEntry;
-        }),
-    );
-
     const uniqueEntries = new Map<string, YearPlanEntry>();
 
-    for (const entry of normalized) {
+    for (const movie of movies) {
+      if (typeof movie?.movieNm !== "string" || !/^\d{8}$/.test(movie?.openDt ?? "")) {
+        continue;
+      }
+
+      const openDate = `${movie.openDt.slice(0, 4)}-${movie.openDt.slice(4, 6)}-${movie.openDt.slice(6, 8)}`;
+      const entry = {
+        title: movie.movieNm,
+        summary: null,
+        type: "개봉",
+        date: openDate,
+        tmdbId: null,
+        tmdbType: null,
+      } satisfies YearPlanEntry;
       const key = `${entry.date}:${entry.title}`;
+
       if (!uniqueEntries.has(key)) {
         uniqueEntries.set(key, entry);
       }
@@ -147,32 +181,46 @@ const getCachedKobisReleaseEntries = unstable_cache(
 
     return Array.from(uniqueEntries.values());
   },
-  ["year-plan-kobis-releases"],
+  ["year-plan-kobis-releases-base"],
+  { revalidate: 3600 },
+);
+
+async function enrichReleaseEntries(entries: YearPlanEntry[]) {
+  return mapWithConcurrency(entries, 6, async (entry) => {
+    const meta = await searchMovieMetaByTitleAndDate(entry.title, entry.date);
+
+    return {
+      ...entry,
+      summary: meta.overview ?? entry.summary ?? null,
+      tmdbId: meta.tmdbId,
+      tmdbType: meta.tmdbId ? ("movie" as const) : null,
+    } satisfies YearPlanEntry;
+  });
+}
+
+const getCachedKobisReleaseEntriesByMonths = unstable_cache(
+  async (year: number) => {
+    return enrichReleaseEntries(await getCachedKobisReleaseEntries(year));
+  },
+  ["year-plan-kobis-releases-enriched"],
   { revalidate: 3600 },
 );
 
 export async function getLatestYearPlanPreview(referenceDate = new Date()): Promise<YearPlanPreview | null> {
   const year = referenceDate.getFullYear();
-  const baseMonth = referenceDate.getMonth() + 1;
-  const monthOffsets = [-1, 0, 1];
   const dbEntries = await getCachedAllYearPlanEntries();
-
-  const monthTargets = monthOffsets.map((offset) => {
-    const anchor = new Date(year, baseMonth - 1 + offset, 1);
-    return {
-      year: anchor.getFullYear(),
-      month: anchor.getMonth() + 1,
-    };
-  });
+  const monthTargets = buildMonthTargets(referenceDate, [-1, 0, 1]);
 
   const kobisEntriesByYear = new Map<number, YearPlanEntry[]>();
-  for (const target of monthTargets) {
-    if (!kobisEntriesByYear.has(target.year)) {
-      kobisEntriesByYear.set(target.year, await getCachedKobisReleaseEntries(target.year));
-    }
-  }
+  const targetYears = Array.from(new Set(monthTargets.map((target) => target.year)));
 
-  const months = monthTargets
+  await Promise.all(
+    targetYears.map(async (targetYear) => {
+      kobisEntriesByYear.set(targetYear, await getCachedKobisReleaseEntries(targetYear));
+    }),
+  );
+
+  const monthsWithPendingReleases = monthTargets
     .map(({ year: monthYear, month }) => {
       const dbMonthEntries = dbEntries.filter(
         (entry) => getYearFromDate(entry.date) === monthYear && getMonthFromDate(entry.date) === month,
@@ -180,15 +228,32 @@ export async function getLatestYearPlanPreview(referenceDate = new Date()): Prom
       const releaseMonthEntries = (kobisEntriesByYear.get(monthYear) ?? []).filter(
         (entry) => getMonthFromDate(entry.date) === month,
       );
-      const monthEntries = sortEntries([...dbMonthEntries, ...releaseMonthEntries]);
+      const monthEntries = sortEntries([...dbMonthEntries, ...releaseMonthEntries]).slice(0, 3);
 
       return {
         key: getMonthKey(monthYear, month),
         label: getMonthLabel(monthYear, month),
-        entries: monthEntries.slice(0, 3),
+        entries: monthEntries,
       };
     })
     .filter((month) => month.entries.length > 0);
+
+  if (!monthsWithPendingReleases.length) {
+    return null;
+  }
+
+  const months = await Promise.all(
+    monthsWithPendingReleases.map(async (month) => {
+      const releaseEntries = month.entries.filter((entry) => entry.type === "개봉");
+      const enrichedReleaseEntries = await enrichReleaseEntries(releaseEntries);
+      const enrichedMap = new Map(enrichedReleaseEntries.map((entry) => [`${entry.date}:${entry.title}`, entry] as const));
+
+      return {
+        ...month,
+        entries: month.entries.map((entry) => enrichedMap.get(`${entry.date}:${entry.title}`) ?? entry),
+      };
+    }),
+  );
 
   if (!months.length) {
     return null;
@@ -203,7 +268,7 @@ export async function getLatestYearPlanPreview(referenceDate = new Date()): Prom
 
 export async function getYearPlanByYear(year: number): Promise<YearPlanYearGroup | null> {
   const dbEntries = await getCachedAllYearPlanEntries();
-  const releaseEntries = await getCachedKobisReleaseEntries(year);
+  const releaseEntries = await getCachedKobisReleaseEntriesByMonths(year);
   const entries = [...dbEntries, ...releaseEntries];
   const yearEntries = sortEntries(entries.filter((entry) => getYearFromDate(entry.date) === year));
 

@@ -278,20 +278,25 @@ export async function searchMoviePosterByTitleAndDate(title: string, openDt: str
   })
 
   const URL = `https://api.themoviedb.org/3/search/movie?${query.toString()}`
-  const response = await fetch(URL, { next: { revalidate: 3600 } })
+  try {
+    const response = await fetch(URL, { next: { revalidate: 3600 } })
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return null
+    }
+
+    const data = await response.json()
+    const results = Array.isArray(data.results) ? (data.results as TmdbSearchMovie[]) : []
+
+    if (results.length === 1) {
+      return results[0]?.poster_path ?? null
+    }
+
+    return null
+  } catch (error) {
+    console.error("Failed to search TMDB poster by title and date.", { title: trimmedTitle, openDt, error })
     return null
   }
-
-  const data = await response.json()
-  const results = Array.isArray(data.results) ? (data.results as TmdbSearchMovie[]) : []
-
-  if (results.length === 1) {
-    return results[0]?.poster_path ?? null
-  }
-
-  return null
 }
 
 async function searchMovieMetaByTitleAndDateInternal(title: string, openDt: string) {
@@ -315,25 +320,30 @@ async function searchMovieMetaByTitleAndDateInternal(title: string, openDt: stri
   })
 
   const URL = `https://api.themoviedb.org/3/search/movie?${query.toString()}`
-  const response = await fetch(URL, { next: { revalidate: 3600 } })
+  try {
+    const response = await fetch(URL, { next: { revalidate: 3600 } })
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return { tmdbId: null, posterPath: null, backdropPath: null, overview: null }
+    }
+
+    const data = await response.json()
+    const results = Array.isArray(data.results) ? (data.results as TmdbSearchMovie[]) : []
+    const matchedMovie = selectBestTmdbMatch(results, trimmedTitle, year)
+
+    if (!matchedMovie) {
+      return { tmdbId: null, posterPath: null, backdropPath: null, overview: null }
+    }
+
+    return {
+      tmdbId: matchedMovie.id,
+      posterPath: matchedMovie.poster_path ?? null,
+      backdropPath: (matchedMovie as any).backdrop_path ?? null,
+      overview: (matchedMovie as any).overview ?? null,
+    }
+  } catch (error) {
+    console.error("Failed to search TMDB metadata by title and date.", { title: trimmedTitle, openDt, error })
     return { tmdbId: null, posterPath: null, backdropPath: null, overview: null }
-  }
-
-  const data = await response.json()
-  const results = Array.isArray(data.results) ? (data.results as TmdbSearchMovie[]) : []
-  const matchedMovie = selectBestTmdbMatch(results, trimmedTitle, year)
-
-  if (!matchedMovie) {
-    return { tmdbId: null, posterPath: null, backdropPath: null, overview: null }
-  }
-
-  return {
-    tmdbId: matchedMovie.id,
-    posterPath: matchedMovie.poster_path ?? null,
-    backdropPath: (matchedMovie as any).backdrop_path ?? null,
-    overview: (matchedMovie as any).overview ?? null,
   }
 }
 
@@ -374,25 +384,30 @@ async function searchMovieLocalizedTitleInternal(title: string, yearHints: numbe
     }
 
     const URL = `https://api.themoviedb.org/3/search/movie?${query.toString()}`
-    const response = await fetch(URL, { next: { revalidate: 86400 } })
 
-    if (!response.ok) {
-      continue
+    try {
+      const response = await fetch(URL, { next: { revalidate: 86400 } })
+
+      if (!response.ok) {
+        continue
+      }
+
+      const data = await response.json()
+      const results = Array.isArray(data.results) ? (data.results as TmdbSearchMovie[]) : []
+
+      if (!results.length) {
+        continue
+      }
+
+      const matchedMovie = results.find((movie) => {
+        const candidates = [movie.title, movie.original_title].filter(Boolean) as string[]
+        return candidates.some((candidate) => normalizeTitle(candidate) === normalizeTitle(trimmedTitle))
+      }) ?? results[0]
+
+      return matchedMovie.title ?? title
+    } catch (error) {
+      console.error("Failed to search TMDB localized title.", { title: trimmedTitle, yearHint, error })
     }
-
-    const data = await response.json()
-    const results = Array.isArray(data.results) ? (data.results as TmdbSearchMovie[]) : []
-
-    if (!results.length) {
-      continue
-    }
-
-    const matchedMovie = results.find((movie) => {
-      const candidates = [movie.title, movie.original_title].filter(Boolean) as string[]
-      return candidates.some((candidate) => normalizeTitle(candidate) === normalizeTitle(trimmedTitle))
-    }) ?? results[0]
-
-    return matchedMovie.title ?? title
   }
 
   return title

@@ -638,5 +638,22 @@ export async function getAwardCeremony(slug: string, year?: number) {
   }
 
   const targetYear = Number.isFinite(year) ? Number(year) : source.latestYear;
-  return source.getCeremony(targetYear);
+
+  try {
+    return await source.getCeremony(targetYear);
+  } catch (error) {
+    console.error(`Failed to load award ceremony for ${slug} (${targetYear}).`, error);
+
+    return {
+      slug: source.slug,
+      name: source.name,
+      ceremonyYear: targetYear,
+      country: source.country,
+      sourceType: source.sourceType,
+      sourceUrl: source.sourceBaseUrl,
+      headline: `${targetYear} ${source.name}`,
+      subheadline: source.description,
+      categories: [],
+    };
+  }
 }

@@ -163,7 +163,7 @@ export default function TimetablePlanner() {
 
       try {
         const response = await fetch("/api/timetable/movies", {
-          cache: "no-store",
+          next: { revalidate: 3600 }
         });
 
         if (!response.ok) {

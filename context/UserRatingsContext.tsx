@@ -81,7 +81,7 @@ export function UserRatingsProvider({
             Authorization: uid,
           },
           body: JSON.stringify({ items: itemsToFetch }),
-          cache: "no-store",
+          next: { revalidate: 3600 }
         });
 
         if (!response.ok) {

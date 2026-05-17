@@ -119,7 +119,7 @@ async function getNaverMovieId(movieName: string) {
       "User-Agent": "Mozilla/5.0",
       Referer: "https://search.naver.com/",
     },
-    cache: "no-store",
+    next: { revalidate: 3600 }
   });
   const naverMovieId = parseNaverMovieId(html);
 
@@ -194,7 +194,7 @@ async function fetchNaverSchedule(movieName: string, naverMovieId: string, date:
       "User-Agent": "Mozilla/5.0",
       Referer: "https://search.naver.com/",
     },
-    cache: "no-store",
+    next: { revalidate: 3600 }
   });
   const payload = JSON.parse(stripJsonp(text)) as {
     items?: Array<{

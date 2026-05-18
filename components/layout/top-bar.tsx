@@ -1,6 +1,6 @@
 "use client";
 
-import { faCircleHalfStroke, faMoon, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faCircleHalfStroke, faMoon, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { usePathname } from "next/navigation";
 import { Avatar, Button, Dropdown, Toast } from "@heroui/react";
@@ -56,16 +56,6 @@ const navItems = [
   { href: "/movie", label: "Movies" },
   { href: "/tv", label: "Series" },
 ];
-
-function LoginModal({ open, onLogin, onClose }: { open: boolean; onLogin: () => void; onClose: () => void }) {
-  return (
-    <OverlayModal open={open} title="Login" onClose={onClose}>
-      <Button className="w-full" variant="primary" onPress={onLogin}>
-        Continue with Kakao
-      </Button>
-    </OverlayModal>
-  );
-}
 
 function SettingsModal({
   open,
@@ -128,7 +118,6 @@ export default function TopBar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedSet, setSelectedSet] = useState<"release" | "today" | "custom">("release");
 
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -172,10 +161,6 @@ export default function TopBar() {
 
     setIsScroll(true);
   }, [path]);
-
-  const clickKakaoLogin = () => {
-    window.location.href = "/api/oauth/login";
-  };
 
   const clickLogout = async () => {
     const response = await fetch("/api/oauth/logout", {
@@ -281,16 +266,7 @@ export default function TopBar() {
             >
               <FontAwesomeIcon icon={faMagnifyingGlass} />
             </Button>
-            {!uid ? (
-              <Button
-                onPress={() => setIsLoginOpen(true)}
-                variant="primary"
-                className="topbar-login h-10 w-10 min-w-0 rounded-none border-none px-0 text-sm font-medium text-slate-700 dark:text-slate-200"
-                aria-label="Open login"
-              >
-                <FontAwesomeIcon icon={faUser} />
-              </Button>
-            ) : (
+            {uid ? (
               <Dropdown>
                 <Dropdown.Trigger>
                   <AvatarButton className="topbar-avatar cursor-pointer rounded-none" src="https://i.pravatar.cc/150?u=a042581f4e29026704d" />
@@ -303,7 +279,7 @@ export default function TopBar() {
                   </Dropdown.Menu>
                 </Dropdown.Popover>
               </Dropdown>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -330,7 +306,6 @@ export default function TopBar() {
         ) : null}
       </nav>
 
-      <LoginModal open={isLoginOpen} onLogin={clickKakaoLogin} onClose={() => setIsLoginOpen(false)} />
       <SettingsModal
         open={isSettingsOpen}
         selectedSet={selectedSet}

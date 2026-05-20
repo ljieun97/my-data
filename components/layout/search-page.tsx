@@ -7,15 +7,12 @@ import { useAsyncList } from "@react-stately/data";
 import { useInfiniteScroll } from "@heroui/use-infinite-scroll";
 import InfiniteImages from "@/components/common/infinite-images";
 import { getSearchMulti } from "@/lib/open-api/tmdb-client";
-import { useSearchKeyword } from "@/context/SearchContext";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const queryKeyword = (searchParams.get("keyword") || "").trim();
-  const { keyword, setKeyword } = useSearchKeyword();
   const [hasMoreMovies, setHasMoreMovies] = useState(false);
-
-  const effectiveKeyword = useMemo(() => queryKeyword || keyword, [keyword, queryKeyword]);
+  const effectiveKeyword = useMemo(() => queryKeyword, [queryKeyword]);
 
   const movies = useAsyncList({
     async load({ cursor }) {
@@ -45,12 +42,8 @@ export default function SearchPage() {
   }) as unknown as RefObject<HTMLDivElement>[];
 
   useEffect(() => {
-    setKeyword(queryKeyword);
-  }, [queryKeyword, setKeyword]);
-
-  useEffect(() => {
     void movies.reload();
-  }, [effectiveKeyword]);
+  }, [effectiveKeyword, movies]);
 
   return (
     <div className="content-panel">

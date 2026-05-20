@@ -1,9 +1,9 @@
 "use client";
 
 import { Input } from "@heroui/react";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useCallback, useRef } from "react";
-import { useSearchKeyword } from "@/context/SearchContext";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useSearchContext } from "@/context/SearchContext";
 
 const SEARCH_DEBOUNCE_MS = 250;
 
@@ -22,14 +22,16 @@ export default function SearchInput({
 }) {
   const router = useRouter();
   const path = usePathname();
-  const { keyword, setKeyword, lastNonSearchPath } = useSearchKeyword();
-  const previousPathRef = useRef(path);
+  const searchParams = useSearchParams();
+  const { lastNonSearchPath } = useSearchContext();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const queryKeyword = (searchParams.get("keyword") || "").trim();
+  const [inputValue, setInputValue] = useState(queryKeyword);
 
-  const handleInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextKeyword = e.target.value;
-    setKeyword(nextKeyword);
+    setInputValue(nextKeyword);
 
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -55,15 +57,18 @@ export default function SearchInput({
 
       router.push(nextUrl);
     }, SEARCH_DEBOUNCE_MS);
-  }, [lastNonSearchPath, path, router, setKeyword]);
+  };
 
   useEffect(() => {
-    if (previousPathRef.current === "/search" && path !== "/search" && !isDetailPath(path)) {
-      setKeyword("");
+    if (path === "/search") {
+      setInputValue(queryKeyword);
+      return;
     }
 
-    previousPathRef.current = path;
-  }, [path, setKeyword]);
+    if (!queryKeyword) {
+      setInputValue("");
+    }
+  }, [path, queryKeyword]);
 
   useEffect(() => {
     if (!autoFocus) {
@@ -93,7 +98,7 @@ export default function SearchInput({
       ref={inputRef}
       className={className}
       placeholder="Search titles"
-      value={keyword}
+      value={inputValue}
       onChange={handleInput}
       onBlur={onBlur}
       type="search"

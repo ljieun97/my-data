@@ -5,8 +5,6 @@ import { createContext, useContext, useMemo, useState } from "react";
 import { useEffect } from "react";
 
 type SearchContextValue = {
-  keyword: string;
-  setKeyword: (value: string) => void;
   lastNonSearchPath: string;
 };
 
@@ -18,7 +16,6 @@ function isDetailPath(pathname: string) {
 
 export function SearchProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [keyword, setKeyword] = useState("");
   const [lastNonSearchPath, setLastNonSearchPath] = useState("/");
 
   useEffect(() => {
@@ -27,16 +24,16 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
     }
   }, [pathname]);
 
-  const value = useMemo(() => ({ keyword, setKeyword, lastNonSearchPath }), [keyword, lastNonSearchPath]);
+  const value = useMemo(() => ({ lastNonSearchPath }), [lastNonSearchPath]);
 
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
 }
 
-export function useSearchKeyword() {
+export function useSearchContext() {
   const context = useContext(SearchContext);
 
   if (!context) {
-    throw new Error("useSearchKeyword must be used within SearchProvider");
+    throw new Error("useSearchContext must be used within SearchProvider");
   }
 
   return context;

@@ -98,6 +98,17 @@ export default function FilterPage({
     { label: "Korea", value: "KR" },
     { label: "United States", value: "US" },
     { label: "United Kingdom", value: "GB" },
+    { label: "Germany", value: "DE" },
+    { label: "Spain", value: "ES" },
+    { label: "France", value: "FR" },
+    { label: "Italy", value: "IT" },
+    { label: "Denmark", value: "DK" },
+    { label: "Sweden", value: "SE" },
+    { label: "Poland", value: "PL" },
+    { label: "Mexico", value: "MX" },
+    { label: "Brazil", value: "BR" },
+    { label: "Argentina", value: "AR" },
+    { label: "Iran", value: "IR" },
     { label: "Japan", value: "JP" },
   ]
 

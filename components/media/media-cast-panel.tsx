@@ -56,7 +56,7 @@ export default function MediaCastPanel({ casts }: { casts: any[] }) {
     <section className="space-y-4 rounded-[26px] bg-slate-50/80 p-5 dark:bg-slate-900/70">
       <h4 className="text-base font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-50">배우</h4>
       {firstRowCasts.length > 0 ? (
-        <div className="grid grid-cols-4 gap-3 sm:grid-cols-8">
+        <div className="media-cast-grid--detail grid gap-3">
           {firstRowCasts.map((item: any, index: number) => (
             <CastCard key={`${item.id ?? item.name}-${index}`} item={item} compact />
           ))}

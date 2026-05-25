@@ -246,16 +246,13 @@ export default function TopBar() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-3">
-            <div
-              className={[
-                "overflow-hidden transition-all duration-200 ease-out",
-                isSearchOpen ? "w-[10.5rem] sm:w-[13rem] lg:w-[16rem]" : "w-0",
-              ].join(" ")}
+            <div className={`overflow-hidden transition-all duration-200 ease-out 
+              ${isSearchOpen ? "w-[10.5rem] sm:w-[13rem] lg:w-[16rem]" : "w-0"}`}
             >
               <SearchInput
-                className="topbar-search h-11 rounded-none [&_*]:rounded-none"
+                // className="topbar-search h-11 rounded-none [&_*]:rounded-none"
                 autoFocus={isSearchOpen}
-                onBlur={() => setIsSearchOpen(false)}
+                // onBlur={() => setIsSearchOpen(false)}
               />
             </div>
             <Button

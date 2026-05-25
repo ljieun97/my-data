@@ -16,6 +16,7 @@ export default function SearchPage() {
 
   const movies = useAsyncList({
     async load({ cursor }) {
+      console.log(effectiveKeyword)
       if (!effectiveKeyword) {
         setHasMoreMovies(false);
         return {
@@ -43,12 +44,12 @@ export default function SearchPage() {
 
   useEffect(() => {
     void movies.reload();
-  }, [effectiveKeyword, movies]);
+  }, [effectiveKeyword]);
 
   return (
     <div className="content-panel">
       <Title title={`"${effectiveKeyword}"`} sub="Search results" />
-      <div className="content-grid-shell overflow-auto rounded-[24px] border p-3" style={{ minHeight: "60vh" }} ref={scrollerRefMovies}>
+      <div className="content-grid-shell overflow-auto" style={{ minHeight: "60vh" }} ref={scrollerRefMovies}>
         <InfiniteImages contents={movies.items} type="info" />
         {hasMoreMovies ? <div className="flex w-full justify-center" ref={loaderRefMovies} /> : null}
       </div>

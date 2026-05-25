@@ -143,7 +143,7 @@ export default function SavedPosterCard({
                 },
                 {
                   icon: faCircleInfo,
-                  label: "?곸꽭蹂닿린",
+                  label: "detail",
                   onClick: () => {
                     if (content.type) navigateToDetail(href, router);
                   },

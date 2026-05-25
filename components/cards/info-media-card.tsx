@@ -26,13 +26,13 @@ export default function InfoMediaCard({ content }: { content: any }) {
   };
 
   return (
-    <div className="browse-card group/footer relative overflow-hidden rounded-[24px] border shadow-none">
-      <div className="absolute right-3 top-3 z-20">
+    <div className="browse-card group/footer relative overflow-hidden border shadow-none">
+      <div className="absolute right-2 top-2 z-20">
         <Flatrates type={type} provider={content.id} />
       </div>
 
       <div className="p-0">
-        <div className="flex flex-col gap-3 p-3 pb-2 md:flex-row md:items-start">
+        <div className="flex flex-col gap-3 pb-2 md:flex-row md:items-start">
           <div className="group/poster relative">
             <img
               alt="poster"

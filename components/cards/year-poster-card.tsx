@@ -111,7 +111,7 @@ export default function YearPosterCard({
             },
             {
               icon: faCircleInfo,
-              label: "?곸꽭蹂닿린",
+              label: "detail",
               onClick: () => navigateToDetail(`/${content.type}/${content.id}`, router),
               className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
             },

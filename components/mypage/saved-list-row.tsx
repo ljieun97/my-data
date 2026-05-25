@@ -96,7 +96,7 @@ export default function SavedListRow({
     <>
       <div className="browse-card relative overflow-hidden rounded-[24px] border shadow-none">
         {isProvider ? (
-          <div className="absolute right-4 top-4 z-20">
+          <div className="absolute right-2 top-2 z-20">
             <Flatrates type={content.type} provider={content.id} />
           </div>
         ) : null}

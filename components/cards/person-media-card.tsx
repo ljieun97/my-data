@@ -31,11 +31,11 @@ export default function PersonMediaCard({ content }: { content: any }) {
       <div className="relative overflow-hidden rounded-[12px] bg-slate-200 dark:bg-slate-800">
         <img alt="poster" src={img} className="h-auto w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/20 to-transparent" />
-        <div className="absolute right-3 top-3 z-20">
+        <div className="absolute right-2 top-2 z-20">
           <Flatrates type={type} provider={content.id} />
         </div>
         {Number.isFinite(savedRating) && savedRating > 0 ? (
-          <div className="absolute bottom-3 right-3 z-20">
+          <div className="absolute bottom-2 right-2 z-20">
             <span className="user-rating-chip inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-semibold shadow-lg">
               <span aria-hidden="true">{"\u2B50"}</span>
               {savedRating.toFixed(1)}

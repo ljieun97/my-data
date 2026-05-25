@@ -86,13 +86,13 @@ export default function YearPosterCard({
         <Image fill alt={title} src={posterImg} className="object-cover" sizes="100%" priority />
 
         {isProvider ? (
-          <div className="absolute right-0 top-0 z-20 p-1">
+          <div className="absolute right-0 top-0 z-20 p-2">
             <Flatrates type={content.type} provider={content.id} />
           </div>
         ) : null}
 
         {isRating ? (
-          <div className="absolute bottom-2 right-2 z-20 sm:bottom-3 sm:right-3">
+          <div className="absolute bottom-2 right-2 z-20">
             <span className="user-rating-chip inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold shadow-lg sm:px-3 sm:py-1.5 sm:text-xs">
               <span aria-hidden="true">{"\u2B50"}</span>
               {formatRating(content.user_rating)}

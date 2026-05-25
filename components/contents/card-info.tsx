@@ -1,0 +1,84 @@
+"use client";
+
+import Flatrates from "./flatrates";
+import { faCircleInfo, faPlus, faEye, faStar } from "@fortawesome/free-solid-svg-icons";
+import { useRouter } from "next/navigation";
+import { useSaveContent } from "@/hooks/useSaveContent";
+import PosterHoverActions from "@/components/media/poster-hover-actions";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+export default function CardInfo({ content }: { content: any }) {
+  const router = useRouter();
+  const { saveWithPreference } = useSaveContent();
+
+  const type = content.title ? "movie" : "tv";
+  const id = content.id;
+  const img = content.poster_path ? `https://image.tmdb.org/t/p/w500/${content.poster_path}` : "/images/no-image.jpg";
+  const title = content.title ? content.title : content.name;
+  const releaseDate = type === "movie" ? content.release_date : content.first_air_date;
+  const voteAverage = content.vote_average ? Number(content.vote_average).toFixed(1) : "-";
+  const voteCount = content.vote_count ? Number(content.vote_count).toLocaleString() : "0";
+
+  const handleClick = async (rating: number) => {
+    await saveWithPreference({ id, content, rating });
+  };
+
+  return (
+    <div className="browse-card group/footer relative overflow-hidden rounded-[24px] border shadow-none">
+      <div className="absolute right-2 top-2 z-20">
+        <Flatrates type={type} provider={content.id} />
+      </div>
+
+      <div className="p-0">
+        <div className="flex flex-col gap-3 p-3 pb-2 md:flex-row md:items-start">
+          <div className="group/poster relative">
+            <img
+              alt="poster"
+              src={img}
+              className="h-auto w-full rounded-lg object-cover shadow-[0_12px_24px_rgba(15,23,42,0.16)] aspect-[2/3] md:h-[6.8rem] md:w-[4.7rem] md:shrink-0"
+            />
+            <PosterHoverActions
+              overlayClassName="bg-slate-950/24 group-hover/poster:visible dark:bg-slate-950/42"
+              actions={[
+                {
+                  icon: faPlus,
+                  label: `${title} save`,
+                  onClick: () => handleClick(2.5),
+                  className: "browse-card__action rounded-full px-3 py-2 text-sm shadow-sm transition",
+                },
+                {
+                  icon: faCircleInfo,
+                  label: `${title} details`,
+                  onClick: () => router.push(`/${type}/${id}`),
+                  className: "browse-card__detail rounded-full px-3 py-2 text-sm shadow-sm transition",
+                },
+              ]}
+            />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-2 md:py-1">
+            <div>
+              <h3 className="browse-card__title line-clamp-2 text-base font-semibold leading-6 tracking-[-0.03em]">{title}</h3>
+              <p className="browse-card__meta text-sm">{releaseDate || "Release date unavailable"}</p>
+            </div>
+            <p className="browse-card__overview line-clamp-3 text-[13px] leading-[1.35rem] md:line-clamp-2">
+              {content.overview || ""}
+            </p>
+          </div>
+        </div>No summary is available for this title yet.
+
+        <div className="browse-card__footer flex items-center justify-between gap-2 border-t px-3 py-2">
+          <div className="flex flex-wrap gap-2">
+            <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
+              <FontAwesomeIcon icon={faStar} className="mr-1.5" />
+              {voteAverage}
+            </span>
+            <span className="browse-card__stat rounded-full px-2.5 py-1 text-[11px] font-medium">
+              <FontAwesomeIcon icon={faEye} className="mr-1.5" />
+              {voteCount}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -116,6 +116,18 @@ async function fetchNowPlayingMoviesPage() {
   return Array.isArray(data.results) ? data.results : [];
 }
 
+export async function getHomeCalendarMovies() {
+  const [upcomingMovies, recentMovies] = await Promise.all([
+    fetchUpcomingMoviesPage(),
+    fetchNowPlayingMoviesPage(),
+  ]);
+
+  return {
+    upcomingMovies: Array.isArray(upcomingMovies) ? upcomingMovies : [],
+    recentMovies: Array.isArray(recentMovies) ? recentMovies : [],
+  };
+}
+
 const getCachedBoxOfficeCards = unstable_cache(
   async (targetDate: string) => {
     const boxOfficeResponse = await getKobisBoxoffice(targetDate, "A");

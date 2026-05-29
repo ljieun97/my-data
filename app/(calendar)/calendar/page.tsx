@@ -1,4 +1,4 @@
-import CalendarView from "@/components/contents/calendar-view";
+﻿import CalendarView from "@/components/contents/calendar-view";
 import Title from "@/components/common/title";
 import { fetchAllMovies, getTodayMovies, getTodaySeries } from '@/lib/open-api/tmdb-server';
 import * as cheerio from "cheerio";
@@ -36,12 +36,12 @@ export default async function Page() {
   })
   const uniqueBoxMovies = Array.from(uniqueBoxMoviesMap.values())
 
-  const ottMovies = ott.map((movie: any) => ({
-    ...movie,
-    type: 'OTT',
-  }));
+  // const ottMovies = ott.map((movie: any) => ({
+  //   ...movie,
+  //   type: 'OTT',
+  // }));
 
-  //재개봉크롤링
+    //재개봉크롤링
   async function fetchSchedulesByReOpening() {
     const url =
       "https://muko.kr/calender/category/1905733/list_style/list"
@@ -55,17 +55,34 @@ export default async function Page() {
     const html = await response.text();
     const $ = cheerio.load(html);
     const schedules: { type: string, release_date: string; title: string; }[] = [];
-    const programList = '.tbl_scdl_list tbody tr';
+    const unique = new Set<string>();
+    const itemSelector = "a[href*='/calender/category/1905733/list_style/list/']";
 
-    $(programList).each((_, li) => {
-      const title = $(li).find("td").eq(1).text().replace(/\s*\(예정\)/g, "").trim();
-      const day = $(li).find("td").eq(2).text().trim();
-      const release_date = `2025년 ${day}`
-        .replace("년", "-")
-        .replace("월", "-")
-        .replace("일", "")
-        .replace(/\s/g, "")
-        .replace(/-(\d)(?!\d)/g, "-0$1");
+    $(itemSelector).each((_, el) => {
+      const root = $(el);
+      const title =
+        root.find("h3 span.flex-1").first().text().trim() ||
+        root.find("h3").first().text().trim();
+
+      const dateText = root
+        .find("i[data-lucide='calendar']")
+        .first()
+        .parent()
+        .find("span")
+        .first()
+        .text()
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const match = dateText.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+      if (!title || !match) return;
+
+      const [, y, m, d] = match;
+      const release_date = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      const key = `${title}::${release_date}`;
+      if (unique.has(key)) return;
+      unique.add(key);
+
       schedules.push({ type: "재개봉", release_date, title });
     });
 
@@ -108,9 +125,9 @@ export default async function Page() {
       }
     });
   }
-// console.log(JSON.stringify(scheduleMap, null, 2));
-  const results = [...uniqueBoxMovies, ...reOpening, ...ottMovies]
-  console.log(uniqueBoxMovies.length, ottMovies.length, reOpening.length)
+// console.log(JSON.stringify(scheduleMap, null, 2))
+  const results = [...uniqueBoxMovies, ...reOpening]
+  console.log(uniqueBoxMovies.length, reOpening.length)
 
   return (
     // <div className="flex flex-col md:flex-row">
@@ -122,3 +139,5 @@ export default async function Page() {
     // </div>
   );
 }
+
+

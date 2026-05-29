@@ -134,6 +134,7 @@ export default function CalendarView({ results, option }: { results: any[]; opti
             navLinks={true}
             navLinkDayClick="listDay"
             moreLinkClick="listDay"
+            eventOrder="start,-priority,title"
             dayCellContent={(arg) => (arg.view.type === "listDay" ? "" : String(arg.date.getDate()))}
             height="100%"
             events={visibleEvents}
@@ -147,11 +148,17 @@ export default function CalendarView({ results, option }: { results: any[]; opti
             eventDataTransform={(rawEvent) => {
               let title = rawEvent.title;
               let color;
+              let priority = 0;
 
-              if (rawEvent.type === "OTT") color = "#eb4d4b";
-              else if (rawEvent.backdrop_path) color = "#f0932b";
+              if (rawEvent.type === "재개봉") {
+                color = "#f6b26b";
+                priority = 1;
+              } else if (rawEvent.type === "박스오피스") {
+                color = "#e67e22";
+                priority = 2;
+              }
 
-              return { ...rawEvent, title, color, start: rawEvent.release_date, url: undefined };
+              return { ...rawEvent, title, color, priority, start: rawEvent.release_date, url: undefined };
             }}
             eventDidMount={(arg) => {
               if (arg.view.type === "listDay") {

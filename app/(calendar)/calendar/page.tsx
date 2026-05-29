@@ -115,7 +115,7 @@ export default async function Page() {
   return (
     // <div className="flex flex-col md:flex-row">
     <>
-      <div className="w-full h-full" >
+      <div className="mx-auto w-full max-w-[540px] px-4 md:px-0">
         <CalendarView results={results} option={option} />
       </div>
     </>

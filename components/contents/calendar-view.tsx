@@ -6,17 +6,37 @@ import koLocale from "@fullcalendar/core/locales/ko";
 import { useRef, useState } from "react";
 
 export default function CalendarView({ results, option }: { results: any[]; option: any }) {
+  const MIN_EVENTS_PER_DAY = 2;
+  const MAX_EVENTS_PER_DAY = 12;
   const [hoveredEvent, setHoveredEvent] = useState<{ x: number; y: number; data: any } | null>(null);
+  const [maxEventsPerDay, setMaxEventsPerDay] = useState(4);
   const popupRef = useRef<HTMLDivElement | null>(null);
 
   return (
-    <div className="min-h-[70vh]">
+    <div className="calendar-view w-full aspect-[2/3]">
       <FullCalendar
         plugins={[dayGridPlugin]}
         initialView={option.initialView}
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,dayGridDay",
+        }}
+        views={{
+          dayGridDay: {
+            buttonText: "일간",
+            dayHeaderFormat: { month: "numeric", day: "numeric", weekday: "short" },
+            dayMaxEvents: false,
+          },
+          dayGridMonth: { buttonText: "월간" },
+        }}
         locale={koLocale}
         fixedWeekCount={false}
-        height="auto"
+        showNonCurrentDates={false}
+        dayMaxEvents={maxEventsPerDay}
+        moreLinkClick="day"
+        dayCellContent={(arg) => (arg.view.type === "dayGridDay" ? "" : String(arg.date.getDate()))}
+        height="100%"
         events={results}
         eventDataTransform={(rawEvent) => {
           let title = rawEvent.title;
@@ -36,6 +56,27 @@ export default function CalendarView({ results, option }: { results: any[]; opti
         }}
         eventMouseLeave={() => setHoveredEvent(null)}
       />
+      <div className="mt-3 flex items-center justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => setMaxEventsPerDay((prev) => Math.max(MIN_EVENTS_PER_DAY, prev - 1))}
+          disabled={maxEventsPerDay <= MIN_EVENTS_PER_DAY}
+          className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          aria-label="하루 이벤트 최대 개수 줄이기"
+        >
+          -
+        </button>
+        <span className="min-w-[54px] text-center text-xs text-slate-700 dark:text-slate-300">{maxEventsPerDay}개</span>
+        <button
+          type="button"
+          onClick={() => setMaxEventsPerDay((prev) => Math.min(MAX_EVENTS_PER_DAY, prev + 1))}
+          disabled={maxEventsPerDay >= MAX_EVENTS_PER_DAY}
+          className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          aria-label="하루 이벤트 최대 개수 늘리기"
+        >
+          +
+        </button>
+      </div>
       {hoveredEvent ? (
         <div
           ref={popupRef}

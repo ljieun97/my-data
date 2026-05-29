@@ -8,13 +8,11 @@ import { toPng } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function CalendarView({ results, option }: { results: any[]; option: any }) {
-  const MIN_EVENTS_PER_DAY = 2;
-  const MAX_EVENTS_PER_DAY = 12;
   const BASE_LIST_ITEM_HEIGHT = 108;
   const MIN_ITEM_HEIGHT = 40;
   const MAX_ITEM_HEIGHT = 140;
 
-  const [maxEventsPerDay, setMaxEventsPerDay] = useState(4);
+  const [hoveredEvent, setHoveredEvent] = useState<{ x: number; y: number; data: any } | null>(null);
   const [listItemHeight, setListItemHeight] = useState(BASE_LIST_ITEM_HEIGHT);
   const [isCapturing, setIsCapturing] = useState(false);
   const [currentView, setCurrentView] = useState(option.initialView);
@@ -24,6 +22,22 @@ export default function CalendarView({ results, option }: { results: any[]; opti
     () => (currentView === "listDay" ? results.filter((item: any) => Boolean(item.backdrop_path)) : results),
     [currentView, results],
   );
+  const toLocalDateKey = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+  const monthEventCountByDate = useMemo(() => {
+    const countByDate = new Map<string, number>();
+    results.forEach((item: any) => {
+      const dateKey = item?.release_date || item?.start;
+      if (!dateKey) return;
+      const key = String(dateKey).slice(0, 10);
+      countByDate.set(key, (countByDate.get(key) || 0) + 1);
+    });
+    return countByDate;
+  }, [results]);
 
   const handleCapture = async () => {
     if (!calendarCaptureRef.current || isCapturing) return;
@@ -117,13 +131,15 @@ export default function CalendarView({ results, option }: { results: any[]; opti
             fixedWeekCount={false}
             showNonCurrentDates={false}
             eventInteractive={currentView !== "listDay"}
-            dayMaxEvents={maxEventsPerDay}
+            navLinks={true}
+            navLinkDayClick="listDay"
             moreLinkClick="listDay"
             dayCellContent={(arg) => (arg.view.type === "listDay" ? "" : String(arg.date.getDate()))}
             height="100%"
             events={visibleEvents}
             datesSet={(arg) => {
               setCurrentView(arg.view.type);
+              if (arg.view.type !== "dayGridMonth") setHoveredEvent(null);
               if (arg.view.type === "listDay") {
                 requestAnimationFrame(() => normalizeListDayDom());
               }
@@ -143,6 +159,28 @@ export default function CalendarView({ results, option }: { results: any[]; opti
                 arg.el.style.borderColor = "#0b0b0b";
                 arg.el.style.pointerEvents = "none";
                 requestAnimationFrame(() => normalizeListDayDom());
+              }
+            }}
+            eventMouseEnter={(info) => {
+              if (info.view.type !== "dayGridMonth") return;
+              setHoveredEvent({
+                x: info.jsEvent.pageX,
+                y: info.jsEvent.pageY,
+                data: info.event,
+              });
+            }}
+            eventMouseLeave={(info) => {
+              if (info.view.type !== "dayGridMonth") return;
+              setHoveredEvent(null);
+            }}
+            dayCellDidMount={(arg) => {
+              if (arg.view.type !== "dayGridMonth") return;
+              const key = toLocalDateKey(arg.date);
+              const count = monthEventCountByDate.get(key) || 0;
+              if (count >= 5) {
+                arg.el.classList.add("month-dense-day");
+              } else {
+                arg.el.classList.remove("month-dense-day");
               }
             }}
             eventContent={(arg) => {
@@ -197,25 +235,6 @@ export default function CalendarView({ results, option }: { results: any[]; opti
       <div className="mt-3 flex items-center justify-center gap-2">
         <button
           type="button"
-          onClick={() => setMaxEventsPerDay((prev) => Math.max(MIN_EVENTS_PER_DAY, prev - 1))}
-          disabled={maxEventsPerDay <= MIN_EVENTS_PER_DAY}
-          className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-          aria-label="Decrease day max events"
-        >
-          -
-        </button>
-        <span className="min-w-[54px] text-center text-xs text-slate-700 dark:text-slate-300">{maxEventsPerDay}개</span>
-        <button
-          type="button"
-          onClick={() => setMaxEventsPerDay((prev) => Math.min(MAX_EVENTS_PER_DAY, prev + 1))}
-          disabled={maxEventsPerDay >= MAX_EVENTS_PER_DAY}
-          className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-          aria-label="Increase day max events"
-        >
-          +
-        </button>
-        <button
-          type="button"
           onClick={handleCapture}
           disabled={isCapturing}
           className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -246,6 +265,34 @@ export default function CalendarView({ results, option }: { results: any[]; opti
           height +
         </button>
       </div>
+
+      {hoveredEvent ? (
+        <div
+          className="calendar-hover-card absolute z-[100] max-w-[308px] rounded-xl border p-3 shadow-lg"
+          style={{
+            left: hoveredEvent.x < window.innerWidth / 2 ? hoveredEvent.x : "auto",
+            right: hoveredEvent.x >= window.innerWidth / 2 ? window.innerWidth - hoveredEvent.x : "auto",
+            top: hoveredEvent.y < window.innerHeight / 2 ? hoveredEvent.y : "auto",
+            bottom: hoveredEvent.y >= window.innerHeight / 2 ? window.innerHeight - hoveredEvent.y : "auto",
+          }}
+        >
+          <p className="font-semibold text-slate-900 dark:text-slate-50">{hoveredEvent.data.title}</p>
+          <p className="text-tiny text-slate-600 dark:text-slate-300">{hoveredEvent.data.extendedProps.type}</p>
+          <p className="text-tiny text-slate-600 dark:text-slate-300">Date: {hoveredEvent.data.start.toLocaleDateString()}</p>
+          {hoveredEvent.data.extendedProps.backdrop_path ? (
+            <>
+              <div className="h-2" aria-hidden="true" />
+              <img
+                alt="Poster Image"
+                src={`https://image.tmdb.org/t/p/original${hoveredEvent.data.extendedProps.backdrop_path}`}
+                width={300}
+                height={168}
+                className="rounded-sm"
+              />
+            </>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -19,6 +19,7 @@ export default function CalendarView({ results, option }: { results: any[]; opti
   const [denseThreshold, setDenseThreshold] = useState(5);
   const [isCapturing, setIsCapturing] = useState(false);
   const [currentView, setCurrentView] = useState(option.initialView);
+  const [visibleRange, setVisibleRange] = useState<{ start: string; end: string } | null>(null);
 
   const calendarCaptureRef = useRef<HTMLDivElement | null>(null);
   const visibleEvents = useMemo(
@@ -40,6 +41,70 @@ export default function CalendarView({ results, option }: { results: any[]; opti
       countByDate.set(key, (countByDate.get(key) || 0) + 1);
     });
     return countByDate;
+  }, [results]);
+  const textScheduleGroups = useMemo(() => {
+    const map = new Map<string, any[]>();
+    const toDateKey = (value: string) => String(value).slice(0, 10);
+    const getPriority = (item: any) => {
+      if (item?.type === "공휴일") return 4;
+      if (item?.type === "관리자") return 3;
+      if (item?.type === "박스오피스") return 2;
+      if (item?.type === "재개봉") return 1;
+      return 0;
+    };
+
+    visibleEvents.forEach((item: any) => {
+      const type = String(item?.type ?? "");
+      const title = String(item?.title ?? "");
+      const isHoliday = type.includes("공휴일") || title.includes("공휴일") || type.includes("대체공휴일") || title.includes("대체공휴일");
+      const isAdmin = type === "관리자";
+      if (isHoliday || isAdmin) return;
+      const start = item?.release_date ?? item?.start;
+      if (!start) return;
+      const key = toDateKey(start);
+      if (visibleRange) {
+        if (key < visibleRange.start || key >= visibleRange.end) return;
+      }
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)?.push(item);
+    });
+
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([dateKey, items]) => ({
+        dateKey,
+        items: items.sort((a, b) => {
+          const pa = getPriority(a);
+          const pb = getPriority(b);
+          if (pa !== pb) return pb - pa;
+          return String(a?.title ?? "").localeCompare(String(b?.title ?? ""), "ko");
+        }),
+      }));
+  }, [visibleEvents, visibleRange]);
+  const formatTextDate = (dateKey: string) => {
+    const date = new Date(`${dateKey}T00:00:00`);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+    const weekday = weekdays[date.getDay()];
+    return `${month}/${day} (${weekday})`;
+  };
+  const holidayDateSet = useMemo(() => {
+    const set = new Set<string>();
+    results.forEach((item: any) => {
+      const type = String(item?.type ?? "");
+      const title = String(item?.title ?? "");
+      const isHoliday =
+        type.includes("공휴일") ||
+        title.includes("공휴일") ||
+        type.includes("대체공휴일") ||
+        title.includes("대체공휴일");
+      if (!isHoliday) return;
+      const dateKey = item?.release_date || item?.start;
+      if (!dateKey) return;
+      set.add(String(dateKey).slice(0, 10));
+    });
+    return set;
   }, [results]);
 
   const handleCapture = async () => {
@@ -143,6 +208,10 @@ export default function CalendarView({ results, option }: { results: any[]; opti
             events={visibleEvents}
             datesSet={(arg) => {
               setCurrentView(arg.view.type);
+              setVisibleRange({
+                start: toLocalDateKey(arg.start),
+                end: toLocalDateKey(arg.end),
+              });
               if (arg.view.type !== "dayGridMonth") setHoveredEvent(null);
               if (arg.view.type === "listDay") {
                 requestAnimationFrame(() => normalizeListDayDom());
@@ -164,13 +233,16 @@ export default function CalendarView({ results, option }: { results: any[]; opti
               }
 
               if (rawEvent.type === "관리자") {
-                color = "#3b82f6";
+                color = "#93C5FD";
                 priority = 3;
+              } else if (rawEvent.type === "공휴일") {
+                color = "#FCA5A5";
+                priority = 4;
               } else if (rawEvent.type === "재개봉") {
-                color = "#f6b26b";
+                color = "#FED7AA";
                 priority = 1;
               } else if (rawEvent.type === "박스오피스") {
-                color = "#e67e22";
+                color = "#FDBA74";
                 priority = 2;
               }
 
@@ -178,6 +250,7 @@ export default function CalendarView({ results, option }: { results: any[]; opti
                 ...rawEvent,
                 title,
                 color,
+                textColor: "#1f2937",
                 priority,
                 start: rawEvent.release_date ?? rawEvent.start,
                 end: normalizedEnd,
@@ -208,7 +281,10 @@ export default function CalendarView({ results, option }: { results: any[]; opti
               if (arg.view.type !== "dayGridMonth") return [];
               const key = toLocalDateKey(arg.date);
               const count = monthEventCountByDate.get(key) || 0;
-              return count >= denseThreshold ? ["month-dense-day"] : [];
+              const classes: string[] = [];
+              if (count >= denseThreshold) classes.push("month-dense-day");
+              if (holidayDateSet.has(key)) classes.push("holiday-day");
+              return classes;
             }}
             eventContent={(arg) => {
               if (arg.view.type !== "listDay") {
@@ -313,6 +389,26 @@ export default function CalendarView({ results, option }: { results: any[]; opti
         >
           2열 기준 +
         </button>
+      </div>
+
+      <div className="mt-5 space-y-4 rounded-md border border-slate-200 bg-white/70 p-3 text-sm text-slate-800 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-100">
+        {textScheduleGroups.length === 0 ? (
+          <p>표시할 일정이 없습니다.</p>
+        ) : (
+          textScheduleGroups.map((group) => (
+            <div key={group.dateKey}>
+              <p className="font-semibold">{formatTextDate(group.dateKey)}</p>
+              <div className="mt-1 space-y-1">
+                {group.items.map((item: any, idx: number) => (
+                  <p key={`${group.dateKey}-${item?.id ?? item?.title ?? "event"}-${idx}`}>
+                    - {item?.title}
+                    {item?.type === "재개봉" ? " (재개봉)" : ""}
+                  </p>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {hoveredEvent ? (

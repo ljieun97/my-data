@@ -1275,6 +1275,22 @@ html.dark-theme .detail-modal-loading__provider {
 
 .calendar-view .fc .fc-daygrid-day-number {
   font-size: 0.72rem;
+  width: 100%;
+  text-align: center;
+}
+
+.calendar-view .fc .fc-daygrid-day-top {
+  justify-content: center;
+  padding-top: 0;
+}
+
+.calendar-view .fc .fc-day-sat .fc-daygrid-day-number {
+  color: #2563eb;
+}
+
+.calendar-view .fc .fc-day-sun .fc-daygrid-day-number,
+.calendar-view .fc .holiday-day .fc-daygrid-day-number {
+  color: #dc2626;
 }
 
 .calendar-view .fc .fc-event-title {

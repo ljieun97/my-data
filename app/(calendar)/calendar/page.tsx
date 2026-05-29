@@ -1,6 +1,6 @@
 ﻿import CalendarView from "@/components/contents/calendar-view";
 import Title from "@/components/common/title";
-import { fetchAllMovies, getTodayMovies, getTodaySeries } from '@/lib/open-api/tmdb-server';
+import { fetchAllMovies } from '@/lib/open-api/tmdb-server';
 import * as cheerio from "cheerio";
 import customEvents from "@/data/calendar-custom-events.json";
 
@@ -18,11 +18,11 @@ export default async function Page() {
     }
   });
   //------------------------------------------api
-  const [upcoming, nowPlaying, ott, reOpening] = await Promise.all([
+  const [upcoming, nowPlaying, reOpening, holidays] = await Promise.all([
     fetchAllMovies('upcoming'),
     fetchAllMovies('now_playing'),
-    getTodayMovies(),
     fetchSchedulesByReOpening(),
+    fetchKoreanHolidays(),
     // fetchSchedulesByOcn({ name: "OCN", query: "ocn 편성표" }),
     // fetchSchedulesByOcn({ name: "OCN MOVIES", query: "ocn MOVIES 편성표" }),
     // fetchSchedulesByOcn({ name: "OCN MOVIES 2", query: "ocn MOVIES 2 편성표" })
@@ -37,10 +37,33 @@ export default async function Page() {
   })
   const uniqueBoxMovies = Array.from(uniqueBoxMoviesMap.values())
 
-  // const ottMovies = ott.map((movie: any) => ({
-  //   ...movie,
-  //   type: 'OTT',
-  // }));
+  async function fetchKoreanHolidays() {
+    const currentYear = new Date().getFullYear();
+    const years = [currentYear - 1, currentYear, currentYear + 1];
+    const holidayMap = new Map<string, { id: string; type: string; title: string; release_date: string }>();
+
+    await Promise.all(
+      years.map(async (year) => {
+        const url = `https://date.nager.at/api/v3/PublicHolidays/${year}/KR`;
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) return;
+        const data = (await response.json()) as Array<{ date: string; localName: string; name: string }>;
+
+        data.forEach((item) => {
+          const release_date = String(item.date).slice(0, 10);
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(release_date)) return;
+          holidayMap.set(release_date, {
+            id: `holiday-${release_date}`,
+            type: "공휴일",
+            title: item.localName || item.name || "공휴일",
+            release_date,
+          });
+        });
+      }),
+    );
+
+    return Array.from(holidayMap.values());
+  }
 
     //재개봉크롤링
   async function fetchSchedulesByReOpening() {
@@ -173,8 +196,8 @@ export default async function Page() {
   }
 // console.log(JSON.stringify(scheduleMap, null, 2))
   const monthlyAdminEvents = buildMonthlyAdminEventsForCurrentMonth();
-  const results = [...uniqueBoxMovies, ...reOpening, ...customEvents, ...monthlyAdminEvents]
-  console.log(uniqueBoxMovies.length, reOpening.length, customEvents.length, monthlyAdminEvents.length)
+  const results = [...uniqueBoxMovies, ...reOpening, ...customEvents, ...monthlyAdminEvents, ...holidays]
+  console.log(uniqueBoxMovies.length, reOpening.length, customEvents.length, monthlyAdminEvents.length, holidays.length)
 
   return (
     // <div className="flex flex-col md:flex-row">

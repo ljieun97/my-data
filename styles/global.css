@@ -1293,3 +1293,9 @@ html.dark-theme .detail-modal-loading__provider {
   display: none;
 }
 
+.calendar-capture-frame.is-capturing {
+  padding: 12px;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+

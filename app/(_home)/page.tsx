@@ -21,7 +21,7 @@ export default async function Home() {
     <div className="-mt-28 overflow-x-hidden">
       {featuredMovie ? <Banners movie={featuredMovie} /> : null}
       <div className="app-frame pb-12 pt-8">
-        <CalendarWeek />
+        {/* <CalendarWeek /> */}
         <HomeBoxOfficeSections initialData={initialData} />
       </div>
     </div>

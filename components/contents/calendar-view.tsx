@@ -11,9 +11,12 @@ export default function CalendarView({ results, option }: { results: any[]; opti
   const BASE_LIST_ITEM_HEIGHT = 108;
   const MIN_ITEM_HEIGHT = 40;
   const MAX_ITEM_HEIGHT = 140;
+  const MIN_DENSE_THRESHOLD = 2;
+  const MAX_DENSE_THRESHOLD = 12;
 
   const [hoveredEvent, setHoveredEvent] = useState<{ x: number; y: number; data: any } | null>(null);
   const [listItemHeight, setListItemHeight] = useState(BASE_LIST_ITEM_HEIGHT);
+  const [denseThreshold, setDenseThreshold] = useState(5);
   const [isCapturing, setIsCapturing] = useState(false);
   const [currentView, setCurrentView] = useState(option.initialView);
 
@@ -149,8 +152,21 @@ export default function CalendarView({ results, option }: { results: any[]; opti
               let title = rawEvent.title;
               let color;
               let priority = 0;
+              let normalizedEnd = rawEvent.end;
 
-              if (rawEvent.type === "재개봉") {
+              if (typeof rawEvent.end === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rawEvent.end)) {
+                const endDate = new Date(`${rawEvent.end}T00:00:00`);
+                endDate.setDate(endDate.getDate() + 1);
+                const y = endDate.getFullYear();
+                const m = String(endDate.getMonth() + 1).padStart(2, "0");
+                const d = String(endDate.getDate()).padStart(2, "0");
+                normalizedEnd = `${y}-${m}-${d}`;
+              }
+
+              if (rawEvent.type === "관리자") {
+                color = "#3b82f6";
+                priority = 3;
+              } else if (rawEvent.type === "재개봉") {
                 color = "#f6b26b";
                 priority = 1;
               } else if (rawEvent.type === "박스오피스") {
@@ -158,7 +174,15 @@ export default function CalendarView({ results, option }: { results: any[]; opti
                 priority = 2;
               }
 
-              return { ...rawEvent, title, color, priority, start: rawEvent.release_date, url: undefined };
+              return {
+                ...rawEvent,
+                title,
+                color,
+                priority,
+                start: rawEvent.release_date ?? rawEvent.start,
+                end: normalizedEnd,
+                url: undefined,
+              };
             }}
             eventDidMount={(arg) => {
               if (arg.view.type === "listDay") {
@@ -180,15 +204,11 @@ export default function CalendarView({ results, option }: { results: any[]; opti
               if (info.view.type !== "dayGridMonth") return;
               setHoveredEvent(null);
             }}
-            dayCellDidMount={(arg) => {
-              if (arg.view.type !== "dayGridMonth") return;
+            dayCellClassNames={(arg) => {
+              if (arg.view.type !== "dayGridMonth") return [];
               const key = toLocalDateKey(arg.date);
               const count = monthEventCountByDate.get(key) || 0;
-              if (count >= 5) {
-                arg.el.classList.add("month-dense-day");
-              } else {
-                arg.el.classList.remove("month-dense-day");
-              }
+              return count >= denseThreshold ? ["month-dense-day"] : [];
             }}
             eventContent={(arg) => {
               if (arg.view.type !== "listDay") {
@@ -273,6 +293,28 @@ export default function CalendarView({ results, option }: { results: any[]; opti
         </button>
       </div>
 
+      <div className="mt-2 flex items-center justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => setDenseThreshold((prev) => Math.max(MIN_DENSE_THRESHOLD, prev - 1))}
+          disabled={denseThreshold <= MIN_DENSE_THRESHOLD}
+          className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          aria-label="Decrease dense threshold"
+        >
+          2열 기준 -
+        </button>
+        <span className="min-w-[64px] text-center text-xs text-slate-700 dark:text-slate-300">{denseThreshold}개</span>
+        <button
+          type="button"
+          onClick={() => setDenseThreshold((prev) => Math.min(MAX_DENSE_THRESHOLD, prev + 1))}
+          disabled={denseThreshold >= MAX_DENSE_THRESHOLD}
+          className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          aria-label="Increase dense threshold"
+        >
+          2열 기준 +
+        </button>
+      </div>
+
       {hoveredEvent ? (
         <div
           className="calendar-hover-card absolute z-[100] max-w-[308px] rounded-xl border p-3 shadow-lg"
@@ -303,4 +345,5 @@ export default function CalendarView({ results, option }: { results: any[]; opti
     </div>
   );
 }
+
 

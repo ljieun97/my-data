@@ -2,6 +2,7 @@
 import Title from "@/components/common/title";
 import { fetchAllMovies, getTodayMovies, getTodaySeries } from '@/lib/open-api/tmdb-server';
 import * as cheerio from "cheerio";
+import customEvents from "@/data/calendar-custom-events.json";
 
 export default async function Page() {
   const option = {
@@ -125,9 +126,55 @@ export default async function Page() {
       }
     });
   }
+
+  function formatDateKey(date: Date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function getSecondWednesday(year: number, monthIndex: number) {
+    const firstDay = new Date(year, monthIndex, 1);
+    const firstDow = firstDay.getDay(); // 0 Sun ... 3 Wed
+    const firstWednesday = 1 + ((3 - firstDow + 7) % 7);
+    return new Date(year, monthIndex, firstWednesday + 7);
+  }
+
+  function getLastWednesday(year: number, monthIndex: number) {
+    const lastDay = new Date(year, monthIndex + 1, 0);
+    const lastDow = lastDay.getDay();
+    const diff = (lastDow - 3 + 7) % 7;
+    return new Date(year, monthIndex, lastDay.getDate() - diff);
+  }
+
+  function buildMonthlyAdminEventsForCurrentMonth() {
+    const base = new Date();
+    const nextMonthBase = new Date(base.getFullYear(), base.getMonth() + 1, 1);
+    const y = nextMonthBase.getFullYear();
+    const m = nextMonthBase.getMonth();
+    const secondWed = getSecondWednesday(y, m);
+    const lastWed = getLastWednesday(y, m);
+
+    return [
+      {
+        id: `admin-second-wed-${y}-${String(m + 1).padStart(2, "0")}`,
+        type: "관리자",
+        title: "문화의 날",
+        release_date: formatDateKey(secondWed),
+      },
+      {
+        id: `admin-last-wed-${y}-${String(m + 1).padStart(2, "0")}`,
+        type: "관리자",
+        title: "문화의 날",
+        release_date: formatDateKey(lastWed),
+      },
+    ];
+  }
 // console.log(JSON.stringify(scheduleMap, null, 2))
-  const results = [...uniqueBoxMovies, ...reOpening]
-  console.log(uniqueBoxMovies.length, reOpening.length)
+  const monthlyAdminEvents = buildMonthlyAdminEventsForCurrentMonth();
+  const results = [...uniqueBoxMovies, ...reOpening, ...customEvents, ...monthlyAdminEvents]
+  console.log(uniqueBoxMovies.length, reOpening.length, customEvents.length, monthlyAdminEvents.length)
 
   return (
     // <div className="flex flex-col md:flex-row">
@@ -139,5 +186,8 @@ export default async function Page() {
     // </div>
   );
 }
+
+
+
 
 

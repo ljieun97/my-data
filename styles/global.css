@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -1277,6 +1277,10 @@ html.dark-theme .detail-modal-loading__provider {
   font-size: 0.72rem;
 }
 
+.calendar-view .fc .fc-event-title {
+  font-weight: 700;
+}
+
 .calendar-view .fc .fc-daygrid-event {
   font-size: 0.68rem;
 }
@@ -1289,8 +1293,16 @@ html.dark-theme .detail-modal-loading__provider {
   background: transparent !important;
 }
 
-.calendar-view .fc.fc-dayGridDay-view .fc-toolbar-title {
-  display: none;
+.calendar-view .fc .fc-scrollgrid {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.calendar-view .fc.fc-listDay-view .fc-view-harness,
+.calendar-view .fc.fc-listDay-view .fc-list,
+.calendar-view .fc.fc-listDay-view .fc-scroller {
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .calendar-capture-frame.is-capturing {
@@ -1298,4 +1310,3 @@ html.dark-theme .detail-modal-loading__provider {
   box-sizing: border-box;
   background: #ffffff;
 }
-

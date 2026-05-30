@@ -53,6 +53,7 @@ const navItems = [
   { href: "/calendar", label: "Calendar" },
   { href: "/timetable", label: "Timetable" },
   { href: "/awards", label: "Awards" },
+  { href: "/capture", label: "Capture" },
   { href: "/movie", label: "Movies" },
   { href: "/tv", label: "Series" },
 ];
@@ -246,8 +247,8 @@ export default function TopBar() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-3">
-            <div className={`overflow-hidden transition-all duration-200 ease-out 
-              ${isSearchOpen ? "w-[10.5rem] sm:w-[13rem] lg:w-[16rem]" : "w-0"}`}
+            <div className={`transition-all duration-200 ease-out 
+              ${isSearchOpen ? "w-[10.5rem] overflow-visible sm:w-[13rem] lg:w-[16rem]" : "w-0 overflow-hidden"}`}
             >
               <SearchInput
                 // className="topbar-search h-11 rounded-none [&_*]:rounded-none"

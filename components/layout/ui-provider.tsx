@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { SearchProvider } from "@/context/SearchContext";
 import { SaveDateProvider } from "@/context/SaveDateContext";
+import { CaptureContentProvider } from "@/context/CaptureContentContext";
 
 export function UiProvider({
   children, modal
@@ -38,7 +39,7 @@ export function UiProvider({
       <Toast.Provider />
       <SearchProvider>
         <SaveDateProvider>
-          <>
+          <CaptureContentProvider>
             <main>
               <div className={`app-shell text-foreground bg-background flex-grow ${isFilterPage ? "app-shell--locked" : ""}`}>
                 <TopBar />
@@ -50,7 +51,7 @@ export function UiProvider({
               </div>
             </main>
             {modal}
-          </>
+          </CaptureContentProvider>
         </SaveDateProvider>
       </SearchProvider>
     </>

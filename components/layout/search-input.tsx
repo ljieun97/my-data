@@ -59,13 +59,28 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
     }
   };
 
-  const handleSelectCaptureMovie = (movie: any) => {
+  const handleSelectCaptureMovie = async (movie: any) => {
     if (captureMode === "follow-card") {
       void handleSelectFollowMovie(movie);
       return;
     }
 
-    const didAdd = addMovie(movie);
+    let posterOptions: string[] = [];
+    try {
+      setIsLoadingCaptureResults(true);
+      const images = await getImages("movie", movie.id);
+      posterOptions = Array.isArray(images?.posters)
+        ? images.posters.map((poster: any) => poster.file_path).filter(Boolean).slice(0, 12)
+        : [];
+    } finally {
+      setIsLoadingCaptureResults(false);
+    }
+
+    const didAdd = addMovie({
+      ...movie,
+      poster_path: movie.poster_path || posterOptions[0],
+      posterOptions,
+    });
     if (didAdd) {
       setInputValue("");
       setCaptureResults([]);
@@ -230,7 +245,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
                     return;
                   }
 
-                  handleSelectCaptureMovie(result);
+                  void handleSelectCaptureMovie(result);
                 }}
                 className="flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-50 dark:hover:bg-slate-900"
               >

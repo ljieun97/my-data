@@ -18,7 +18,7 @@ function getBackdropUrl(movie?: CaptureMovie) {
 
 function getPosterUrl(movie?: CaptureMovie) {
   if (!movie?.poster_path) return "";
-  return `https://image.tmdb.org/t/p/w342${movie.poster_path}`;
+  return `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
 }
 
 function getPosterThumbUrl(posterPath?: string) {
@@ -29,6 +29,27 @@ function getPosterThumbUrl(posterPath?: string) {
 function getProfileUrl(profilePath?: string) {
   if (!profilePath) return "";
   return `https://image.tmdb.org/t/p/original${profilePath}`;
+}
+
+function toSafeFilename(value: string) {
+  return value.replace(/[\\/:*?"<>|]+/g, "-").trim().replace(/\s+/g, " ");
+}
+
+function CaptureFooter({
+  footerLeft,
+  footerRight,
+  borderless = false,
+}: {
+  footerLeft: string;
+  footerRight: string;
+  borderless?: boolean;
+}) {
+  return (
+    <footer className={["mt-auto flex items-center justify-between pt-4 text-xs font-black text-white/82", borderless ? "" : "border-t border-white/40"].join(" ")}>
+      <span className="text-[11px] uppercase tracking-[0.08em]">{footerLeft || "셰나코리아"}</span>
+      <span>{footerRight || "@scena.kr"}</span>
+    </footer>
+  );
 }
 
 function MovieCaptureRow({ movie, index }: { movie?: CaptureMovie; index: number }) {
@@ -49,11 +70,11 @@ function MovieCaptureRow({ movie, index }: { movie?: CaptureMovie; index: number
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.04)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.22)_100%)]" />
 
       <div className="relative z-[1] flex h-full items-end gap-2 px-5 pb-4 pt-3">
-        <div className="flex w-8 shrink-0 items-baseline">
+        {/* <div className="flex w-8 shrink-0 items-baseline">
           <span className="text-xl font-black leading-tight text-white drop-shadow">
             {index + 1}위
           </span>
-        </div>
+        </div> */}
         <div className="min-w-0 flex-1">
           <p className="truncate text-xl font-black leading-tight text-white drop-shadow">{movie?.title ?? "영화를 추가하세요"}</p>
         </div>
@@ -70,13 +91,11 @@ function MovieCaptureRow({ movie, index }: { movie?: CaptureMovie; index: number
 function MovieListTemplate({
   slots,
   title,
-  label,
   footerLeft,
   footerRight,
 }: {
   slots: Array<CaptureMovie | undefined>;
   title: string;
-  label: string;
   footerLeft: string;
   footerRight: string;
 }) {
@@ -85,7 +104,6 @@ function MovieListTemplate({
   return (
     <div className="flex h-full flex-col bg-slate-950 text-white">
       <header className="shrink-0 px-6 py-4">
-        {/* <p className="text-xs font-semibold leading-tight text-white/62">{label || "TOP 5"}</p> */}
         <h1 className={["mt-1.5 mb-2 truncate font-black leading-none", isLongTitle ? "text-lg" : "text-xl"].join(" ")}>
           {title || "인물 이름"}
         </h1>
@@ -97,10 +115,45 @@ function MovieListTemplate({
         ))}
       </div>
 
-      <footer className="mb-7 mx-7 flex items-center justify-between pt-4 text-xs font-black text-white/82">
-        <span className="text-[11px] uppercase tracking-[0.08em]">{footerLeft || "셰나코리아"}</span>
-        <span>{footerRight || "@scena.kr"}</span>
-      </footer>
+      <div className="mx-7 mb-7">
+        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} borderless />
+      </div>
+    </div>
+  );
+}
+
+function SingleMovieTemplate({
+  movie,
+  footerLeft,
+  footerRight,
+}: {
+  movie: CaptureMovie | undefined;
+  footerLeft: string;
+  footerRight: string;
+}) {
+  const posterUrl = getPosterUrl(movie);
+
+  return (
+    <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
+      {posterUrl ? (
+        <img alt="" src={posterUrl} className="absolute inset-0 h-full w-full object-cover object-center" crossOrigin="anonymous" />
+      ) : null}
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.06)_0%,rgba(0,0,0,0.08)_46%,rgba(0,0,0,0.88)_100%)]" />
+      <div className="absolute inset-0 z-[1] flex flex-col px-5 pb-4 pt-3">
+        <div className="mt-auto flex items-end gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xl font-black leading-tight text-white drop-shadow">{movie?.title ?? "영화를 추가하세요"}</p>
+          </div>
+          {movie?.note ? (
+            <p className="max-w-[40%] shrink-0 text-right text-base font-black leading-tight text-white drop-shadow">
+              {movie.note}
+            </p>
+          ) : null}
+        </div>
+        <div className="mt-7">
+          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} borderless />
+        </div>
+      </div>
     </div>
   );
 }
@@ -137,9 +190,8 @@ function PersonCoverTemplate({
         <h1 className="mt-2 text-4xl font-black leading-none text-white drop-shadow">
           {headline || person?.name || "인물 이름"}
         </h1>
-        <div className="mt-7 flex items-center justify-between border-t border-white/40 pt-4 text-xs font-black text-white/82">
-          <span className="text-[11px] uppercase tracking-[0.08em]">{footerLeft || "셰나코리아"}</span>
-          <span>{footerRight || "@scena.kr"}</span>
+        <div className="mt-7">
+          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
         </div>
       </div>
     </div>
@@ -150,6 +202,11 @@ function FollowCardTemplate({
   movie,
   title,
   subtitle,
+  body,
+  textPosition,
+  showTitle,
+  showSubtitle,
+  showBody,
   footerLeft,
   footerRight,
   onSelectPoster,
@@ -157,12 +214,25 @@ function FollowCardTemplate({
   movie: CaptureFollowMovie | null;
   title: string;
   subtitle: string;
+  body: string;
+  textPosition: "top" | "center" | "bottom";
+  showTitle: boolean;
+  showSubtitle: boolean;
+  showBody: boolean;
   footerLeft: string;
   footerRight: string;
   onSelectPoster: (posterPath: string) => void;
 }) {
   const posterUrl = getPosterUrl(movie ?? undefined);
-  const posterOptions = movie?.posterOptions ?? [];
+  const positionClass =
+    textPosition === "top"
+      ? "items-start pt-7"
+      : textPosition === "bottom"
+        ? "items-end pb-7"
+        : "items-center";
+  const subtitleClass = "text-sm font-bold leading-tight text-white/78";
+  const titleClass = "mt-2 text-4xl font-black leading-none text-white drop-shadow";
+  const bodyClass = "mt-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76";
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
@@ -170,20 +240,15 @@ function FollowCardTemplate({
         <img alt="" src={posterUrl} className="absolute inset-0 h-full w-full object-cover object-center" crossOrigin="anonymous" />
       ) : null}
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12)_0%,rgba(0,0,0,0.18)_42%,rgba(0,0,0,0.88)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-7 pt-24">
-        <div className="mx-auto max-w-[20rem]">
-          <p className="text-sm font-bold leading-tight text-white/78">
-            {subtitle || "더 많은 영화와 배우 이야기를 보고 싶다면"}
-          </p>
-
-          <h1 className="mt-2 text-4xl font-black leading-none text-white drop-shadow">
-            {title || "셰나코리아"}
-          </h1>
+      <div className="absolute inset-0 z-[1] flex flex-col px-7 py-7">
+        <div className={["flex flex-1", positionClass].join(" ")}>
+          <div className="w-full max-w-[20rem] text-left">
+            {showSubtitle ? <p className={subtitleClass}>{subtitle || "더 많은 영화와 배우 이야기를 보고 싶다면"}</p> : null}
+            {showTitle ? <h1 className={showSubtitle ? titleClass : "text-4xl font-black leading-none text-white drop-shadow"}>{title || "셰나코리아"}</h1> : null}
+            {showBody ? <p className={bodyClass}>{body || "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다."}</p> : null}
+          </div>
         </div>
-        <div className="mt-7 flex items-center justify-between border-t border-white/40 pt-4 text-xs font-black text-white/82">
-          <span className="text-[11px] uppercase tracking-[0.08em]">{footerLeft || "셰나코리아"}</span>
-          <span>{footerRight || "@scena.kr"}</span>
-        </div>
+        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>
   );
@@ -199,6 +264,7 @@ export default function ContentCapturePage() {
     removeMovie,
     reorderMovie,
     updateMovieNote,
+    updateMoviePoster,
     updateFollowMoviePoster,
     updatePersonProfilePath,
     clearMovies,
@@ -206,30 +272,46 @@ export default function ContentCapturePage() {
     clearPerson,
   } = useCaptureContent();
   const captureRef = useRef<HTMLDivElement | null>(null);
+  const singleMovieCaptureRef = useRef<HTMLDivElement | null>(null);
   const personCaptureRef = useRef<HTMLDivElement | null>(null);
   const followCaptureRef = useRef<HTMLDivElement | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
   const [personTitle, setPersonTitle] = useState("인물 이름");
   const [movieTitle, setMovieTitle] = useState("하면 떠오르는 영화는?");
-  const [movieSubtitle, setMovieSubtitle] = useState("TOP 5");
   const [personSubtitle, setPersonSubtitle] = useState("관객수가 증명한 배우");
   const [followTitle, setFollowTitle] = useState("셰나코리아");
   const [followSubtitle, setFollowSubtitle] = useState("더 많은 영화와 배우 이야기를 보고 싶다면");
+  const [followBody, setFollowBody] = useState("여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.");
+  const [followTextPosition, setFollowTextPosition] = useState<"top" | "center" | "bottom">("center");
+  const [followShowTitle, setFollowShowTitle] = useState(true);
+  const [followShowSubtitle, setFollowShowSubtitle] = useState(true);
+  const [followShowBody, setFollowShowBody] = useState(true);
   const [footerLeft, setFooterLeft] = useState("셰나코리아");
   const [footerRight, setFooterRight] = useState("@scena.kr");
   const [isCapturing, setIsCapturing] = useState(false);
+  const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
 
   const isPersonMode = captureMode === "person-cover";
   const isFollowMode = captureMode === "follow-card";
   const isMovieMode = captureMode === "movie-list";
+  const movieSlotCount = Math.min(Math.max(selectedMovies.length, 3), 5);
 
   useEffect(() => {
     if (selectedPerson?.name) {
-      setPersonTitle(`${selectedPerson.name} 영화 TOP 5`);
+      setPersonTitle(`${selectedPerson.name} 영화 TOP ${movieSlotCount}`);
     }
-  }, [selectedPerson?.id, selectedPerson?.name]);
+  }, [movieSlotCount, selectedPerson?.id, selectedPerson?.name]);
+
+  useEffect(() => {
+    if (!selectedMovies.length) {
+      setPreviewMovieIndex(0);
+      return;
+    }
+
+    setPreviewMovieIndex((current) => Math.min(current, selectedMovies.length - 1));
+  }, [selectedMovies.length]);
 
   const handleCapture = async () => {
     const targetRef = isPersonMode ? personCaptureRef : isFollowMode ? followCaptureRef : captureRef;
@@ -255,13 +337,45 @@ export default function ContentCapturePage() {
     }
   };
 
-  const slots = Array.from({ length: 5 }, (_, index) => selectedMovies[index]);
+  const handleDownloadEachMovie = async () => {
+    if (!isMovieMode || !selectedMovies.length || isCapturing) return;
+
+    try {
+      setIsCapturing(true);
+
+      for (let index = 0; index < selectedMovies.length; index += 1) {
+        setPreviewMovieIndex(index);
+
+        await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+        await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+        if (!singleMovieCaptureRef.current) continue;
+
+        const dataUrl = await toPng(singleMovieCaptureRef.current, {
+          cacheBust: true,
+          pixelRatio: 2,
+          backgroundColor: "#111827",
+        });
+
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = `tovie-${toSafeFilename(selectedMovies[index]?.title || `movie-${index + 1}`)}-${new Date().toISOString().slice(0, 10)}.png`;
+        link.click();
+
+        await new Promise((resolve) => window.setTimeout(resolve, 120));
+      }
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
+  const slots = Array.from({ length: movieSlotCount }, (_, index) => selectedMovies[index]);
   const movieTextForCopy = useMemo(
     () =>
       selectedMovies
         .map((movie, index) => {
           const year = formatYear(movie);
-          return [`${index + 1}위`, movie.title, year ? `(${year})` : "", movie.note].filter(Boolean).join(" ");
+          return [`-`, movie.title, year ? `(${year})` : ""].filter(Boolean).join(" ");
         })
         .join("\n"),
     [selectedMovies],
@@ -318,6 +432,17 @@ export default function ContentCapturePage() {
             <FontAwesomeIcon icon={faDownload} />
             {isCapturing ? "capturing" : "download"}
           </button>
+          {isMovieMode ? (
+            <button
+              type="button"
+              onClick={handleDownloadEachMovie}
+              disabled={isCapturing || !selectedMovies.length}
+              className="inline-flex h-10 flex-1 items-center justify-center gap-2 border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900 sm:flex-none"
+            >
+              <FontAwesomeIcon icon={faDownload} />
+              개별
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -348,10 +473,13 @@ export default function ContentCapturePage() {
           {isMovieMode ? (
           <>
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Movies</p>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedMovies.length}/5</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedMovies.length}/{movieSlotCount}</p>
             </div>
+            <p className="mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
+              3개부터 시작해서 추가하면 4, 5개로 자동 확장됩니다.
+            </p>
 
             <div className="flex flex-col gap-2">
               {slots.map((movie, index) => (
@@ -436,31 +564,23 @@ export default function ContentCapturePage() {
                 className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
               />
             </label>
-            <label className="mb-3 block">
-              <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle</span>
-              <input
-                value={movieSubtitle}
-                onChange={(event) => setMovieSubtitle(event.target.value)}
-                className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-              />
-            </label>
             <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block">
-              <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer left</span>
-              <input
-                value={footerLeft}
-                onChange={(event) => setFooterLeft(event.target.value)}
-                className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-              />
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer right</span>
-              <input
-                value={footerRight}
-                onChange={(event) => setFooterRight(event.target.value)}
-                className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-              />
-            </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer left</span>
+                <input
+                  value={footerLeft}
+                  onChange={(event) => setFooterLeft(event.target.value)}
+                  className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer right</span>
+                <input
+                  value={footerRight}
+                  onChange={(event) => setFooterRight(event.target.value)}
+                  className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                />
+              </label>
             </div>
           </div>
 
@@ -535,6 +655,57 @@ export default function ContentCapturePage() {
                   className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
                 />
                 </label>
+              <label className="mb-3 block">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body</span>
+                <textarea
+                  value={followBody}
+                  onChange={(event) => setFollowBody(event.target.value)}
+                  rows={2}
+                  className="min-h-20 w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                />
+              </label>
+              <div className="mb-3 flex items-center gap-2">
+                {[
+                  { key: "top", label: "Top" },
+                  { key: "center", label: "Center" },
+                  { key: "bottom", label: "Bottom" },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setFollowTextPosition(item.key as "top" | "center" | "bottom")}
+                    className={[
+                      "h-8 flex-1 border px-2 text-xs font-bold transition",
+                      followTextPosition === item.key
+                        ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                        : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <div className="mb-3 grid grid-cols-3 gap-2">
+                {[
+                  { key: "title", label: "Title", checked: followShowTitle, setChecked: setFollowShowTitle },
+                  { key: "subtitle", label: "Subtitle", checked: followShowSubtitle, setChecked: setFollowShowSubtitle },
+                  { key: "body", label: "Body", checked: followShowBody, setChecked: setFollowShowBody },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => item.setChecked((current) => !current)}
+                    className={[
+                      "h-8 border px-2 text-xs font-bold transition",
+                      item.checked
+                        ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                        : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                    ].join(" ")}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer left</span>
@@ -657,6 +828,11 @@ export default function ContentCapturePage() {
                   movie={selectedFollowMovie}
                   title={followTitle}
                   subtitle={followSubtitle}
+                  body={followBody}
+                  textPosition={followTextPosition}
+                  showTitle={followShowTitle}
+                  showSubtitle={followShowSubtitle}
+                  showBody={followShowBody}
                   footerLeft={footerLeft}
                   footerRight={footerRight}
                   onSelectPoster={updateFollowMoviePoster}
@@ -665,12 +841,81 @@ export default function ContentCapturePage() {
                 <MovieListTemplate
                   slots={slots}
                   title={movieTitle}
-                  label={movieSubtitle}
                   footerLeft={footerLeft}
                   footerRight={footerRight}
                 />
               )}
             </div>
+            {isMovieMode ? (
+              <div className="mt-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Single Preview</p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {selectedMovies.length ? `${previewMovieIndex + 1}/${selectedMovies.length}` : "empty"}
+                  </p>
+                </div>
+
+                {selectedMovies.length ? (
+                  <>
+                    <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
+                      {selectedMovies.map((movie, index) => (
+                        <button
+                          key={movie.id}
+                          type="button"
+                          onClick={() => setPreviewMovieIndex(index)}
+                          className={[
+                            "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
+                            previewMovieIndex === index
+                              ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                              : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                          ].join(" ")}
+                        >
+                          {index + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="aspect-[4/5] overflow-hidden bg-slate-950 text-white">
+                      <div ref={singleMovieCaptureRef} className="h-full w-full">
+                      <SingleMovieTemplate
+                        movie={selectedMovies[previewMovieIndex]}
+                        footerLeft={footerLeft}
+                        footerRight={footerRight}
+                      />
+                      </div>
+                    </div>
+
+                    {selectedMovies[previewMovieIndex]?.posterOptions?.length ? (
+                      <div className="mt-3">
+                        <p className="mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Poster</p>
+                        <div className="grid grid-cols-6 gap-2">
+                          {selectedMovies[previewMovieIndex]?.posterOptions?.map((posterPath) => (
+                            <button
+                              key={posterPath}
+                              type="button"
+                              onClick={() => updateMoviePoster(selectedMovies[previewMovieIndex].id, posterPath)}
+                              className={[
+                                "aspect-[4/5] overflow-hidden border transition",
+                                selectedMovies[previewMovieIndex]?.poster_path === posterPath
+                                  ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
+                                  : "border-slate-200 dark:border-slate-800",
+                              ].join(" ")}
+                              aria-label="Select poster"
+                            >
+                              <img alt="" src={`https://image.tmdb.org/t/p/w185${posterPath}`} className="h-full w-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="flex h-56 items-center justify-center border border-dashed border-slate-300 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                    영화를 추가하면 개별 미리보기가 표시됩니다.
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
         </section>
       </div>

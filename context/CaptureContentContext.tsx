@@ -12,6 +12,7 @@ export type CaptureMovie = {
   backdrop_path?: string;
   vote_average?: number;
   note?: string;
+  posterOptions?: string[];
 };
 
 export type CaptureMode = "movie-list" | "person-cover" | "follow-card";
@@ -44,6 +45,7 @@ type CaptureContentContextValue = {
   moveMovie: (id: number, direction: "up" | "down") => void;
   reorderMovie: (fromIndex: number, toIndex: number) => void;
   updateMovieNote: (id: number, note: string) => void;
+  updateMoviePoster: (id: number, posterPath: string) => void;
   updateFollowMoviePoster: (posterPath: string) => void;
   updatePersonProfilePath: (profilePath: string) => void;
   clearMovies: () => void;
@@ -72,6 +74,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     backdrop_path: movie.backdrop_path,
     vote_average: movie.vote_average,
     note: movie.note,
+    posterOptions: movie.posterOptions,
   };
 }
 
@@ -139,6 +142,19 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
+  const updateMoviePoster = (id: number, posterPath: string) => {
+    setSelectedMovies((current) =>
+      current.map((movie) =>
+        movie.id === id
+          ? {
+              ...movie,
+              poster_path: posterPath,
+            }
+          : movie,
+      ),
+    );
+  };
+
   const updateFollowMoviePoster = (posterPath: string) => {
     setSelectedFollowMovie((current) => (current ? { ...current, poster_path: posterPath } : current));
   };
@@ -175,6 +191,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       moveMovie,
       reorderMovie,
       updateMovieNote,
+      updateMoviePoster,
       updateFollowMoviePoster,
       updatePersonProfilePath,
       clearMovies,

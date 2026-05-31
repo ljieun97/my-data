@@ -12,10 +12,21 @@ export type CaptureMovie = {
   backdrop_path?: string;
   vote_average?: number;
   note?: string;
+  noteMode?: "custom" | "rotten";
   posterOptions?: string[];
+  rottenTomatometer?: string | null;
+  rottenPopcornmeter?: string | null;
+  rottenTomatoesUrl?: string | null;
+  singlePreviewTitle?: string;
+  singlePreviewSubtitle?: string;
+  singlePreviewBody?: string;
+  singlePreviewTextPosition?: "top" | "center" | "bottom";
+  singlePreviewShowTitle?: boolean;
+  singlePreviewShowSubtitle?: boolean;
+  singlePreviewShowBody?: boolean;
 };
 
-export type CaptureMode = "movie-list" | "person-cover" | "follow-card";
+export type CaptureMode = "movie-list" | "movie-cover" | "person-cover";
 
 export type CapturePerson = {
   id: number;
@@ -28,28 +39,44 @@ export type CapturePerson = {
   profileOptions?: string[];
 };
 
-export type CaptureFollowMovie = CaptureMovie & {
-  posterOptions?: string[];
-};
-
 type CaptureContentContextValue = {
   captureMode: CaptureMode;
   setCaptureMode: (mode: CaptureMode) => void;
   selectedMovies: CaptureMovie[];
-  selectedFollowMovie: CaptureFollowMovie | null;
   selectedPerson: CapturePerson | null;
   addMovie: (movie: CaptureMovie) => boolean;
-  setFollowMovie: (movie: CaptureFollowMovie) => void;
   setPerson: (person: CapturePerson) => void;
   removeMovie: (id: number) => void;
   moveMovie: (id: number, direction: "up" | "down") => void;
   reorderMovie: (fromIndex: number, toIndex: number) => void;
   updateMovieNote: (id: number, note: string) => void;
+  updateMovieNoteMode: (id: number, noteMode: "custom" | "rotten") => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
-  updateFollowMoviePoster: (posterPath: string) => void;
+  updateMovieRottenScore: (
+    id: number,
+    patch: {
+      rottenTomatometer?: string | null;
+      rottenPopcornmeter?: string | null;
+      rottenTomatoesUrl?: string | null;
+    },
+  ) => void;
+  updateMovieSinglePreview: (
+    id: number,
+    patch: Partial<
+      Pick<
+        CaptureMovie,
+        | "singlePreviewTitle"
+        | "singlePreviewSubtitle"
+        | "singlePreviewBody"
+        | "singlePreviewTextPosition"
+        | "singlePreviewShowTitle"
+        | "singlePreviewShowSubtitle"
+        | "singlePreviewShowBody"
+      >
+    >,
+  ) => void;
   updatePersonProfilePath: (profilePath: string) => void;
   clearMovies: () => void;
-  clearFollowMovie: () => void;
   clearPerson: () => void;
   hasMovie: (id: number) => boolean;
 };
@@ -74,14 +101,24 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     backdrop_path: movie.backdrop_path,
     vote_average: movie.vote_average,
     note: movie.note,
+    noteMode: movie.noteMode === "rotten" ? "rotten" : "custom",
     posterOptions: movie.posterOptions,
+    rottenTomatometer: movie.rottenTomatometer ?? null,
+    rottenPopcornmeter: movie.rottenPopcornmeter ?? null,
+    rottenTomatoesUrl: movie.rottenTomatoesUrl ?? null,
+    singlePreviewTitle: movie.singlePreviewTitle ?? title,
+    singlePreviewSubtitle: movie.singlePreviewSubtitle ?? (movie.original_title || title),
+    singlePreviewBody: movie.singlePreviewBody ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.",
+    singlePreviewTextPosition: movie.singlePreviewTextPosition ?? "center",
+    singlePreviewShowTitle: movie.singlePreviewShowTitle ?? true,
+    singlePreviewShowSubtitle: movie.singlePreviewShowSubtitle ?? true,
+    singlePreviewShowBody: movie.singlePreviewShowBody ?? true,
   };
 }
 
 export function CaptureContentProvider({ children }: { children: React.ReactNode }) {
   const [captureMode, setCaptureMode] = useState<CaptureMode>("person-cover");
   const [selectedMovies, setSelectedMovies] = useState<CaptureMovie[]>([]);
-  const [selectedFollowMovie, setSelectedFollowMovie] = useState<CaptureFollowMovie | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<CapturePerson | null>(null);
 
   const addMovie = (movie: CaptureMovie) => {
@@ -98,10 +135,6 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
 
   const setPerson = (person: CapturePerson) => {
     setSelectedPerson(person);
-  };
-
-  const setFollowMovie = (movie: CaptureFollowMovie) => {
-    setSelectedFollowMovie(movie);
   };
 
   const removeMovie = (id: number) => {
@@ -142,6 +175,12 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
+  const updateMovieNoteMode = (id: number, noteMode: "custom" | "rotten") => {
+    setSelectedMovies((current) =>
+      current.map((movie) => (movie.id === id ? { ...movie, noteMode } : movie)),
+    );
+  };
+
   const updateMoviePoster = (id: number, posterPath: string) => {
     setSelectedMovies((current) =>
       current.map((movie) =>
@@ -155,8 +194,51 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
-  const updateFollowMoviePoster = (posterPath: string) => {
-    setSelectedFollowMovie((current) => (current ? { ...current, poster_path: posterPath } : current));
+  const updateMovieRottenScore = (
+    id: number,
+    patch: {
+      rottenTomatometer?: string | null;
+      rottenPopcornmeter?: string | null;
+      rottenTomatoesUrl?: string | null;
+    },
+  ) => {
+    setSelectedMovies((current) =>
+      current.map((movie) =>
+        movie.id === id
+          ? {
+              ...movie,
+              ...patch,
+            }
+          : movie,
+      ),
+    );
+  };
+
+  const updateMovieSinglePreview = (
+    id: number,
+    patch: Partial<
+      Pick<
+        CaptureMovie,
+        | "singlePreviewTitle"
+        | "singlePreviewSubtitle"
+        | "singlePreviewBody"
+        | "singlePreviewTextPosition"
+        | "singlePreviewShowTitle"
+        | "singlePreviewShowSubtitle"
+        | "singlePreviewShowBody"
+      >
+    >,
+  ) => {
+    setSelectedMovies((current) =>
+      current.map((movie) =>
+        movie.id === id
+          ? {
+              ...movie,
+              ...patch,
+            }
+          : movie,
+      ),
+    );
   };
 
   const updatePersonProfilePath = (profilePath: string) => {
@@ -165,10 +247,6 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
 
   const clearMovies = () => {
     setSelectedMovies([]);
-  };
-
-  const clearFollowMovie = () => {
-    setSelectedFollowMovie(null);
   };
 
   const clearPerson = () => {
@@ -182,24 +260,23 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       captureMode,
       setCaptureMode,
       selectedMovies,
-      selectedFollowMovie,
       selectedPerson,
       addMovie,
-      setFollowMovie,
       setPerson,
       removeMovie,
       moveMovie,
       reorderMovie,
       updateMovieNote,
+      updateMovieNoteMode,
       updateMoviePoster,
-      updateFollowMoviePoster,
+      updateMovieRottenScore,
+      updateMovieSinglePreview,
       updatePersonProfilePath,
       clearMovies,
-      clearFollowMovie,
       clearPerson,
       hasMovie,
     }),
-    [captureMode, selectedFollowMovie, selectedMovies, selectedPerson],
+    [captureMode, selectedMovies, selectedPerson],
   );
 
   return <CaptureContentContext.Provider value={value}>{children}</CaptureContentContext.Provider>;

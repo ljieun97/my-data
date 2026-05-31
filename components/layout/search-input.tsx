@@ -17,7 +17,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const [isLoadingCaptureResults, setIsLoadingCaptureResults] = useState(false);
   const [captureSearchError, setCaptureSearchError] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const { captureMode, addMovie, setFollowMovie, setPerson, hasMovie, selectedMovies } = useCaptureContent();
+  const { captureMode, addMovie, setPerson, hasMovie, selectedMovies } = useCaptureContent();
   const isCapturePage = pathname?.startsWith("/capture");
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,45 +32,13 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
     router.push(nextUrl);
   };
 
-  const handleSelectFollowMovie = async (movie: any) => {
-    try {
-      setIsLoadingCaptureResults(true);
-      const images = await getImages("movie", movie.id);
-      const posterOptions = Array.isArray(images?.posters)
-        ? images.posters.map((poster: any) => poster.file_path).filter(Boolean).slice(0, 12)
-        : [];
-
-      setFollowMovie({
-        id: Number(movie.id),
-        title: movie.title,
-        original_title: movie.original_title,
-        overview: movie.overview,
-        release_date: movie.release_date,
-        poster_path: movie.poster_path || posterOptions[0],
-        backdrop_path: movie.backdrop_path,
-        vote_average: movie.vote_average,
-        note: movie.note,
-        posterOptions,
-      });
-      setInputValue("");
-      setCaptureResults([]);
-    } finally {
-      setIsLoadingCaptureResults(false);
-    }
-  };
-
   const handleSelectCaptureMovie = async (movie: any) => {
-    if (captureMode === "follow-card") {
-      void handleSelectFollowMovie(movie);
-      return;
-    }
-
     let posterOptions: string[] = [];
     try {
       setIsLoadingCaptureResults(true);
       const images = await getImages("movie", movie.id);
       posterOptions = Array.isArray(images?.posters)
-        ? images.posters.map((poster: any) => poster.file_path).filter(Boolean).slice(0, 12)
+        ? images.posters.map((poster: any) => poster.file_path).filter(Boolean).slice(0, 20)
         : [];
     } finally {
       setIsLoadingCaptureResults(false);
@@ -228,7 +196,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
           {captureResults.map((result) => {
             const isPersonMode = captureMode === "person-cover";
             const isAdded = !isPersonMode && hasMovie(Number(result.id));
-            const isDisabled = !isPersonMode && captureMode !== "follow-card" && (isAdded || selectedMovies.length >= 5);
+            const isDisabled = !isPersonMode && (isAdded || selectedMovies.length >= 5);
             const year = result.release_date ? String(result.release_date).slice(0, 4) : "";
             const imagePath = isPersonMode ? result.profile_path : result.poster_path || result.backdrop_path;
             const title = isPersonMode ? result.name : result.title;

@@ -19,6 +19,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const [isFocused, setIsFocused] = useState(false);
   const { captureMode, addMovie, setPerson, hasMovie, selectedMovies } = useCaptureContent();
   const isCapturePage = pathname?.startsWith("/capture");
+  const isCalendarMode = captureMode === "calendar";
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextKeyword = e.target.value;
@@ -99,7 +100,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   }, [autoFocus]);
 
   useEffect(() => {
-    if (!isCapturePage) {
+    if (!isCapturePage || isCalendarMode) {
       return;
     }
 
@@ -147,7 +148,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       isCancelled = true;
       window.clearTimeout(timerId);
     };
-  }, [captureMode, inputValue, isCapturePage]);
+  }, [captureMode, inputValue, isCapturePage, isCalendarMode]);
 
   useEffect(() => {
     if (isCapturePage) {
@@ -157,14 +158,14 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
     setInputValue(queryKeyword);
   }, [isCapturePage, queryKeyword]);
 
-  const showCaptureResults = isCapturePage && isFocused && (inputValue.trim() || captureResults.length);
+  const showCaptureResults = isCapturePage && !isCalendarMode && isFocused && (inputValue.trim() || captureResults.length);
 
   return (
     <div className="relative">
       <Input
         ref={inputRef}
         aria-label="Search title"
-        placeholder={isCapturePage ? (captureMode === "person-cover" ? "커버 인물 검색" : "추가할 영화 검색") : "제목을 입력하세요."}
+        placeholder={isCapturePage ? (isCalendarMode ? "Calendar 모드에서는 검색을 사용하지 않습니다" : captureMode === "person-cover" ? "커버 인물 검색" : "추가할 영화 검색") : "제목을 입력하세요."}
         className="border-none shadow-none outline-none ring-0
           focus:border-none focus:outline-none focus:ring-0
           focus-visible:outline-none focus-visible:ring-0"

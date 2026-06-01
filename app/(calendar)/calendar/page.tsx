@@ -173,26 +173,32 @@ export default async function Page() {
 
   function buildMonthlyAdminEventsForCurrentMonth() {
     const base = new Date();
-    const nextMonthBase = new Date(base.getFullYear(), base.getMonth() + 1, 1);
-    const y = nextMonthBase.getFullYear();
-    const m = nextMonthBase.getMonth();
-    const secondWed = getSecondWednesday(y, m);
-    const lastWed = getLastWednesday(y, m);
-
-    return [
-      {
-        id: `admin-second-wed-${y}-${String(m + 1).padStart(2, "0")}`,
-        type: "관리자",
-        title: "문화의 날",
-        release_date: formatDateKey(secondWed),
-      },
-      {
-        id: `admin-last-wed-${y}-${String(m + 1).padStart(2, "0")}`,
-        type: "관리자",
-        title: "문화의 날",
-        release_date: formatDateKey(lastWed),
-      },
+    const monthBases = [
+      new Date(base.getFullYear(), base.getMonth(), 1),
+      new Date(base.getFullYear(), base.getMonth() + 1, 1),
     ];
+
+    return monthBases.flatMap((monthBase) => {
+      const y = monthBase.getFullYear();
+      const m = monthBase.getMonth();
+      const secondWed = getSecondWednesday(y, m);
+      const lastWed = getLastWednesday(y, m);
+
+      return [
+        {
+          id: `admin-second-wed-${y}-${String(m + 1).padStart(2, "0")}`,
+          type: "관리자",
+          title: "문화의 날",
+          release_date: formatDateKey(secondWed),
+        },
+        {
+          id: `admin-last-wed-${y}-${String(m + 1).padStart(2, "0")}`,
+          type: "관리자",
+          title: "문화의 날",
+          release_date: formatDateKey(lastWed),
+        },
+      ];
+    });
   }
 // console.log(JSON.stringify(scheduleMap, null, 2))
   const monthlyAdminEvents = buildMonthlyAdminEventsForCurrentMonth();
@@ -209,6 +215,7 @@ export default async function Page() {
     // </div>
   );
 }
+
 
 
 

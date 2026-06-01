@@ -26,7 +26,7 @@ export type CaptureMovie = {
   singlePreviewShowBody?: boolean;
 };
 
-export type CaptureMode = "movie-list" | "movie-cover" | "person-cover";
+export type CaptureMode = "movie-list" | "movie-cover" | "person-cover" | "calendar";
 
 export type CapturePerson = {
   id: number;

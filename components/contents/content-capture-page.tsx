@@ -1,6 +1,7 @@
 "use client";
 
 import Title from "@/components/common/title";
+import CalendarView from "@/components/contents/calendar-view";
 import { CaptureMovie, CapturePerson, useCaptureContent } from "@/context/CaptureContentContext";
 import { faDownload, faGripVertical, faRotateLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -157,7 +158,7 @@ function MovieCoverTemplate({
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.02)_58%,rgba(0,0,0,0.82)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.02)_56%,rgba(0,0,0,0.72)_100%)]" />
       <div className="relative z-[0] flex-1 overflow-hidden">
         <div
           className={["grid h-full", contentClass].join(" ")}
@@ -305,6 +306,43 @@ function PersonCoverTemplate({
   );
 }
 
+function CalendarCoverTemplate({
+  results,
+  option,
+  title,
+  showTitle,
+  footerLeft,
+  footerRight,
+}: {
+  results: any[];
+  option: any;
+  title: string;
+  showTitle: boolean;
+  footerLeft: string;
+  footerRight: string;
+}) {
+  return (
+    <div className="relative w-full overflow-hidden bg-white text-slate-900">
+      <CalendarView results={results} option={option} hideCaptureButton embedCalendarOnly />
+      <div
+        className={[
+          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] px-7 pb-7 pt-24 bg-gradient-to-t from-black/64 via-black/24 to-transparent",
+          showTitle ? "from-black/78 via-black/46" : "",
+        ].join(" ")}
+      >
+        {showTitle ? (
+          <h2 className="mt-2 break-keep text-4xl font-black leading-none text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.45)]">
+            {title || "TOVIE CALENDAR"}
+          </h2>
+        ) : null}
+        <div className="mt-7">
+          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} borderless={!showTitle} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ContentCapturePage() {
   const {
     captureMode,
@@ -326,6 +364,7 @@ export default function ContentCapturePage() {
   const singleMovieCaptureRef = useRef<HTMLDivElement | null>(null);
   const movieCoverCaptureRef = useRef<HTMLDivElement | null>(null);
   const personCaptureRef = useRef<HTMLDivElement | null>(null);
+  const calendarCaptureRef = useRef<HTMLDivElement | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
   const [personTitle, setPersonTitle] = useState("인물 이름");
   const [personSubtitle, setPersonSubtitle] = useState("관객수가 증명한 배우");
@@ -339,10 +378,17 @@ export default function ContentCapturePage() {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
   const [loadingRottenIds, setLoadingRottenIds] = useState<Record<number, boolean>>({});
+  const [calendarResults, setCalendarResults] = useState<any[]>([]);
+  const [calendarOption, setCalendarOption] = useState<any>({ initialView: "dayGridMonth" });
+  const [isCalendarLoading, setIsCalendarLoading] = useState(false);
+  const [calendarError, setCalendarError] = useState("");
+  const [calendarTitle, setCalendarTitle] = useState(`${new Date().getMonth() + 1}월 개봉 일정`);
+  const [showCalendarTitle, setShowCalendarTitle] = useState(true);
 
   const isPersonMode = captureMode === "person-cover";
   const isMovieListMode = captureMode === "movie-list";
   const isMovieCoverMode = captureMode === "movie-cover";
+  const isCalendarMode = captureMode === "calendar";
   const isMovieMode = isMovieListMode || isMovieCoverMode;
   const movieMinCount = isMovieCoverMode ? 2 : 3;
   const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), 5);
@@ -402,8 +448,43 @@ export default function ContentCapturePage() {
     });
   }, [requestRottenScore, selectedMovies]);
 
+  useEffect(() => {
+    if (!isCalendarMode || calendarResults.length) return;
+
+    const loadCalendarData = async () => {
+      try {
+        setIsCalendarLoading(true);
+        setCalendarError("");
+        const response = await fetch("/api/capture/calendar", { cache: "no-store" });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error("Failed to load calendar data");
+        }
+
+        setCalendarResults(Array.isArray(payload?.results) ? payload.results : []);
+        if (payload?.option?.initialView) {
+          setCalendarOption(payload.option);
+        }
+      } catch (error) {
+        console.error("Failed to load calendar capture data", error);
+        setCalendarError("달력 데이터를 불러오지 못했습니다.");
+      } finally {
+        setIsCalendarLoading(false);
+      }
+    };
+
+    void loadCalendarData();
+  }, [calendarResults.length, isCalendarMode]);
+
   const handleCapture = async () => {
-    const targetRef = isPersonMode ? personCaptureRef : isMovieCoverMode ? movieCoverCaptureRef : captureRef;
+    const targetRef = isCalendarMode
+      ? calendarCaptureRef
+      : isPersonMode
+        ? personCaptureRef
+        : isMovieCoverMode
+          ? movieCoverCaptureRef
+          : captureRef;
     if (!targetRef.current || isCapturing) return;
 
     try {
@@ -414,7 +495,7 @@ export default function ContentCapturePage() {
       const dataUrl = await toPng(targetRef.current, {
         cacheBust: true,
         pixelRatio: 2,
-        backgroundColor: "#111827",
+        backgroundColor: isCalendarMode ? "#ffffff" : "#111827",
       });
 
       const link = document.createElement("a");
@@ -469,6 +550,52 @@ export default function ContentCapturePage() {
         .join("\n"),
     [selectedMovies],
   );
+  const calendarTextForCopy = useMemo(() => {
+    const groups = new Map<string, any[]>();
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const getPriority = (item: any) => {
+      if (item?.type === "공휴일") return 4;
+      if (item?.type === "관리자") return 3;
+      if (item?.type === "박스오피스") return 2;
+      if (item?.type === "재개봉") return 1;
+      return 0;
+    };
+
+    calendarResults.forEach((item: any) => {
+      const type = String(item?.type ?? "");
+      const title = String(item?.title ?? "");
+      const isHoliday = type.includes("공휴일") || title.includes("공휴일") || type.includes("대체공휴일") || title.includes("대체공휴일");
+      const isAdmin = type === "관리자";
+      if (isHoliday || isAdmin) return;
+
+      const dateKey = String(item?.release_date ?? item?.start ?? "").slice(0, 10);
+      if (!dateKey) return;
+      const date = new Date(`${dateKey}T00:00:00`);
+      if (date.getFullYear() !== currentYear || date.getMonth() !== currentMonth) return;
+      if (!groups.has(dateKey)) groups.set(dateKey, []);
+      groups.get(dateKey)?.push(item);
+    });
+
+    const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([dateKey, items]) => {
+        const date = new Date(`${dateKey}T00:00:00`);
+        const head = `${date.getMonth() + 1}/${date.getDate()} (${weekdays[date.getDay()]})`;
+        const lines = items
+          .sort((a, b) => {
+            const pa = getPriority(a);
+            const pb = getPriority(b);
+            if (pa !== pb) return pb - pa;
+            return String(a?.title ?? "").localeCompare(String(b?.title ?? ""), "ko");
+          })
+          .map((entry: any) => `- ${entry?.title}${entry?.type === "재개봉" ? " (재개봉)" : ""}`);
+        return [head, ...lines].join("\n");
+      })
+      .join("\n\n");
+  }, [calendarResults]);
 
   const updateCurrentSinglePreview = (
     patch: Partial<
@@ -495,6 +622,13 @@ export default function ContentCapturePage() {
     setDidCopyText(true);
     window.setTimeout(() => setDidCopyText(false), 1200);
   };
+  const handleCopyCalendarText = async () => {
+    if (!calendarTextForCopy) return;
+
+    await navigator.clipboard.writeText(calendarTextForCopy);
+    setDidCopyText(true);
+    window.setTimeout(() => setDidCopyText(false), 1200);
+  };
 
   const handleDragStart = (index: number) => {
     draggedIndexRef.current = index;
@@ -517,7 +651,7 @@ export default function ContentCapturePage() {
           <button
             type="button"
             onClick={isPersonMode ? clearPerson : clearMovies}
-            disabled={isPersonMode ? !selectedPerson : !selectedMovies.length}
+            disabled={isCalendarMode ? true : isPersonMode ? !selectedPerson : !selectedMovies.length}
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-slate-300 bg-white text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
             aria-label="Reset selected movies"
             title="Reset"
@@ -527,7 +661,7 @@ export default function ContentCapturePage() {
           <button
             type="button"
             onClick={handleCapture}
-            disabled={isCapturing || (isPersonMode ? !selectedPerson : !selectedMovies.length)}
+            disabled={isCapturing || (isCalendarMode ? isCalendarLoading || !calendarResults.length : isPersonMode ? !selectedPerson : !selectedMovies.length)}
             className="inline-flex h-10 flex-1 items-center justify-center gap-2 border border-slate-900 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-default disabled:opacity-45 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-white sm:flex-none"
           >
             <FontAwesomeIcon icon={faDownload} />
@@ -552,11 +686,12 @@ export default function ContentCapturePage() {
           { key: "person-cover", label: "Person Cover" },
           { key: "movie-cover", label: "Movie Cover" },
           { key: "movie-list", label: "Movie List" },
+          { key: "calendar", label: "Calendar" },
         ].map((item) => (
           <button
             key={item.key}
             type="button"
-            onClick={() => setCaptureMode(item.key as "movie-list" | "movie-cover" | "person-cover")}
+            onClick={() => setCaptureMode(item.key as "movie-list" | "movie-cover" | "person-cover" | "calendar")}
             className={[
               "h-9 flex-1 px-4 text-sm font-bold transition sm:flex-none",
               captureMode === item.key
@@ -571,7 +706,80 @@ export default function ContentCapturePage() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <section className="flex flex-col gap-4">
-          {isMovieMode ? (
+          {isCalendarMode ? (
+          <>
+            <div className="border border-slate-200 bg-white/72 p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200">
+              <p className="font-bold text-slate-900 dark:text-slate-100">Calendar Mode</p>
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                달력 페이지 내용을 그대로 표시합니다. 상단 download 버튼으로 캡처하세요.
+              </p>
+              {isCalendarLoading ? <p className="mt-3 text-xs">불러오는 중...</p> : null}
+              {calendarError ? <p className="mt-3 text-xs text-rose-500">{calendarError}</p> : null}
+              {!isCalendarLoading && !calendarError ? (
+                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                  이벤트 {calendarResults.length}개
+                </p>
+              ) : null}
+            </div>
+            <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+              <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Cover Text</p>
+              <label className="mb-3 block">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
+                <input
+                  value={calendarTitle}
+                  onChange={(event) => setCalendarTitle(event.target.value)}
+                  className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowCalendarTitle((current) => !current)}
+                className={[
+                  "h-8 border px-2 text-xs font-bold transition",
+                  showCalendarTitle
+                    ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                    : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                ].join(" ")}
+              >
+                Title {showCalendarTitle ? "ON" : "OFF"}
+              </button>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer left</span>
+                  <input
+                    value={footerLeft}
+                    onChange={(event) => setFooterLeft(event.target.value)}
+                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer right</span>
+                  <input
+                    value={footerRight}
+                    onChange={(event) => setFooterRight(event.target.value)}
+                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                  />
+                </label>
+              </div>
+              <div className="mt-3 border border-slate-200 bg-white/72 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Copy Text</p>
+                  <button
+                    type="button"
+                    onClick={handleCopyCalendarText}
+                    disabled={!calendarTextForCopy}
+                    className="h-8 border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    {didCopyText ? "copied" : "copy"}
+                  </button>
+                </div>
+                <pre className="min-h-24 whitespace-pre-wrap border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-700 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-200">
+                  {calendarTextForCopy || "캘린더 데이터가 로드되면 복사용 텍스트가 표시됩니다."}
+                </pre>
+              </div>
+            </div>
+          </>
+          ) : isMovieMode ? (
           <>
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -977,10 +1185,22 @@ export default function ContentCapturePage() {
         <section className="flex justify-center lg:justify-end">
           <div className="w-full max-w-[min(100%,390px)] sm:max-w-[420px]">
             <div
-              ref={captureMode === "person-cover" ? personCaptureRef : isMovieCoverMode ? movieCoverCaptureRef : captureRef}
-              className="aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white shadow-[0_24px_64px_rgba(15,23,42,0.24)]"
+              ref={isCalendarMode ? calendarCaptureRef : captureMode === "person-cover" ? personCaptureRef : isMovieCoverMode ? movieCoverCaptureRef : captureRef}
+              className={[
+                isCalendarMode ? "aspect-[4/5] w-full overflow-hidden bg-white text-slate-900" : "aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white",
+                "shadow-[0_24px_64px_rgba(15,23,42,0.24)]",
+              ].join(" ")}
             >
-              {captureMode === "person-cover" ? (
+              {isCalendarMode ? (
+                <CalendarCoverTemplate
+                  results={calendarResults}
+                  option={calendarOption}
+                  title={calendarTitle}
+                  showTitle={showCalendarTitle}
+                  footerLeft={footerLeft}
+                  footerRight={footerRight}
+                />
+              ) : captureMode === "person-cover" ? (
                 <PersonCoverTemplate
                   person={selectedPerson}
                   headline={personTitle}

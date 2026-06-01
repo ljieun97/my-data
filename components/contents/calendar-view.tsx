@@ -7,7 +7,17 @@ import koLocale from "@fullcalendar/core/locales/ko";
 import { toPng } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-export default function CalendarView({ results, option }: { results: any[]; option: any }) {
+export default function CalendarView({
+  results,
+  option,
+  hideCaptureButton = false,
+  embedCalendarOnly = false,
+}: {
+  results: any[];
+  option: any;
+  hideCaptureButton?: boolean;
+  embedCalendarOnly?: boolean;
+}) {
   const BASE_LIST_ITEM_HEIGHT = 108;
   const MIN_ITEM_HEIGHT = 40;
   const MAX_ITEM_HEIGHT = 140;
@@ -23,7 +33,18 @@ export default function CalendarView({ results, option }: { results: any[]; opti
 
   const calendarCaptureRef = useRef<HTMLDivElement | null>(null);
   const visibleEvents = useMemo(
-    () => (currentView === "listDay" ? results.filter((item: any) => Boolean(item.backdrop_path)) : results),
+    () =>
+      (currentView === "listDay" ? results.filter((item: any) => Boolean(item.backdrop_path)) : results).filter((item: any) => {
+        const type = String(item?.type ?? "");
+        const title = String(item?.title ?? "");
+        const isHoliday =
+          type.includes("공휴일") ||
+          title.includes("공휴일") ||
+          type.includes("대체공휴일") ||
+          title.includes("대체공휴일");
+        const isAdmin = type === "관리자";
+        return !isHoliday && !isAdmin;
+      }),
     [currentView, results],
   );
   const toLocalDateKey = (date: Date) => {
@@ -173,12 +194,12 @@ export default function CalendarView({ results, option }: { results: any[]; opti
   return (
     <div>
       <div ref={calendarCaptureRef} className={`calendar-capture-frame ${isCapturing ? "is-capturing" : ""}`}>
-        <div className="calendar-view w-full aspect-[2/3]">
+        <div className="calendar-view w-full aspect-[4/5]">
         <FullCalendar
           plugins={[dayGridPlugin, listPlugin]}
           initialView={option.initialView}
           headerToolbar={
-            isCapturing
+            isCapturing || embedCalendarOnly
               ? false
               : {
                   left: "prev,next today",
@@ -335,18 +356,21 @@ export default function CalendarView({ results, option }: { results: any[]; opti
       </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-center gap-2">
-        <button
-          type="button"
-          onClick={handleCapture}
-          disabled={isCapturing}
-          className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-          aria-label="Capture calendar image"
-        >
-          {isCapturing ? "capturing..." : "capture"}
-        </button>
-      </div>
+      {!hideCaptureButton && !embedCalendarOnly ? (
+        <div className="mt-3 flex items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={handleCapture}
+            disabled={isCapturing}
+            className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+            aria-label="Capture calendar image"
+          >
+            {isCapturing ? "capturing..." : "capture"}
+          </button>
+        </div>
+      ) : null}
 
+      {!embedCalendarOnly ? (
       <div className="mt-2 flex items-center justify-center gap-2">
         <button
           type="button"
@@ -368,7 +392,9 @@ export default function CalendarView({ results, option }: { results: any[]; opti
           height +
         </button>
       </div>
+      ) : null}
 
+      {!embedCalendarOnly ? (
       <div className="mt-2 flex items-center justify-center gap-2">
         <button
           type="button"
@@ -390,7 +416,9 @@ export default function CalendarView({ results, option }: { results: any[]; opti
           2열 기준 +
         </button>
       </div>
+      ) : null}
 
+      {!embedCalendarOnly ? (
       <div className="mt-5 space-y-4 rounded-md border border-slate-200 bg-white/70 p-3 text-sm text-slate-800 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-100">
         {textScheduleGroups.length === 0 ? (
           <p>표시할 일정이 없습니다.</p>
@@ -410,6 +438,7 @@ export default function CalendarView({ results, option }: { results: any[]; opti
           ))
         )}
       </div>
+      ) : null}
 
       {hoveredEvent ? (
         <div

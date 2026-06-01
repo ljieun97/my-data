@@ -1274,14 +1274,29 @@ html.dark-theme .detail-modal-loading__provider {
 }
 
 .calendar-view .fc .fc-daygrid-day-number {
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   width: 100%;
   text-align: center;
+  line-height: 1;
+  padding-top: 2px;
+  padding-bottom: 4px;
 }
 
 .calendar-view .fc .fc-daygrid-day-top {
   justify-content: center;
   padding-top: 0;
+  min-height: 0;
+}
+
+.calendar-view .fc .fc-col-header-cell-cushion {
+  font-size: 0.6rem;
+  line-height: 1;
+  padding-top: 0;
+  padding-bottom: 0 !important;
+}
+
+.calendar-view .fc .fc-col-header-cell {
+  padding-bottom: 4px !important;
 }
 
 .calendar-view .fc .fc-day-sat .fc-daygrid-day-number {
@@ -1303,6 +1318,20 @@ html.dark-theme .detail-modal-loading__provider {
 
 .calendar-view .fc .fc-daygrid-more-link {
   font-size: 0.66rem;
+}
+
+/* Make Wednesday column wider in month view */
+.calendar-view .fc .fc-scrollgrid-sync-table colgroup col {
+  width: 13.333% !important;
+}
+
+.calendar-view .fc .fc-scrollgrid-sync-table colgroup col:nth-child(4) {
+  width: 20% !important;
+}
+
+.calendar-view .fc .fc-col-header-cell:nth-child(4),
+.calendar-view .fc .fc-daygrid-day:nth-child(4) {
+  width: 20% !important;
 }
 
 .calendar-view .fc .month-dense-day .fc-daygrid-day-events {
@@ -1331,14 +1360,14 @@ html.dark-theme .detail-modal-loading__provider {
 }
 
 .calendar-view .fc .fc-scrollgrid {
-  border-radius: 10px;
+  border-radius: 0;
   overflow: hidden;
 }
 
 .calendar-view .fc.fc-listDay-view .fc-view-harness,
 .calendar-view .fc.fc-listDay-view .fc-list,
 .calendar-view .fc.fc-listDay-view .fc-scroller {
-  border-radius: 10px;
+  border-radius: 0;
   overflow: hidden;
 }
 

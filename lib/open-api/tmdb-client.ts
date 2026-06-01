@@ -93,6 +93,14 @@ export async function getPosters(type: string, id: string) {
   return posters
 }
 
+export async function getImages(type: string, id: string | number) {
+  const URL = `${BASE_URL}/${type}/${id}/images?`
+    + 'include_image_language=en,ko,null&'
+    + `&api_key=${API_KEY}`
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
+  return response.json()
+}
+
 export async function getSearchMulti(keyword: string, pageNum: number) {
   const URL =
     `${BASE_URL}/search/multi?query=${keyword}&language=ko&api_key=${API_KEY}` +
@@ -107,6 +115,15 @@ export async function getSearchMulti(keyword: string, pageNum: number) {
 
   data.results = results.flat()
   return data
+}
+
+export async function getSearchPeople(keyword: string, pageNum: number) {
+  const URL =
+    `${BASE_URL}/search/person?query=${keyword}&language=ko&api_key=${API_KEY}` +
+    `&page=${pageNum}`
+
+  const response = await fetch(URL, { next: { revalidate: 3600 } })
+  return response.json()
 }
 
 export async function getContentByMood(genres: string) {

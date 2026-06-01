@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Title from "@/components/common/title";
 import CalendarView from "@/components/contents/calendar-view";
@@ -30,6 +30,24 @@ function getPosterThumbUrl(posterPath?: string) {
 function getProfileUrl(profilePath?: string) {
   if (!profilePath) return "";
   return `https://image.tmdb.org/t/p/original${profilePath}`;
+}
+
+function getCalendarPosterUrl(item: any) {
+  const raw = String(item?.poster_path ?? item?.posterPath ?? item?.poster ?? "").trim();
+  if (!raw) return "";
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  if (raw.startsWith("//")) return `https:${raw}`;
+  if (raw.startsWith("/")) return `https://image.tmdb.org/t/p/w500${raw}`;
+  return "";
+}
+
+function getCalendarBackdropUrl(item: any) {
+  const raw = String(item?.backdrop_path ?? item?.backdropPath ?? item?.backdrop ?? item?.src ?? "").trim();
+  if (!raw) return "";
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  if (raw.startsWith("//")) return `https:${raw}`;
+  if (raw.startsWith("/")) return `https://image.tmdb.org/t/p/original${raw}`;
+  return "";
 }
 
 function toSafeFilename(value: string) {
@@ -190,7 +208,7 @@ function MovieCoverTemplate({
 
       <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-7 pt-24">
         <p className="text-sm font-bold leading-tight text-white/78">{subtitle || "TOVIE MOVIE COVER"}</p>
-        <h1 className="mt-2 break-keep text-4xl font-black leading-none text-white drop-shadow">
+        <h1 className="mt-2 break-keep text-[2.15rem] font-black leading-none text-white drop-shadow">
           {title || "영화 목록"}
         </h1>
         <div className="mt-7">
@@ -295,7 +313,7 @@ function PersonCoverTemplate({
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.05)_42%,rgba(0,0,0,0.82)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-7 pt-24">
         <p className="text-sm font-bold leading-tight text-white/78">{kicker || "TOVIE PERSON"}</p>
-        <h1 className="mt-2 break-keep text-4xl font-black leading-none text-white drop-shadow">
+        <h1 className="mt-2 break-keep text-[2.15rem] font-black leading-none text-white drop-shadow">
           {headline || person?.name || "인물 이름"}
         </h1>
         <div className="mt-7">
@@ -322,22 +340,96 @@ function CalendarCoverTemplate({
   footerRight: string;
 }) {
   return (
-    <div className="relative w-full overflow-hidden bg-white text-slate-900">
+    <div className="relative h-full w-full overflow-hidden bg-white text-slate-900">
       <CalendarView results={results} option={option} hideCaptureButton embedCalendarOnly />
       <div
         className={[
-          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] px-7 pb-7 pt-24 bg-gradient-to-t from-black/64 via-black/24 to-transparent",
-          showTitle ? "from-black/78 via-black/46" : "",
+          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-7 pb-7 pt-24 bg-gradient-to-t from-black via-black/24 to-transparent",
+          showTitle ? "via-black/24" : "",
         ].join(" ")}
       >
         {showTitle ? (
-          <h2 className="mt-2 break-keep text-4xl font-black leading-none text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.45)]">
-            {title || "TOVIE CALENDAR"}
+          <h2 className="mb-3 break-keep text-[2.15rem] font-black leading-none text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.45)]">
+            {title || "TOVIE CALENDAR"} <span className="relative -top-[0.12em]">📽️</span>
           </h2>
         ) : null}
-        <div className="mt-7">
-          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} borderless={!showTitle} />
+        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+      </div>
+    </div>
+  );
+}
+
+function CalendarDayPreviewTemplate({
+  dateKey,
+  items,
+  footerLeft,
+  footerRight,
+}: {
+  dateKey: string;
+  items: any[];
+  footerLeft: string;
+  footerRight: string;
+}) {
+  const date = new Date(`${dateKey}T00:00:00`);
+  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+  const showBackdropGrid = items.length >= 2;
+  const isDense = items.length >= 4;
+  const leadTitle = String(items[0]?.title ?? "");
+
+  return (
+    <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white">
+      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/70 via-black/34 to-transparent px-7">
+        <div className="flex h-full items-center justify-between gap-3">
+          <p className="text-sm font-black leading-tight text-white">{date.getMonth() + 1}월 {date.getDate()}일 ({weekdays[date.getDay()]})</p>
+          <span className="shrink-0 text-xs font-bold text-white/88">@scena.kr</span>
         </div>
+      </div>
+
+      {showBackdropGrid ? (
+        <div className={["absolute inset-x-0 top-12 bottom-0 grid", isDense ? "grid-cols-2" : "grid-cols-1"].join(" ")}>
+          {items.map((item, idx) => {
+            const backdrop = getCalendarBackdropUrl(item);
+            const title = String(item?.title ?? "");
+            const isLastOddWide = isDense && items.length % 2 === 1 && idx === items.length - 1;
+            return (
+              <div key={`${dateKey}-${idx}`} className={["relative overflow-hidden bg-slate-800", isLastOddWide ? "col-span-2" : ""].join(" ")}>
+                {backdrop ? (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: `url(${backdrop})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center top",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-black/18" />
+                <p className="absolute inset-x-2 bottom-2 z-[1] line-clamp-2 whitespace-normal text-center [word-break:keep-all] text-xs font-bold leading-tight text-white drop-shadow">{title}</p>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="absolute inset-x-0 top-12 bottom-0 bg-slate-900">
+          {getCalendarPosterUrl(items[0]) || getCalendarBackdropUrl(items[0]) ? (
+            <img
+              alt=""
+              src={getCalendarPosterUrl(items[0]) || getCalendarBackdropUrl(items[0])}
+              className="block h-full w-full object-cover object-top"
+              crossOrigin="anonymous"
+            />
+          ) : null}
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.06)_0%,rgba(0,0,0,0.14)_42%,rgba(0,0,0,0.76)_100%)]" />
+        </div>
+      )}
+
+      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/70 via-black/28 to-transparent px-7 pb-7 pt-0"].join(" ")}>
+        {!showBackdropGrid ? (
+          <h2 className="mb-0 whitespace-normal [word-break:keep-all] text-[2.15rem] font-black leading-none text-white drop-shadow">
+            {leadTitle}
+          </h2>
+        ) : null}
       </div>
     </div>
   );
@@ -365,6 +457,7 @@ export default function ContentCapturePage() {
   const movieCoverCaptureRef = useRef<HTMLDivElement | null>(null);
   const personCaptureRef = useRef<HTMLDivElement | null>(null);
   const calendarCaptureRef = useRef<HTMLDivElement | null>(null);
+  const calendarDayPreviewCaptureRef = useRef<HTMLDivElement | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
   const [personTitle, setPersonTitle] = useState("인물 이름");
   const [personSubtitle, setPersonSubtitle] = useState("관객수가 증명한 배우");
@@ -384,6 +477,7 @@ export default function ContentCapturePage() {
   const [calendarError, setCalendarError] = useState("");
   const [calendarTitle, setCalendarTitle] = useState(`${new Date().getMonth() + 1}월 개봉 일정`);
   const [showCalendarTitle, setShowCalendarTitle] = useState(true);
+  const [calendarPreviewDateKey, setCalendarPreviewDateKey] = useState("");
 
   const isPersonMode = captureMode === "person-cover";
   const isMovieListMode = captureMode === "movie-list";
@@ -393,6 +487,35 @@ export default function ContentCapturePage() {
   const movieMinCount = isMovieCoverMode ? 2 : 3;
   const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), 5);
   const currentSingleMovie = selectedMovies[previewMovieIndex];
+  const calendarPreviewGroups = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const groups = new Map<string, any[]>();
+
+    calendarResults.forEach((item: any) => {
+      const type = String(item?.type ?? "");
+      const title = String(item?.title ?? "");
+      const isHoliday = type.includes("공휴일") || title.includes("공휴일") || type.includes("대체공휴일") || title.includes("대체공휴일");
+      const isAdmin = type === "관리자";
+      if (isHoliday || isAdmin) return;
+
+      const dateKey = String(item?.release_date ?? item?.start ?? "").slice(0, 10);
+      if (!dateKey) return;
+      const date = new Date(`${dateKey}T00:00:00`);
+      if (date.getFullYear() !== currentYear || date.getMonth() !== currentMonth) return;
+      if (!(item?.backdrop_path ?? item?.backdropPath)) return;
+      if (!groups.has(dateKey)) groups.set(dateKey, []);
+      groups.get(dateKey)?.push(item);
+    });
+
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([dateKey, items]) => ({ dateKey, items }))
+      .filter((group) => group.items.length > 0);
+  }, [calendarResults]);
+  const activeCalendarPreview =
+    calendarPreviewGroups.find((group) => group.dateKey === calendarPreviewDateKey) ?? calendarPreviewGroups[0] ?? null;
 
   useEffect(() => {
     if (selectedPerson?.name) {
@@ -408,6 +531,16 @@ export default function ContentCapturePage() {
 
     setPreviewMovieIndex((current) => Math.min(current, selectedMovies.length - 1));
   }, [selectedMovies.length]);
+
+  useEffect(() => {
+    if (!calendarPreviewGroups.length) {
+      setCalendarPreviewDateKey("");
+      return;
+    }
+    if (!calendarPreviewGroups.some((group) => group.dateKey === calendarPreviewDateKey)) {
+      setCalendarPreviewDateKey(calendarPreviewGroups[0].dateKey);
+    }
+  }, [calendarPreviewDateKey, calendarPreviewGroups]);
 
   const requestRottenScore = useCallback(
     async (movie: CaptureMovie) => {
@@ -492,10 +625,18 @@ export default function ContentCapturePage() {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
 
+      const rect = targetRef.current.getBoundingClientRect();
+      const captureWidth = Math.max(1, Math.round(rect.width));
+      const captureHeight = Math.max(1, Math.round(rect.height) - (isCalendarMode ? 2 : 0));
+
       const dataUrl = await toPng(targetRef.current, {
         cacheBust: true,
         pixelRatio: 2,
         backgroundColor: isCalendarMode ? "#ffffff" : "#111827",
+        width: captureWidth,
+        height: captureHeight,
+        canvasWidth: captureWidth * 2,
+        canvasHeight: captureHeight * 2,
       });
 
       const link = document.createElement("a");
@@ -539,6 +680,46 @@ export default function ContentCapturePage() {
     }
   };
 
+  const handleDownloadEachCalendarPreview = async () => {
+    if (!isCalendarMode || !calendarPreviewGroups.length || isCapturing) return;
+
+    try {
+      setIsCapturing(true);
+
+      for (const group of calendarPreviewGroups) {
+        setCalendarPreviewDateKey(group.dateKey);
+
+        await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+        await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+
+        if (!calendarDayPreviewCaptureRef.current) continue;
+
+        const rect = calendarDayPreviewCaptureRef.current.getBoundingClientRect();
+        const captureWidth = Math.max(1, Math.round(rect.width));
+        const captureHeight = Math.max(1, Math.round(rect.height));
+
+        const dataUrl = await toPng(calendarDayPreviewCaptureRef.current, {
+          cacheBust: true,
+          pixelRatio: 2,
+          backgroundColor: "#111827",
+          width: captureWidth,
+          height: captureHeight,
+          canvasWidth: captureWidth * 2,
+          canvasHeight: captureHeight * 2,
+        });
+
+        const link = document.createElement("a");
+        link.href = dataUrl;
+        link.download = `tovie-calendar-preview-${group.dateKey}.png`;
+        link.click();
+
+        await new Promise((resolve) => window.setTimeout(resolve, 120));
+      }
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
   const slots = Array.from({ length: movieSlotCount }, (_, index) => selectedMovies[index]);
   const movieTextForCopy = useMemo(
     () =>
@@ -556,7 +737,7 @@ export default function ContentCapturePage() {
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
     const getPriority = (item: any) => {
-      if (item?.type === "공휴일") return 4;
+      if (item?.type === "공휴일" || item?.type === "대체공휴일") return 4;
       if (item?.type === "관리자") return 3;
       if (item?.type === "박스오피스") return 2;
       if (item?.type === "재개봉") return 1;
@@ -677,6 +858,16 @@ export default function ContentCapturePage() {
               <FontAwesomeIcon icon={faDownload} />
               개별
             </button>
+          ) : null}
+          {isCalendarMode ? (
+            <button
+              type="button"
+              onClick={handleDownloadEachCalendarPreview}
+              disabled={isCapturing || !calendarPreviewGroups.length}
+              className="inline-flex h-10 flex-1 items-center justify-center gap-2 border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900 sm:flex-none"
+            >
+              <FontAwesomeIcon icon={faDownload} />
+              ?좎쭨蹂?            </button>
           ) : null}
         </div>
       </div>
@@ -857,7 +1048,7 @@ export default function ContentCapturePage() {
                             onMouseDown={(event) => event.stopPropagation()}
                             onDragStart={(event) => event.preventDefault()}
                             maxLength={16}
-                            placeholder="오른쪽 문구"
+                            placeholder="아래쪽 문구"
                             className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                           />
                         ) : (
@@ -872,7 +1063,7 @@ export default function ContentCapturePage() {
                       </div>
                     ) : (
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {movie ? "목록형 커버에서는 사진만 사용합니다" : "상단 검색으로 추가"}
+                        {movie ? "목록형 커버에서는 사진만 사용합니다." : "상단 검색으로 추가"}
                       </p>
                     )}
                   </div>
@@ -1225,6 +1416,41 @@ export default function ContentCapturePage() {
               />
               )}
             </div>
+            {isCalendarMode ? (
+              <div className="mt-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
+                  {calendarPreviewGroups.map((group) => (
+                    <button
+                      key={group.dateKey}
+                      type="button"
+                      onClick={() => setCalendarPreviewDateKey(group.dateKey)}
+                      className={[
+                        "inline-flex h-8 min-w-12 items-center justify-center border px-2 text-xs font-bold transition",
+                        (activeCalendarPreview?.dateKey ?? "") === group.dateKey
+                          ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                          : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                      ].join(" ")}
+                    >
+                      {group.dateKey.slice(5).replace("-", "/")}
+                    </button>
+                  ))}
+                </div>
+                {activeCalendarPreview ? (
+                  <div ref={calendarDayPreviewCaptureRef} className="overflow-hidden bg-slate-950">
+                    <CalendarDayPreviewTemplate
+                      dateKey={activeCalendarPreview.dateKey}
+                      items={activeCalendarPreview.items}
+                      footerLeft={footerLeft}
+                      footerRight={footerRight}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-56 items-center justify-center border border-dashed border-slate-300 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                    ?대깽?멸? ?덈뒗 ?좎쭨媛 ?놁뒿?덈떎.
+                  </div>
+                )}
+              </div>
+            ) : null}
             {isMovieListMode ? (
               <div className="mt-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                 <div className="mb-3 flex items-center justify-between gap-3">
@@ -1307,3 +1533,4 @@ export default function ContentCapturePage() {
     </div>
   );
 }
+

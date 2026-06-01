@@ -192,9 +192,9 @@ export default function CalendarView({
   }, [currentView, listItemHeight, visibleEvents]);
 
   return (
-    <div>
-      <div ref={calendarCaptureRef} className={`calendar-capture-frame ${isCapturing ? "is-capturing" : ""}`}>
-        <div className="calendar-view w-full aspect-[4/5]">
+    <div className={embedCalendarOnly ? "h-full" : ""}>
+      <div ref={calendarCaptureRef} className={`${embedCalendarOnly ? "h-full " : ""}calendar-capture-frame ${isCapturing ? "is-capturing" : ""}`}>
+        <div className={embedCalendarOnly ? "calendar-view h-full w-full" : "calendar-view w-full aspect-[4/5]"}>
         <FullCalendar
           plugins={[dayGridPlugin, listPlugin]}
           initialView={option.initialView}
@@ -470,5 +470,6 @@ export default function CalendarView({
     </div>
   );
 }
+
 
 

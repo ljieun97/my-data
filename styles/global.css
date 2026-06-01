@@ -1278,8 +1278,8 @@ html.dark-theme .detail-modal-loading__provider {
   width: 100%;
   text-align: center;
   line-height: 1;
-  padding-top: 2px;
-  padding-bottom: 4px;
+  padding-top: 0;
+  padding-bottom: 2px;
 }
 
 .calendar-view .fc .fc-daygrid-day-top {
@@ -1296,6 +1296,7 @@ html.dark-theme .detail-modal-loading__provider {
 }
 
 .calendar-view .fc .fc-col-header-cell {
+  padding-top: 0 !important;
   padding-bottom: 4px !important;
 }
 

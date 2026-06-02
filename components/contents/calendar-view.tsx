@@ -260,10 +260,10 @@ export default function CalendarView({
                 color = "#FCA5A5";
                 priority = 4;
               } else if (rawEvent.type === "재개봉") {
-                color = "#FED7AA";
+                color = "#F3F4F6";
                 priority = 1;
               } else if (rawEvent.type === "박스오피스") {
-                color = "#FDBA74";
+                color = "#E5E7EB";
                 priority = 2;
               }
 

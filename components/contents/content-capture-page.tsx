@@ -97,8 +97,8 @@ function MovieCaptureRow({
         />
       ) : null}
 
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.72)_0%,rgba(0,0,0,0.36)_28%,rgba(0,0,0,0.04)_58%,rgba(0,0,0,0.52)_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.04)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.22)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.56)_0%,rgba(0,0,0,0.24)_28%,rgba(0,0,0,0.02)_58%,rgba(0,0,0,0.36)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]" />
 
       <div className="relative z-[1] flex h-full items-end gap-2 px-5 pb-4 pt-3">
         {/* <div className="flex w-8 shrink-0 items-baseline">
@@ -176,7 +176,7 @@ function MovieCoverTemplate({
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.02)_56%,rgba(0,0,0,0.72)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.01)_56%,rgba(0,0,0,0.56)_100%)]" />
       <div className="relative z-[0] flex-1 overflow-hidden">
         <div
           className={["grid h-full", contentClass].join(" ")}
@@ -199,7 +199,7 @@ function MovieCoverTemplate({
                     crossOrigin="anonymous"
                   />
                 ) : null}
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.48)_100%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.04)_0%,rgba(0,0,0,0.34)_100%)]" />
               </div>
             );
           })}
@@ -263,7 +263,7 @@ function SingleMovieTemplate({
       {posterUrl ? (
         <img alt="" src={posterUrl} className="absolute inset-0 h-full w-full object-cover object-center" crossOrigin="anonymous" />
       ) : null}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.12)_0%,rgba(0,0,0,0.18)_42%,rgba(0,0,0,0.88)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.12)_42%,rgba(0,0,0,0.68)_100%)]" />
       <div className="absolute inset-0 z-[1] flex flex-col px-7 py-7">
         <div className={["flex flex-1", positionClass].join(" ")}>
           <div className="w-full max-w-[20rem] text-left">
@@ -310,7 +310,7 @@ function PersonCoverTemplate({
         />
       ) : null}
 
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.05)_42%,rgba(0,0,0,0.82)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.62)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-7 pt-24">
         <p className="text-sm font-bold leading-tight text-white/78">{kicker || "TOVIE PERSON"}</p>
         <h1 className="mt-2 break-keep text-[2.15rem] font-black leading-none text-white drop-shadow">
@@ -344,16 +344,22 @@ function CalendarCoverTemplate({
       <CalendarView results={results} option={option} hideCaptureButton embedCalendarOnly />
       <div
         className={[
-          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-7 pb-7 pt-24 bg-gradient-to-t from-black via-black/24 to-transparent",
-          showTitle ? "via-black/24" : "",
+          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-7 pb-7 pt-24",
+          showTitle ? "" : "bg-gradient-to-t from-black/20 via-black/6 to-transparent",
         ].join(" ")}
       >
         {showTitle ? (
-          <h2 className="mb-3 break-keep text-[2.15rem] font-black leading-none text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.45)]">
-            {title || "TOVIE CALENDAR"} <span className="relative -top-[0.12em]">📽️</span>
-          </h2>
+          <h1 className="mt-2 inline-flex w-fit break-keep bg-black px-3 py-2 text-[2.15rem] font-black leading-none text-white">
+            {title || "TOVIE CALENDAR"}
+          </h1>
         ) : null}
-        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+        {showTitle ? (
+          <div className="mt-7 h-[26px]" aria-hidden="true" />
+        ) : (
+          <div className="mt-7">
+            <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} borderless />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -378,7 +384,7 @@ function CalendarDayPreviewTemplate({
 
   return (
     <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/70 via-black/34 to-transparent px-7">
+      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/56 via-black/22 to-transparent px-7">
         <div className="flex h-full items-center justify-between gap-3">
           <p className="text-sm font-black leading-tight text-white">{date.getMonth() + 1}월 {date.getDate()}일 ({weekdays[date.getDay()]})</p>
           <span className="shrink-0 text-xs font-bold text-white/88">@scena.kr</span>
@@ -404,7 +410,7 @@ function CalendarDayPreviewTemplate({
                     }}
                   />
                 ) : null}
-                <div className="absolute inset-0 bg-black/18" />
+                <div className="absolute inset-0 bg-black/10" />
                 <p className="absolute inset-x-2 bottom-2 z-[1] line-clamp-2 whitespace-normal text-center [word-break:keep-all] text-xs font-bold leading-tight text-white drop-shadow">{title}</p>
               </div>
             );
@@ -420,11 +426,11 @@ function CalendarDayPreviewTemplate({
               crossOrigin="anonymous"
             />
           ) : null}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.06)_0%,rgba(0,0,0,0.14)_42%,rgba(0,0,0,0.76)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03)_0%,rgba(0,0,0,0.08)_42%,rgba(0,0,0,0.58)_100%)]" />
         </div>
       )}
 
-      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/70 via-black/28 to-transparent px-7 pb-7 pt-0"].join(" ")}>
+      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/52 via-black/18 to-transparent px-7 pb-7 pt-0"].join(" ")}>
         {!showBackdropGrid ? (
           <h2 className="mb-0 whitespace-normal [word-break:keep-all] text-[2.15rem] font-black leading-none text-white drop-shadow">
             {leadTitle}

@@ -12,6 +12,10 @@ function formatYear(movie: CaptureMovie) {
   return movie.release_date ? movie.release_date.slice(0, 4) : "";
 }
 
+function isMovieContent(movie?: CaptureMovie) {
+  return (movie?.media_type ?? "movie") === "movie";
+}
+
 function getBackdropUrl(movie?: CaptureMovie) {
   if (!movie?.backdrop_path) return "";
   return `https://image.tmdb.org/t/p/original${movie.backdrop_path}`;
@@ -140,8 +144,8 @@ function MovieListTemplate({
         ))}
       </div>
 
-      <div className="mx-7 mb-7">
-        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} borderless />
+      <div className="mx-6 mb-6">
+        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>
   );
@@ -206,9 +210,9 @@ function MovieCoverTemplate({
         </div>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-7 pt-24">
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-6 pt-24">
         <p className="text-sm font-bold leading-tight text-white/78">{subtitle || "TOVIE MOVIE COVER"}</p>
-        <h1 className="mt-2 break-keep text-[2.15rem] font-black leading-none text-white drop-shadow">
+        <h1 className="mt-2 break-keep text-[36px] font-black leading-none text-white drop-shadow">
           {title || "영화 목록"}
         </h1>
         <div className="mt-7">
@@ -231,8 +235,7 @@ function SingleMovieTemplate({
   const posterUrl = getPosterUrl(movie);
   const title = movie?.singlePreviewTitle ?? movie?.title ?? "영화를 추가하세요";
   const subtitle = movie?.singlePreviewSubtitle ?? movie?.original_title ?? movie?.title ?? "설명 텍스트";
-  const body = movie?.singlePreviewBody ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.";
-  const textPosition = movie?.singlePreviewTextPosition ?? "center";
+  const body = movie?.singlePreviewBody ?? movie?.overview ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.";
   const showTitle = movie?.singlePreviewShowTitle ?? true;
   const showSubtitle = movie?.singlePreviewShowSubtitle ?? true;
   const showBody = movie?.singlePreviewShowBody ?? true;
@@ -242,21 +245,9 @@ function SingleMovieTemplate({
         ? `${movie.rottenTomatometer ?? "00%"} ${movie.rottenPopcornmeter ?? "-%"}`
         : "00% 00%"
       : movie?.note || subtitle;
-  const titleLength = title.replace(/\s/g, "").length;
-  const titleClass =
-    titleLength >= 14
-      ? "text-xl sm:text-2xl"
-      : titleLength >= 7
-        ? "text-2xl sm:text-[2.2rem]"
-        : "text-4xl";
-  const positionClass =
-    textPosition === "top"
-      ? "items-start pt-7"
-      : textPosition === "bottom"
-        ? "items-end pb-7"
-        : "items-center";
+  const titleClass = "text-[36px]";
   const subtitleClass = "text-sm font-bold leading-tight text-white/78";
-  const bodyClass = "mt-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76";
+  const bodyClass = "mt-2 line-clamp-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76";
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
@@ -264,21 +255,21 @@ function SingleMovieTemplate({
         <img alt="" src={posterUrl} className="absolute inset-0 h-full w-full object-cover object-center" crossOrigin="anonymous" />
       ) : null}
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.12)_42%,rgba(0,0,0,0.68)_100%)]" />
-      <div className="absolute inset-0 z-[1] flex flex-col px-7 py-7">
-        <div className={["flex flex-1", positionClass].join(" ")}>
-          <div className="w-full max-w-[20rem] text-left">
-            {showSubtitle ? <p className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
-            {showTitle ? (
-              <div className="mt-2">
-                <h1 className={["min-w-0 flex-1 break-keep font-black leading-none text-white drop-shadow", titleClass].join(" ")}>
-                  {title || movie?.title || "영화를 추가하세요"}
-                </h1>
-              </div>
-            ) : null}
-            {showBody ? <p className={bodyClass}>{body || "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다."}</p> : null}
-          </div>
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-6 pt-24">
+        <div className="w-full max-w-[20rem] text-left">
+          {showSubtitle ? <p className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
+          {showTitle ? (
+            <div className="mt-2">
+              <h1 className={["min-w-0 flex-1 break-keep font-black leading-none text-white drop-shadow", titleClass].join(" ")}>
+                {title || movie?.title || "영화를 추가하세요"}
+              </h1>
+            </div>
+          ) : null}
+          {showBody ? <p className={bodyClass}>{body || "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다."}</p> : null}
         </div>
-        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+        <div className="mt-7">
+          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+        </div>
       </div>
     </div>
   );
@@ -288,16 +279,25 @@ function PersonCoverTemplate({
   person,
   headline,
   kicker,
+  body,
+  showTitle,
+  showSubtitle,
+  showBody,
   footerLeft,
   footerRight,
 }: {
   person: CapturePerson | null;
   headline: string;
   kicker: string;
+  body: string;
+  showTitle: boolean;
+  showSubtitle: boolean;
+  showBody: boolean;
   footerLeft: string;
   footerRight: string;
 }) {
   const profileUrl = getProfileUrl(person?.profile_path);
+  const bodyValue = body || person?.biography || "";
 
   return (
     <div className="relative h-full overflow-hidden bg-slate-950 text-white">
@@ -311,11 +311,18 @@ function PersonCoverTemplate({
       ) : null}
 
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.62)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-7 pt-24">
-        <p className="text-sm font-bold leading-tight text-white/78">{kicker || "TOVIE PERSON"}</p>
-        <h1 className="mt-2 break-keep text-[2.15rem] font-black leading-none text-white drop-shadow">
-          {headline || person?.name || "인물 이름"}
-        </h1>
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-6 pt-24">
+        {showSubtitle ? <p className="text-sm font-bold leading-tight text-white/78">{kicker || "TOVIE PERSON"}</p> : null}
+        {showTitle ? (
+          <h1 className="mt-2 break-keep text-[36px] font-black leading-none text-white drop-shadow">
+            {headline || person?.name || "인물 이름"}
+          </h1>
+        ) : null}
+        {showBody && bodyValue ? (
+          <p className="mt-2 line-clamp-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76">
+            {bodyValue}
+          </p>
+        ) : null}
         <div className="mt-7">
           <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
         </div>
@@ -344,12 +351,12 @@ function CalendarCoverTemplate({
       <CalendarView results={results} option={option} hideCaptureButton embedCalendarOnly />
       <div
         className={[
-          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-7 pb-7 pt-24",
+          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-6 pb-6 pt-24",
           showTitle ? "" : "bg-gradient-to-t from-black/20 via-black/6 to-transparent",
         ].join(" ")}
       >
         {showTitle ? (
-          <h1 className="mt-2 inline-flex w-fit break-keep bg-black px-3 py-2 text-[2.15rem] font-black leading-none text-white">
+          <h1 className="mt-2 inline-flex w-fit break-keep bg-black px-3 py-2 text-[36px] font-black leading-none text-white">
             {title || "TOVIE CALENDAR"}
           </h1>
         ) : null}
@@ -357,7 +364,7 @@ function CalendarCoverTemplate({
           <div className="mt-7 h-[26px]" aria-hidden="true" />
         ) : (
           <div className="mt-7">
-            <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} borderless />
+            <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
           </div>
         )}
       </div>
@@ -384,7 +391,7 @@ function CalendarDayPreviewTemplate({
 
   return (
     <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/56 via-black/22 to-transparent px-7">
+      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/56 via-black/22 to-transparent px-6">
         <div className="flex h-full items-center justify-between gap-3">
           <p className="text-sm font-black leading-tight text-white">{date.getMonth() + 1}월 {date.getDate()}일 ({weekdays[date.getDay()]})</p>
           <span className="shrink-0 text-xs font-bold text-white/88">@scena.kr</span>
@@ -430,9 +437,9 @@ function CalendarDayPreviewTemplate({
         </div>
       )}
 
-      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/52 via-black/18 to-transparent px-7 pb-7 pt-0"].join(" ")}>
+      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/52 via-black/18 to-transparent px-6 pb-6 pt-0"].join(" ")}>
         {!showBackdropGrid ? (
-          <h2 className="mb-0 whitespace-normal [word-break:keep-all] text-[2.15rem] font-black leading-none text-white drop-shadow">
+          <h2 className="mb-0 whitespace-normal [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow">
             {leadTitle}
           </h2>
         ) : null}
@@ -467,6 +474,10 @@ export default function ContentCapturePage() {
   const draggedIndexRef = useRef<number | null>(null);
   const [personTitle, setPersonTitle] = useState("인물 이름");
   const [personSubtitle, setPersonSubtitle] = useState("관객수가 증명한 배우");
+  const [personBody, setPersonBody] = useState("");
+  const [personShowTitle, setPersonShowTitle] = useState(true);
+  const [personShowSubtitle, setPersonShowSubtitle] = useState(true);
+  const [personShowBody, setPersonShowBody] = useState(true);
   const [movieCoverTitle, setMovieCoverTitle] = useState("영화 묶음");
   const [movieCoverSubtitle, setMovieCoverSubtitle] = useState("TOVIE MOVIE COVER");
   const [movieCoverLayout, setMovieCoverLayout] = useState<"stack" | "grid">("stack");
@@ -530,6 +541,10 @@ export default function ContentCapturePage() {
   }, [movieSlotCount, selectedPerson?.id, selectedPerson?.name]);
 
   useEffect(() => {
+    setPersonBody(selectedPerson?.biography || "");
+  }, [selectedPerson?.id, selectedPerson?.biography]);
+
+  useEffect(() => {
     if (!selectedMovies.length) {
       setPreviewMovieIndex(0);
       return;
@@ -551,6 +566,7 @@ export default function ContentCapturePage() {
   const requestRottenScore = useCallback(
     async (movie: CaptureMovie) => {
       if (loadingRottenIds[movie.id]) return;
+      if (!isMovieContent(movie)) return;
 
       setLoadingRottenIds((current) => ({ ...current, [movie.id]: true }));
 
@@ -581,7 +597,7 @@ export default function ContentCapturePage() {
 
   useEffect(() => {
     selectedMovies.forEach((movie) => {
-      if (movie.noteMode === "rotten" && !movie.rottenTomatometer && !movie.rottenPopcornmeter) {
+      if (isMovieContent(movie) && movie.noteMode === "rotten" && !movie.rottenTomatometer && !movie.rottenPopcornmeter) {
         void requestRottenScore(movie);
       }
     });
@@ -1037,7 +1053,7 @@ export default function ContentCapturePage() {
                           onChange={(event) => {
                             const nextMode = event.target.value as "custom" | "rotten";
                             updateMovieNoteMode(movie.id, nextMode);
-                            if (nextMode === "rotten" && !movie.rottenTomatometer && !movie.rottenPopcornmeter) {
+                            if (isMovieContent(movie) && nextMode === "rotten" && !movie.rottenTomatometer && !movie.rottenPopcornmeter) {
                               void requestRottenScore(movie);
                             }
                           }}
@@ -1045,7 +1061,7 @@ export default function ContentCapturePage() {
                           className="h-7 w-full border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-700 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:focus:border-slate-100"
                         >
                           <option value="custom">직접 입력</option>
-                          <option value="rotten">로튼</option>
+                          {isMovieContent(movie) ? <option value="rotten">로튼</option> : null}
                         </select>
                         {movie.noteMode === "custom" ? (
                           <input
@@ -1219,7 +1235,7 @@ export default function ContentCapturePage() {
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body</span>
                 <textarea
-                  value={currentSingleMovie?.singlePreviewBody ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다."}
+                  value={currentSingleMovie?.singlePreviewBody ?? currentSingleMovie?.overview ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다."}
                   onChange={(event) => updateCurrentSinglePreview({ singlePreviewBody: event.target.value })}
                   rows={2}
                   className="min-h-20 w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
@@ -1262,27 +1278,6 @@ export default function ContentCapturePage() {
                     className={[
                       "h-8 border px-2 text-xs font-bold transition",
                       item.checked
-                        ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                        : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-3 flex gap-2">
-                {[
-                  { key: "top", label: "Top" },
-                  { key: "center", label: "Center" },
-                  { key: "bottom", label: "Bottom" },
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => updateCurrentSinglePreview({ singlePreviewTextPosition: item.key as "top" | "center" | "bottom" })}
-                    className={[
-                      "h-8 flex-1 border px-2 text-xs font-bold transition",
-                      (currentSingleMovie?.singlePreviewTextPosition ?? "center") === item.key
                         ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
                         : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
                     ].join(" ")}
@@ -1356,6 +1351,37 @@ export default function ContentCapturePage() {
                     className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
                   />
                 </label>
+                <label className="mb-3 block">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body</span>
+                  <textarea
+                    value={personBody}
+                    onChange={(event) => setPersonBody(event.target.value)}
+                    placeholder={selectedPerson?.biography ? "" : "인물 설명"}
+                    rows={2}
+                    className="min-h-20 w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                  />
+                </label>
+                <div className="mb-3 grid grid-cols-3 gap-2">
+                  {[
+                    { key: "title", label: "Title", checked: personShowTitle, setChecked: setPersonShowTitle },
+                    { key: "subtitle", label: "Subtitle", checked: personShowSubtitle, setChecked: setPersonShowSubtitle },
+                    { key: "body", label: "Body", checked: personShowBody, setChecked: setPersonShowBody },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => item.setChecked((current) => !current)}
+                      className={[
+                        "h-8 border px-2 text-xs font-bold transition",
+                        item.checked
+                          ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                          : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                      ].join(" ")}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer left</span>
@@ -1402,6 +1428,10 @@ export default function ContentCapturePage() {
                   person={selectedPerson}
                   headline={personTitle}
                   kicker={personSubtitle}
+                  body={personBody}
+                  showTitle={personShowTitle}
+                  showSubtitle={personShowSubtitle}
+                  showBody={personShowBody}
                   footerLeft={footerLeft}
                   footerRight={footerRight}
                 />
@@ -1458,34 +1488,38 @@ export default function ContentCapturePage() {
               </div>
             ) : null}
             {isMovieListMode ? (
-              <div className="mt-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Single Preview</p>
-                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {selectedMovies.length ? `${previewMovieIndex + 1}/${selectedMovies.length}` : "empty"}
-                  </p>
+              <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
+                <div className="p-4 pb-3">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Single Preview</p>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      {selectedMovies.length ? `${previewMovieIndex + 1}/${selectedMovies.length}` : "empty"}
+                    </p>
+                  </div>
+
+                  {selectedMovies.length ? (
+                    <div className="flex gap-1.5 overflow-x-auto pb-1">
+                        {selectedMovies.map((movie, index) => (
+                          <button
+                            key={movie.id}
+                            type="button"
+                            onClick={() => setPreviewMovieIndex(index)}
+                            className={[
+                              "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
+                              previewMovieIndex === index
+                                ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                                : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                            ].join(" ")}
+                          >
+                            {index + 1}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
                 </div>
 
                 {selectedMovies.length ? (
                   <>
-                    <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
-                      {selectedMovies.map((movie, index) => (
-                        <button
-                          key={movie.id}
-                          type="button"
-                          onClick={() => setPreviewMovieIndex(index)}
-                          className={[
-                            "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
-                            previewMovieIndex === index
-                              ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                              : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                          ].join(" ")}
-                        >
-                          {index + 1}
-                        </button>
-                      ))}
-                    </div>
-
                     <div className="aspect-[4/5] overflow-hidden bg-slate-950 text-white">
                       <div ref={singleMovieCaptureRef} className="h-full w-full">
                         <SingleMovieTemplate
@@ -1497,7 +1531,7 @@ export default function ContentCapturePage() {
                     </div>
 
                     {selectedMovies[previewMovieIndex]?.posterOptions?.length ? (
-                      <div className="mt-3 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                      <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                         <div className="mb-3 flex items-center justify-between gap-3">
                           <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Poster</p>
                           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -1539,4 +1573,3 @@ export default function ContentCapturePage() {
     </div>
   );
 }
-

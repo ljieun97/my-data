@@ -4,6 +4,7 @@ import { createContext, useContext, useMemo, useState } from "react";
 
 export type CaptureMovie = {
   id: number;
+  media_type?: "movie" | "tv";
   title: string;
   original_title?: string;
   overview?: string;
@@ -78,7 +79,7 @@ type CaptureContentContextValue = {
   updatePersonProfilePath: (profilePath: string) => void;
   clearMovies: () => void;
   clearPerson: () => void;
-  hasMovie: (id: number) => boolean;
+  hasMovie: (id: number, mediaType?: CaptureMovie["media_type"]) => boolean;
 };
 
 const CaptureContentContext = createContext<CaptureContentContextValue | undefined>(undefined);
@@ -86,6 +87,7 @@ const CaptureContentContext = createContext<CaptureContentContextValue | undefin
 function normalizeMovie(movie: any): CaptureMovie | null {
   const id = Number(movie?.id);
   const title = movie?.title || movie?.name;
+  const mediaType = movie?.media_type === "tv" ? "tv" : "movie";
 
   if (!Number.isFinite(id) || !title) {
     return null;
@@ -93,10 +95,11 @@ function normalizeMovie(movie: any): CaptureMovie | null {
 
   return {
     id,
+    media_type: mediaType,
     title,
-    original_title: movie.original_title,
+    original_title: movie.original_title || movie.original_name,
     overview: movie.overview,
-    release_date: movie.release_date,
+    release_date: movie.release_date || movie.first_air_date,
     poster_path: movie.poster_path,
     backdrop_path: movie.backdrop_path,
     vote_average: movie.vote_average,
@@ -107,8 +110,8 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     rottenPopcornmeter: movie.rottenPopcornmeter ?? null,
     rottenTomatoesUrl: movie.rottenTomatoesUrl ?? null,
     singlePreviewTitle: movie.singlePreviewTitle ?? title,
-    singlePreviewSubtitle: movie.singlePreviewSubtitle ?? (movie.original_title || title),
-    singlePreviewBody: movie.singlePreviewBody ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.",
+    singlePreviewSubtitle: movie.singlePreviewSubtitle ?? (movie.original_title || movie.original_name || title),
+    singlePreviewBody: movie.singlePreviewBody ?? movie.overview ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.",
     singlePreviewTextPosition: movie.singlePreviewTextPosition ?? "center",
     singlePreviewShowTitle: movie.singlePreviewShowTitle ?? true,
     singlePreviewShowSubtitle: movie.singlePreviewShowSubtitle ?? true,
@@ -125,7 +128,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     const normalizedMovie = normalizeMovie(movie);
     if (!normalizedMovie) return false;
 
-    if (selectedMovies.some((item) => item.id === normalizedMovie.id) || selectedMovies.length >= 5) {
+    if (selectedMovies.some((item) => item.id === normalizedMovie.id && item.media_type === normalizedMovie.media_type) || selectedMovies.length >= 5) {
       return false;
     }
 
@@ -253,7 +256,8 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     setSelectedPerson(null);
   };
 
-  const hasMovie = (id: number) => selectedMovies.some((movie) => movie.id === id);
+  const hasMovie = (id: number, mediaType: CaptureMovie["media_type"] = "movie") =>
+    selectedMovies.some((movie) => movie.id === id && movie.media_type === mediaType);
 
   const value = useMemo(
     () => ({

@@ -35,9 +35,15 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
 
   const handleSelectCaptureMovie = async (movie: any) => {
     let posterOptions: string[] = [];
+    let detail: any = null;
+    const mediaType = movie?.media_type === "tv" ? "tv" : "movie";
     try {
       setIsLoadingCaptureResults(true);
-      const images = await getImages("movie", movie.id);
+      const [images, detailResult] = await Promise.all([
+        getImages(mediaType, movie.id),
+        getDetail(mediaType, movie.id),
+      ]);
+      detail = detailResult;
       posterOptions = Array.isArray(images?.posters)
         ? images.posters.map((poster: any) => poster.file_path).filter(Boolean).slice(0, 20)
         : [];
@@ -47,7 +53,14 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
 
     const didAdd = addMovie({
       ...movie,
-      poster_path: movie.poster_path || posterOptions[0],
+      ...detail,
+      media_type: mediaType,
+      title: detail?.title || detail?.name || movie.title || movie.name,
+      original_title: detail?.original_title || detail?.original_name || movie.original_title || movie.original_name,
+      overview: movie.overview || detail?.overview || "한국어 overview가 없습니다.",
+      release_date: detail?.release_date || detail?.first_air_date || movie.release_date || movie.first_air_date,
+      poster_path: detail?.poster_path || movie.poster_path || posterOptions[0],
+      backdrop_path: detail?.backdrop_path || movie.backdrop_path,
       posterOptions,
     });
     if (didAdd) {
@@ -127,7 +140,15 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
           ? captureMode === "person-cover"
             ? data.results.filter((item: any) => item?.profile_path).slice(0, 6)
             : data.results
-                .filter((item: any) => (item?.media_type === "movie" || item?.title) && item?.backdrop_path)
+                .filter((item: any) => item?.media_type === "movie" || item?.media_type === "tv" || item?.title || item?.name)
+                .filter((item: any, index: number, items: any[]) => {
+                  const mediaType = item?.media_type === "tv" ? "tv" : "movie";
+                  const key = `${mediaType}-${item?.id}`;
+                  return items.findIndex((candidate: any) => {
+                    const candidateMediaType = candidate?.media_type === "tv" ? "tv" : "movie";
+                    return `${candidateMediaType}-${candidate?.id}` === key;
+                  }) === index;
+                })
                 .slice(0, 6)
           : [];
 
@@ -190,21 +211,23 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
 
           {!isLoadingCaptureResults && !captureSearchError && inputValue.trim() && !captureResults.length ? (
             <div className="px-3 py-3 text-sm text-slate-500 dark:text-slate-400">
-              {captureMode === "person-cover" ? "프로필 이미지가 있는 인물이 없습니다" : "backdrop 이미지가 있는 영화가 없습니다"}
+              {captureMode === "person-cover" ? "프로필 이미지가 있는 인물이 없습니다" : "검색 결과가 없습니다"}
             </div>
           ) : null}
 
           {captureResults.map((result) => {
             const isPersonMode = captureMode === "person-cover";
-            const isAdded = !isPersonMode && hasMovie(Number(result.id));
+            const mediaType = result?.media_type === "tv" ? "tv" : "movie";
+            const isAdded = !isPersonMode && hasMovie(Number(result.id), mediaType);
             const isDisabled = !isPersonMode && (isAdded || selectedMovies.length >= 5);
-            const year = result.release_date ? String(result.release_date).slice(0, 4) : "";
+            const yearSource = result.release_date || result.first_air_date;
+            const year = yearSource ? String(yearSource).slice(0, 4) : "";
             const imagePath = isPersonMode ? result.profile_path : result.poster_path || result.backdrop_path;
-            const title = isPersonMode ? result.name : result.title;
+            const title = isPersonMode ? result.name : result.title || result.name;
 
             return (
               <button
-                key={result.id}
+                key={isPersonMode ? result.id : `${mediaType}-${result.id}`}
                 type="button"
                 disabled={isDisabled}
                 onMouseDown={(event) => event.preventDefault()}
@@ -218,15 +241,21 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
                 }}
                 className="flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-50 dark:hover:bg-slate-900"
               >
-                <img
-                  alt=""
-                  src={`https://image.tmdb.org/t/p/w185${imagePath}`}
-                  className="h-14 w-10 shrink-0 object-cover"
-                />
+                {imagePath ? (
+                  <img
+                    alt=""
+                    src={`https://image.tmdb.org/t/p/w185${imagePath}`}
+                    className="h-14 w-10 shrink-0 object-cover"
+                  />
+                ) : (
+                  <span className="flex h-14 w-10 shrink-0 items-center justify-center bg-slate-200 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    NO
+                  </span>
+                )}
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</span>
                   <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                    {isPersonMode ? result.known_for_department || "Person" : year || "개봉일 미정"}
+                    {isPersonMode ? result.known_for_department || "Person" : `${mediaType === "tv" ? "시리즈" : "영화"}${year ? ` · ${year}` : ""}`}
                   </span>
                 </span>
                 <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">

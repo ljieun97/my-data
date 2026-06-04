@@ -54,6 +54,40 @@ function getCalendarBackdropUrl(item: any) {
   return "";
 }
 
+function formatEnglishMonthBadge(date: Date) {
+  return new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(date).toUpperCase();
+}
+
+function formatEnglishDateBadge(dateKey: string) {
+  const date = new Date(`${dateKey}T00:00:00`);
+  return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric" }).format(date).toUpperCase();
+}
+
+function formatReleaseBoardDate(value: string) {
+  return value.trim();
+}
+
+function getReleaseBoardAutoDate(movie?: CaptureMovie) {
+  const rawDate = String(movie?.release_date ?? "").slice(0, 10);
+  if (!rawDate) return "";
+
+  const [year, month, day] = rawDate.split("-").map(Number);
+  if (!year || !month || !day) return "";
+
+  return `${month}/${day}`;
+}
+
+const RELEASE_BOARD_DEFAULT_COLORS = [
+  "#b91c1c",
+  "#315f90",
+  "#374151",
+  "#111827",
+  "#d14d72",
+  "#7c1d5a",
+  "#caa13f",
+  "#ea6b00",
+];
+
 function toSafeFilename(value: string) {
   return value.replace(/[\\/:*?"<>|]+/g, "-").trim().replace(/\s+/g, " ");
 }
@@ -448,6 +482,66 @@ function CalendarDayPreviewTemplate({
   );
 }
 
+function CalendarReleaseBoardTemplate({
+  movies,
+  title,
+  labelColors,
+  dateLabels,
+}: {
+  movies: Array<CaptureMovie | undefined>;
+  title: string;
+  labelColors: string[];
+  dateLabels: string[];
+}) {
+  const visibleMovies = movies.slice(0, 8).filter(Boolean) as CaptureMovie[];
+  const gridColsClass =
+    visibleMovies.length <= 2 ? "grid-cols-2" : visibleMovies.length <= 6 ? "grid-cols-3" : "grid-cols-4";
+
+  return (
+    <div className="relative flex h-full flex-col overflow-hidden bg-[#221f2e] text-white">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(236,72,153,0.34),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.22),transparent_36%),linear-gradient(180deg,#7a3f52_0%,#4a364a_52%,#262b3d_100%)]" />
+      <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
+
+      <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
+        <div className="flex flex-col items-center">
+          <h1 className="mt-0.5 inline-flex max-w-full items-center justify-center rounded-[1.1rem] bg-white px-4 py-2 break-keep text-center text-[1.55rem] font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_0_0_currentColor]">
+            {title}
+          </h1>
+        </div>
+
+        <div className={["mt-2.5 grid min-h-0 flex-1 gap-2", gridColsClass].join(" ")}>
+          {visibleMovies.map((movie, index) => {
+            const posterUrl = getPosterUrl(movie) || getBackdropUrl(movie);
+
+            return (
+              <div key={`${movie?.id ?? "empty"}-${index}`} className="flex min-h-0 flex-col overflow-hidden rounded-[0.95rem] bg-white/6 shadow-[0_10px_20px_rgba(0,0,0,0.22)]">
+                <div
+                  className="px-2 py-0.5 text-center"
+                  style={{ backgroundColor: labelColors[index] || RELEASE_BOARD_DEFAULT_COLORS[index] || "#1f2937" }}
+                >
+                  <p className="text-[0.78rem] font-black tracking-[0.06em] text-white">{formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}</p>
+                </div>
+                <div className="relative min-h-0 flex-1 bg-white">
+                  {posterUrl ? (
+                    <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-white/90 text-center text-xs font-bold tracking-[0.08em] text-slate-400">
+                      ADD MOVIE
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="pt-0.5 text-center">
+          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/92">@scena.kr</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ContentCapturePage() {
   const {
     captureMode,
@@ -470,6 +564,7 @@ export default function ContentCapturePage() {
   const movieCoverCaptureRef = useRef<HTMLDivElement | null>(null);
   const personCaptureRef = useRef<HTMLDivElement | null>(null);
   const calendarCaptureRef = useRef<HTMLDivElement | null>(null);
+  const calendarReleaseCaptureRef = useRef<HTMLDivElement | null>(null);
   const calendarDayPreviewCaptureRef = useRef<HTMLDivElement | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
   const [personTitle, setPersonTitle] = useState("인물 이름");
@@ -485,6 +580,7 @@ export default function ContentCapturePage() {
   const [footerRight, setFooterRight] = useState("@scena.kr");
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
+  const [releaseBoardPreviewIndex, setReleaseBoardPreviewIndex] = useState(0);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
   const [loadingRottenIds, setLoadingRottenIds] = useState<Record<number, boolean>>({});
@@ -495,12 +591,17 @@ export default function ContentCapturePage() {
   const [calendarTitle, setCalendarTitle] = useState(`${new Date().getMonth() + 1}월 개봉 일정`);
   const [showCalendarTitle, setShowCalendarTitle] = useState(true);
   const [calendarPreviewDateKey, setCalendarPreviewDateKey] = useState("");
+  const [calendarReleaseTitle, setCalendarReleaseTitle] = useState("6월 개봉예정 영화 라인업");
+  const [calendarReleaseLabelColors, setCalendarReleaseLabelColors] = useState(RELEASE_BOARD_DEFAULT_COLORS);
+  const [calendarReleaseDates, setCalendarReleaseDates] = useState(() => Array.from({ length: 8 }, () => ""));
 
   const isPersonMode = captureMode === "person-cover";
   const isMovieListMode = captureMode === "movie-list";
   const isMovieCoverMode = captureMode === "movie-cover";
   const isCalendarMode = captureMode === "calendar";
-  const isMovieMode = isMovieListMode || isMovieCoverMode;
+  const isCalendarReleaseMode = captureMode === "calendar-release";
+  const isCalendarDataMode = isCalendarMode;
+  const isMovieMode = isMovieListMode || isMovieCoverMode || isCalendarReleaseMode;
   const movieMinCount = isMovieCoverMode ? 2 : 3;
   const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), 5);
   const currentSingleMovie = selectedMovies[previewMovieIndex];
@@ -533,6 +634,9 @@ export default function ContentCapturePage() {
   }, [calendarResults]);
   const activeCalendarPreview =
     calendarPreviewGroups.find((group) => group.dateKey === calendarPreviewDateKey) ?? calendarPreviewGroups[0] ?? null;
+  const releaseBoardSlots = Array.from({ length: 8 }, (_, index) => selectedMovies[index]);
+  const releaseBoardDateLabels = releaseBoardSlots.map((movie, index) => formatReleaseBoardDate(calendarReleaseDates[index]) || getReleaseBoardAutoDate(movie));
+  const currentReleaseBoardMovie = releaseBoardSlots[releaseBoardPreviewIndex];
 
   useEffect(() => {
     if (selectedPerson?.name) {
@@ -635,6 +739,8 @@ export default function ContentCapturePage() {
   const handleCapture = async () => {
     const targetRef = isCalendarMode
       ? calendarCaptureRef
+      : isCalendarReleaseMode
+        ? calendarReleaseCaptureRef
       : isPersonMode
         ? personCaptureRef
         : isMovieCoverMode
@@ -654,7 +760,7 @@ export default function ContentCapturePage() {
       const dataUrl = await toPng(targetRef.current, {
         cacheBust: true,
         pixelRatio: 2,
-        backgroundColor: isCalendarMode ? "#ffffff" : "#111827",
+        backgroundColor: isCalendarMode ? "#ffffff" : isCalendarReleaseMode ? "#221f2e" : "#111827",
         width: captureWidth,
         height: captureHeight,
         canvasWidth: captureWidth * 2,
@@ -900,11 +1006,12 @@ export default function ContentCapturePage() {
           { key: "movie-cover", label: "Movie Cover" },
           { key: "movie-list", label: "Movie List" },
           { key: "calendar", label: "Calendar" },
+          { key: "calendar-release", label: "Release Board" },
         ].map((item) => (
           <button
             key={item.key}
             type="button"
-            onClick={() => setCaptureMode(item.key as "movie-list" | "movie-cover" | "person-cover" | "calendar")}
+            onClick={() => setCaptureMode(item.key as "movie-list" | "movie-cover" | "person-cover" | "calendar" | "calendar-release")}
             className={[
               "h-9 flex-1 px-4 text-sm font-bold transition sm:flex-none",
               captureMode === item.key
@@ -919,16 +1026,18 @@ export default function ContentCapturePage() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <section className="flex flex-col gap-4">
-          {isCalendarMode ? (
+          {isCalendarMode || isCalendarReleaseMode ? (
           <>
             <div className="border border-slate-200 bg-white/72 p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200">
-              <p className="font-bold text-slate-900 dark:text-slate-100">Calendar Mode</p>
+              <p className="font-bold text-slate-900 dark:text-slate-100">{isCalendarReleaseMode ? "Release Board Mode" : "Calendar Mode"}</p>
               <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                달력 페이지 내용을 그대로 표시합니다. 상단 download 버튼으로 캡처하세요.
+                {isCalendarReleaseMode ? "직접 고른 영화 8개를 날짜 라벨과 함께 4:5 보드로 배치합니다." : "달력 페이지 내용을 그대로 표시합니다. 상단 download 버튼으로 캡처하세요."}
               </p>
-              {isCalendarLoading ? <p className="mt-3 text-xs">불러오는 중...</p> : null}
+              {isCalendarMode && isCalendarLoading ? <p className="mt-3 text-xs">불러오는 중...</p> : null}
               {calendarError ? <p className="mt-3 text-xs text-rose-500">{calendarError}</p> : null}
-              {!isCalendarLoading && !calendarError ? (
+              {isCalendarReleaseMode ? (
+                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">영화 {selectedMovies.length}/8개</p>
+              ) : !isCalendarLoading && !calendarError ? (
                 <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
                   이벤트 {calendarResults.length}개
                 </p>
@@ -936,44 +1045,97 @@ export default function ContentCapturePage() {
             </div>
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Cover Text</p>
-              <label className="mb-3 block">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                <input
-                  value={calendarTitle}
-                  onChange={(event) => setCalendarTitle(event.target.value)}
-                  className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                />
-              </label>
-              <button
-                type="button"
-                onClick={() => setShowCalendarTitle((current) => !current)}
-                className={[
-                  "h-8 border px-2 text-xs font-bold transition",
-                  showCalendarTitle
-                    ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                    : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                ].join(" ")}
-              >
-                Title {showCalendarTitle ? "ON" : "OFF"}
-              </button>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer left</span>
-                  <input
-                    value={footerLeft}
-                    onChange={(event) => setFooterLeft(event.target.value)}
-                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                  />
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer right</span>
-                  <input
-                    value={footerRight}
-                    onChange={(event) => setFooterRight(event.target.value)}
-                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                  />
-                </label>
-              </div>
+              {isCalendarReleaseMode ? (
+                <>
+                  <label className="mb-3 block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
+                    <input
+                      value={calendarReleaseTitle}
+                      onChange={(event) => setCalendarReleaseTitle(event.target.value)}
+                      className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                    />
+                  </label>
+                  <div className="mb-3">
+                    <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Date Label Colors</span>
+                    <div className="grid grid-cols-4 gap-2">
+                      {calendarReleaseLabelColors.map((color, index) => (
+                        <label key={`release-color-${index}`} className="flex items-center gap-2 border border-slate-200 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900/60">
+                          <input
+                            type="color"
+                            value={color}
+                            onChange={(event) =>
+                              setCalendarReleaseLabelColors((current) =>
+                                current.map((entry, entryIndex) => (entryIndex === index ? event.target.value : entry)),
+                              )
+                            }
+                            className="h-7 w-7 cursor-pointer border-0 bg-transparent p-0"
+                          />
+                          <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">{index + 1}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Date Labels</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {calendarReleaseDates.map((dateLabel, index) => (
+                        <label key={`release-date-${index}`} className="block">
+                          <span className="mb-1 block text-[11px] font-bold text-slate-500 dark:text-slate-400">{index + 1}</span>
+                          <input
+                            value={dateLabel}
+                            onChange={(event) => setCalendarReleaseDates((current) => current.map((entry, entryIndex) => (entryIndex === index ? event.target.value : entry)))}
+                            placeholder={getReleaseBoardAutoDate(releaseBoardSlots[index]) || "6/5"}
+                            className="h-9 w-full border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">날짜는 영화 개봉일로 자동 채워지고, 입력하면 그 값이 우선 적용됩니다.</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">영화는 아래 Movies 영역에서 직접 추가하고 순서를 바꾸면 보드에 그대로 반영됩니다.</p>
+                </>
+              ) : (
+                <>
+                  <label className="mb-3 block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
+                    <input
+                      value={calendarTitle}
+                      onChange={(event) => setCalendarTitle(event.target.value)}
+                      className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowCalendarTitle((current) => !current)}
+                    className={[
+                      "h-8 border px-2 text-xs font-bold transition",
+                      showCalendarTitle
+                        ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                        : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                    ].join(" ")}
+                  >
+                    Title {showCalendarTitle ? "ON" : "OFF"}
+                  </button>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer left</span>
+                      <input
+                        value={footerLeft}
+                        onChange={(event) => setFooterLeft(event.target.value)}
+                        className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer right</span>
+                      <input
+                        value={footerRight}
+                        onChange={(event) => setFooterRight(event.target.value)}
+                        className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                      />
+                    </label>
+                  </div>
+                </>
+              )}
               <div className="mt-3 border border-slate-200 bg-white/72 p-3 dark:border-slate-800 dark:bg-slate-900/60">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Copy Text</p>
@@ -1000,11 +1162,11 @@ export default function ContentCapturePage() {
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedMovies.length}/{movieSlotCount}</p>
             </div>
             <p className="mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              3개부터 시작해서 추가하면 4, 5개로 자동 확장됩니다.
+              {isCalendarReleaseMode ? "영화를 최대 8개까지 추가하고 순서를 바꾸면 보드에 그대로 반영됩니다." : "3개부터 시작해서 추가하면 4, 5개로 자동 확장됩니다."}
             </p>
 
             <div className="flex flex-col gap-2">
-              {slots.map((movie, index) => (
+              {(isCalendarReleaseMode ? releaseBoardSlots : slots).map((movie, index) => (
                 <div
                   key={movie?.id ?? `slot-${index}`}
                   draggable={Boolean(movie)}
@@ -1408,9 +1570,9 @@ export default function ContentCapturePage() {
         <section className="flex justify-center lg:justify-end">
           <div className="w-full max-w-[min(100%,390px)] sm:max-w-[420px]">
             <div
-              ref={isCalendarMode ? calendarCaptureRef : captureMode === "person-cover" ? personCaptureRef : isMovieCoverMode ? movieCoverCaptureRef : captureRef}
+              ref={isCalendarMode ? calendarCaptureRef : isCalendarReleaseMode ? calendarReleaseCaptureRef : captureMode === "person-cover" ? personCaptureRef : isMovieCoverMode ? movieCoverCaptureRef : captureRef}
               className={[
-                isCalendarMode ? "aspect-[4/5] w-full overflow-hidden bg-white text-slate-900" : "aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white",
+                isCalendarMode ? "aspect-[4/5] w-full overflow-hidden bg-white text-slate-900" : isCalendarReleaseMode ? "aspect-[4/5] w-full overflow-hidden bg-[#221f2e] text-white" : "aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white",
                 "shadow-[0_24px_64px_rgba(15,23,42,0.24)]",
               ].join(" ")}
             >
@@ -1422,6 +1584,13 @@ export default function ContentCapturePage() {
                   showTitle={showCalendarTitle}
                   footerLeft={footerLeft}
                   footerRight={footerRight}
+                />
+              ) : isCalendarReleaseMode ? (
+                <CalendarReleaseBoardTemplate
+                  movies={releaseBoardSlots}
+                  title={calendarReleaseTitle}
+                  labelColors={calendarReleaseLabelColors}
+                  dateLabels={releaseBoardDateLabels}
                 />
               ) : captureMode === "person-cover" ? (
                 <PersonCoverTemplate
@@ -1483,6 +1652,72 @@ export default function ContentCapturePage() {
                 ) : (
                   <div className="flex h-56 items-center justify-center border border-dashed border-slate-300 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
                     ?대깽?멸? ?덈뒗 ?좎쭨媛 ?놁뒿?덈떎.
+                  </div>
+                )}
+              </div>
+            ) : null}
+            {isCalendarReleaseMode ? (
+              <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
+                <div className="p-4 pb-3">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Release Board Poster</p>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      {selectedMovies.length ? `${releaseBoardPreviewIndex + 1}/${Math.min(selectedMovies.length, 8)}` : "empty"}
+                    </p>
+                  </div>
+
+                  {selectedMovies.length ? (
+                    <div className="flex gap-1.5 overflow-x-auto pb-1">
+                      {releaseBoardSlots.map((movie, index) => (
+                        <button
+                          key={`${movie?.id ?? "release-slot"}-${index}`}
+                          type="button"
+                          onClick={() => setReleaseBoardPreviewIndex(index)}
+                          className={[
+                            "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
+                            releaseBoardPreviewIndex === index
+                              ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                              : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                          ].join(" ")}
+                          disabled={!movie}
+                        >
+                          {index + 1}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
+                {currentReleaseBoardMovie?.posterOptions?.length ? (
+                  <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Poster</p>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        {currentReleaseBoardMovie.posterOptions.length}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                      {currentReleaseBoardMovie.posterOptions.map((posterPath) => (
+                        <button
+                          key={posterPath}
+                          type="button"
+                          onClick={() => updateMoviePoster(currentReleaseBoardMovie.id, posterPath)}
+                          className={[
+                            "aspect-[4/5] overflow-hidden border transition",
+                            currentReleaseBoardMovie.poster_path === posterPath
+                              ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
+                              : "border-slate-200 dark:border-slate-800",
+                          ].join(" ")}
+                          aria-label="Select release board poster"
+                        >
+                          <img alt="" src={getPosterThumbUrl(posterPath)} className="h-full w-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="px-4 pb-4 text-xs text-slate-500 dark:text-slate-400">
+                    {selectedMovies.length ? "선택한 영화에 포스터 옵션이 없으면 현재 포스터가 그대로 사용됩니다." : "영화를 추가하면 포스터 선택이 표시됩니다."}
                   </div>
                 )}
               </div>

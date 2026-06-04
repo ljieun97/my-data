@@ -86,7 +86,7 @@ export async function getTopRatedMovies() {
 
 export async function getPosters(type: string, id: string) {
   const URL = `${BASE_URL}/${type}/${id}/images?`
-    + 'include_image_language=en,ko&'
+    + 'include_image_language=en,ko,null&'
     + `&api_key=${API_KEY}`
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   const { posters } = await response.json()

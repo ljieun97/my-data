@@ -20,6 +20,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const { captureMode, addMovie, setPerson, hasMovie, selectedMovies } = useCaptureContent();
   const isCapturePage = pathname?.startsWith("/capture");
   const isCalendarMode = captureMode === "calendar";
+  const maxCaptureMovies = captureMode === "calendar-release" ? 8 : 5;
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextKeyword = e.target.value;
@@ -219,7 +220,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
             const isPersonMode = captureMode === "person-cover";
             const mediaType = result?.media_type === "tv" ? "tv" : "movie";
             const isAdded = !isPersonMode && hasMovie(Number(result.id), mediaType);
-            const isDisabled = !isPersonMode && (isAdded || selectedMovies.length >= 5);
+            const isDisabled = !isPersonMode && (isAdded || selectedMovies.length >= maxCaptureMovies);
             const yearSource = result.release_date || result.first_air_date;
             const year = yearSource ? String(yearSource).slice(0, 4) : "";
             const imagePath = isPersonMode ? result.profile_path : result.poster_path || result.backdrop_path;
@@ -259,7 +260,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
                   </span>
                 </span>
                 <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  {isPersonMode ? "선택" : isAdded ? "추가됨" : selectedMovies.length >= 5 ? "가득참" : "추가"}
+                  {isPersonMode ? "선택" : isAdded ? "추가됨" : selectedMovies.length >= maxCaptureMovies ? "가득참" : "추가"}
                 </span>
               </button>
             );

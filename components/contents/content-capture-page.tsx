@@ -1,9 +1,11 @@
 ﻿"use client";
 
 import Title from "@/components/common/title";
+import { CalendarCaptureControls } from "@/components/contents/content-capture-calendar-controls";
 import CalendarView from "@/components/contents/calendar-view";
+import { MovieSlotsPanel } from "@/components/contents/content-capture-movie-controls";
 import { CaptureMovie, CapturePerson, useCaptureContent } from "@/context/CaptureContentContext";
-import { faDownload, faGripVertical, faRotateLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toPng } from "html-to-image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -1027,247 +1029,58 @@ export default function ContentCapturePage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <section className="flex flex-col gap-4">
           {isCalendarMode || isCalendarReleaseMode ? (
-          <>
-            <div className="border border-slate-200 bg-white/72 p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-950/70 dark:text-slate-200">
-              <p className="font-bold text-slate-900 dark:text-slate-100">{isCalendarReleaseMode ? "Release Board Mode" : "Calendar Mode"}</p>
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                {isCalendarReleaseMode ? "직접 고른 영화 8개를 날짜 라벨과 함께 4:5 보드로 배치합니다." : "달력 페이지 내용을 그대로 표시합니다. 상단 download 버튼으로 캡처하세요."}
-              </p>
-              {isCalendarMode && isCalendarLoading ? <p className="mt-3 text-xs">불러오는 중...</p> : null}
-              {calendarError ? <p className="mt-3 text-xs text-rose-500">{calendarError}</p> : null}
-              {isCalendarReleaseMode ? (
-                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">영화 {selectedMovies.length}/8개</p>
-              ) : !isCalendarLoading && !calendarError ? (
-                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                  이벤트 {calendarResults.length}개
-                </p>
-              ) : null}
-            </div>
-            <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-              <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Cover Text</p>
-              {isCalendarReleaseMode ? (
-                <>
-                  <label className="mb-3 block">
-                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                    <input
-                      value={calendarReleaseTitle}
-                      onChange={(event) => setCalendarReleaseTitle(event.target.value)}
-                      className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                    />
-                  </label>
-                  <div className="mb-3">
-                    <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Date Label Colors</span>
-                    <div className="grid grid-cols-4 gap-2">
-                      {calendarReleaseLabelColors.map((color, index) => (
-                        <label key={`release-color-${index}`} className="flex items-center gap-2 border border-slate-200 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900/60">
-                          <input
-                            type="color"
-                            value={color}
-                            onChange={(event) =>
-                              setCalendarReleaseLabelColors((current) =>
-                                current.map((entry, entryIndex) => (entryIndex === index ? event.target.value : entry)),
-                              )
-                            }
-                            className="h-7 w-7 cursor-pointer border-0 bg-transparent p-0"
-                          />
-                          <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">{index + 1}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Date Labels</span>
-                    <div className="grid grid-cols-2 gap-2">
-                      {calendarReleaseDates.map((dateLabel, index) => (
-                        <label key={`release-date-${index}`} className="block">
-                          <span className="mb-1 block text-[11px] font-bold text-slate-500 dark:text-slate-400">{index + 1}</span>
-                          <input
-                            value={dateLabel}
-                            onChange={(event) => setCalendarReleaseDates((current) => current.map((entry, entryIndex) => (entryIndex === index ? event.target.value : entry)))}
-                            placeholder={getReleaseBoardAutoDate(releaseBoardSlots[index]) || "6/5"}
-                            className="h-9 w-full border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                          />
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">날짜는 영화 개봉일로 자동 채워지고, 입력하면 그 값이 우선 적용됩니다.</p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">영화는 아래 Movies 영역에서 직접 추가하고 순서를 바꾸면 보드에 그대로 반영됩니다.</p>
-                </>
-              ) : (
-                <>
-                  <label className="mb-3 block">
-                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                    <input
-                      value={calendarTitle}
-                      onChange={(event) => setCalendarTitle(event.target.value)}
-                      className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowCalendarTitle((current) => !current)}
-                    className={[
-                      "h-8 border px-2 text-xs font-bold transition",
-                      showCalendarTitle
-                        ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                        : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                    ].join(" ")}
-                  >
-                    Title {showCalendarTitle ? "ON" : "OFF"}
-                  </button>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer left</span>
-                      <input
-                        value={footerLeft}
-                        onChange={(event) => setFooterLeft(event.target.value)}
-                        className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                      />
-                    </label>
-                    <label className="block">
-                      <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer right</span>
-                      <input
-                        value={footerRight}
-                        onChange={(event) => setFooterRight(event.target.value)}
-                        className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                      />
-                    </label>
-                  </div>
-                </>
-              )}
-              <div className="mt-3 border border-slate-200 bg-white/72 p-3 dark:border-slate-800 dark:bg-slate-900/60">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Copy Text</p>
-                  <button
-                    type="button"
-                    onClick={handleCopyCalendarText}
-                    disabled={!calendarTextForCopy}
-                    className="h-8 border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                  >
-                    {didCopyText ? "copied" : "copy"}
-                  </button>
-                </div>
-                <pre className="min-h-24 whitespace-pre-wrap border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-700 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-200">
-                  {calendarTextForCopy || "캘린더 데이터가 로드되면 복사용 텍스트가 표시됩니다."}
-                </pre>
-              </div>
-            </div>
-          </>
+            <CalendarCaptureControls
+              isCalendarReleaseMode={isCalendarReleaseMode}
+              isCalendarMode={isCalendarMode}
+              isCalendarLoading={isCalendarLoading}
+              calendarError={calendarError}
+              selectedMoviesCount={selectedMovies.length}
+              calendarResultsCount={calendarResults.length}
+              calendarReleaseTitle={calendarReleaseTitle}
+              setCalendarReleaseTitle={setCalendarReleaseTitle}
+              calendarReleaseLabelColors={calendarReleaseLabelColors}
+              setCalendarReleaseLabelColors={setCalendarReleaseLabelColors}
+              calendarReleaseDates={calendarReleaseDates}
+              setCalendarReleaseDates={setCalendarReleaseDates}
+              releaseBoardPlaceholders={releaseBoardSlots.map((movie) => getReleaseBoardAutoDate(movie) || "6/5")}
+              calendarTitle={calendarTitle}
+              setCalendarTitle={setCalendarTitle}
+              showCalendarTitle={showCalendarTitle}
+              setShowCalendarTitle={setShowCalendarTitle}
+              footerLeft={footerLeft}
+              setFooterLeft={setFooterLeft}
+              footerRight={footerRight}
+              setFooterRight={setFooterRight}
+              handleCopyCalendarText={handleCopyCalendarText}
+              calendarTextForCopy={calendarTextForCopy}
+              didCopyText={didCopyText}
+            />
           ) : isMovieMode ? (
           <>
-            <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Movies</p>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedMovies.length}/{movieSlotCount}</p>
-            </div>
-            <p className="mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {isCalendarReleaseMode ? "영화를 최대 8개까지 추가하고 순서를 바꾸면 보드에 그대로 반영됩니다." : "3개부터 시작해서 추가하면 4, 5개로 자동 확장됩니다."}
-            </p>
-
-            <div className="flex flex-col gap-2">
-              {(isCalendarReleaseMode ? releaseBoardSlots : slots).map((movie, index) => (
-                <div
-                  key={movie?.id ?? `slot-${index}`}
-                  draggable={Boolean(movie)}
-                  onDragStart={(event) => {
-                    if (!movie) return;
-                    handleDragStart(index);
-                    event.dataTransfer.effectAllowed = "move";
-                    event.dataTransfer.setData("text/plain", String(movie.id));
-                  }}
-                  onDragOver={(event) => {
-                    if (!movie || draggedIndexRef.current === null) return;
-                    event.preventDefault();
-                    event.dataTransfer.dropEffect = "move";
-                    setDragOverIndex(index);
-                  }}
-                  onDragLeave={() => {
-                    setDragOverIndex((current) => (current === index ? null : current));
-                  }}
-                  onDrop={(event) => {
-                    event.preventDefault();
-                    if (!movie) return;
-                    handleDrop(index);
-                  }}
-                  onDragEnd={() => {
-                    draggedIndexRef.current = null;
-                    setDragOverIndex(null);
-                  }}
-                  className={[
-                    "flex min-h-14 items-center gap-2 border bg-white px-2.5 py-2 transition dark:bg-slate-900/60 sm:px-3",
-                    movie ? "cursor-grab active:cursor-grabbing" : "",
-                    dragOverIndex === index
-                      ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-slate-100 dark:ring-slate-100/20"
-                      : "border-slate-200 dark:border-slate-800",
-                  ].join(" ")}
-                >
-                  <span className="inline-flex h-8 w-5 shrink-0 items-center justify-center text-slate-300 dark:text-slate-600">
-                    {movie ? <FontAwesomeIcon icon={faGripVertical} /> : null}
-                  </span>
-                  <span className="w-5 shrink-0 text-xs font-bold text-slate-400 sm:w-6">{index + 1}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{movie?.title ?? "빈 슬롯"}</p>
-                    {movie && isMovieListMode ? (
-                      <div className="mt-1 flex flex-col gap-1.5">
-                        <select
-                          value={movie.noteMode ?? "custom"}
-                          onChange={(event) => {
-                            const nextMode = event.target.value as "custom" | "rotten";
-                            updateMovieNoteMode(movie.id, nextMode);
-                            if (isMovieContent(movie) && nextMode === "rotten" && !movie.rottenTomatometer && !movie.rottenPopcornmeter) {
-                              void requestRottenScore(movie);
-                            }
-                          }}
-                          onMouseDown={(event) => event.stopPropagation()}
-                          className="h-7 w-full border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-700 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:focus:border-slate-100"
-                        >
-                          <option value="custom">직접 입력</option>
-                          {isMovieContent(movie) ? <option value="rotten">로튼</option> : null}
-                        </select>
-                        {movie.noteMode === "custom" ? (
-                          <input
-                            value={movie.note ?? ""}
-                            onChange={(event) => updateMovieNote(movie.id, event.target.value)}
-                            onMouseDown={(event) => event.stopPropagation()}
-                            onDragStart={(event) => event.preventDefault()}
-                            maxLength={16}
-                            placeholder="아래쪽 문구"
-                            className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
-                          />
-                        ) : (
-                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                            {movie.rottenTomatometer || movie.rottenPopcornmeter
-                              ? `${movie.rottenTomatometer ?? "00%"} ${movie.rottenPopcornmeter ?? "-%"}`
-                              : loadingRottenIds[movie.id]
-                                ? "불러오는 중"
-                                : "00% 00%"}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {movie ? "목록형 커버에서는 사진만 사용합니다." : "상단 검색으로 추가"}
-                      </p>
-                    )}
-                  </div>
-                  {movie ? (
-                    <div className="flex shrink-0 items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => removeMovie(movie.id)}
-                        className="inline-flex h-8 w-8 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-                        aria-label={`${movie.title} remove`}
-                        title="Remove"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </div>
+            <MovieSlotsPanel
+              isCalendarReleaseMode={isCalendarReleaseMode}
+              isMovieListMode={isMovieListMode}
+              selectedMoviesCount={selectedMovies.length}
+              movieSlotCount={movieSlotCount}
+              movies={isCalendarReleaseMode ? releaseBoardSlots : slots}
+              dragOverIndex={dragOverIndex}
+              loadingRottenIds={loadingRottenIds}
+              onDragStart={handleDragStart}
+              onDragOver={(index) => setDragOverIndex(index)}
+              onDragLeave={(index) => setDragOverIndex((current) => (current === index ? null : current))}
+              onDrop={handleDrop}
+              onDragEnd={() => {
+                draggedIndexRef.current = null;
+                setDragOverIndex(null);
+              }}
+              removeMovie={removeMovie}
+              updateMovieNote={updateMovieNote}
+              updateMovieNoteMode={updateMovieNoteMode}
+              requestRottenScore={(movie) => {
+                void requestRottenScore(movie);
+              }}
+              isMovieContent={isMovieContent}
+            />
 
           {isMovieListMode ? (
             <>

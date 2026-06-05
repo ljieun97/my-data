@@ -9,6 +9,7 @@ import { faDownload, faRotateLeft, faTrash } from "@fortawesome/free-solid-svg-i
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toPng } from "html-to-image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { SyntheticEvent } from "react";
 
 function formatYear(movie: CaptureMovie) {
   return movie.release_date ? movie.release_date.slice(0, 4) : "";
@@ -36,6 +37,23 @@ function getPosterThumbUrl(posterPath?: string) {
 function getProfileUrl(profilePath?: string) {
   if (!profilePath) return "";
   return `https://image.tmdb.org/t/p/original${profilePath}`;
+}
+
+function buildImageCandidates(...values: Array<string | undefined>) {
+  return values.filter((value, index, list): value is string => Boolean(value) && list.indexOf(value) === index);
+}
+
+function handleImageFallback(event: SyntheticEvent<HTMLImageElement>, candidates: string[]) {
+  const nextIndex = Number(event.currentTarget.dataset.fallbackIndex ?? "0") + 1;
+
+  if (nextIndex >= candidates.length) {
+    event.currentTarget.onerror = null;
+    event.currentTarget.style.display = "none";
+    return;
+  }
+
+  event.currentTarget.dataset.fallbackIndex = String(nextIndex);
+  event.currentTarget.src = candidates[nextIndex];
 }
 
 function getCalendarPosterUrl(item: any) {
@@ -121,7 +139,7 @@ function MovieCaptureRow({
   movie?: CaptureMovie;
   index: number;
 }) {
-  const backdropUrl = getBackdropUrl(movie);
+  const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
   const noteMode = movie?.noteMode ?? "custom";
   const rottenValue =
     movie?.rottenTomatometer || movie?.rottenPopcornmeter
@@ -131,10 +149,12 @@ function MovieCaptureRow({
 
   return (
     <div className="relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white">
-      {backdropUrl ? (
+      {imageCandidates[0] ? (
         <img
           alt=""
-          src={backdropUrl}
+          src={imageCandidates[0]}
+          data-fallback-index="0"
+          onError={(event) => handleImageFallback(event, imageCandidates)}
           className="absolute inset-0 h-full w-full object-cover object-[center_20%]"
           crossOrigin="anonymous"
         />
@@ -230,14 +250,19 @@ function MovieCoverTemplate({
           }
         >
           {movies.map((movie, index) => {
-            const posterUrl = layout === "grid" ? getPosterUrl(movie) || getBackdropUrl(movie) : getBackdropUrl(movie) || getPosterUrl(movie);
+            const imageCandidates =
+              layout === "grid"
+                ? buildImageCandidates(getPosterUrl(movie), getBackdropUrl(movie))
+                : buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
 
             return (
               <div key={movie.id} className="relative overflow-hidden bg-slate-900">
-                {posterUrl ? (
+                {imageCandidates[0] ? (
                   <img
                     alt=""
-                    src={posterUrl}
+                    src={imageCandidates[0]}
+                    data-fallback-index="0"
+                    onError={(event) => handleImageFallback(event, imageCandidates)}
                     className={["h-full w-full object-cover", layout === "stack" ? "object-top" : "object-center"].join(" ")}
                     crossOrigin="anonymous"
                   />
@@ -271,7 +296,7 @@ function SingleMovieTemplate({
   footerLeft: string;
   footerRight: string;
 }) {
-  const posterUrl = getPosterUrl(movie);
+  const imageCandidates = buildImageCandidates(getPosterUrl(movie), getBackdropUrl(movie));
   const title = movie?.singlePreviewTitle ?? movie?.title ?? "영화를 추가하세요";
   const subtitle = movie?.singlePreviewSubtitle ?? movie?.original_title ?? movie?.title ?? "설명 텍스트";
   const body = movie?.singlePreviewBody ?? movie?.overview ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.";
@@ -290,8 +315,15 @@ function SingleMovieTemplate({
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
-      {posterUrl ? (
-        <img alt="" src={posterUrl} className="absolute inset-0 h-full w-full object-cover object-center" crossOrigin="anonymous" />
+      {imageCandidates[0] ? (
+        <img
+          alt=""
+          src={imageCandidates[0]}
+          data-fallback-index="0"
+          onError={(event) => handleImageFallback(event, imageCandidates)}
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          crossOrigin="anonymous"
+        />
       ) : null}
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.12)_42%,rgba(0,0,0,0.68)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">

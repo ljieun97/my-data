@@ -60,8 +60,8 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       original_title: detail?.original_title || detail?.original_name || movie.original_title || movie.original_name,
       overview: movie.overview || detail?.overview || "한국어 overview가 없습니다.",
       release_date: detail?.release_date || detail?.first_air_date || movie.release_date || movie.first_air_date,
-      poster_path: detail?.poster_path || movie.poster_path || posterOptions[0],
-      backdrop_path: detail?.backdrop_path || movie.backdrop_path,
+      poster_path: posterOptions[0] || detail?.poster_path || movie.poster_path,
+      backdrop_path: detail?.backdrop_path || movie.backdrop_path || posterOptions[0],
       posterOptions,
     });
     if (didAdd) {

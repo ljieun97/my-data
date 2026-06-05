@@ -277,7 +277,7 @@ function MovieCoverTemplate({
       <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
         <div className="pb-[31px]">
           <p className="text-sm font-bold leading-tight text-white/78">{subtitle || "TOVIE MOVIE COVER"}</p>
-          <h1 className="mt-2 break-keep text-[36px] font-black leading-none text-white drop-shadow">
+          <h1 className="mt-2 break-keep text-[32px] font-black leading-[1.06] text-white drop-shadow">
             {title || "영화 목록"}
           </h1>
         </div>
@@ -309,7 +309,7 @@ function SingleMovieTemplate({
         ? `${movie.rottenTomatometer ?? "00%"} ${movie.rottenPopcornmeter ?? "-%"}`
         : "00% 00%"
       : movie?.note || subtitle;
-  const titleClass = "text-[36px]";
+  const titleClass = "text-[32px]";
   const subtitleClass = "text-sm font-bold leading-tight text-white/78";
   const bodyClass = "mt-2 line-clamp-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76";
 
@@ -331,7 +331,7 @@ function SingleMovieTemplate({
           {showSubtitle ? <p className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
           {showTitle ? (
             <div className="mt-2">
-              <h1 className={["min-w-0 flex-1 break-keep font-black leading-none text-white drop-shadow", titleClass].join(" ")}>
+              <h1 className={["min-w-0 flex-1 break-keep font-black leading-[1.06] text-white drop-shadow", titleClass].join(" ")}>
                 {title || movie?.title || "영화를 추가하세요"}
               </h1>
             </div>
@@ -407,7 +407,7 @@ function PersonCoverTemplate({
         <div className="pb-[31px]">
           {showSubtitle ? <p className="text-sm font-bold leading-tight text-white/78">{kicker || "TOVIE PERSON"}</p> : null}
           {showTitle ? (
-            <h1 className="mt-2 break-keep text-[36px] font-black leading-none text-white drop-shadow">
+            <h1 className="mt-2 break-keep text-[32px] font-black leading-[1.06] text-white drop-shadow">
               {headline || getDualPersonTitle(persons)}
             </h1>
           ) : null}
@@ -448,7 +448,7 @@ function CalendarCoverTemplate({
         ].join(" ")}
       >
         {showTitle ? (
-          <h1 className="mt-2 inline-flex w-fit break-keep bg-black px-3 py-2 text-[36px] font-black leading-none text-white">
+          <h1 className="mt-2 inline-flex w-fit break-keep bg-black px-3 py-2 text-[32px] font-black leading-[1.06] text-white">
             {title || "TOVIE CALENDAR"}
           </h1>
         ) : null}

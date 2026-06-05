@@ -45,8 +45,10 @@ type CaptureContentContextValue = {
   setCaptureMode: (mode: CaptureMode) => void;
   selectedMovies: CaptureMovie[];
   selectedPerson: CapturePerson | null;
+  selectedPersons: CapturePerson[];
   addMovie: (movie: CaptureMovie) => boolean;
   setPerson: (person: CapturePerson) => void;
+  removePerson: (id: number) => void;
   removeMovie: (id: number) => void;
   moveMovie: (id: number, direction: "up" | "down") => void;
   reorderMovie: (fromIndex: number, toIndex: number) => void;
@@ -76,7 +78,7 @@ type CaptureContentContextValue = {
       >
     >,
   ) => void;
-  updatePersonProfilePath: (profilePath: string) => void;
+  updatePersonProfilePath: (id: number, profilePath: string) => void;
   clearMovies: () => void;
   clearPerson: () => void;
   hasMovie: (id: number, mediaType?: CaptureMovie["media_type"]) => boolean;
@@ -122,7 +124,8 @@ function normalizeMovie(movie: any): CaptureMovie | null {
 export function CaptureContentProvider({ children }: { children: React.ReactNode }) {
   const [captureMode, setCaptureMode] = useState<CaptureMode>("person-cover");
   const [selectedMovies, setSelectedMovies] = useState<CaptureMovie[]>([]);
-  const [selectedPerson, setSelectedPerson] = useState<CapturePerson | null>(null);
+  const [selectedPersons, setSelectedPersons] = useState<CapturePerson[]>([]);
+  const selectedPerson = selectedPersons[0] ?? null;
 
   const addMovie = (movie: CaptureMovie) => {
     const normalizedMovie = normalizeMovie(movie);
@@ -138,7 +141,20 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
   };
 
   const setPerson = (person: CapturePerson) => {
-    setSelectedPerson(person);
+    setSelectedPersons((current) => {
+      const existingIndex = current.findIndex((entry) => entry.id === person.id);
+      if (existingIndex >= 0) {
+        return current.map((entry, index) => (index === existingIndex ? person : entry));
+      }
+      if (current.length >= 2) {
+        return current;
+      }
+      return [...current, person];
+    });
+  };
+
+  const removePerson = (id: number) => {
+    setSelectedPersons((current) => current.filter((person) => person.id !== id));
   };
 
   const removeMovie = (id: number) => {
@@ -245,8 +261,17 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
-  const updatePersonProfilePath = (profilePath: string) => {
-    setSelectedPerson((current) => (current ? { ...current, profile_path: profilePath } : current));
+  const updatePersonProfilePath = (id: number, profilePath: string) => {
+    setSelectedPersons((current) =>
+      current.map((person) =>
+        person.id === id
+          ? {
+              ...person,
+              profile_path: profilePath,
+            }
+          : person,
+      ),
+    );
   };
 
   const clearMovies = () => {
@@ -254,7 +279,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
   };
 
   const clearPerson = () => {
-    setSelectedPerson(null);
+    setSelectedPersons([]);
   };
 
   const hasMovie = (id: number, mediaType: CaptureMovie["media_type"] = "movie") =>
@@ -266,8 +291,10 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       setCaptureMode,
       selectedMovies,
       selectedPerson,
+      selectedPersons,
       addMovie,
       setPerson,
+      removePerson,
       removeMovie,
       moveMovie,
       reorderMovie,
@@ -281,7 +308,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       clearPerson,
       hasMovie,
     }),
-    [captureMode, selectedMovies, selectedPerson],
+    [captureMode, selectedMovies, selectedPerson, selectedPersons],
   );
 
   return <CaptureContentContext.Provider value={value}>{children}</CaptureContentContext.Provider>;

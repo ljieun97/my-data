@@ -5,7 +5,7 @@ import { CalendarCaptureControls } from "@/components/contents/content-capture-c
 import CalendarView from "@/components/contents/calendar-view";
 import { MovieSlotsPanel } from "@/components/contents/content-capture-movie-controls";
 import { CaptureMovie, CapturePerson, useCaptureContent } from "@/context/CaptureContentContext";
-import { faDownload, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faRotateLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toPng } from "html-to-image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -95,20 +95,23 @@ function toSafeFilename(value: string) {
 }
 
 function CaptureFooter({
-  footerLeft,
   footerRight,
-  borderless = false,
 }: {
   footerLeft: string;
   footerRight: string;
   borderless?: boolean;
 }) {
   return (
-    <footer className={["mt-auto flex items-center justify-between pt-4 text-xs font-black text-white/82", borderless ? "" : "border-t border-white/40"].join(" ")}>
-      <span className="text-[11px] uppercase tracking-[0.08em]">{footerLeft || "셰나코리아"}</span>
-      <span>{footerRight || "@scena.kr"}</span>
+    <footer className="pt-0.5 text-center">
+      <span className="text-[10px] font-semibold tracking-[0.03em] text-white/92">{footerRight || "@scena.kr"}</span>
     </footer>
   );
+}
+
+function getDualPersonTitle(persons: CapturePerson[]) {
+  if (!persons.length) return "인물 이름";
+  if (persons.length === 1) return persons[0].name;
+  return `${persons[0].name} & ${persons[1].name}`;
 }
 
 function MovieCaptureRow({
@@ -180,7 +183,7 @@ function MovieListTemplate({
         ))}
       </div>
 
-      <div className="mx-6 mb-6">
+      <div className="px-4 pb-1">
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>
@@ -246,14 +249,14 @@ function MovieCoverTemplate({
         </div>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-6 pt-24">
-        <p className="text-sm font-bold leading-tight text-white/78">{subtitle || "TOVIE MOVIE COVER"}</p>
-        <h1 className="mt-2 break-keep text-[36px] font-black leading-none text-white drop-shadow">
-          {title || "영화 목록"}
-        </h1>
-        <div className="mt-7">
-          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
+        <div className="pb-[31px]">
+          <p className="text-sm font-bold leading-tight text-white/78">{subtitle || "TOVIE MOVIE COVER"}</p>
+          <h1 className="mt-2 break-keep text-[36px] font-black leading-none text-white drop-shadow">
+            {title || "영화 목록"}
+          </h1>
         </div>
+        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>
   );
@@ -291,8 +294,8 @@ function SingleMovieTemplate({
         <img alt="" src={posterUrl} className="absolute inset-0 h-full w-full object-cover object-center" crossOrigin="anonymous" />
       ) : null}
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.12)_42%,rgba(0,0,0,0.68)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-6 pt-24">
-        <div className="w-full max-w-[20rem] text-left">
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
+        <div className="w-full max-w-[20rem] pb-[31px] text-left">
           {showSubtitle ? <p className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
           {showTitle ? (
             <div className="mt-2">
@@ -303,16 +306,14 @@ function SingleMovieTemplate({
           ) : null}
           {showBody ? <p className={bodyClass}>{body || "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다."}</p> : null}
         </div>
-        <div className="mt-7">
-          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
-        </div>
+        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>
   );
 }
 
 function PersonCoverTemplate({
-  person,
+  persons,
   headline,
   kicker,
   body,
@@ -322,7 +323,7 @@ function PersonCoverTemplate({
   footerLeft,
   footerRight,
 }: {
-  person: CapturePerson | null;
+  persons: CapturePerson[];
   headline: string;
   kicker: string;
   body: string;
@@ -332,36 +333,59 @@ function PersonCoverTemplate({
   footerLeft: string;
   footerRight: string;
 }) {
-  const profileUrl = getProfileUrl(person?.profile_path);
-  const bodyValue = body || person?.biography || "";
+  const primaryPerson = persons[0] ?? null;
+  const secondaryPerson = persons[1] ?? null;
+  const profileUrl = getProfileUrl(primaryPerson?.profile_path);
+  const secondaryProfileUrl = getProfileUrl(secondaryPerson?.profile_path);
+  const bodyValue = body || primaryPerson?.biography || "";
+  const isDualLayout = Boolean(primaryPerson && secondaryPerson);
 
   return (
     <div className="relative h-full overflow-hidden bg-slate-950 text-white">
-      {profileUrl ? (
+      {isDualLayout ? (
+        <>
+          {profileUrl ? (
+            <img
+              alt=""
+              src={profileUrl}
+              className="absolute inset-y-0 left-0 h-full w-1/2 object-cover"
+              crossOrigin="anonymous"
+            />
+          ) : null}
+          {secondaryProfileUrl ? (
+            <img
+              alt=""
+              src={secondaryProfileUrl}
+              className="absolute inset-y-0 right-0 h-full w-1/2 object-cover"
+              crossOrigin="anonymous"
+            />
+          ) : null}
+        </>
+      ) : profileUrl ? (
         <img
           alt=""
           src={profileUrl}
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 h-full w-full object-cover"
           crossOrigin="anonymous"
         />
       ) : null}
 
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.62)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-6 pt-24">
-        {showSubtitle ? <p className="text-sm font-bold leading-tight text-white/78">{kicker || "TOVIE PERSON"}</p> : null}
-        {showTitle ? (
-          <h1 className="mt-2 break-keep text-[36px] font-black leading-none text-white drop-shadow">
-            {headline || person?.name || "인물 이름"}
-          </h1>
-        ) : null}
-        {showBody && bodyValue ? (
-          <p className="mt-2 line-clamp-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76">
-            {bodyValue}
-          </p>
-        ) : null}
-        <div className="mt-7">
-          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+      <div className={["absolute inset-0", isDualLayout ? "bg-[linear-gradient(180deg,rgba(0,0,0,0.12)_0%,rgba(0,0,0,0.04)_40%,rgba(0,0,0,0.62)_100%)]" : "bg-[linear-gradient(180deg,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.62)_100%)]"].join(" ")} />
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
+        <div className="pb-[31px]">
+          {showSubtitle ? <p className="text-sm font-bold leading-tight text-white/78">{kicker || "TOVIE PERSON"}</p> : null}
+          {showTitle ? (
+            <h1 className="mt-2 break-keep text-[36px] font-black leading-none text-white drop-shadow">
+              {headline || getDualPersonTitle(persons)}
+            </h1>
+          ) : null}
+          {showBody && bodyValue ? (
+            <p className="mt-2 line-clamp-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76">
+              {bodyValue}
+            </p>
+          ) : null}
         </div>
+        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>
   );
@@ -387,7 +411,7 @@ function CalendarCoverTemplate({
       <CalendarView results={results} option={option} hideCaptureButton embedCalendarOnly />
       <div
         className={[
-          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-6 pb-6 pt-24",
+          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-6 pb-1 pt-24",
           showTitle ? "" : "bg-gradient-to-t from-black/20 via-black/6 to-transparent",
         ].join(" ")}
       >
@@ -397,11 +421,9 @@ function CalendarCoverTemplate({
           </h1>
         ) : null}
         {showTitle ? (
-          <div className="mt-7 h-[26px]" aria-hidden="true" />
+          <div className="h-[31px]" aria-hidden="true" />
         ) : (
-          <div className="mt-7">
-            <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
-          </div>
+          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
         )}
       </div>
     </div>
@@ -550,7 +572,9 @@ export default function ContentCapturePage() {
     setCaptureMode,
     selectedMovies,
     selectedPerson,
+    selectedPersons,
     removeMovie,
+    removePerson,
     reorderMovie,
     updateMovieNote,
     updateMovieNoteMode,
@@ -641,10 +665,14 @@ export default function ContentCapturePage() {
   const currentReleaseBoardMovie = releaseBoardSlots[releaseBoardPreviewIndex];
 
   useEffect(() => {
-    if (selectedPerson?.name) {
-      setPersonTitle(`${selectedPerson.name} 영화 TOP ${movieSlotCount}`);
+    if (selectedPersons.length === 1 && selectedPersons[0]?.name) {
+      setPersonTitle(selectedPersons[0].name);
+      return;
     }
-  }, [movieSlotCount, selectedPerson?.id, selectedPerson?.name]);
+    if (selectedPersons.length === 2) {
+      setPersonTitle(getDualPersonTitle(selectedPersons));
+    }
+  }, [movieSlotCount, selectedPersons]);
 
   useEffect(() => {
     setPersonBody(selectedPerson?.biography || "");
@@ -1270,42 +1298,64 @@ export default function ContentCapturePage() {
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Person</p>
-                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedPerson ? "selected" : "empty"}</p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedPersons.length}/2</p>
                 </div>
-                <div className="flex items-center gap-3 border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900/60">
-                  {selectedPerson?.profile_path ? (
-                    <img
-                      alt=""
-                      src={`https://image.tmdb.org/t/p/w185${selectedPerson.profile_path}`}
-                      className="h-20 w-14 shrink-0 object-cover"
-                    />
-                  ) : (
-                    <div className="h-20 w-14 shrink-0 bg-slate-200 dark:bg-slate-800" />
-                  )}
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">{selectedPerson?.name ?? "상단 검색으로 인물 선택"}</p>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{selectedPerson?.known_for_department ?? "프로필 이미지를 선택할 수 있습니다"}</p>
-                  </div>
-                </div>
+                <div className="flex flex-col gap-3">
+                  {selectedPersons.length ? (
+                    selectedPersons.map((person, index) => (
+                      <div key={person.id} className="border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900/60">
+                        <div className="flex items-start gap-3">
+                          {person.profile_path ? (
+                            <img
+                              alt=""
+                              src={`https://image.tmdb.org/t/p/w185${person.profile_path}`}
+                              className="h-20 w-14 shrink-0 object-cover"
+                            />
+                          ) : (
+                            <div className="h-20 w-14 shrink-0 bg-slate-200 dark:bg-slate-800" />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">{person.name}</p>
+                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{person.known_for_department ?? "프로필 이미지를 선택할 수 있습니다"}</p>
+                            <p className="mt-2 text-[11px] font-semibold text-slate-400 dark:text-slate-500">인물 {index + 1}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removePerson(person.id)}
+                            className="inline-flex h-8 w-8 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                            aria-label={`${person.name} remove`}
+                            title="Remove"
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </div>
 
-                {selectedPerson?.profileOptions?.length ? (
-                  <div className="mt-3 grid grid-cols-5 gap-2">
-                    {selectedPerson.profileOptions.map((profilePath) => (
-                      <button
-                        key={profilePath}
-                        type="button"
-                        onClick={() => updatePersonProfilePath(profilePath)}
-                        className={[
-                          "aspect-[4/5] overflow-hidden border transition",
-                          selectedPerson.profile_path === profilePath ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20" : "border-slate-200 dark:border-slate-800",
-                        ].join(" ")}
-                        aria-label="Select profile image"
-                      >
-                        <img alt="" src={`https://image.tmdb.org/t/p/w185${profilePath}`} className="h-full w-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
+                        {person.profileOptions?.length ? (
+                          <div className="mt-3 grid grid-cols-5 gap-2">
+                            {person.profileOptions.map((profilePath) => (
+                              <button
+                                key={`${person.id}-${profilePath}`}
+                                type="button"
+                                onClick={() => updatePersonProfilePath(person.id, profilePath)}
+                                className={[
+                                  "aspect-[4/5] overflow-hidden border transition",
+                                  person.profile_path === profilePath ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20" : "border-slate-200 dark:border-slate-800",
+                                ].join(" ")}
+                                aria-label="Select profile image"
+                              >
+                                <img alt="" src={`https://image.tmdb.org/t/p/w185${profilePath}`} className="h-full w-full object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex items-center justify-center border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400">
+                      상단 검색으로 인물을 최대 2명까지 추가하세요
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
@@ -1407,7 +1457,7 @@ export default function ContentCapturePage() {
                 />
               ) : captureMode === "person-cover" ? (
                 <PersonCoverTemplate
-                  person={selectedPerson}
+                  persons={selectedPersons}
                   headline={personTitle}
                   kicker={personSubtitle}
                   body={personBody}

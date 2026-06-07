@@ -8,15 +8,11 @@ import { CaptureMovie, CapturePerson, useCaptureContent } from "@/context/Captur
 import { faDownload, faRotateLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toPng } from "html-to-image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { SyntheticEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties, SyntheticEvent } from "react";
 
 function formatYear(movie: CaptureMovie) {
   return movie.release_date ? movie.release_date.slice(0, 4) : "";
-}
-
-function isMovieContent(movie?: CaptureMovie) {
-  return (movie?.media_type ?? "movie") === "movie";
 }
 
 function getBackdropUrl(movie?: CaptureMovie) {
@@ -36,7 +32,20 @@ function getPosterThumbUrl(posterPath?: string) {
 
 function getProfileUrl(profilePath?: string) {
   if (!profilePath) return "";
+  if (profilePath.startsWith("http://") || profilePath.startsWith("https://")) return `/api/proxy?url=${encodeURIComponent(profilePath)}`;
+  if (profilePath.startsWith("//")) return `/api/proxy?url=${encodeURIComponent(`https:${profilePath}`)}`;
   return `https://image.tmdb.org/t/p/original${profilePath}`;
+}
+
+function getProfileThumbUrl(profilePath?: string) {
+  if (!profilePath) return "";
+  if (profilePath.startsWith("http://") || profilePath.startsWith("https://")) return `/api/proxy?url=${encodeURIComponent(profilePath)}`;
+  if (profilePath.startsWith("//")) return `/api/proxy?url=${encodeURIComponent(`https:${profilePath}`)}`;
+  return `https://image.tmdb.org/t/p/w185${profilePath}`;
+}
+
+function isExternalImageUrl(imagePath?: string) {
+  return Boolean(imagePath?.startsWith("http://") || imagePath?.startsWith("https://") || imagePath?.startsWith("//"));
 }
 
 function buildImageCandidates(...values: Array<string | undefined>) {
@@ -55,6 +64,15 @@ function handleImageFallback(event: SyntheticEvent<HTMLImageElement>, candidates
   event.currentTarget.dataset.fallbackIndex = String(nextIndex);
   event.currentTarget.src = candidates[nextIndex];
 }
+
+const titleFontStyle: CSSProperties = {
+  fontFamily: '"Gmarket Sans", "지마켓 산스", sans-serif',
+};
+
+const bodyFontStyle: CSSProperties = {
+  fontFamily:
+    '"Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif',
+};
 
 function getCalendarPosterUrl(item: any) {
   const raw = String(item?.poster_path ?? item?.posterPath ?? item?.poster ?? "").trim();
@@ -126,6 +144,8 @@ function CaptureFooter({
   );
 }
 
+const coverSubtitleClass = "inline-flex max-w-full bg-white px-2 py-1 text-sm font-black leading-tight text-slate-950";
+
 function getDualPersonTitle(persons: CapturePerson[]) {
   if (!persons.length) return "인물 이름";
   if (persons.length === 1) return persons[0].name;
@@ -140,15 +160,10 @@ function MovieCaptureRow({
   index: number;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
-  const noteMode = movie?.noteMode ?? "custom";
-  const rottenValue =
-    movie?.rottenTomatometer || movie?.rottenPopcornmeter
-      ? `${movie?.rottenTomatometer ?? "00%"} ${movie?.rottenPopcornmeter ?? "-%"}`
-      : "00% 00%";
-  const noteValue = noteMode === "rotten" ? rottenValue : movie?.note ?? "";
+  const noteValue = movie?.note ?? "";
 
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white">
+    <div className="relative min-h-0 flex-1 overflow-hidden rounded-md bg-slate-900 text-white">
       {imageCandidates[0] ? (
         <img
           alt=""
@@ -160,20 +175,20 @@ function MovieCaptureRow({
         />
       ) : null}
 
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.56)_0%,rgba(0,0,0,0.24)_28%,rgba(0,0,0,0.02)_58%,rgba(0,0,0,0.36)_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.24)_0%,rgba(0,0,0,0.10)_28%,rgba(0,0,0,0)_58%,rgba(0,0,0,0.18)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]" />
 
-      <div className="relative z-[1] flex h-full items-end gap-2 px-5 pb-4 pt-3">
+      <div className="relative z-[1] flex h-full items-end gap-2 px-[14px] py-[10px]">
         {/* <div className="flex w-8 shrink-0 items-baseline">
           <span className="text-xl font-black leading-tight text-white drop-shadow">
             {index + 1}위
           </span>
         </div> */}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-lg font-black leading-tight text-white drop-shadow">{movie?.title ?? "영화를 추가하세요"}</p>
+          <p style={titleFontStyle} className="truncate text-[14px] font-black leading-tight text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.85)]">{movie?.title ?? "영화를 추가하세요"}</p>
         </div>
-        {movie?.noteMode !== "custom" || movie?.note ? (
-          <p className="max-w-[36%] shrink-0 text-right text-base font-black leading-tight text-white drop-shadow">
+        {movie?.note ? (
+          <p style={titleFontStyle} className="max-w-[36%] shrink-0 text-right text-sm font-black leading-tight text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.85)]">
             {noteValue}
           </p>
         ) : null}
@@ -184,16 +199,25 @@ function MovieCaptureRow({
 
 function MovieListTemplate({
   slots,
+  title,
   footerLeft,
   footerRight,
 }: {
   slots: Array<CaptureMovie | undefined>;
+  title: string;
   footerLeft: string;
   footerRight: string;
 }) {
   return (
     <div className="flex h-full flex-col bg-slate-950 text-white">
-      <div className="flex min-h-0 flex-1 flex-col bg-slate-950">
+      {title ? (
+        <div className="px-[30px] pt-3">
+          <h1 style={titleFontStyle} className="break-keep text-center text-[16px] font-black leading-[1.08] text-white drop-shadow">
+            {title}
+          </h1>
+        </div>
+      ) : null}
+      <div className="flex min-h-0 flex-1 flex-col gap-1 bg-slate-950 px-[30px] pt-3">
         {slots.map((movie, index) => (
           <MovieCaptureRow
             key={movie?.id ?? `preview-${index}`}
@@ -203,7 +227,7 @@ function MovieListTemplate({
         ))}
       </div>
 
-      <div className="px-4 pb-1">
+      <div className="px-[30px] pb-1">
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>
@@ -239,7 +263,7 @@ function MovieCoverTemplate({
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.01)_56%,rgba(0,0,0,0.56)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_56%,rgba(0,0,0,0.44)_100%)]" />
       <div className="relative z-[0] flex-1 overflow-hidden">
         <div
           className={["grid h-full", contentClass].join(" ")}
@@ -267,7 +291,7 @@ function MovieCoverTemplate({
                     crossOrigin="anonymous"
                   />
                 ) : null}
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.04)_0%,rgba(0,0,0,0.34)_100%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.22)_100%)]" />
               </div>
             );
           })}
@@ -275,9 +299,9 @@ function MovieCoverTemplate({
       </div>
 
       <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
-        <div className="pb-[31px]">
-          <p className="text-sm font-bold leading-tight text-white/78">{subtitle || "TOVIE MOVIE COVER"}</p>
-          <h1 className="mt-2 break-keep text-[32px] font-black leading-[1.06] text-white drop-shadow">
+        <div className="pb-[36px]">
+          <p style={titleFontStyle} className={coverSubtitleClass}>{subtitle || "TOVIE MOVIE COVER"}</p>
+          <h1 style={titleFontStyle} className="mt-2 break-keep text-[36px] font-black leading-[1.06] text-white drop-shadow">
             {title || "영화 목록"}
           </h1>
         </div>
@@ -303,14 +327,9 @@ function SingleMovieTemplate({
   const showTitle = movie?.singlePreviewShowTitle ?? true;
   const showSubtitle = movie?.singlePreviewShowSubtitle ?? true;
   const showBody = movie?.singlePreviewShowBody ?? true;
-  const subtitleValue =
-    movie?.noteMode === "rotten"
-      ? movie?.rottenTomatometer || movie?.rottenPopcornmeter
-        ? `${movie.rottenTomatometer ?? "00%"} ${movie.rottenPopcornmeter ?? "-%"}`
-        : "00% 00%"
-      : movie?.note || subtitle;
-  const titleClass = "text-[32px]";
-  const subtitleClass = "text-sm font-bold leading-tight text-white/78";
+  const subtitleValue = movie?.note || subtitle;
+  const titleClass = "text-[36px]";
+  const subtitleClass = coverSubtitleClass;
   const bodyClass = "mt-2 line-clamp-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76";
 
   return (
@@ -325,18 +344,18 @@ function SingleMovieTemplate({
           crossOrigin="anonymous"
         />
       ) : null}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.12)_42%,rgba(0,0,0,0.68)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.06)_42%,rgba(0,0,0,0.50)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
-        <div className="w-full max-w-[20rem] pb-[31px] text-left">
-          {showSubtitle ? <p className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
+        <div className="w-full max-w-[20rem] pb-[36px] text-left">
+          {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
           {showTitle ? (
             <div className="mt-2">
-              <h1 className={["min-w-0 flex-1 break-keep font-black leading-[1.06] text-white drop-shadow", titleClass].join(" ")}>
+              <h1 style={titleFontStyle} className={["min-w-0 flex-1 break-keep font-black leading-[1.06] text-white drop-shadow", titleClass].join(" ")}>
                 {title || movie?.title || "영화를 추가하세요"}
               </h1>
             </div>
           ) : null}
-          {showBody ? <p className={bodyClass}>{body || "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다."}</p> : null}
+          {showBody ? <p style={bodyFontStyle} className={bodyClass}>{body || "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다."}</p> : null}
         </div>
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
@@ -380,16 +399,16 @@ function PersonCoverTemplate({
             <img
               alt=""
               src={profileUrl}
-              className="absolute inset-y-0 left-0 h-full w-1/2 object-cover"
-              crossOrigin="anonymous"
+              className="absolute inset-y-0 left-0 h-full w-1/2 object-cover object-bottom"
+              crossOrigin={isExternalImageUrl(primaryPerson?.profile_path) ? undefined : "anonymous"}
             />
           ) : null}
           {secondaryProfileUrl ? (
             <img
               alt=""
               src={secondaryProfileUrl}
-              className="absolute inset-y-0 right-0 h-full w-1/2 object-cover"
-              crossOrigin="anonymous"
+              className="absolute inset-y-0 right-0 h-full w-1/2 object-cover object-bottom"
+              crossOrigin={isExternalImageUrl(secondaryPerson?.profile_path) ? undefined : "anonymous"}
             />
           ) : null}
         </>
@@ -397,22 +416,22 @@ function PersonCoverTemplate({
         <img
           alt=""
           src={profileUrl}
-          className="absolute inset-0 h-full w-full object-cover"
-          crossOrigin="anonymous"
+          className="absolute inset-0 h-full w-full object-cover object-bottom"
+          crossOrigin={isExternalImageUrl(primaryPerson?.profile_path) ? undefined : "anonymous"}
         />
       ) : null}
 
-      <div className={["absolute inset-0", isDualLayout ? "bg-[linear-gradient(180deg,rgba(0,0,0,0.12)_0%,rgba(0,0,0,0.04)_40%,rgba(0,0,0,0.62)_100%)]" : "bg-[linear-gradient(180deg,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.62)_100%)]"].join(" ")} />
+      <div className={["absolute inset-0", isDualLayout ? "bg-[linear-gradient(180deg,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.02)_40%,rgba(0,0,0,0.50)_100%)]" : "bg-[linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.02)_42%,rgba(0,0,0,0.50)_100%)]"].join(" ")} />
       <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
-        <div className="pb-[31px]">
-          {showSubtitle ? <p className="text-sm font-bold leading-tight text-white/78">{kicker || "TOVIE PERSON"}</p> : null}
+        <div className="pb-[36px]">
+          {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{kicker || "TOVIE PERSON"}</p> : null}
           {showTitle ? (
-            <h1 className="mt-2 break-keep text-[32px] font-black leading-[1.06] text-white drop-shadow">
+            <h1 style={titleFontStyle} className="mt-2 break-keep text-[36px] font-black leading-[1.06] text-white drop-shadow">
               {headline || getDualPersonTitle(persons)}
             </h1>
           ) : null}
           {showBody && bodyValue ? (
-            <p className="mt-2 line-clamp-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76">
+            <p style={bodyFontStyle} className="mt-2 line-clamp-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76">
               {bodyValue}
             </p>
           ) : null}
@@ -444,16 +463,16 @@ function CalendarCoverTemplate({
       <div
         className={[
           "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-6 pb-1 pt-24",
-          showTitle ? "" : "bg-gradient-to-t from-black/20 via-black/6 to-transparent",
+          showTitle ? "" : "bg-gradient-to-t from-black/18 via-black/0 to-transparent",
         ].join(" ")}
       >
         {showTitle ? (
-          <h1 className="mt-2 inline-flex w-fit break-keep bg-black px-3 py-2 text-[32px] font-black leading-[1.06] text-white">
+          <h1 style={titleFontStyle} className="mt-2 inline-flex w-fit break-keep bg-black px-3 py-2 text-[36px] font-black leading-[1.06] text-white">
             {title || "TOVIE CALENDAR"}
           </h1>
         ) : null}
         {showTitle ? (
-          <div className="h-[31px]" aria-hidden="true" />
+          <div className="h-[36px]" aria-hidden="true" />
         ) : (
           <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
         )}
@@ -481,9 +500,9 @@ function CalendarDayPreviewTemplate({
 
   return (
     <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/56 via-black/22 to-transparent px-6">
+      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/36 via-black/12 to-transparent px-6">
         <div className="flex h-full items-center justify-between gap-3">
-          <p className="text-sm font-black leading-tight text-white">{date.getMonth() + 1}월 {date.getDate()}일 ({weekdays[date.getDay()]})</p>
+          <p style={titleFontStyle} className="text-sm font-black leading-tight text-white">{date.getMonth() + 1}월 {date.getDate()}일 ({weekdays[date.getDay()]})</p>
           <span className="shrink-0 text-xs font-bold text-white/88">@scena.kr</span>
         </div>
       </div>
@@ -508,7 +527,7 @@ function CalendarDayPreviewTemplate({
                   />
                 ) : null}
                 <div className="absolute inset-0 bg-black/10" />
-                <p className="absolute inset-x-2 bottom-2 z-[1] line-clamp-2 whitespace-normal text-center [word-break:keep-all] text-xs font-bold leading-tight text-white drop-shadow">{title}</p>
+                <p style={titleFontStyle} className="absolute inset-x-2 bottom-2 z-[1] line-clamp-2 whitespace-normal text-center [word-break:keep-all] text-xs font-bold leading-tight text-white drop-shadow">{title}</p>
               </div>
             );
           })}
@@ -523,13 +542,13 @@ function CalendarDayPreviewTemplate({
               crossOrigin="anonymous"
             />
           ) : null}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03)_0%,rgba(0,0,0,0.08)_42%,rgba(0,0,0,0.58)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.01)_0%,rgba(0,0,0,0.05)_42%,rgba(0,0,0,0.46)_100%)]" />
         </div>
       )}
 
-      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/52 via-black/18 to-transparent px-6 pb-6 pt-0"].join(" ")}>
+      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/44 via-black/12 to-transparent px-6 pb-6 pt-0"].join(" ")}>
         {!showBackdropGrid ? (
-          <h2 className="mb-0 whitespace-normal [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow">
+          <h2 style={titleFontStyle} className="mb-0 whitespace-normal [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow">
             {leadTitle}
           </h2>
         ) : null}
@@ -560,7 +579,7 @@ function CalendarReleaseBoardTemplate({
 
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
         <div className="flex flex-col items-center">
-          <h1 className="mt-0.5 inline-flex max-w-full items-center justify-center rounded-[1.1rem] bg-white px-4 py-2 break-keep text-center text-[1.55rem] font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_0_0_currentColor]">
+          <h1 style={titleFontStyle} className="mt-0.5 inline-flex max-w-full items-center justify-center rounded-[1.1rem] bg-white px-4 py-2 break-keep text-center text-[1.55rem] font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_0_0_currentColor]">
             {title}
           </h1>
         </div>
@@ -575,7 +594,7 @@ function CalendarReleaseBoardTemplate({
                   className="px-2 py-0.5 text-center"
                   style={{ backgroundColor: labelColors[index] || RELEASE_BOARD_DEFAULT_COLORS[index] || "#1f2937" }}
                 >
-                  <p className="text-[0.78rem] font-black tracking-[0.06em] text-white">{formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}</p>
+                  <p style={titleFontStyle} className="text-[0.78rem] font-black tracking-[0.06em] text-white">{formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}</p>
                 </div>
                 <div className="relative min-h-0 flex-1 bg-white">
                   {posterUrl ? (
@@ -608,10 +627,9 @@ export default function ContentCapturePage() {
     removeMovie,
     removePerson,
     reorderMovie,
+    updateMovieTitle,
     updateMovieNote,
-    updateMovieNoteMode,
     updateMoviePoster,
-    updateMovieRottenScore,
     updateMovieSinglePreview,
     updatePersonProfilePath,
     clearMovies,
@@ -631,6 +649,7 @@ export default function ContentCapturePage() {
   const [personShowTitle, setPersonShowTitle] = useState(true);
   const [personShowSubtitle, setPersonShowSubtitle] = useState(true);
   const [personShowBody, setPersonShowBody] = useState(true);
+  const [movieListTitle, setMovieListTitle] = useState("영화 목록");
   const [movieCoverTitle, setMovieCoverTitle] = useState("영화 묶음");
   const [movieCoverSubtitle, setMovieCoverSubtitle] = useState("TOVIE MOVIE COVER");
   const [movieCoverLayout, setMovieCoverLayout] = useState<"stack" | "grid">("stack");
@@ -641,7 +660,6 @@ export default function ContentCapturePage() {
   const [releaseBoardPreviewIndex, setReleaseBoardPreviewIndex] = useState(0);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
-  const [loadingRottenIds, setLoadingRottenIds] = useState<Record<number, boolean>>({});
   const [calendarResults, setCalendarResults] = useState<any[]>([]);
   const [calendarOption, setCalendarOption] = useState<any>({ initialView: "dayGridMonth" });
   const [isCalendarLoading, setIsCalendarLoading] = useState(false);
@@ -661,7 +679,8 @@ export default function ContentCapturePage() {
   const isCalendarDataMode = isCalendarMode;
   const isMovieMode = isMovieListMode || isMovieCoverMode || isCalendarReleaseMode;
   const movieMinCount = isMovieCoverMode ? 2 : 3;
-  const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), 5);
+  const movieMaxCount = isCalendarReleaseMode ? 8 : isMovieListMode ? 7 : 5;
+  const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
   const currentSingleMovie = selectedMovies[previewMovieIndex];
   const calendarPreviewGroups = useMemo(() => {
     const now = new Date();
@@ -728,46 +747,6 @@ export default function ContentCapturePage() {
       setCalendarPreviewDateKey(calendarPreviewGroups[0].dateKey);
     }
   }, [calendarPreviewDateKey, calendarPreviewGroups]);
-
-  const requestRottenScore = useCallback(
-    async (movie: CaptureMovie) => {
-      if (loadingRottenIds[movie.id]) return;
-      if (!isMovieContent(movie)) return;
-
-      setLoadingRottenIds((current) => ({ ...current, [movie.id]: true }));
-
-      try {
-        const year = formatYear(movie);
-        const params = new URLSearchParams({
-          title: movie.title,
-          originalTitle: movie.original_title || "",
-          year,
-        });
-
-        const response = await fetch(`/api/rottentomatoes/movie/${movie.id}?${params.toString()}`);
-        const payload = await response.json();
-
-        updateMovieRottenScore(movie.id, {
-          rottenTomatometer: payload?.rottenTomatometer ?? null,
-          rottenPopcornmeter: payload?.rottenPopcornmeter ?? null,
-          rottenTomatoesUrl: payload?.rottenTomatoesUrl ?? null,
-        });
-      } catch (error) {
-        console.error("Failed to load Rotten Tomatoes score", error);
-      } finally {
-        setLoadingRottenIds((current) => ({ ...current, [movie.id]: false }));
-      }
-    },
-    [loadingRottenIds, updateMovieRottenScore],
-  );
-
-  useEffect(() => {
-    selectedMovies.forEach((movie) => {
-      if (isMovieContent(movie) && movie.noteMode === "rotten" && !movie.rottenTomatometer && !movie.rottenPopcornmeter) {
-        void requestRottenScore(movie);
-      }
-    });
-  }, [requestRottenScore, selectedMovies]);
 
   useEffect(() => {
     if (!isCalendarMode || calendarResults.length) return;
@@ -1124,7 +1103,6 @@ export default function ContentCapturePage() {
               movieSlotCount={movieSlotCount}
               movies={isCalendarReleaseMode ? releaseBoardSlots : slots}
               dragOverIndex={dragOverIndex}
-              loadingRottenIds={loadingRottenIds}
               onDragStart={handleDragStart}
               onDragOver={(index) => setDragOverIndex(index)}
               onDragLeave={(index) => setDragOverIndex((current) => (current === index ? null : current))}
@@ -1134,18 +1112,22 @@ export default function ContentCapturePage() {
                 setDragOverIndex(null);
               }}
               removeMovie={removeMovie}
+              updateMovieTitle={updateMovieTitle}
               updateMovieNote={updateMovieNote}
-              updateMovieNoteMode={updateMovieNoteMode}
-              requestRottenScore={(movie) => {
-                void requestRottenScore(movie);
-              }}
-              isMovieContent={isMovieContent}
             />
 
           {isMovieListMode ? (
             <>
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                 <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Text</p>
+                <label className="mb-3 block">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
+                  <input
+                    value={movieListTitle}
+                    onChange={(event) => setMovieListTitle(event.target.value)}
+                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                  />
+                </label>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer left</span>
@@ -1340,7 +1322,7 @@ export default function ContentCapturePage() {
                           {person.profile_path ? (
                             <img
                               alt=""
-                              src={`https://image.tmdb.org/t/p/w185${person.profile_path}`}
+                              src={getProfileThumbUrl(person.profile_path)}
                               className="h-20 w-14 shrink-0 object-cover"
                             />
                           ) : (
@@ -1361,6 +1343,16 @@ export default function ContentCapturePage() {
                             <FontAwesomeIcon icon={faTrash} />
                           </button>
                         </div>
+
+                        <label className="mt-3 block">
+                          <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Custom image URL</span>
+                          <input
+                            value={person.profile_path?.startsWith("http") || person.profile_path?.startsWith("//") ? person.profile_path : ""}
+                            onChange={(event) => updatePersonProfilePath(person.id, event.target.value.trim())}
+                            placeholder="https://..."
+                            className="h-9 w-full border border-slate-200 bg-white px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                          />
+                        </label>
 
                         {person.profileOptions?.length ? (
                           <div className="mt-3 grid grid-cols-5 gap-2">
@@ -1511,6 +1503,7 @@ export default function ContentCapturePage() {
               ) : (
               <MovieListTemplate
                 slots={slots}
+                title={movieListTitle}
                 footerLeft={footerLeft}
                 footerRight={footerRight}
               />

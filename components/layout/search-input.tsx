@@ -20,7 +20,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const { captureMode, addMovie, setPerson, hasMovie, selectedMovies } = useCaptureContent();
   const isCapturePage = pathname?.startsWith("/capture");
   const isCalendarMode = captureMode === "calendar";
-  const maxCaptureMovies = captureMode === "calendar-release" ? 8 : 5;
+  const maxCaptureMovies = captureMode === "calendar-release" ? 8 : captureMode === "movie-list" ? 7 : 5;
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextKeyword = e.target.value;

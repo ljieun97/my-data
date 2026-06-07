@@ -13,11 +13,7 @@ export type CaptureMovie = {
   backdrop_path?: string;
   vote_average?: number;
   note?: string;
-  noteMode?: "custom" | "rotten";
   posterOptions?: string[];
-  rottenTomatometer?: string | null;
-  rottenPopcornmeter?: string | null;
-  rottenTomatoesUrl?: string | null;
   singlePreviewTitle?: string;
   singlePreviewSubtitle?: string;
   singlePreviewBody?: string;
@@ -52,17 +48,9 @@ type CaptureContentContextValue = {
   removeMovie: (id: number) => void;
   moveMovie: (id: number, direction: "up" | "down") => void;
   reorderMovie: (fromIndex: number, toIndex: number) => void;
+  updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
-  updateMovieNoteMode: (id: number, noteMode: "custom" | "rotten") => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
-  updateMovieRottenScore: (
-    id: number,
-    patch: {
-      rottenTomatometer?: string | null;
-      rottenPopcornmeter?: string | null;
-      rottenTomatoesUrl?: string | null;
-    },
-  ) => void;
   updateMovieSinglePreview: (
     id: number,
     patch: Partial<
@@ -106,11 +94,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     backdrop_path: movie.backdrop_path,
     vote_average: movie.vote_average,
     note: movie.note,
-    noteMode: movie.noteMode === "rotten" ? "rotten" : "custom",
     posterOptions: movie.posterOptions,
-    rottenTomatometer: movie.rottenTomatometer ?? null,
-    rottenPopcornmeter: movie.rottenPopcornmeter ?? null,
-    rottenTomatoesUrl: movie.rottenTomatoesUrl ?? null,
     singlePreviewTitle: movie.singlePreviewTitle ?? title,
     singlePreviewSubtitle: movie.singlePreviewSubtitle ?? (movie.original_title || movie.original_name || title),
     singlePreviewBody: movie.singlePreviewBody ?? movie.overview ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.",
@@ -130,7 +114,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
   const addMovie = (movie: CaptureMovie) => {
     const normalizedMovie = normalizeMovie(movie);
     if (!normalizedMovie) return false;
-    const maxMovies = captureMode === "calendar-release" ? 8 : 5;
+    const maxMovies = captureMode === "calendar-release" ? 8 : captureMode === "movie-list" ? 7 : 5;
 
     if (selectedMovies.some((item) => item.id === normalizedMovie.id && item.media_type === normalizedMovie.media_type) || selectedMovies.length >= maxMovies) {
       return false;
@@ -189,15 +173,26 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     });
   };
 
-  const updateMovieNote = (id: number, note: string) => {
+  const updateMovieTitle = (id: number, title: string) => {
     setSelectedMovies((current) =>
-      current.map((movie) => (movie.id === id ? { ...movie, note } : movie)),
+      current.map((movie) =>
+        movie.id === id
+          ? {
+              ...movie,
+              title,
+              singlePreviewTitle:
+                !movie.singlePreviewTitle || movie.singlePreviewTitle === movie.title
+                  ? title
+                  : movie.singlePreviewTitle,
+            }
+          : movie,
+      ),
     );
   };
 
-  const updateMovieNoteMode = (id: number, noteMode: "custom" | "rotten") => {
+  const updateMovieNote = (id: number, note: string) => {
     setSelectedMovies((current) =>
-      current.map((movie) => (movie.id === id ? { ...movie, noteMode } : movie)),
+      current.map((movie) => (movie.id === id ? { ...movie, note } : movie)),
     );
   };
 
@@ -208,26 +203,6 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
           ? {
               ...movie,
               poster_path: posterPath,
-            }
-          : movie,
-      ),
-    );
-  };
-
-  const updateMovieRottenScore = (
-    id: number,
-    patch: {
-      rottenTomatometer?: string | null;
-      rottenPopcornmeter?: string | null;
-      rottenTomatoesUrl?: string | null;
-    },
-  ) => {
-    setSelectedMovies((current) =>
-      current.map((movie) =>
-        movie.id === id
-          ? {
-              ...movie,
-              ...patch,
             }
           : movie,
       ),
@@ -298,10 +273,9 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       removeMovie,
       moveMovie,
       reorderMovie,
+      updateMovieTitle,
       updateMovieNote,
-      updateMovieNoteMode,
       updateMoviePoster,
-      updateMovieRottenScore,
       updateMovieSinglePreview,
       updatePersonProfilePath,
       clearMovies,

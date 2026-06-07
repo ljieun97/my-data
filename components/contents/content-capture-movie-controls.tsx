@@ -12,17 +12,14 @@ type MovieSlotsPanelProps = {
   movieSlotCount: number;
   movies: Array<CaptureMovie | undefined>;
   dragOverIndex: number | null;
-  loadingRottenIds: Record<number, boolean>;
   onDragStart: (index: number) => void;
   onDragOver: (index: number) => void;
   onDragLeave: (index: number) => void;
   onDrop: (index: number) => void;
   onDragEnd: () => void;
   removeMovie: (id: number) => void;
+  updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
-  updateMovieNoteMode: (id: number, noteMode: "custom" | "rotten") => void;
-  requestRottenScore: (movie: CaptureMovie) => void;
-  isMovieContent: (movie?: CaptureMovie) => boolean;
 };
 
 export function MovieSlotsPanel({
@@ -32,17 +29,14 @@ export function MovieSlotsPanel({
   movieSlotCount,
   movies,
   dragOverIndex,
-  loadingRottenIds,
   onDragStart,
   onDragOver,
   onDragLeave,
   onDrop,
   onDragEnd,
   removeMovie,
+  updateMovieTitle,
   updateMovieNote,
-  updateMovieNoteMode,
-  requestRottenScore,
-  isMovieContent,
 }: MovieSlotsPanelProps) {
   return (
     <CapturePanel>
@@ -91,48 +85,33 @@ export function MovieSlotsPanel({
             </span>
             <span className="w-5 shrink-0 text-xs font-bold text-slate-400 sm:w-6">{index + 1}</span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{movie?.title ?? "빈 슬롯"}</p>
               {movie && isMovieListMode ? (
                 <div className="mt-1 flex flex-col gap-1.5">
-                  <select
-                    value={movie.noteMode ?? "custom"}
-                    onChange={(event) => {
-                      const nextMode = event.target.value as "custom" | "rotten";
-                      updateMovieNoteMode(movie.id, nextMode);
-                      if (isMovieContent(movie) && nextMode === "rotten" && !movie.rottenTomatometer && !movie.rottenPopcornmeter) {
-                        requestRottenScore(movie);
-                      }
-                    }}
+                  <input
+                    value={movie.title}
+                    onChange={(event) => updateMovieTitle(movie.id, event.target.value)}
                     onMouseDown={(event) => event.stopPropagation()}
-                    className="h-7 w-full border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-700 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:focus:border-slate-100"
-                  >
-                    <option value="custom">직접 입력</option>
-                    {isMovieContent(movie) ? <option value="rotten">로튼</option> : null}
-                  </select>
-                  {movie.noteMode === "custom" ? (
-                    <input
-                      value={movie.note ?? ""}
-                      onChange={(event) => updateMovieNote(movie.id, event.target.value)}
-                      onMouseDown={(event) => event.stopPropagation()}
-                      onDragStart={(event) => event.preventDefault()}
-                      maxLength={16}
-                      placeholder="아래쪽 문구"
-                      className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
-                    />
-                  ) : (
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                      {movie.rottenTomatometer || movie.rottenPopcornmeter
-                        ? `${movie.rottenTomatometer ?? "00%"} ${movie.rottenPopcornmeter ?? "-%"}`
-                        : loadingRottenIds[movie.id]
-                          ? "불러오는 중"
-                          : "00% 00%"}
-                    </p>
-                  )}
+                    onDragStart={(event) => event.preventDefault()}
+                    placeholder="제목"
+                    className="h-7 w-full border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                  />
+                  <input
+                    value={movie.note ?? ""}
+                    onChange={(event) => updateMovieNote(movie.id, event.target.value)}
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onDragStart={(event) => event.preventDefault()}
+                    maxLength={16}
+                    placeholder="아래쪽 문구"
+                    className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                  />
                 </div>
               ) : (
+                <>
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{movie?.title ?? "빈 슬롯"}</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   {movie ? "목록형 커버에서는 사진만 사용합니다." : "상단 검색으로 추가"}
                 </p>
+                </>
               )}
             </div>
             {movie ? (

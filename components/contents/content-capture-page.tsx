@@ -210,7 +210,7 @@ function MovieListTemplate({
     <div className="flex h-full flex-col bg-slate-950 text-white">
       {title ? (
         <div className="px-[30px] pt-3">
-          <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow">
+          <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
             {title}
           </h1>
         </div>
@@ -313,7 +313,7 @@ function MovieCoverTemplate({
         <div>
           {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
           {showTitle ? (
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-2 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow">
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-2 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
               {title || "?? ??"}
             </h1>
           ) : null}
@@ -369,7 +369,7 @@ function SingleMovieTemplate({
           {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
           {showTitle ? (
             <div className="mt-2">
-              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow">
+              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
                 {title || movie?.title || "영화를 추가하세요"}
               </h1>
             </div>
@@ -452,7 +452,7 @@ function PersonCoverTemplate({
         <div className="pb-[36px]">
           {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{kicker || "TOVIE PERSON"}</p> : null}
           {showTitle ? (
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-2 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow">
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-2 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
               {headline || getDualPersonTitle(persons)}
             </h1>
           ) : null}
@@ -581,7 +581,7 @@ function CalendarDayPreviewTemplate({
 
       <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/44 via-black/12 to-transparent px-6 pb-6 pt-0"].join(" ")}>
         {!showBackdropGrid ? (
-          <h2 style={titleFontStyle} className="mb-0 whitespace-pre-line [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow">
+          <h2 style={titleFontStyle} className="mb-0 whitespace-pre-line [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
             {leadTitle}
           </h2>
         ) : null}

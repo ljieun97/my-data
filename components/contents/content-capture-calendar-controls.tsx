@@ -4,6 +4,8 @@ import {
   CaptureField,
   CaptureHelperText,
   CapturePanel,
+  CaptureSizeControls,
+  CaptureTextArea,
   CaptureTextInput,
   CaptureToggleButton,
 } from "@/components/contents/content-capture-controls";
@@ -17,6 +19,8 @@ type CalendarCaptureControlsProps = {
   calendarResultsCount: number;
   calendarReleaseTitle: string;
   setCalendarReleaseTitle: (value: string) => void;
+  calendarReleaseTitleSize: number;
+  setCalendarReleaseTitleSize: (value: number) => void;
   calendarReleaseLabelColors: string[];
   setCalendarReleaseLabelColors: (updater: (current: string[]) => string[]) => void;
   calendarReleaseDates: string[];
@@ -24,6 +28,8 @@ type CalendarCaptureControlsProps = {
   releaseBoardPlaceholders: string[];
   calendarTitle: string;
   setCalendarTitle: (value: string) => void;
+  calendarTitleSize: number;
+  setCalendarTitleSize: (value: number) => void;
   showCalendarTitle: boolean;
   setShowCalendarTitle: (updater: (current: boolean) => boolean) => void;
   footerLeft: string;
@@ -44,6 +50,8 @@ export function CalendarCaptureControls({
   calendarResultsCount,
   calendarReleaseTitle,
   setCalendarReleaseTitle,
+  calendarReleaseTitleSize,
+  setCalendarReleaseTitleSize,
   calendarReleaseLabelColors,
   setCalendarReleaseLabelColors,
   calendarReleaseDates,
@@ -51,6 +59,8 @@ export function CalendarCaptureControls({
   releaseBoardPlaceholders,
   calendarTitle,
   setCalendarTitle,
+  calendarTitleSize,
+  setCalendarTitleSize,
   showCalendarTitle,
   setShowCalendarTitle,
   footerLeft,
@@ -82,7 +92,8 @@ export function CalendarCaptureControls({
         {isCalendarReleaseMode ? (
           <>
             <CaptureField label="Title" className="mb-3">
-              <CaptureTextInput value={calendarReleaseTitle} onChange={(event) => setCalendarReleaseTitle(event.target.value)} />
+              <CaptureTextArea value={calendarReleaseTitle} onChange={(event) => setCalendarReleaseTitle(event.target.value)} rows={2} />
+              <CaptureSizeControls value={calendarReleaseTitleSize} defaultValue={25} onChange={setCalendarReleaseTitleSize} step={2} min={18} max={36} />
             </CaptureField>
 
             <div className="mb-3">
@@ -133,7 +144,8 @@ export function CalendarCaptureControls({
         ) : (
           <>
             <CaptureField label="Title" className="mb-3">
-              <CaptureTextInput value={calendarTitle} onChange={(event) => setCalendarTitle(event.target.value)} />
+              <CaptureTextArea value={calendarTitle} onChange={(event) => setCalendarTitle(event.target.value)} rows={2} />
+              <CaptureSizeControls value={calendarTitleSize} defaultValue={36} onChange={setCalendarTitleSize} step={2} min={24} max={48} />
             </CaptureField>
             <CaptureToggleButton type="button" active={showCalendarTitle} onClick={() => setShowCalendarTitle((current) => !current)}>
               Title {showCalendarTitle ? "ON" : "OFF"}

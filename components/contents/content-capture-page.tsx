@@ -2,6 +2,7 @@
 
 import Title from "@/components/common/title";
 import { CalendarCaptureControls } from "@/components/contents/content-capture-calendar-controls";
+import { CaptureSizeControls, CaptureTextArea } from "@/components/contents/content-capture-controls";
 import CalendarView from "@/components/contents/calendar-view";
 import { MovieSlotsPanel } from "@/components/contents/content-capture-movie-controls";
 import { CaptureMovie, CapturePerson, useCaptureContent } from "@/context/CaptureContentContext";
@@ -69,11 +70,6 @@ const titleFontStyle: CSSProperties = {
   fontFamily: '"Gmarket Sans", "지마켓 산스", sans-serif',
 };
 
-const bodyFontStyle: CSSProperties = {
-  fontFamily:
-    '"Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif',
-};
-
 function getCalendarPosterUrl(item: any) {
   const raw = String(item?.poster_path ?? item?.posterPath ?? item?.poster ?? "").trim();
   if (!raw) return "";
@@ -139,7 +135,7 @@ function CaptureFooter({
 }) {
   return (
     <footer className="pt-0.5 text-center">
-      <span className="text-[10px] font-semibold tracking-[0.03em] text-white/92">{footerRight || "@scena.kr"}</span>
+      <span className="text-[10px] font-semibold tracking-[0.03em] text-white/72">{footerRight || "@scena.kr"}</span>
     </footer>
   );
 }
@@ -200,11 +196,13 @@ function MovieCaptureRow({
 function MovieListTemplate({
   slots,
   title,
+  titleSize,
   footerLeft,
   footerRight,
 }: {
   slots: Array<CaptureMovie | undefined>;
   title: string;
+  titleSize: number;
   footerLeft: string;
   footerRight: string;
 }) {
@@ -212,7 +210,7 @@ function MovieListTemplate({
     <div className="flex h-full flex-col bg-slate-950 text-white">
       {title ? (
         <div className="px-[30px] pt-3">
-          <h1 style={titleFontStyle} className="break-keep text-center text-[16px] font-black leading-[1.08] text-white drop-shadow">
+          <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow">
             {title}
           </h1>
         </div>
@@ -237,6 +235,7 @@ function MovieListTemplate({
 function MovieCoverTemplate({
   slots,
   title,
+  titleSize,
   subtitle,
   layout,
   footerLeft,
@@ -244,6 +243,7 @@ function MovieCoverTemplate({
 }: {
   slots: Array<CaptureMovie | undefined>;
   title: string;
+  titleSize: number;
   subtitle: string;
   layout: "stack" | "grid";
   footerLeft: string;
@@ -301,7 +301,7 @@ function MovieCoverTemplate({
       <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
         <div className="pb-[36px]">
           <p style={titleFontStyle} className={coverSubtitleClass}>{subtitle || "TOVIE MOVIE COVER"}</p>
-          <h1 style={titleFontStyle} className="mt-2 break-keep text-[36px] font-black leading-[1.06] text-white drop-shadow">
+          <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-2 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow">
             {title || "영화 목록"}
           </h1>
         </div>
@@ -313,24 +313,28 @@ function MovieCoverTemplate({
 
 function SingleMovieTemplate({
   movie,
+  titleSize,
   footerLeft,
   footerRight,
 }: {
   movie: CaptureMovie | undefined;
+  titleSize: number;
   footerLeft: string;
   footerRight: string;
 }) {
   const imageCandidates = buildImageCandidates(getPosterUrl(movie), getBackdropUrl(movie));
   const title = movie?.singlePreviewTitle ?? movie?.title ?? "영화를 추가하세요";
   const subtitle = movie?.singlePreviewSubtitle ?? movie?.original_title ?? movie?.title ?? "설명 텍스트";
-  const body = movie?.singlePreviewBody ?? movie?.overview ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.";
+  const subbody = movie?.singlePreviewSubbody ?? "";
+  const body = movie?.singlePreviewBody ?? movie?.overview ?? "여기에 설명을 적어주세요.\n네 줄까지 표시됩니다.";
   const showTitle = movie?.singlePreviewShowTitle ?? true;
   const showSubtitle = movie?.singlePreviewShowSubtitle ?? true;
+  const showSubbody = movie?.singlePreviewShowSubbody ?? true;
   const showBody = movie?.singlePreviewShowBody ?? true;
   const subtitleValue = movie?.note || subtitle;
-  const titleClass = "text-[36px]";
   const subtitleClass = coverSubtitleClass;
-  const bodyClass = "mt-2 line-clamp-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76";
+  const subbodyClass = "mt-2 whitespace-pre-line text-[0.82rem] font-normal leading-relaxed text-white/88";
+  const bodyClass = "mt-2 whitespace-pre-line text-base font-normal leading-relaxed text-white";
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
@@ -346,16 +350,17 @@ function SingleMovieTemplate({
       ) : null}
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.06)_42%,rgba(0,0,0,0.50)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
-        <div className="w-full max-w-[20rem] pb-[36px] text-left">
+        <div className="w-full pb-[36px] text-left">
           {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
           {showTitle ? (
             <div className="mt-2">
-              <h1 style={titleFontStyle} className={["min-w-0 flex-1 break-keep font-black leading-[1.06] text-white drop-shadow", titleClass].join(" ")}>
+              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow">
                 {title || movie?.title || "영화를 추가하세요"}
               </h1>
             </div>
           ) : null}
-          {showBody ? <p style={bodyFontStyle} className={bodyClass}>{body || "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다."}</p> : null}
+          {showSubbody && subbody ? <p style={titleFontStyle} className={subbodyClass}>{subbody}</p> : null}
+          {showBody ? <p style={titleFontStyle} className={bodyClass}>{body || "여기에 설명을 적어주세요.\n네 줄까지 표시됩니다."}</p> : null}
         </div>
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
@@ -366,20 +371,26 @@ function SingleMovieTemplate({
 function PersonCoverTemplate({
   persons,
   headline,
+  titleSize,
   kicker,
+  subbody,
   body,
   showTitle,
   showSubtitle,
+  showSubbody,
   showBody,
   footerLeft,
   footerRight,
 }: {
   persons: CapturePerson[];
   headline: string;
+  titleSize: number;
   kicker: string;
+  subbody: string;
   body: string;
   showTitle: boolean;
   showSubtitle: boolean;
+  showSubbody: boolean;
   showBody: boolean;
   footerLeft: string;
   footerRight: string;
@@ -426,12 +437,17 @@ function PersonCoverTemplate({
         <div className="pb-[36px]">
           {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{kicker || "TOVIE PERSON"}</p> : null}
           {showTitle ? (
-            <h1 style={titleFontStyle} className="mt-2 break-keep text-[36px] font-black leading-[1.06] text-white drop-shadow">
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-2 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow">
               {headline || getDualPersonTitle(persons)}
             </h1>
           ) : null}
+          {showSubbody && subbody ? (
+            <p style={titleFontStyle} className="mt-2 whitespace-pre-line text-[0.82rem] font-normal leading-relaxed text-white/88">
+              {subbody}
+            </p>
+          ) : null}
           {showBody && bodyValue ? (
-            <p style={bodyFontStyle} className="mt-2 line-clamp-2 whitespace-pre-line text-base font-medium leading-relaxed text-white/76">
+            <p style={titleFontStyle} className="mt-2 whitespace-pre-line text-base font-normal leading-relaxed text-white">
               {bodyValue}
             </p>
           ) : null}
@@ -446,6 +462,7 @@ function CalendarCoverTemplate({
   results,
   option,
   title,
+  titleSize,
   showTitle,
   footerLeft,
   footerRight,
@@ -453,6 +470,7 @@ function CalendarCoverTemplate({
   results: any[];
   option: any;
   title: string;
+  titleSize: number;
   showTitle: boolean;
   footerLeft: string;
   footerRight: string;
@@ -467,7 +485,7 @@ function CalendarCoverTemplate({
         ].join(" ")}
       >
         {showTitle ? (
-          <h1 style={titleFontStyle} className="mt-2 inline-flex w-fit break-keep bg-black px-3 py-2 text-[36px] font-black leading-[1.06] text-white">
+          <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-2 inline-flex w-fit break-keep whitespace-pre-line bg-black px-3 py-2 font-black leading-[1.06] text-white">
             {title || "TOVIE CALENDAR"}
           </h1>
         ) : null}
@@ -548,7 +566,7 @@ function CalendarDayPreviewTemplate({
 
       <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/44 via-black/12 to-transparent px-6 pb-6 pt-0"].join(" ")}>
         {!showBackdropGrid ? (
-          <h2 style={titleFontStyle} className="mb-0 whitespace-normal [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow">
+          <h2 style={titleFontStyle} className="mb-0 whitespace-pre-line [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow">
             {leadTitle}
           </h2>
         ) : null}
@@ -560,11 +578,13 @@ function CalendarDayPreviewTemplate({
 function CalendarReleaseBoardTemplate({
   movies,
   title,
+  titleSize,
   labelColors,
   dateLabels,
 }: {
   movies: Array<CaptureMovie | undefined>;
   title: string;
+  titleSize: number;
   labelColors: string[];
   dateLabels: string[];
 }) {
@@ -579,7 +599,7 @@ function CalendarReleaseBoardTemplate({
 
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
         <div className="flex flex-col items-center">
-          <h1 style={titleFontStyle} className="mt-0.5 inline-flex max-w-full items-center justify-center rounded-[1.1rem] bg-white px-4 py-2 break-keep text-center text-[1.55rem] font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_0_0_currentColor]">
+          <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-0.5 inline-flex max-w-full items-center justify-center rounded-[1.1rem] bg-white px-4 py-2 break-keep whitespace-pre-line text-center font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_0_0_currentColor]">
             {title}
           </h1>
         </div>
@@ -645,14 +665,20 @@ export default function ContentCapturePage() {
   const draggedIndexRef = useRef<number | null>(null);
   const [personTitle, setPersonTitle] = useState("인물 이름");
   const [personSubtitle, setPersonSubtitle] = useState("관객수가 증명한 배우");
+  const [personSubbody, setPersonSubbody] = useState("");
   const [personBody, setPersonBody] = useState("");
   const [personShowTitle, setPersonShowTitle] = useState(true);
   const [personShowSubtitle, setPersonShowSubtitle] = useState(true);
+  const [personShowSubbody, setPersonShowSubbody] = useState(true);
   const [personShowBody, setPersonShowBody] = useState(true);
   const [movieListTitle, setMovieListTitle] = useState("영화 목록");
+  const [movieListTitleSize, setMovieListTitleSize] = useState(16);
   const [movieCoverTitle, setMovieCoverTitle] = useState("영화 묶음");
+  const [movieCoverTitleSize, setMovieCoverTitleSize] = useState(36);
   const [movieCoverSubtitle, setMovieCoverSubtitle] = useState("TOVIE MOVIE COVER");
   const [movieCoverLayout, setMovieCoverLayout] = useState<"stack" | "grid">("stack");
+  const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(36);
+  const [personTitleSize, setPersonTitleSize] = useState(36);
   const [footerLeft, setFooterLeft] = useState("셰나코리아");
   const [footerRight, setFooterRight] = useState("@scena.kr");
   const [isCapturing, setIsCapturing] = useState(false);
@@ -665,9 +691,11 @@ export default function ContentCapturePage() {
   const [isCalendarLoading, setIsCalendarLoading] = useState(false);
   const [calendarError, setCalendarError] = useState("");
   const [calendarTitle, setCalendarTitle] = useState(`${new Date().getMonth() + 1}월 개봉 일정`);
+  const [calendarTitleSize, setCalendarTitleSize] = useState(36);
   const [showCalendarTitle, setShowCalendarTitle] = useState(true);
   const [calendarPreviewDateKey, setCalendarPreviewDateKey] = useState("");
   const [calendarReleaseTitle, setCalendarReleaseTitle] = useState("6월 개봉예정 영화 라인업");
+  const [calendarReleaseTitleSize, setCalendarReleaseTitleSize] = useState(25);
   const [calendarReleaseLabelColors, setCalendarReleaseLabelColors] = useState(RELEASE_BOARD_DEFAULT_COLORS);
   const [calendarReleaseDates, setCalendarReleaseDates] = useState(() => Array.from({ length: 8 }, () => ""));
 
@@ -953,10 +981,12 @@ export default function ContentCapturePage() {
         CaptureMovie,
         | "singlePreviewTitle"
         | "singlePreviewSubtitle"
+        | "singlePreviewSubbody"
         | "singlePreviewBody"
         | "singlePreviewTextPosition"
         | "singlePreviewShowTitle"
         | "singlePreviewShowSubtitle"
+        | "singlePreviewShowSubbody"
         | "singlePreviewShowBody"
       >
     >,
@@ -1068,7 +1098,7 @@ export default function ContentCapturePage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <section className="flex flex-col gap-4">
           {isCalendarMode || isCalendarReleaseMode ? (
-            <CalendarCaptureControls
+              <CalendarCaptureControls
               isCalendarReleaseMode={isCalendarReleaseMode}
               isCalendarMode={isCalendarMode}
               isCalendarLoading={isCalendarLoading}
@@ -1077,6 +1107,8 @@ export default function ContentCapturePage() {
               calendarResultsCount={calendarResults.length}
               calendarReleaseTitle={calendarReleaseTitle}
               setCalendarReleaseTitle={setCalendarReleaseTitle}
+              calendarReleaseTitleSize={calendarReleaseTitleSize}
+              setCalendarReleaseTitleSize={setCalendarReleaseTitleSize}
               calendarReleaseLabelColors={calendarReleaseLabelColors}
               setCalendarReleaseLabelColors={setCalendarReleaseLabelColors}
               calendarReleaseDates={calendarReleaseDates}
@@ -1084,6 +1116,8 @@ export default function ContentCapturePage() {
               releaseBoardPlaceholders={releaseBoardSlots.map((movie) => getReleaseBoardAutoDate(movie) || "6/5")}
               calendarTitle={calendarTitle}
               setCalendarTitle={setCalendarTitle}
+              calendarTitleSize={calendarTitleSize}
+              setCalendarTitleSize={setCalendarTitleSize}
               showCalendarTitle={showCalendarTitle}
               setShowCalendarTitle={setShowCalendarTitle}
               footerLeft={footerLeft}
@@ -1122,12 +1156,13 @@ export default function ContentCapturePage() {
                 <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Text</p>
                 <label className="mb-3 block">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                  <input
-                    value={movieListTitle}
-                    onChange={(event) => setMovieListTitle(event.target.value)}
-                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                  />
-                </label>
+                <CaptureTextArea
+                  value={movieListTitle}
+                  onChange={(event) => setMovieListTitle(event.target.value)}
+                  rows={2}
+                />
+                <CaptureSizeControls value={movieListTitleSize} defaultValue={16} onChange={setMovieListTitleSize} step={1} min={12} max={28} />
+              </label>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Footer left</span>
@@ -1171,11 +1206,12 @@ export default function ContentCapturePage() {
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Cover Text</p>
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                <input
+                <CaptureTextArea
                   value={movieCoverTitle}
                   onChange={(event) => setMovieCoverTitle(event.target.value)}
-                  className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                  rows={2}
                 />
+                <CaptureSizeControls value={movieCoverTitleSize} defaultValue={36} onChange={setMovieCoverTitleSize} step={2} min={24} max={48} />
               </label>
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle</span>
@@ -1233,12 +1269,13 @@ export default function ContentCapturePage() {
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Single Preview Text</p>
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                <input
+                <CaptureTextArea
                   value={currentSingleMovie?.singlePreviewTitle ?? currentSingleMovie?.title ?? ""}
                   onChange={(event) => updateCurrentSinglePreview({ singlePreviewTitle: event.target.value })}
                   placeholder={currentSingleMovie?.title ?? "제목"}
-                  className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                  rows={2}
                 />
+                <CaptureSizeControls value={singlePreviewTitleSize} defaultValue={36} onChange={setSinglePreviewTitleSize} step={2} min={24} max={48} />
               </label>
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle</span>
@@ -1250,15 +1287,24 @@ export default function ContentCapturePage() {
                 />
               </label>
               <label className="mb-3 block">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subbody</span>
+                <textarea
+                  value={currentSingleMovie?.singlePreviewSubbody ?? ""}
+                  onChange={(event) => updateCurrentSinglePreview({ singlePreviewSubbody: event.target.value })}
+                  rows={2}
+                  className="w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                />
+              </label>
+              <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body</span>
                 <textarea
                   value={currentSingleMovie?.singlePreviewBody ?? currentSingleMovie?.overview ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다."}
                   onChange={(event) => updateCurrentSinglePreview({ singlePreviewBody: event.target.value })}
-                  rows={2}
-                  className="min-h-20 w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                  rows={4}
+                  className="w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
                 />
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {[
                   {
                     key: "title",
@@ -1276,6 +1322,15 @@ export default function ContentCapturePage() {
                     setChecked: (next: boolean | ((current: boolean) => boolean)) => {
                       const current = currentSingleMovie?.singlePreviewShowSubtitle ?? true;
                       updateCurrentSinglePreview({ singlePreviewShowSubtitle: typeof next === "function" ? next(current) : next });
+                    },
+                  },
+                  {
+                    key: "subbody",
+                    label: "Subbody",
+                    checked: currentSingleMovie?.singlePreviewShowSubbody ?? true,
+                    setChecked: (next: boolean | ((current: boolean) => boolean)) => {
+                      const current = currentSingleMovie?.singlePreviewShowSubbody ?? true;
+                      updateCurrentSinglePreview({ singlePreviewShowSubbody: typeof next === "function" ? next(current) : next });
                     },
                   },
                   {
@@ -1386,11 +1441,12 @@ export default function ContentCapturePage() {
                 <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Cover Text</p>
                 <label className="mb-3 block">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                  <input
+                  <CaptureTextArea
                     value={personTitle}
                     onChange={(event) => setPersonTitle(event.target.value)}
-                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                    rows={2}
                   />
+                  <CaptureSizeControls value={personTitleSize} defaultValue={36} onChange={setPersonTitleSize} step={2} min={24} max={48} />
                 </label>
                 <label className="mb-3 block">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle</span>
@@ -1410,10 +1466,20 @@ export default function ContentCapturePage() {
                     className="min-h-20 w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
                   />
                 </label>
-                <div className="mb-3 grid grid-cols-3 gap-2">
+                <label className="mb-3 block">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subbody</span>
+                  <textarea
+                    value={personSubbody}
+                    onChange={(event) => setPersonSubbody(event.target.value)}
+                    rows={2}
+                    className="min-h-16 w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                  />
+                </label>
+                <div className="mb-3 grid grid-cols-4 gap-2">
                   {[
                     { key: "title", label: "Title", checked: personShowTitle, setChecked: setPersonShowTitle },
                     { key: "subtitle", label: "Subtitle", checked: personShowSubtitle, setChecked: setPersonShowSubtitle },
+                    { key: "subbody", label: "Subbody", checked: personShowSubbody, setChecked: setPersonShowSubbody },
                     { key: "body", label: "Body", checked: personShowBody, setChecked: setPersonShowBody },
                   ].map((item) => (
                     <button
@@ -1468,6 +1534,7 @@ export default function ContentCapturePage() {
                   results={calendarResults}
                   option={calendarOption}
                   title={calendarTitle}
+                  titleSize={calendarTitleSize}
                   showTitle={showCalendarTitle}
                   footerLeft={footerLeft}
                   footerRight={footerRight}
@@ -1476,6 +1543,7 @@ export default function ContentCapturePage() {
                 <CalendarReleaseBoardTemplate
                   movies={releaseBoardSlots}
                   title={calendarReleaseTitle}
+                  titleSize={calendarReleaseTitleSize}
                   labelColors={calendarReleaseLabelColors}
                   dateLabels={releaseBoardDateLabels}
                 />
@@ -1483,10 +1551,13 @@ export default function ContentCapturePage() {
                 <PersonCoverTemplate
                   persons={selectedPersons}
                   headline={personTitle}
+                  titleSize={personTitleSize}
                   kicker={personSubtitle}
+                  subbody={personSubbody}
                   body={personBody}
                   showTitle={personShowTitle}
                   showSubtitle={personShowSubtitle}
+                  showSubbody={personShowSubbody}
                   showBody={personShowBody}
                   footerLeft={footerLeft}
                   footerRight={footerRight}
@@ -1495,6 +1566,7 @@ export default function ContentCapturePage() {
                 <MovieCoverTemplate
                   slots={slots}
                   title={movieCoverTitle}
+                  titleSize={movieCoverTitleSize}
                   subtitle={movieCoverSubtitle}
                   layout={movieCoverLayout}
                   footerLeft={footerLeft}
@@ -1504,6 +1576,7 @@ export default function ContentCapturePage() {
               <MovieListTemplate
                 slots={slots}
                 title={movieListTitle}
+                titleSize={movieListTitleSize}
                 footerLeft={footerLeft}
                 footerRight={footerRight}
               />
@@ -1647,6 +1720,7 @@ export default function ContentCapturePage() {
                       <div ref={singleMovieCaptureRef} className="h-full w-full">
                         <SingleMovieTemplate
                           movie={selectedMovies[previewMovieIndex]}
+                          titleSize={singlePreviewTitleSize}
                           footerLeft={footerLeft}
                           footerRight={footerRight}
                         />

@@ -16,10 +16,12 @@ export type CaptureMovie = {
   posterOptions?: string[];
   singlePreviewTitle?: string;
   singlePreviewSubtitle?: string;
+  singlePreviewSubbody?: string;
   singlePreviewBody?: string;
   singlePreviewTextPosition?: "top" | "center" | "bottom";
   singlePreviewShowTitle?: boolean;
   singlePreviewShowSubtitle?: boolean;
+  singlePreviewShowSubbody?: boolean;
   singlePreviewShowBody?: boolean;
 };
 
@@ -58,10 +60,12 @@ type CaptureContentContextValue = {
         CaptureMovie,
         | "singlePreviewTitle"
         | "singlePreviewSubtitle"
+        | "singlePreviewSubbody"
         | "singlePreviewBody"
         | "singlePreviewTextPosition"
         | "singlePreviewShowTitle"
         | "singlePreviewShowSubtitle"
+        | "singlePreviewShowSubbody"
         | "singlePreviewShowBody"
       >
     >,
@@ -216,10 +220,12 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
         CaptureMovie,
         | "singlePreviewTitle"
         | "singlePreviewSubtitle"
+        | "singlePreviewSubbody"
         | "singlePreviewBody"
         | "singlePreviewTextPosition"
         | "singlePreviewShowTitle"
         | "singlePreviewShowSubtitle"
+        | "singlePreviewShowSubbody"
         | "singlePreviewShowBody"
       >
     >,

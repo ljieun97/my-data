@@ -70,6 +70,12 @@ const titleFontStyle: CSSProperties = {
   fontFamily: '"Gmarket Sans", "지마켓 산스", sans-serif',
 };
 
+function getTitleBlockStyle(titleSize: number): CSSProperties {
+  return {
+    minHeight: `${Math.round(titleSize * 2.12)}px`,
+  };
+}
+
 function getCalendarPosterUrl(item: any) {
   const raw = String(item?.poster_path ?? item?.posterPath ?? item?.poster ?? "").trim();
   if (!raw) return "";
@@ -210,9 +216,11 @@ function MovieListTemplate({
     <div className="flex h-full flex-col bg-slate-950 text-white">
       {title ? (
         <div className="px-[30px] pt-3">
-          <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
-            {title}
-          </h1>
+          <div className="flex items-end justify-center" style={getTitleBlockStyle(titleSize)}>
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
+              {title}
+            </h1>
+          </div>
         </div>
       ) : null}
       <div className="flex min-h-0 flex-1 flex-col gap-1 bg-slate-950 px-[30px] pt-3">
@@ -313,9 +321,11 @@ function MovieCoverTemplate({
         <div>
           {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
           {showTitle ? (
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-2 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
-              {title || "?? ??"}
-            </h1>
+            <div className="mt-2 flex items-end" style={getTitleBlockStyle(titleSize)}>
+              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
+                {title || "?? ??"}
+              </h1>
+            </div>
           ) : null}
         </div>
       </div>
@@ -368,7 +378,7 @@ function SingleMovieTemplate({
         <div className="w-full pb-[36px] text-left">
           {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
           {showTitle ? (
-            <div className="mt-2">
+            <div className="mt-2 flex items-end" style={getTitleBlockStyle(titleSize)}>
               <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
                 {title || movie?.title || "영화를 추가하세요"}
               </h1>
@@ -452,9 +462,11 @@ function PersonCoverTemplate({
         <div className="pb-[36px]">
           {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{kicker || "TOVIE PERSON"}</p> : null}
           {showTitle ? (
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-2 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
-              {headline || getDualPersonTitle(persons)}
-            </h1>
+            <div className="mt-2 flex items-end" style={getTitleBlockStyle(titleSize)}>
+              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
+                {headline || getDualPersonTitle(persons)}
+              </h1>
+            </div>
           ) : null}
           {showSubbody && subbody ? (
             <p style={titleFontStyle} className="mt-2 whitespace-pre-line text-[0.82rem] font-normal leading-relaxed text-white/88">
@@ -500,9 +512,11 @@ function CalendarCoverTemplate({
         ].join(" ")}
       >
         {showTitle ? (
-          <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-2 inline-flex w-fit break-keep whitespace-pre-line bg-black px-3 py-2 font-black leading-[1.06] text-white">
-            {title || "TOVIE CALENDAR"}
-          </h1>
+          <div className="mt-2 flex items-end" style={getTitleBlockStyle(titleSize)}>
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="inline-flex w-fit break-keep whitespace-pre-line bg-black px-3 py-2 font-black leading-[1.06] text-white">
+              {title || "TOVIE CALENDAR"}
+            </h1>
+          </div>
         ) : null}
         {showTitle ? (
           <div className="h-[36px]" aria-hidden="true" />
@@ -614,9 +628,11 @@ function CalendarReleaseBoardTemplate({
 
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
         <div className="flex flex-col items-center">
-          <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="mt-0.5 inline-flex max-w-full items-center justify-center rounded-[1.1rem] bg-white px-4 py-2 break-keep whitespace-pre-line text-center font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_0_0_currentColor]">
-            {title}
-          </h1>
+          <div className="mt-0.5 flex items-end justify-center" style={getTitleBlockStyle(titleSize)}>
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="inline-flex max-w-full items-center justify-center rounded-[1.1rem] bg-white px-4 py-2 break-keep whitespace-pre-line text-center font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_0_0_currentColor]">
+              {title}
+            </h1>
+          </div>
         </div>
 
         <div className={["mt-2.5 grid min-h-0 flex-1 gap-2", gridColsClass].join(" ")}>

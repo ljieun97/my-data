@@ -150,14 +150,6 @@ export function CalendarCaptureControls({
             <CaptureToggleButton type="button" active={showCalendarTitle} onClick={() => setShowCalendarTitle((current) => !current)}>
               Title {showCalendarTitle ? "ON" : "OFF"}
             </CaptureToggleButton>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <CaptureField label="Footer left">
-                <CaptureTextInput value={footerLeft} onChange={(event) => setFooterLeft(event.target.value)} />
-              </CaptureField>
-              <CaptureField label="Footer right">
-                <CaptureTextInput value={footerRight} onChange={(event) => setFooterRight(event.target.value)} />
-              </CaptureField>
-            </div>
           </>
         )}
 

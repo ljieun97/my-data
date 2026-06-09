@@ -23,7 +23,7 @@ function getBackdropUrl(movie?: CaptureMovie) {
 
 function getPosterUrl(movie?: CaptureMovie) {
   if (!movie?.poster_path) return "";
-  return `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+  return `https://image.tmdb.org/t/p/w780${movie.poster_path}`;
 }
 
 function getPosterThumbUrl(posterPath?: string) {
@@ -233,15 +233,15 @@ function MovieListTemplate({
   return (
     <div className="flex h-full flex-col bg-slate-950 text-white">
       {title ? (
-        <div className="px-[30px] pt-3">
+        <div className="px-5 pt-1.5">
           <div className="flex items-end justify-center" style={getTitleBlockStyle(titleSize)}>
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white">
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
               {title}
             </h1>
           </div>
         </div>
       ) : null}
-      <div className="flex min-h-0 flex-1 flex-col gap-1 bg-slate-950 px-[30px] pt-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-1 bg-slate-950 px-5 pt-2">
         {slots.map((movie, index) => (
           <MovieCaptureRow
             key={movie?.id ?? `preview-${index}`}
@@ -251,7 +251,7 @@ function MovieListTemplate({
         ))}
       </div>
 
-      <div className="px-[30px] pb-1">
+      <div className="px-5 pb-1">
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>
@@ -340,7 +340,7 @@ function MovieCoverTemplate({
           {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
           {showTitle ? (
             <div className="mt-2">
-              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white">
+              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
                 {title || "영화 커버"}
               </h1>
             </div>
@@ -399,7 +399,7 @@ function SingleMovieTemplate({
             {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
             {showTitle ? (
               <div className="mt-2">
-                <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white">
+                <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
                   {title || movie?.title || "영화를 추가하세요"}
                 </h1>
               </div>
@@ -486,7 +486,7 @@ function PersonCoverTemplate({
             {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{kicker || "TOVIE PERSON"}</p> : null}
             {showTitle ? (
               <div className="mt-2">
-                <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white">
+                <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
                   {headline || getDualPersonTitle(persons)}
                 </h1>
               </div>
@@ -537,7 +537,7 @@ function CalendarCoverTemplate({
       >
         {showTitle ? (
           <div className="mt-2 flex items-end" style={getTitleBlockStyle(titleSize)}>
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="inline-flex w-fit break-keep whitespace-pre-line bg-black px-3 py-2 font-black leading-[1.06] text-white">
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="inline-flex w-fit break-keep whitespace-pre-line bg-black px-3 py-2 font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
               {title || "TOVIE CALENDAR"}
             </h1>
           </div>
@@ -619,7 +619,7 @@ function CalendarDayPreviewTemplate({
 
       <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/44 via-black/12 to-transparent px-6 pb-6 pt-0"].join(" ")}>
         {!showBackdropGrid ? (
-          <h2 style={titleFontStyle} className="mb-0 whitespace-pre-line [word-break:keep-all] text-[36px] font-black leading-none text-white">
+          <h2 style={titleFontStyle} className="mb-0 whitespace-pre-line [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
             {leadTitle}
           </h2>
         ) : null}
@@ -653,7 +653,7 @@ function CalendarReleaseBoardTemplate({
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
         <div className="flex flex-col items-center">
           <div className="mt-0.5 flex items-end justify-center" style={getTitleBlockStyle(titleSize)}>
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="inline-flex max-w-full items-center justify-center rounded-[1.1rem] bg-white px-4 py-2 break-keep whitespace-pre-line text-center font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_0_0_currentColor]">
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="inline-flex max-w-full items-center justify-center rounded-[1.1rem] bg-white px-4 py-2 break-keep whitespace-pre-line text-center font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]">
               {title}
             </h1>
           </div>

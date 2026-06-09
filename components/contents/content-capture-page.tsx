@@ -76,6 +76,24 @@ function getTitleBlockStyle(titleSize: number): CSSProperties {
   };
 }
 
+function getTitleGroupStyle(titleSize: number): CSSProperties {
+  return {
+    minHeight: `${Math.round(titleSize * 2.7)}px`,
+  };
+}
+
+function getTextOverlayClass(textPosition: "top" | "center" | "bottom") {
+  if (textPosition === "top") {
+    return "bg-[linear-gradient(180deg,rgba(0,0,0,0.46)_0%,rgba(0,0,0,0.18)_28%,rgba(0,0,0,0)_58%)]";
+  }
+
+  if (textPosition === "center") {
+    return "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.2)_28%,rgba(0,0,0,0.42)_50%,rgba(0,0,0,0.2)_72%,rgba(0,0,0,0)_100%)]";
+  }
+
+  return "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_54%,rgba(0,0,0,0.46)_100%)]";
+}
+
 function getCalendarPosterUrl(item: any) {
   const raw = String(item?.poster_path ?? item?.posterPath ?? item?.poster ?? "").trim();
   if (!raw) return "";
@@ -187,10 +205,10 @@ function MovieCaptureRow({
           </span>
         </div> */}
         <div className="min-w-0 flex-1">
-          <p style={titleFontStyle} className="truncate text-[14px] font-black leading-tight text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.85)]">{movie?.title ?? "영화를 추가하세요"}</p>
+          <p style={titleFontStyle} className="truncate text-[14px] font-black leading-tight text-white">{movie?.title ?? "영화를 추가하세요"}</p>
         </div>
         {movie?.note ? (
-          <p style={titleFontStyle} className="max-w-[36%] shrink-0 text-right text-sm font-black leading-tight text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.85)]">
+          <p style={titleFontStyle} className="max-w-[36%] shrink-0 text-right text-sm font-black leading-tight text-white">
             {noteValue}
           </p>
         ) : null}
@@ -217,7 +235,7 @@ function MovieListTemplate({
       {title ? (
         <div className="px-[30px] pt-3">
           <div className="flex items-end justify-center" style={getTitleBlockStyle(titleSize)}>
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white">
               {title}
             </h1>
           </div>
@@ -277,7 +295,6 @@ function MovieCoverTemplate({
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_56%,rgba(0,0,0,0.44)_100%)]" />
       <div className="relative z-[0] flex-1 overflow-hidden">
         <div
           className={["grid h-full", contentClass].join(" ")}
@@ -311,6 +328,7 @@ function MovieCoverTemplate({
           })}
         </div>
       </div>
+      <div className={["pointer-events-none absolute inset-0 z-[0]", getTextOverlayClass(textPosition)].join(" ")} />
 
       <div
         className={[
@@ -318,12 +336,12 @@ function MovieCoverTemplate({
           textPosition === "top" ? "top-0 pt-14" : textPosition === "center" ? "top-1/2 -translate-y-1/2" : "bottom-0 pb-[36px] pt-24",
         ].join(" ")}
       >
-        <div>
+        <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
           {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
           {showTitle ? (
-            <div className="mt-2 flex items-end" style={getTitleBlockStyle(titleSize)}>
-              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
-                {title || "?? ??"}
+            <div className="mt-2">
+              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white">
+                {title || "영화 커버"}
               </h1>
             </div>
           ) : null}
@@ -358,8 +376,9 @@ function SingleMovieTemplate({
   const showBody = movie?.singlePreviewShowBody ?? true;
   const subtitleValue = movie?.note || subtitle;
   const subtitleClass = coverSubtitleClass;
-  const subbodyClass = "mt-2 whitespace-pre-line text-[0.82rem] font-normal leading-relaxed text-white/88";
-  const bodyClass = "mt-2 whitespace-pre-line text-base font-normal leading-relaxed text-white";
+  const subbodyClass = "mt-2 whitespace-pre-line text-[0.74rem] font-normal leading-relaxed text-white/88";
+  const bodyClass = "mt-2 whitespace-pre-line text-[0.9rem] font-normal leading-relaxed text-white";
+  const hasDetailText = (showSubbody && Boolean(subbody)) || showBody;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
@@ -373,17 +392,19 @@ function SingleMovieTemplate({
           crossOrigin="anonymous"
         />
       ) : null}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.06)_42%,rgba(0,0,0,0.50)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.48)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
-        <div className="w-full pb-[36px] text-left">
-          {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
-          {showTitle ? (
-            <div className="mt-2 flex items-end" style={getTitleBlockStyle(titleSize)}>
-              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
-                {title || movie?.title || "영화를 추가하세요"}
-              </h1>
-            </div>
-          ) : null}
+        <div className={["w-full text-left", hasDetailText ? "pb-1" : "pb-[36px]"].join(" ")}>
+          <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
+            {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
+            {showTitle ? (
+              <div className="mt-2">
+                <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white">
+                  {title || movie?.title || "영화를 추가하세요"}
+                </h1>
+              </div>
+            ) : null}
+          </div>
           {showSubbody && subbody ? <p style={titleFontStyle} className={subbodyClass}>{subbody}</p> : null}
           {showBody ? <p style={titleFontStyle} className={bodyClass}>{body || "여기에 설명을 적어주세요.\n네 줄까지 표시됩니다."}</p> : null}
         </div>
@@ -426,6 +447,7 @@ function PersonCoverTemplate({
   const secondaryProfileUrl = getProfileUrl(secondaryPerson?.profile_path);
   const bodyValue = body || primaryPerson?.biography || "";
   const isDualLayout = Boolean(primaryPerson && secondaryPerson);
+  const hasDetailText = (showSubbody && Boolean(subbody)) || (showBody && Boolean(bodyValue));
 
   return (
     <div className="relative h-full overflow-hidden bg-slate-950 text-white">
@@ -457,24 +479,26 @@ function PersonCoverTemplate({
         />
       ) : null}
 
-      <div className={["absolute inset-0", isDualLayout ? "bg-[linear-gradient(180deg,rgba(0,0,0,0.05)_0%,rgba(0,0,0,0.02)_40%,rgba(0,0,0,0.50)_100%)]" : "bg-[linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.02)_42%,rgba(0,0,0,0.50)_100%)]"].join(" ")} />
+      <div className={["absolute inset-0", isDualLayout ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.02)_40%,rgba(0,0,0,0.48)_100%)]" : "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.48)_100%)]"].join(" ")} />
       <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
-        <div className="pb-[36px]">
-          {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{kicker || "TOVIE PERSON"}</p> : null}
-          {showTitle ? (
-            <div className="mt-2 flex items-end" style={getTitleBlockStyle(titleSize)}>
-              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
-                {headline || getDualPersonTitle(persons)}
-              </h1>
-            </div>
-          ) : null}
+        <div className={hasDetailText ? "pb-1" : "pb-[36px]"}>
+          <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
+            {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{kicker || "TOVIE PERSON"}</p> : null}
+            {showTitle ? (
+              <div className="mt-2">
+                <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white">
+                  {headline || getDualPersonTitle(persons)}
+                </h1>
+              </div>
+            ) : null}
+          </div>
           {showSubbody && subbody ? (
-            <p style={titleFontStyle} className="mt-2 whitespace-pre-line text-[0.82rem] font-normal leading-relaxed text-white/88">
+            <p style={titleFontStyle} className="mt-2 whitespace-pre-line text-[0.74rem] font-normal leading-relaxed text-white/88">
               {subbody}
             </p>
           ) : null}
           {showBody && bodyValue ? (
-            <p style={titleFontStyle} className="mt-2 whitespace-pre-line text-base font-normal leading-relaxed text-white">
+            <p style={titleFontStyle} className="mt-2 whitespace-pre-line text-[0.9rem] font-normal leading-relaxed text-white">
               {bodyValue}
             </p>
           ) : null}
@@ -573,8 +597,8 @@ function CalendarDayPreviewTemplate({
                     }}
                   />
                 ) : null}
-                <div className="absolute inset-0 bg-black/10" />
-                <p style={titleFontStyle} className="absolute inset-x-2 bottom-2 z-[1] line-clamp-2 whitespace-normal text-center [word-break:keep-all] text-xs font-bold leading-tight text-white drop-shadow">{title}</p>
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_56%,rgba(0,0,0,0.34)_100%)]" />
+                <p style={titleFontStyle} className="absolute inset-x-2 bottom-2 z-[1] line-clamp-2 whitespace-normal text-center [word-break:keep-all] text-xs font-bold leading-tight text-white">{title}</p>
               </div>
             );
           })}
@@ -589,13 +613,13 @@ function CalendarDayPreviewTemplate({
               crossOrigin="anonymous"
             />
           ) : null}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.01)_0%,rgba(0,0,0,0.05)_42%,rgba(0,0,0,0.46)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.44)_100%)]" />
         </div>
       )}
 
       <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/44 via-black/12 to-transparent px-6 pb-6 pt-0"].join(" ")}>
         {!showBackdropGrid ? (
-          <h2 style={titleFontStyle} className="mb-0 whitespace-pre-line [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.72)]">
+          <h2 style={titleFontStyle} className="mb-0 whitespace-pre-line [word-break:keep-all] text-[36px] font-black leading-none text-white">
             {leadTitle}
           </h2>
         ) : null}

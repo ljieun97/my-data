@@ -183,12 +183,12 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const showCaptureResults = isCapturePage && !isCalendarMode && isFocused && (inputValue.trim() || captureResults.length);
 
   return (
-    <div className="relative">
+    <div className="relative w-full min-w-0">
       <Input
         ref={inputRef}
         aria-label="Search title"
         placeholder={isCapturePage ? (isCalendarMode ? "Calendar 모드에서는 검색을 사용하지 않습니다" : captureMode === "person-cover" ? "커버 인물 검색" : "추가할 영화 검색") : "제목을 입력하세요."}
-        className="border-none shadow-none outline-none ring-0
+        className="w-full min-w-0 border-none shadow-none outline-none ring-0
           focus:border-none focus:outline-none focus:ring-0
           focus-visible:outline-none focus-visible:ring-0"
         value={inputValue}
@@ -201,7 +201,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       />
 
       {showCaptureResults ? (
-        <div className="absolute right-0 top-full z-[140] mt-2 w-[18rem] overflow-hidden border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-950 sm:w-[22rem]">
+        <div className="absolute inset-x-0 top-full z-[140] mt-2 w-full min-w-0 overflow-hidden border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-950 sm:left-auto sm:right-0 sm:w-[22rem]">
           {isLoadingCaptureResults ? (
             <div className="px-3 py-3 text-sm text-slate-500 dark:text-slate-400">검색 중</div>
           ) : null}

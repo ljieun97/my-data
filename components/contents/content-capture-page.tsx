@@ -1175,7 +1175,7 @@ export default function ContentCapturePage() {
         </div>
       </div>
 
-      <div className="inline-flex w-full border border-slate-200 bg-white/72 p-1 dark:border-slate-800 dark:bg-slate-950/70 sm:w-fit">
+      <div className="flex w-full flex-wrap border border-slate-200 bg-white/72 p-1 dark:border-slate-800 dark:bg-slate-950/70 sm:inline-flex sm:w-fit">
         {[
           { key: "person-cover", label: "Person Cover" },
           { key: "movie-cover", label: "Movie Cover" },
@@ -1188,7 +1188,7 @@ export default function ContentCapturePage() {
             type="button"
             onClick={() => setCaptureMode(item.key as "movie-list" | "movie-cover" | "person-cover" | "calendar" | "calendar-release")}
             className={[
-              "h-9 flex-1 px-4 text-sm font-bold transition sm:flex-none",
+              "h-9 min-w-0 flex-[1_1_calc(50%-0.25rem)] px-3 text-sm font-bold transition sm:flex-none sm:px-4",
               captureMode === item.key
                 ? "bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-950"
                 : "text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",

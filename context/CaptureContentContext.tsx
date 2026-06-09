@@ -104,7 +104,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     singlePreviewBody: movie.singlePreviewBody ?? movie.overview ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.",
     singlePreviewTextPosition: movie.singlePreviewTextPosition ?? "center",
     singlePreviewShowTitle: movie.singlePreviewShowTitle ?? true,
-    singlePreviewShowSubtitle: movie.singlePreviewShowSubtitle ?? true,
+    singlePreviewShowSubtitle: movie.singlePreviewShowSubtitle ?? false,
     singlePreviewShowBody: movie.singlePreviewShowBody ?? true,
   };
 }

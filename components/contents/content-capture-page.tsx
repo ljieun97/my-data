@@ -164,7 +164,7 @@ function CaptureFooter({
   );
 }
 
-const coverSubtitleClass = "inline-flex max-w-full bg-white px-2 py-1 text-sm font-black leading-tight text-slate-950";
+const coverSubtitleClass = "inline-flex max-w-full bg-white px-2 py-1 text-[14px] font-black leading-tight text-slate-950";
 
 function getDualPersonTitle(persons: CapturePerson[]) {
   if (!persons.length) return "인물 이름";
@@ -207,10 +207,10 @@ function MovieCaptureRow({
           </span>
         </div> */}
         <div className="min-w-0 flex-1">
-          <p style={titleFontStyle} className="truncate text-[14px] font-black leading-tight text-white">{movie?.title ?? "영화를 추가하세요"}</p>
+          <p style={titleFontStyle} className="truncate text-[16px] font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]">{movie?.title ?? "영화를 추가하세요"}</p>
         </div>
         {movie?.note ? (
-          <p style={titleFontStyle} className="max-w-[36%] shrink-0 text-right text-sm font-black leading-tight text-white">
+          <p style={titleFontStyle} className="max-w-[36%] shrink-0 text-right text-[16px] font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]">
             {noteValue}
           </p>
         ) : null}
@@ -245,8 +245,8 @@ function MovieListTemplate({
   return (
     <div className="relative flex h-full flex-col bg-slate-950 text-white">
       {!isEdgeVariant && title ? (
-        <div className="px-[26px] pt-1.5">
-          <div className="flex items-end justify-center" style={getTitleBlockStyle(titleSize)}>
+        <div className="px-[26px] py-4">
+          <div className="flex items-end justify-center">
             <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
               {title}
             </h1>
@@ -257,10 +257,10 @@ function MovieListTemplate({
         className={[
           "min-h-0 flex-1 bg-slate-950",
           isTwoColumn ? "grid grid-cols-2" : "flex flex-col",
-          isEdgeVariant ? "gap-0 px-0 pt-0" : "gap-1 px-[26px] pt-2",
+          isEdgeVariant ? "gap-0 px-0 pt-0" : "gap-1 px-[26px] pt-0",
         ].join(" ")}
       >
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className={["flex min-h-0 flex-1 flex-col", isEdgeVariant ? "gap-0" : "gap-1"].join(" ")}>
           {leftSlots.map((movie, index) => (
             <MovieCaptureRow
               key={movie?.id ?? `preview-left-${index}`}
@@ -271,7 +271,7 @@ function MovieListTemplate({
           ))}
         </div>
         {isTwoColumn ? (
-          <div className="flex min-h-0 flex-1 flex-col">
+          <div className={["flex min-h-0 flex-1 flex-col", isEdgeVariant ? "gap-0" : "gap-1"].join(" ")}>
             {rightSlots.map((movie, index) => (
               <MovieCaptureRow
                 key={movie?.id ?? `preview-right-${index + splitIndex}`}
@@ -410,13 +410,13 @@ function SingleMovieTemplate({
   const subbody = movie?.singlePreviewSubbody ?? "";
   const body = movie?.singlePreviewBody ?? movie?.overview ?? "여기에 설명을 적어주세요.\n네 줄까지 표시됩니다.";
   const showTitle = movie?.singlePreviewShowTitle ?? true;
-  const showSubtitle = movie?.singlePreviewShowSubtitle ?? true;
+  const showSubtitle = movie?.singlePreviewShowSubtitle ?? false;
   const showSubbody = movie?.singlePreviewShowSubbody ?? true;
   const showBody = movie?.singlePreviewShowBody ?? true;
   const subtitleValue = movie?.note || subtitle;
   const subtitleClass = coverSubtitleClass;
-  const subbodyClass = "mt-1 whitespace-pre-line text-[0.74rem] font-normal leading-relaxed text-white/72";
-  const bodyClass = "mt-1 whitespace-pre-line text-[0.9rem] font-normal leading-relaxed text-white/82";
+  const subbodyClass = "mt-1 whitespace-pre-line text-[11px] font-normal leading-relaxed text-white/72";
+  const bodyClass = "mt-1 whitespace-pre-line text-[13px] font-normal leading-relaxed text-white/82";
   const hasDetailText = (showSubbody && Boolean(subbody)) || showBody;
 
   return (
@@ -532,12 +532,12 @@ function PersonCoverTemplate({
             ) : null}
           </div>
           {showSubbody && subbody ? (
-            <p style={titleFontStyle} className="mt-1 whitespace-pre-line text-[0.74rem] font-normal leading-relaxed text-white/72">
+            <p style={titleFontStyle} className="mt-1 whitespace-pre-line text-[11px] font-normal leading-relaxed text-white/72">
               {subbody}
             </p>
           ) : null}
           {showBody && bodyValue ? (
-            <p style={titleFontStyle} className="mt-1 whitespace-pre-line text-[0.9rem] font-normal leading-relaxed text-white/82">
+            <p style={titleFontStyle} className="mt-1 whitespace-pre-line text-[13px] font-normal leading-relaxed text-white/82">
               {bodyValue}
             </p>
           ) : null}
@@ -612,8 +612,8 @@ function CalendarDayPreviewTemplate({
     <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white">
       <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/36 via-black/12 to-transparent px-7">
         <div className="flex h-full items-center justify-between gap-3">
-          <p style={titleFontStyle} className="text-sm font-black leading-tight text-white">{date.getMonth() + 1}월 {date.getDate()}일 ({weekdays[date.getDay()]})</p>
-          <span className="shrink-0 text-xs font-bold text-white/88">@scena.kr</span>
+          <p style={titleFontStyle} className="text-[14px] font-black leading-tight text-white">{date.getMonth() + 1}월 {date.getDate()}일 ({weekdays[date.getDay()]})</p>
+          <span className="shrink-0 text-[11px] font-bold text-white/88">@scena.kr</span>
         </div>
       </div>
 
@@ -637,7 +637,7 @@ function CalendarDayPreviewTemplate({
                   />
                 ) : null}
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_56%,rgba(0,0,0,0.34)_100%)]" />
-                <p style={titleFontStyle} className="absolute inset-x-2 bottom-2 z-[1] line-clamp-2 whitespace-normal text-center [word-break:keep-all] text-xs font-bold leading-tight text-white">{title}</p>
+                <p style={titleFontStyle} className="absolute inset-x-2 bottom-2 z-[1] line-clamp-2 whitespace-normal text-center [word-break:keep-all] text-[12px] font-bold leading-tight text-white">{title}</p>
               </div>
             );
           })}
@@ -708,13 +708,13 @@ function CalendarReleaseBoardTemplate({
                   className="px-2 py-0.5 text-center"
                   style={{ backgroundColor: labelColors[index] || RELEASE_BOARD_DEFAULT_COLORS[index] || "#1f2937" }}
                 >
-                  <p style={titleFontStyle} className="text-[0.78rem] font-black tracking-[0.06em] text-white">{formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}</p>
+                  <p style={titleFontStyle} className="text-[12px] font-black tracking-[0.06em] text-white">{formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}</p>
                 </div>
                 <div className="relative min-h-0 flex-1 bg-white">
                   {posterUrl ? (
                     <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
                   ) : (
-                    <div className="flex h-full items-center justify-center bg-white/90 text-center text-xs font-bold tracking-[0.08em] text-slate-400">
+                    <div className="flex h-full items-center justify-center bg-white/90 text-center text-[12px] font-bold tracking-[0.08em] text-slate-400">
                       ADD MOVIE
                     </div>
                   )}
@@ -762,7 +762,7 @@ export default function ContentCapturePage() {
   const [personSubbody, setPersonSubbody] = useState("");
   const [personBody, setPersonBody] = useState("");
   const [personShowTitle, setPersonShowTitle] = useState(true);
-  const [personShowSubtitle, setPersonShowSubtitle] = useState(true);
+  const [personShowSubtitle, setPersonShowSubtitle] = useState(false);
   const [personShowSubbody, setPersonShowSubbody] = useState(true);
   const [personShowBody, setPersonShowBody] = useState(true);
   const [movieListTitle, setMovieListTitle] = useState("영화 목록");
@@ -773,7 +773,7 @@ export default function ContentCapturePage() {
   const [movieCoverTitleSize, setMovieCoverTitleSize] = useState(36);
   const [movieCoverSubtitle, setMovieCoverSubtitle] = useState("TOVIE MOVIE COVER");
   const [movieCoverShowTitle, setMovieCoverShowTitle] = useState(true);
-  const [movieCoverShowSubtitle, setMovieCoverShowSubtitle] = useState(true);
+  const [movieCoverShowSubtitle, setMovieCoverShowSubtitle] = useState(false);
   const [movieCoverTextPosition, setMovieCoverTextPosition] = useState<"top" | "center" | "bottom">("bottom");
   const [movieCoverLayout, setMovieCoverLayout] = useState<"stack" | "grid">("stack");
   const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(36);
@@ -1349,7 +1349,7 @@ export default function ContentCapturePage() {
                       : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
                   ].join(" ")}
                 >
-                  Subtitle {movieCoverShowSubtitle ? "ON" : "OFF"}
+                  Subtitle
                 </button>
               </div>
               <div className="mb-3">
@@ -1454,9 +1454,9 @@ export default function ContentCapturePage() {
                   {
                     key: "subtitle",
                     label: "Subtitle",
-                    checked: currentSingleMovie?.singlePreviewShowSubtitle ?? true,
+                    checked: currentSingleMovie?.singlePreviewShowSubtitle ?? false,
                     setChecked: (next: boolean | ((current: boolean) => boolean)) => {
-                      const current = currentSingleMovie?.singlePreviewShowSubtitle ?? true;
+                      const current = currentSingleMovie?.singlePreviewShowSubtitle ?? false;
                       updateCurrentSinglePreview({ singlePreviewShowSubtitle: typeof next === "function" ? next(current) : next });
                     },
                   },

@@ -20,7 +20,7 @@ type MovieSlotsPanelProps = {
   removeMovie: (id: number) => void;
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
-  updateMovieImagePosition: (id: number, imagePosition: "top" | "center" | "bottom") => void;
+  updateMovieImagePosition: (id: number, imagePosition: number) => void;
 };
 
 export function MovieSlotsPanel({
@@ -108,27 +108,39 @@ export function MovieSlotsPanel({
                     placeholder="오른쪽 문구"
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
-                  <div className="grid grid-cols-3 gap-1">
-                    {[
-                      { key: "top", label: "Top" },
-                      { key: "center", label: "Center" },
-                      { key: "bottom", label: "Bottom" },
-                    ].map((item) => (
-                      <button
-                        key={item.key}
-                        type="button"
-                        onMouseDown={(event) => event.stopPropagation()}
-                        onClick={() => updateMovieImagePosition(movie.id, item.key as "top" | "center" | "bottom")}
-                        className={[
-                          "h-7 border px-2 text-[11px] font-bold transition",
-                          (movie.imagePosition ?? "center") === item.key
-                            ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                        ].join(" ")}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onClick={() => updateMovieImagePosition(movie.id, (movie.imagePosition ?? 20) - 5)}
+                      className="inline-flex h-7 min-w-8 items-center justify-center border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+                    >
+                      -
+                    </button>
+                    <div className="flex h-7 min-w-0 flex-1 items-center justify-center border border-slate-200 bg-slate-50 px-2 text-[11px] font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                      Y {(movie.imagePosition ?? 20)}%
+                    </div>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onClick={() => updateMovieImagePosition(movie.id, (movie.imagePosition ?? 20) + 5)}
+                      className="inline-flex h-7 min-w-8 items-center justify-center border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+                    >
+                      +
+                    </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onClick={() => updateMovieImagePosition(movie.id, 20)}
+                      className={[
+                        "h-7 border px-2 text-[11px] font-bold transition",
+                        (movie.imagePosition ?? 20) === 20
+                          ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                          : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                      ].join(" ")}
+                    >
+                      기본
+                    </button>
                   </div>
                 </div>
               ) : (

@@ -219,8 +219,7 @@ function MovieCaptureRow({
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
   const noteValue = movie?.note ?? "";
   const textSizeClass = stackCount >= 8 ? "text-[13px]" : stackCount >= 6 ? "text-[14px]" : "text-[16px]";
-  const objectPosition =
-    movie?.imagePosition === "top" ? "center 20%" : movie?.imagePosition === "bottom" ? "center 80%" : "center center";
+  const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
 
   return (
     <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "rounded-md" : "rounded-none"].join(" ")}>

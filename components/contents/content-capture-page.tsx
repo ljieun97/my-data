@@ -176,13 +176,16 @@ function MovieCaptureRow({
   movie,
   index,
   rounded = true,
+  stackCount = 5,
 }: {
   movie?: CaptureMovie;
   index: number;
   rounded?: boolean;
+  stackCount?: number;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
   const noteValue = movie?.note ?? "";
+  const textSizeClass = stackCount >= 8 ? "text-[13px]" : stackCount >= 6 ? "text-[14px]" : "text-[16px]";
 
   return (
     <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "rounded-md" : "rounded-none"].join(" ")}>
@@ -207,10 +210,10 @@ function MovieCaptureRow({
           </span>
         </div> */}
         <div className="min-w-0 flex-1">
-          <p style={titleFontStyle} className="truncate text-[16px] font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]">{movie?.title ?? "영화를 추가하세요"}</p>
+          <p style={titleFontStyle} className={["truncate font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]", textSizeClass].join(" ")}>{movie?.title ?? "영화를 추가하세요"}</p>
         </div>
         {movie?.note ? (
-          <p style={titleFontStyle} className="max-w-[36%] shrink-0 text-right text-[16px] font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]">
+          <p style={titleFontStyle} className={["max-w-[36%] shrink-0 text-right font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]", textSizeClass].join(" ")}>
             {noteValue}
           </p>
         ) : null}
@@ -267,6 +270,7 @@ function MovieListTemplate({
               movie={movie}
               index={index}
               rounded={!isEdgeVariant}
+              stackCount={leftSlots.length}
             />
           ))}
         </div>
@@ -278,6 +282,7 @@ function MovieListTemplate({
                 movie={movie}
                 index={index + splitIndex}
                 rounded={!isEdgeVariant}
+                stackCount={rightSlots.length}
               />
             ))}
           </div>

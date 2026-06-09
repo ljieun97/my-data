@@ -189,7 +189,7 @@ function MovieCaptureRow({
   const noteValue = movie?.note ?? "";
   const textSizeClass = stackCount >= 8 ? "text-[13px]" : stackCount >= 6 ? "text-[14px]" : "text-[16px]";
   const objectPosition =
-    movie?.imagePosition === "top" ? "center top" : movie?.imagePosition === "bottom" ? "center bottom" : "center center";
+    movie?.imagePosition === "top" ? "center 20%" : movie?.imagePosition === "bottom" ? "center 80%" : "center center";
 
   return (
     <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "rounded-md" : "rounded-none"].join(" ")}>

@@ -2,7 +2,7 @@
 
 import Title from "@/components/common/title";
 import { CalendarCaptureControls } from "@/components/contents/content-capture-calendar-controls";
-import { CaptureSizeControls, CaptureTextArea } from "@/components/contents/content-capture-controls";
+import { CaptureSizeControls, CaptureTextArea, CaptureToggleButton } from "@/components/contents/content-capture-controls";
 import CalendarView from "@/components/contents/calendar-view";
 import { MovieSlotsPanel } from "@/components/contents/content-capture-movie-controls";
 import { CaptureMovie, CapturePerson, useCaptureContent } from "@/context/CaptureContentContext";
@@ -175,15 +175,17 @@ function getDualPersonTitle(persons: CapturePerson[]) {
 function MovieCaptureRow({
   movie,
   index,
+  rounded = true,
 }: {
   movie?: CaptureMovie;
   index: number;
+  rounded?: boolean;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
   const noteValue = movie?.note ?? "";
 
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden rounded-md bg-slate-900 text-white">
+    <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "rounded-md" : "rounded-none"].join(" ")}>
       {imageCandidates[0] ? (
         <img
           alt=""
@@ -198,7 +200,7 @@ function MovieCaptureRow({
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.24)_0%,rgba(0,0,0,0.10)_28%,rgba(0,0,0,0)_58%,rgba(0,0,0,0.18)_100%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]" />
 
-      <div className="relative z-[1] flex h-full items-end gap-2 px-[14px] py-[10px]">
+      <div className="relative z-[1] flex h-full items-center gap-2 px-[14px] py-[10px]">
         {/* <div className="flex w-8 shrink-0 items-baseline">
           <span className="text-xl font-black leading-tight text-white drop-shadow">
             {index + 1}위
@@ -221,18 +223,28 @@ function MovieListTemplate({
   slots,
   title,
   titleSize,
+  variant,
+  columns,
   footerLeft,
   footerRight,
 }: {
   slots: Array<CaptureMovie | undefined>;
   title: string;
   titleSize: number;
+  variant: "default" | "edge";
+  columns: 1 | 2;
   footerLeft: string;
   footerRight: string;
 }) {
+  const isEdgeVariant = variant === "edge";
+  const isTwoColumn = columns === 2;
+  const splitIndex = Math.ceil(slots.length / 2);
+  const leftSlots = isTwoColumn ? slots.slice(0, splitIndex) : slots;
+  const rightSlots = isTwoColumn ? slots.slice(splitIndex) : [];
+
   return (
-    <div className="flex h-full flex-col bg-slate-950 text-white">
-      {title ? (
+    <div className="relative flex h-full flex-col bg-slate-950 text-white">
+      {!isEdgeVariant && title ? (
         <div className="px-5 pt-1.5">
           <div className="flex items-end justify-center" style={getTitleBlockStyle(titleSize)}>
             <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
@@ -241,19 +253,46 @@ function MovieListTemplate({
           </div>
         </div>
       ) : null}
-      <div className="flex min-h-0 flex-1 flex-col gap-1 bg-slate-950 px-5 pt-2">
-        {slots.map((movie, index) => (
-          <MovieCaptureRow
-            key={movie?.id ?? `preview-${index}`}
-            movie={movie}
-            index={index}
-          />
-        ))}
+      <div
+        className={[
+          "min-h-0 flex-1 bg-slate-950",
+          isTwoColumn ? "grid grid-cols-2" : "flex flex-col",
+          isEdgeVariant ? "gap-0 px-0 pt-0" : "gap-1 px-5 pt-2",
+        ].join(" ")}
+      >
+        <div className="flex min-h-0 flex-1 flex-col">
+          {leftSlots.map((movie, index) => (
+            <MovieCaptureRow
+              key={movie?.id ?? `preview-left-${index}`}
+              movie={movie}
+              index={index}
+              rounded={!isEdgeVariant}
+            />
+          ))}
+        </div>
+        {isTwoColumn ? (
+          <div className="flex min-h-0 flex-1 flex-col">
+            {rightSlots.map((movie, index) => (
+              <MovieCaptureRow
+                key={movie?.id ?? `preview-right-${index + splitIndex}`}
+                movie={movie}
+                index={index + splitIndex}
+                rounded={!isEdgeVariant}
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
 
-      <div className="px-5 pb-1">
-        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
-      </div>
+      {isEdgeVariant ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] px-0 pb-1">
+          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+        </div>
+      ) : (
+        <div className="px-5 pb-1">
+          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+        </div>
+      )}
     </div>
   );
 }
@@ -376,8 +415,8 @@ function SingleMovieTemplate({
   const showBody = movie?.singlePreviewShowBody ?? true;
   const subtitleValue = movie?.note || subtitle;
   const subtitleClass = coverSubtitleClass;
-  const subbodyClass = "mt-2 whitespace-pre-line text-[0.74rem] font-normal leading-relaxed text-white/88";
-  const bodyClass = "mt-2 whitespace-pre-line text-[0.9rem] font-normal leading-relaxed text-white";
+  const subbodyClass = "mt-1 whitespace-pre-line text-[0.74rem] font-normal leading-relaxed text-white/72";
+  const bodyClass = "mt-1 whitespace-pre-line text-[0.9rem] font-normal leading-relaxed text-white/82";
   const hasDetailText = (showSubbody && Boolean(subbody)) || showBody;
 
   return (
@@ -493,12 +532,12 @@ function PersonCoverTemplate({
             ) : null}
           </div>
           {showSubbody && subbody ? (
-            <p style={titleFontStyle} className="mt-2 whitespace-pre-line text-[0.74rem] font-normal leading-relaxed text-white/88">
+            <p style={titleFontStyle} className="mt-1 whitespace-pre-line text-[0.74rem] font-normal leading-relaxed text-white/72">
               {subbody}
             </p>
           ) : null}
           {showBody && bodyValue ? (
-            <p style={titleFontStyle} className="mt-2 whitespace-pre-line text-[0.9rem] font-normal leading-relaxed text-white">
+            <p style={titleFontStyle} className="mt-1 whitespace-pre-line text-[0.9rem] font-normal leading-relaxed text-white/82">
               {bodyValue}
             </p>
           ) : null}
@@ -728,6 +767,8 @@ export default function ContentCapturePage() {
   const [personShowBody, setPersonShowBody] = useState(true);
   const [movieListTitle, setMovieListTitle] = useState("영화 목록");
   const [movieListTitleSize, setMovieListTitleSize] = useState(16);
+  const [movieListVariant, setMovieListVariant] = useState<"default" | "edge">("default");
+  const [movieListColumns, setMovieListColumns] = useState<1 | 2>(1);
   const [movieCoverTitle, setMovieCoverTitle] = useState("영화 묶음");
   const [movieCoverTitleSize, setMovieCoverTitleSize] = useState(36);
   const [movieCoverSubtitle, setMovieCoverSubtitle] = useState("TOVIE MOVIE COVER");
@@ -765,7 +806,7 @@ export default function ContentCapturePage() {
   const isCalendarDataMode = isCalendarMode;
   const isMovieMode = isMovieListMode || isMovieCoverMode || isCalendarReleaseMode;
   const movieMinCount = isMovieCoverMode ? 2 : 3;
-  const movieMaxCount = isCalendarReleaseMode ? 8 : isMovieListMode ? 7 : 5;
+  const movieMaxCount = isCalendarReleaseMode ? 8 : isMovieListMode ? 10 : 5;
   const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
   const currentSingleMovie = selectedMovies[previewMovieIndex];
   const calendarPreviewGroups = useMemo(() => {
@@ -1212,15 +1253,39 @@ export default function ContentCapturePage() {
             <>
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                 <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Text</p>
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Preview Version</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <CaptureToggleButton type="button" active={movieListVariant === "default"} onClick={() => setMovieListVariant("default")}>
+                      기본
+                    </CaptureToggleButton>
+                    <CaptureToggleButton type="button" active={movieListVariant === "edge"} onClick={() => setMovieListVariant("edge")}>
+                      여백 없음
+                    </CaptureToggleButton>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Columns</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <CaptureToggleButton type="button" active={movieListColumns === 1} onClick={() => setMovieListColumns(1)}>
+                      1열
+                    </CaptureToggleButton>
+                    <CaptureToggleButton type="button" active={movieListColumns === 2} onClick={() => setMovieListColumns(2)}>
+                      2열
+                    </CaptureToggleButton>
+                  </div>
+                </div>
+                {movieListVariant === "default" ? (
                 <label className="mb-3 block">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                <CaptureTextArea
-                  value={movieListTitle}
-                  onChange={(event) => setMovieListTitle(event.target.value)}
-                  rows={2}
-                />
-                <CaptureSizeControls value={movieListTitleSize} defaultValue={16} onChange={setMovieListTitleSize} step={1} min={12} max={28} />
-              </label>
+                  <CaptureTextArea
+                    value={movieListTitle}
+                    onChange={(event) => setMovieListTitle(event.target.value)}
+                    rows={2}
+                  />
+                  <CaptureSizeControls value={movieListTitleSize} defaultValue={16} onChange={setMovieListTitleSize} step={1} min={12} max={28} />
+                </label>
+                ) : null}
               </div>
 
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
@@ -1633,6 +1698,8 @@ export default function ContentCapturePage() {
                 slots={slots}
                 title={movieListTitle}
                 titleSize={movieListTitleSize}
+                variant={movieListVariant}
+                columns={movieListColumns}
                 footerLeft={footerLeft}
                 footerRight={footerRight}
               />

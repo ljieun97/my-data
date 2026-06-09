@@ -176,7 +176,7 @@ const subtitleChipToneOptions: Array<{ key: SubtitleChipTone; label: string; swa
 
 function getCoverSubtitleClass(tone: SubtitleChipTone) {
   const base =
-    "inline-flex w-fit max-w-full self-start rounded-full px-3 pb-[4px] pt-[5px] text-[12px] font-medium leading-none tracking-[0.01em] backdrop-blur-sm";
+    "inline-flex w-fit max-w-full self-start rounded-full px-3 pb-[4px] pt-[5px] text-[12px] font-medium leading-none tracking-[0.01em]";
 
   if (tone === "navy") {
     return `${base} border border-sky-300/18 bg-sky-950/38 text-sky-100 shadow-[0_4px_14px_rgba(8,47,73,0.18)]`;

@@ -164,7 +164,38 @@ function CaptureFooter({
   );
 }
 
-const coverSubtitleClass = "inline-flex max-w-full bg-white px-2 py-1 text-[14px] font-black leading-tight text-slate-950";
+type SubtitleChipTone = "burgundy" | "navy" | "slate" | "olive" | "amber";
+
+const subtitleChipToneOptions: Array<{ key: SubtitleChipTone; label: string; swatchClass: string }> = [
+  { key: "burgundy", label: "Burgundy", swatchClass: "bg-rose-900" },
+  { key: "navy", label: "Navy", swatchClass: "bg-sky-950" },
+  { key: "slate", label: "Slate", swatchClass: "bg-slate-900" },
+  { key: "olive", label: "Olive", swatchClass: "bg-lime-900" },
+  { key: "amber", label: "Amber", swatchClass: "bg-amber-500" },
+];
+
+function getCoverSubtitleClass(tone: SubtitleChipTone) {
+  const base =
+    "inline-flex w-fit max-w-full self-start rounded-full px-3 pb-[4px] pt-[5px] text-[12px] font-medium leading-none tracking-[0.01em] backdrop-blur-sm";
+
+  if (tone === "navy") {
+    return `${base} border border-sky-300/18 bg-sky-950/38 text-sky-100 shadow-[0_4px_14px_rgba(8,47,73,0.18)]`;
+  }
+
+  if (tone === "slate") {
+    return `${base} border border-slate-200/14 bg-slate-950/44 text-slate-100 shadow-[0_4px_14px_rgba(2,6,23,0.2)]`;
+  }
+
+  if (tone === "olive") {
+    return `${base} border border-lime-200/16 bg-lime-950/40 text-lime-100 shadow-[0_4px_14px_rgba(26,46,5,0.18)]`;
+  }
+
+  if (tone === "amber") {
+    return `${base} border border-amber-200/16 bg-amber-950/34 text-amber-100 shadow-[0_4px_14px_rgba(120,53,15,0.16)]`;
+  }
+
+  return `${base} border border-rose-200/16 bg-rose-950/42 text-rose-100 shadow-[0_4px_14px_rgba(76,5,25,0.18)]`;
+}
 
 function getDualPersonTitle(persons: CapturePerson[]) {
   if (!persons.length) return "인물 이름";
@@ -329,6 +360,7 @@ function MovieCoverTemplate({
   title,
   titleSize,
   subtitle,
+  subtitleChipClass,
   showTitle,
   showSubtitle,
   textPosition,
@@ -340,6 +372,7 @@ function MovieCoverTemplate({
   title: string;
   titleSize: number;
   subtitle: string;
+  subtitleChipClass: string;
   showTitle: boolean;
   showSubtitle: boolean;
   textPosition: "top" | "center" | "bottom";
@@ -403,7 +436,7 @@ function MovieCoverTemplate({
         ].join(" ")}
       >
         <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
-          {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
+          {showSubtitle ? <p style={titleFontStyle} className={subtitleChipClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
           {showTitle ? (
             <div className="mt-2">
               <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
@@ -423,11 +456,13 @@ function MovieCoverTemplate({
 function SingleMovieTemplate({
   movie,
   titleSize,
+  subtitleChipClass,
   footerLeft,
   footerRight,
 }: {
   movie: CaptureMovie | undefined;
   titleSize: number;
+  subtitleChipClass: string;
   footerLeft: string;
   footerRight: string;
 }) {
@@ -441,7 +476,6 @@ function SingleMovieTemplate({
   const showSubbody = movie?.singlePreviewShowSubbody ?? true;
   const showBody = movie?.singlePreviewShowBody ?? true;
   const subtitleValue = movie?.note || subtitle;
-  const subtitleClass = coverSubtitleClass;
   const subbodyClass = "mt-1 whitespace-pre-line text-[11px] font-normal leading-relaxed text-white/72";
   const bodyClass = "mt-1 whitespace-pre-line text-[13px] font-normal leading-relaxed text-white/82";
   const hasDetailText = (showSubbody && Boolean(subbody)) || showBody;
@@ -462,7 +496,7 @@ function SingleMovieTemplate({
       <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1 pt-24">
         <div className={["w-full text-left", hasDetailText ? "pb-1" : "pb-[36px]"].join(" ")}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
-            {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
+            {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleChipClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
             {showTitle ? (
               <div className="mt-2">
                 <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
@@ -485,6 +519,7 @@ function PersonCoverTemplate({
   headline,
   titleSize,
   kicker,
+  subtitleChipClass,
   subbody,
   body,
   showTitle,
@@ -498,6 +533,7 @@ function PersonCoverTemplate({
   headline: string;
   titleSize: number;
   kicker: string;
+  subtitleChipClass: string;
   subbody: string;
   body: string;
   showTitle: boolean;
@@ -549,7 +585,7 @@ function PersonCoverTemplate({
       <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1 pt-24">
         <div className={hasDetailText ? "pb-1" : "pb-[36px]"}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
-            {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{kicker || "TOVIE PERSON"}</p> : null}
+            {showSubtitle ? <p style={titleFontStyle} className={subtitleChipClass}>{kicker || "TOVIE PERSON"}</p> : null}
             {showTitle ? (
               <div className="mt-2">
                 <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
@@ -800,6 +836,7 @@ export default function ContentCapturePage() {
   const [movieCoverTitle, setMovieCoverTitle] = useState("영화 묶음");
   const [movieCoverTitleSize, setMovieCoverTitleSize] = useState(36);
   const [movieCoverSubtitle, setMovieCoverSubtitle] = useState("TOVIE MOVIE COVER");
+  const [subtitleChipTone, setSubtitleChipTone] = useState<SubtitleChipTone>("burgundy");
   const [movieCoverShowTitle, setMovieCoverShowTitle] = useState(true);
   const [movieCoverShowSubtitle, setMovieCoverShowSubtitle] = useState(false);
   const [movieCoverTextPosition, setMovieCoverTextPosition] = useState<"top" | "center" | "bottom">("bottom");
@@ -825,6 +862,7 @@ export default function ContentCapturePage() {
   const [calendarReleaseTitleSize, setCalendarReleaseTitleSize] = useState(25);
   const [calendarReleaseLabelColors, setCalendarReleaseLabelColors] = useState(RELEASE_BOARD_DEFAULT_COLORS);
   const [calendarReleaseDates, setCalendarReleaseDates] = useState(() => Array.from({ length: 8 }, () => ""));
+  const subtitleChipClass = getCoverSubtitleClass(subtitleChipTone);
 
   const isPersonMode = captureMode === "person-cover";
   const isMovieListMode = captureMode === "movie-list";
@@ -1355,6 +1393,27 @@ export default function ContentCapturePage() {
                   className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
                 />
               </label>
+              <div className="mb-3">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle Chip</span>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {subtitleChipToneOptions.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setSubtitleChipTone(item.key)}
+                      className={[
+                        "flex h-9 items-center gap-2 border px-2 text-xs font-bold transition",
+                        subtitleChipTone === item.key
+                          ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                          : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                      ].join(" ")}
+                    >
+                      <span className={["h-3 w-3 rounded-full", item.swatchClass].join(" ")} />
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="mb-3 grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -1451,6 +1510,27 @@ export default function ContentCapturePage() {
                   className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
                 />
               </label>
+              <div className="mb-3">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle Chip</span>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {subtitleChipToneOptions.map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setSubtitleChipTone(item.key)}
+                      className={[
+                        "flex h-9 items-center gap-2 border px-2 text-xs font-bold transition",
+                        subtitleChipTone === item.key
+                          ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                          : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                      ].join(" ")}
+                    >
+                      <span className={["h-3 w-3 rounded-full", item.swatchClass].join(" ")} />
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subbody</span>
                 <textarea
@@ -1621,6 +1701,27 @@ export default function ContentCapturePage() {
                     className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
                   />
                 </label>
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle Chip</span>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {subtitleChipToneOptions.map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => setSubtitleChipTone(item.key)}
+                        className={[
+                          "flex h-9 items-center gap-2 border px-2 text-xs font-bold transition",
+                          subtitleChipTone === item.key
+                            ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                        ].join(" ")}
+                      >
+                        <span className={["h-3 w-3 rounded-full", item.swatchClass].join(" ")} />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <label className="mb-3 block">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body</span>
                   <textarea
@@ -1700,6 +1801,7 @@ export default function ContentCapturePage() {
                   headline={personTitle}
                   titleSize={personTitleSize}
                   kicker={personSubtitle}
+                  subtitleChipClass={subtitleChipClass}
                   subbody={personSubbody}
                   body={personBody}
                   showTitle={personShowTitle}
@@ -1715,6 +1817,7 @@ export default function ContentCapturePage() {
                   title={movieCoverTitle}
                   titleSize={movieCoverTitleSize}
                   subtitle={movieCoverSubtitle}
+                  subtitleChipClass={subtitleChipClass}
                   showTitle={movieCoverShowTitle}
                   showSubtitle={movieCoverShowSubtitle}
                   textPosition={movieCoverTextPosition}
@@ -1938,6 +2041,7 @@ export default function ContentCapturePage() {
                         <SingleMovieTemplate
                           movie={selectedMovies[previewMovieIndex]}
                           titleSize={singlePreviewTitleSize}
+                          subtitleChipClass={subtitleChipClass}
                           footerLeft={footerLeft}
                           footerRight={footerRight}
                         />

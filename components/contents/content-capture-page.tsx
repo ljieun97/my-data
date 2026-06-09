@@ -177,15 +177,19 @@ function MovieCaptureRow({
   index,
   rounded = true,
   stackCount = 5,
+  bottomAligned = false,
 }: {
   movie?: CaptureMovie;
   index: number;
   rounded?: boolean;
   stackCount?: number;
+  bottomAligned?: boolean;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
   const noteValue = movie?.note ?? "";
   const textSizeClass = stackCount >= 8 ? "text-[13px]" : stackCount >= 6 ? "text-[14px]" : "text-[16px]";
+  const objectPosition =
+    movie?.imagePosition === "top" ? "center top" : movie?.imagePosition === "bottom" ? "center bottom" : "center center";
 
   return (
     <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "rounded-md" : "rounded-none"].join(" ")}>
@@ -195,7 +199,8 @@ function MovieCaptureRow({
           src={imageCandidates[0]}
           data-fallback-index="0"
           onError={(event) => handleImageFallback(event, imageCandidates)}
-          className="absolute inset-0 h-full w-full object-cover object-[center_20%]"
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ objectPosition }}
           crossOrigin="anonymous"
         />
       ) : null}
@@ -203,17 +208,33 @@ function MovieCaptureRow({
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.24)_0%,rgba(0,0,0,0.10)_28%,rgba(0,0,0,0)_58%,rgba(0,0,0,0.18)_100%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]" />
 
-      <div className="relative z-[1] flex h-full items-center gap-2 px-[17px] py-[10px]">
+      <div className={["relative z-[1] flex h-full gap-2 px-[17px] py-[10px]", bottomAligned ? "items-end" : "items-center"].join(" ")}>
         {/* <div className="flex w-8 shrink-0 items-baseline">
           <span className="text-xl font-black leading-tight text-white drop-shadow">
             {index + 1}위
           </span>
         </div> */}
         <div className="min-w-0 flex-1">
-          <p style={titleFontStyle} className={["truncate font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]", textSizeClass].join(" ")}>{movie?.title ?? "영화를 추가하세요"}</p>
+          <p
+            style={titleFontStyle}
+            className={[
+              "font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
+              bottomAligned ? "line-clamp-2 whitespace-normal" : "truncate",
+              textSizeClass,
+            ].join(" ")}
+          >
+            {movie?.title ?? "영화를 추가하세요"}
+          </p>
         </div>
         {movie?.note ? (
-          <p style={titleFontStyle} className={["max-w-[36%] shrink-0 text-right font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]", textSizeClass].join(" ")}>
+          <p
+            style={titleFontStyle}
+            className={[
+              "max-w-[36%] shrink-0 text-right font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
+              bottomAligned ? "line-clamp-2 whitespace-normal self-end" : "truncate",
+              textSizeClass,
+            ].join(" ")}
+          >
             {noteValue}
           </p>
         ) : null}
@@ -241,9 +262,8 @@ function MovieListTemplate({
 }) {
   const isEdgeVariant = variant === "edge";
   const isTwoColumn = columns === 2;
-  const splitIndex = Math.ceil(slots.length / 2);
-  const leftSlots = isTwoColumn ? slots.slice(0, splitIndex) : slots;
-  const rightSlots = isTwoColumn ? slots.slice(splitIndex) : [];
+  const leftSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 0) : slots;
+  const rightSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 1) : [];
 
   return (
     <div className="relative flex h-full flex-col bg-slate-950 text-white">
@@ -271,6 +291,7 @@ function MovieListTemplate({
               index={index}
               rounded={!isEdgeVariant}
               stackCount={leftSlots.length}
+              bottomAligned={isTwoColumn}
             />
           ))}
         </div>
@@ -278,11 +299,12 @@ function MovieListTemplate({
           <div className={["flex min-h-0 flex-1 flex-col", isEdgeVariant ? "gap-0" : "gap-1"].join(" ")}>
             {rightSlots.map((movie, index) => (
               <MovieCaptureRow
-                key={movie?.id ?? `preview-right-${index + splitIndex}`}
+                key={movie?.id ?? `preview-right-${index * 2 + 1}`}
                 movie={movie}
-                index={index + splitIndex}
+                index={index * 2 + 1}
                 rounded={!isEdgeVariant}
                 stackCount={rightSlots.length}
+                bottomAligned={isTwoColumn}
               />
             ))}
           </div>
@@ -748,6 +770,7 @@ export default function ContentCapturePage() {
     reorderMovie,
     updateMovieTitle,
     updateMovieNote,
+    updateMovieImagePosition,
     updateMoviePoster,
     updateMovieSinglePreview,
     updatePersonProfilePath,
@@ -1252,6 +1275,7 @@ export default function ContentCapturePage() {
               removeMovie={removeMovie}
               updateMovieTitle={updateMovieTitle}
               updateMovieNote={updateMovieNote}
+              updateMovieImagePosition={updateMovieImagePosition}
             />
 
           {isMovieListMode ? (

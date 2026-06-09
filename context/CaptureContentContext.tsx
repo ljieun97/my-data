@@ -13,6 +13,7 @@ export type CaptureMovie = {
   backdrop_path?: string;
   vote_average?: number;
   note?: string;
+  imagePosition?: "top" | "center" | "bottom";
   posterOptions?: string[];
   singlePreviewTitle?: string;
   singlePreviewSubtitle?: string;
@@ -56,6 +57,7 @@ type CaptureContentContextValue = {
   reorderMovie: (fromIndex: number, toIndex: number) => void;
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
+  updateMovieImagePosition: (id: number, imagePosition: "top" | "center" | "bottom") => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
   updateMovieSinglePreview: (
     id: number,
@@ -102,6 +104,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     backdrop_path: movie.backdrop_path,
     vote_average: movie.vote_average,
     note: movie.note,
+    imagePosition: movie.imagePosition ?? "center",
     posterOptions: movie.posterOptions,
     singlePreviewTitle: movie.singlePreviewTitle ?? title,
     singlePreviewSubtitle: movie.singlePreviewSubtitle ?? (movie.original_title || movie.original_name || title),
@@ -204,6 +207,12 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
+  const updateMovieImagePosition = (id: number, imagePosition: "top" | "center" | "bottom") => {
+    setSelectedMovies((current) =>
+      current.map((movie) => (movie.id === id ? { ...movie, imagePosition } : movie)),
+    );
+  };
+
   const updateMoviePoster = (id: number, posterPath: string) => {
     setSelectedMovies((current) =>
       current.map((movie) =>
@@ -285,6 +294,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       reorderMovie,
       updateMovieTitle,
       updateMovieNote,
+      updateMovieImagePosition,
       updateMoviePoster,
       updateMovieSinglePreview,
       updatePersonProfilePath,

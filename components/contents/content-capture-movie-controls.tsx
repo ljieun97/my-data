@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { CaptureMovie } from "@/context/CaptureContentContext";
 import { faGripVertical, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -20,6 +20,7 @@ type MovieSlotsPanelProps = {
   removeMovie: (id: number) => void;
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
+  updateMovieImagePosition: (id: number, imagePosition: "top" | "center" | "bottom") => void;
 };
 
 export function MovieSlotsPanel({
@@ -37,6 +38,7 @@ export function MovieSlotsPanel({
   removeMovie,
   updateMovieTitle,
   updateMovieNote,
+  updateMovieImagePosition,
 }: MovieSlotsPanelProps) {
   return (
     <CapturePanel>
@@ -45,7 +47,9 @@ export function MovieSlotsPanel({
         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedMoviesCount}/{movieSlotCount}</p>
       </div>
       <CaptureHelperText className="mb-3 font-semibold">
-        {isCalendarReleaseMode ? "영화를 최대 8개까지 추가하고 순서를 바꾸면 보드에 그대로 반영됩니다." : "3개부터 시작해서 추가하면 4, 5개로 자동 확장됩니다."}
+        {isCalendarReleaseMode
+          ? "릴리즈보드는 최대 8개까지 추가되고 순서대로 반영됩니다."
+          : "영화는 추가한 만큼 자동으로 레이아웃이 확장됩니다."}
       </CaptureHelperText>
 
       <div className="flex flex-col gap-2">
@@ -101,16 +105,38 @@ export function MovieSlotsPanel({
                     onMouseDown={(event) => event.stopPropagation()}
                     onDragStart={(event) => event.preventDefault()}
                     maxLength={16}
-                    placeholder="아래쪽 문구"
+                    placeholder="오른쪽 문구"
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
+                  <div className="grid grid-cols-3 gap-1">
+                    {[
+                      { key: "top", label: "Top" },
+                      { key: "center", label: "Center" },
+                      { key: "bottom", label: "Bottom" },
+                    ].map((item) => (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={() => updateMovieImagePosition(movie.id, item.key as "top" | "center" | "bottom")}
+                        className={[
+                          "h-7 border px-2 text-[11px] font-bold transition",
+                          (movie.imagePosition ?? "center") === item.key
+                            ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                        ].join(" ")}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <>
                   <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{movie?.title ?? "빈 슬롯"}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {movie ? "목록형 커버에서는 사진만 사용합니다." : "상단 검색으로 추가"}
-                </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {movie ? "목록형 커버에서는 선택한 이미지가 사용됩니다." : "상단 검색으로 영화를 추가하세요."}
+                  </p>
                 </>
               )}
             </div>

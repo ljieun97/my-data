@@ -201,7 +201,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       />
 
       {showCaptureResults ? (
-        <div className="absolute inset-x-0 top-full z-[140] mt-2 w-full min-w-0 overflow-hidden border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-950 sm:left-auto sm:right-0 sm:w-[22rem]">
+        <div className="absolute left-1/2 top-full z-[140] mt-2 w-[min(24rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] -translate-x-1/2 overflow-hidden border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-950 sm:left-auto sm:right-0 sm:w-[22rem] sm:translate-x-0">
           {isLoadingCaptureResults ? (
             <div className="px-3 py-3 text-sm text-slate-500 dark:text-slate-400">검색 중</div>
           ) : null}

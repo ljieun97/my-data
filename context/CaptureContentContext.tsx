@@ -27,6 +27,10 @@ export type CaptureMovie = {
 
 export type CaptureMode = "movie-list" | "movie-cover" | "person-cover" | "calendar" | "calendar-release";
 
+export function getCaptureMovieMaxCount(captureMode: CaptureMode) {
+  return captureMode === "calendar-release" ? 8 : captureMode === "movie-list" ? 10 : 5;
+}
+
 export type CapturePerson = {
   id: number;
   name: string;
@@ -118,7 +122,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
   const addMovie = (movie: CaptureMovie) => {
     const normalizedMovie = normalizeMovie(movie);
     if (!normalizedMovie) return false;
-    const maxMovies = captureMode === "calendar-release" ? 8 : captureMode === "movie-list" ? 10 : 5;
+    const maxMovies = getCaptureMovieMaxCount(captureMode);
 
     if (selectedMovies.some((item) => item.id === normalizedMovie.id && item.media_type === normalizedMovie.media_type) || selectedMovies.length >= maxMovies) {
       return false;

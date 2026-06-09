@@ -5,7 +5,7 @@ import { CalendarCaptureControls } from "@/components/contents/content-capture-c
 import { CaptureSizeControls, CaptureTextArea, CaptureToggleButton } from "@/components/contents/content-capture-controls";
 import CalendarView from "@/components/contents/calendar-view";
 import { MovieSlotsPanel } from "@/components/contents/content-capture-movie-controls";
-import { CaptureMovie, CapturePerson, useCaptureContent } from "@/context/CaptureContentContext";
+import { CaptureMovie, CapturePerson, getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
 import { faDownload, faRotateLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toPng } from "html-to-image";
@@ -806,7 +806,7 @@ export default function ContentCapturePage() {
   const isCalendarDataMode = isCalendarMode;
   const isMovieMode = isMovieListMode || isMovieCoverMode || isCalendarReleaseMode;
   const movieMinCount = isMovieCoverMode ? 2 : 3;
-  const movieMaxCount = isCalendarReleaseMode ? 8 : isMovieListMode ? 10 : 5;
+  const movieMaxCount = getCaptureMovieMaxCount(captureMode);
   const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
   const currentSingleMovie = selectedMovies[previewMovieIndex];
   const calendarPreviewGroups = useMemo(() => {

@@ -3,7 +3,7 @@
 import { Input } from "@heroui/react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useCaptureContent } from "@/context/CaptureContentContext";
+import { getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
 import { getDetail, getImages, getSearchMulti, getSearchPeople } from "@/lib/open-api/tmdb-client";
 
 export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean }) {
@@ -20,7 +20,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const { captureMode, addMovie, setPerson, hasMovie, selectedMovies } = useCaptureContent();
   const isCapturePage = pathname?.startsWith("/capture");
   const isCalendarMode = captureMode === "calendar";
-  const maxCaptureMovies = captureMode === "calendar-release" ? 8 : captureMode === "movie-list" ? 7 : 5;
+  const maxCaptureMovies = getCaptureMovieMaxCount(captureMode);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextKeyword = e.target.value;

@@ -200,7 +200,7 @@ function MovieCaptureRow({
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.24)_0%,rgba(0,0,0,0.10)_28%,rgba(0,0,0,0)_58%,rgba(0,0,0,0.18)_100%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]" />
 
-      <div className="relative z-[1] flex h-full items-center gap-2 px-[14px] py-[10px]">
+      <div className="relative z-[1] flex h-full items-center gap-2 px-[17px] py-[10px]">
         {/* <div className="flex w-8 shrink-0 items-baseline">
           <span className="text-xl font-black leading-tight text-white drop-shadow">
             {index + 1}위
@@ -245,7 +245,7 @@ function MovieListTemplate({
   return (
     <div className="relative flex h-full flex-col bg-slate-950 text-white">
       {!isEdgeVariant && title ? (
-        <div className="px-5 pt-1.5">
+        <div className="px-[26px] pt-1.5">
           <div className="flex items-end justify-center" style={getTitleBlockStyle(titleSize)}>
             <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
               {title}
@@ -257,7 +257,7 @@ function MovieListTemplate({
         className={[
           "min-h-0 flex-1 bg-slate-950",
           isTwoColumn ? "grid grid-cols-2" : "flex flex-col",
-          isEdgeVariant ? "gap-0 px-0 pt-0" : "gap-1 px-5 pt-2",
+          isEdgeVariant ? "gap-0 px-0 pt-0" : "gap-1 px-[26px] pt-2",
         ].join(" ")}
       >
         <div className="flex min-h-0 flex-1 flex-col">
@@ -289,7 +289,7 @@ function MovieListTemplate({
           <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
         </div>
       ) : (
-        <div className="px-5 pb-1">
+        <div className="px-[26px] pb-1">
           <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
         </div>
       )}
@@ -371,7 +371,7 @@ function MovieCoverTemplate({
 
       <div
         className={[
-          "absolute inset-x-0 z-[1] px-6",
+          "absolute inset-x-0 z-[1] px-7",
           textPosition === "top" ? "top-0 pt-14" : textPosition === "center" ? "top-1/2 -translate-y-1/2" : "bottom-0 pb-[36px] pt-24",
         ].join(" ")}
       >
@@ -386,7 +386,7 @@ function MovieCoverTemplate({
           ) : null}
         </div>
       </div>
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1">
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1">
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>
@@ -432,7 +432,7 @@ function SingleMovieTemplate({
         />
       ) : null}
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.48)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1 pt-24">
         <div className={["w-full text-left", hasDetailText ? "pb-1" : "pb-[36px]"].join(" ")}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
             {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
@@ -519,7 +519,7 @@ function PersonCoverTemplate({
       ) : null}
 
       <div className={["absolute inset-0", isDualLayout ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.02)_40%,rgba(0,0,0,0.48)_100%)]" : "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.48)_100%)]"].join(" ")} />
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-6 pb-1 pt-24">
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1 pt-24">
         <div className={hasDetailText ? "pb-1" : "pb-[36px]"}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
             {showSubtitle ? <p style={titleFontStyle} className={coverSubtitleClass}>{kicker || "TOVIE PERSON"}</p> : null}
@@ -570,7 +570,7 @@ function CalendarCoverTemplate({
       <CalendarView results={results} option={option} hideCaptureButton embedCalendarOnly />
       <div
         className={[
-          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-6 pb-1 pt-24",
+          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-7 pb-1 pt-24",
           showTitle ? "" : "bg-gradient-to-t from-black/18 via-black/0 to-transparent",
         ].join(" ")}
       >
@@ -610,7 +610,7 @@ function CalendarDayPreviewTemplate({
 
   return (
     <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/36 via-black/12 to-transparent px-6">
+      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/36 via-black/12 to-transparent px-7">
         <div className="flex h-full items-center justify-between gap-3">
           <p style={titleFontStyle} className="text-sm font-black leading-tight text-white">{date.getMonth() + 1}월 {date.getDate()}일 ({weekdays[date.getDay()]})</p>
           <span className="shrink-0 text-xs font-bold text-white/88">@scena.kr</span>
@@ -656,7 +656,7 @@ function CalendarDayPreviewTemplate({
         </div>
       )}
 
-      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/44 via-black/12 to-transparent px-6 pb-6 pt-0"].join(" ")}>
+      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/44 via-black/12 to-transparent px-7 pb-6 pt-0"].join(" ")}>
         {!showBackdropGrid ? (
           <h2 style={titleFontStyle} className="mb-0 whitespace-pre-line [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
             {leadTitle}

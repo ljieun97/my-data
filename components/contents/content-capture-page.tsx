@@ -12,6 +12,12 @@ import { toPng } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, SyntheticEvent } from "react";
 
+type ProviderLogoOption = {
+  provider_id: number;
+  provider_name: string;
+  logo_path?: string | null;
+};
+
 function formatYear(movie: CaptureMovie) {
   return movie.release_date ? movie.release_date.slice(0, 4) : "";
 }
@@ -123,6 +129,12 @@ function formatEnglishDateBadge(dateKey: string) {
 
 function formatReleaseBoardDate(value: string) {
   return value.trim();
+}
+
+function getProviderLogoUrl(logoPath?: string | null) {
+  if (!logoPath) return "";
+  if (logoPath.startsWith("http://") || logoPath.startsWith("https://")) return logoPath;
+  return `https://image.tmdb.org/t/p/w185${logoPath}`;
 }
 
 function getReleaseBoardAutoDate(movie?: CaptureMovie) {
@@ -752,9 +764,9 @@ function CalendarReleaseBoardTemplate({
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
 
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
-        <div className="flex flex-col items-center">
-          <div className="mt-0.5 flex items-end justify-center" style={getTitleBlockStyle(titleSize)}>
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="inline-flex max-w-full items-center justify-center rounded-[1.1rem] bg-white px-4 py-2 break-keep whitespace-pre-line text-center font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]">
+        <div className="flex flex-col items-start -mx-4">
+          <div className="flex items-end justify-start">
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="inline-flex max-w-full items-center justify-center rounded-r-[1.1rem] rounded-l-none bg-white pb-1 pl-2 pr-4 pt-2 break-keep whitespace-pre-line text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]">
               {title}
             </h1>
           </div>
@@ -780,6 +792,16 @@ function CalendarReleaseBoardTemplate({
                       ADD MOVIE
                     </div>
                   )}
+                  {movie?.providerLogoPath ? (
+                    <div className="absolute right-2 top-2 rounded-[0.45rem] bg-white/92 p-0.5 shadow-[0_6px_18px_rgba(15,23,42,0.18)]">
+                      <img
+                        alt={movie.providerLogoName || "Provider logo"}
+                        src={getProviderLogoUrl(movie.providerLogoPath)}
+                        className="h-7 w-7 rounded-[0.45rem] object-cover"
+                        crossOrigin="anonymous"
+                      />
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
@@ -806,6 +828,7 @@ export default function ContentCapturePage() {
     updateMovieTitle,
     updateMovieNote,
     updateMovieImagePosition,
+    updateMovieProviderLogo,
     updateMoviePoster,
     updateMovieSinglePreview,
     updatePersonProfilePath,
@@ -861,6 +884,7 @@ export default function ContentCapturePage() {
   const [calendarReleaseTitleSize, setCalendarReleaseTitleSize] = useState(25);
   const [calendarReleaseLabelColors, setCalendarReleaseLabelColors] = useState(RELEASE_BOARD_DEFAULT_COLORS);
   const [calendarReleaseDates, setCalendarReleaseDates] = useState(() => Array.from({ length: 8 }, () => ""));
+  const [releaseBoardProviderOptions, setReleaseBoardProviderOptions] = useState<ProviderLogoOption[]>([]);
   const subtitleChipClass = getCoverSubtitleClass(subtitleChipTone);
 
   const isPersonMode = captureMode === "person-cover";
@@ -906,6 +930,7 @@ export default function ContentCapturePage() {
   const releaseBoardSlots = Array.from({ length: 8 }, (_, index) => selectedMovies[index]);
   const releaseBoardDateLabels = releaseBoardSlots.map((movie, index) => formatReleaseBoardDate(calendarReleaseDates[index]) || getReleaseBoardAutoDate(movie));
   const currentReleaseBoardMovie = releaseBoardSlots[releaseBoardPreviewIndex];
+  const currentReleaseBoardProviderOptions = releaseBoardProviderOptions;
 
   useEffect(() => {
     if (selectedPersons.length === 1 && selectedPersons[0]?.name) {
@@ -929,6 +954,42 @@ export default function ContentCapturePage() {
 
     setPreviewMovieIndex((current) => Math.min(current, selectedMovies.length - 1));
   }, [selectedMovies.length]);
+
+  useEffect(() => {
+    if (!isCalendarReleaseMode || releaseBoardProviderOptions.length) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadProviderOptions = async () => {
+      try {
+        const response = await fetch("/api/provider-catalog");
+
+        if (!response.ok) {
+          throw new Error(`Failed to load provider catalog: ${response.status}`);
+        }
+
+        const payload = (await response.json()) as {
+          results?: ProviderLogoOption[];
+        };
+
+        if (!cancelled) {
+          setReleaseBoardProviderOptions(Array.isArray(payload.results) ? payload.results : []);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error(error);
+        }
+      }
+    };
+
+    void loadProviderOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isCalendarReleaseMode, releaseBoardProviderOptions.length]);
 
   useEffect(() => {
     if (!calendarPreviewGroups.length) {
@@ -1935,6 +1996,53 @@ export default function ContentCapturePage() {
                     {selectedMovies.length ? "선택한 영화에 포스터 옵션이 없으면 현재 포스터가 그대로 사용됩니다." : "영화를 추가하면 포스터 선택이 표시됩니다."}
                   </div>
                 )}
+
+                {currentReleaseBoardMovie ? (
+                  <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Provider Logo</p>
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        {currentReleaseBoardProviderOptions.length}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                      <button
+                        type="button"
+                        onClick={() => updateMovieProviderLogo(currentReleaseBoardMovie.id, "")}
+                        className={[
+                          "flex aspect-square items-center justify-center border text-[11px] font-bold transition",
+                          !currentReleaseBoardMovie.providerLogoPath
+                            ? "border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-slate-950"
+                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                        ].join(" ")}
+                      >
+                        없음
+                      </button>
+                      {currentReleaseBoardProviderOptions.map((provider) => (
+                        <button
+                          key={`${provider.provider_id}-${provider.logo_path ?? "none"}`}
+                          type="button"
+                          onClick={() => updateMovieProviderLogo(currentReleaseBoardMovie.id, provider.logo_path ?? "", provider.provider_name)}
+                          className={[
+                            "aspect-square overflow-hidden border p-0.5 transition",
+                            currentReleaseBoardMovie.providerLogoPath === provider.logo_path
+                              ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
+                              : "border-slate-200 dark:border-slate-800",
+                          ].join(" ")}
+                          title={provider.provider_name}
+                          aria-label={`Select ${provider.provider_name} logo`}
+                        >
+                          <img
+                            alt={provider.provider_name}
+                            src={getProviderLogoUrl(provider.logo_path)}
+                            className="h-full w-full rounded-md object-cover"
+                            crossOrigin="anonymous"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : null}
             {isMovieCoverMode && movieCoverLayout === "grid" ? (

@@ -14,6 +14,8 @@ export type CaptureMovie = {
   vote_average?: number;
   note?: string;
   imagePosition?: number;
+  providerLogoPath?: string;
+  providerLogoName?: string;
   posterOptions?: string[];
   singlePreviewTitle?: string;
   singlePreviewSubtitle?: string;
@@ -58,6 +60,7 @@ type CaptureContentContextValue = {
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
+  updateMovieProviderLogo: (id: number, providerLogoPath: string, providerLogoName?: string) => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
   updateMovieSinglePreview: (
     id: number,
@@ -105,6 +108,8 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     vote_average: movie.vote_average,
     note: movie.note,
     imagePosition: typeof movie.imagePosition === "number" ? movie.imagePosition : 20,
+    providerLogoPath: movie.providerLogoPath,
+    providerLogoName: movie.providerLogoName,
     posterOptions: movie.posterOptions,
     singlePreviewTitle: movie.singlePreviewTitle ?? title,
     singlePreviewSubtitle: movie.singlePreviewSubtitle ?? (movie.original_title || movie.original_name || title),
@@ -213,6 +218,20 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
+  const updateMovieProviderLogo = (id: number, providerLogoPath: string, providerLogoName?: string) => {
+    setSelectedMovies((current) =>
+      current.map((movie) =>
+        movie.id === id
+          ? {
+              ...movie,
+              providerLogoPath: providerLogoPath || undefined,
+              providerLogoName: providerLogoPath ? providerLogoName || movie.providerLogoName : undefined,
+            }
+          : movie,
+      ),
+    );
+  };
+
   const updateMoviePoster = (id: number, posterPath: string) => {
     setSelectedMovies((current) =>
       current.map((movie) =>
@@ -295,6 +314,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       updateMovieTitle,
       updateMovieNote,
       updateMovieImagePosition,
+      updateMovieProviderLogo,
       updateMoviePoster,
       updateMovieSinglePreview,
       updatePersonProfilePath,

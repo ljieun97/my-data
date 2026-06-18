@@ -3,7 +3,7 @@
 import { Input } from "@heroui/react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
+import { CAPTURE_PERSON_MAX_COUNT, getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
 import { getDetail, getImages, getSearchMulti, getSearchPeople } from "@/lib/open-api/tmdb-client";
 
 export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean }) {
@@ -17,7 +17,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const [isLoadingCaptureResults, setIsLoadingCaptureResults] = useState(false);
   const [captureSearchError, setCaptureSearchError] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const { captureMode, addMovie, setPerson, hasMovie, selectedMovies } = useCaptureContent();
+  const { captureMode, addMovie, setPerson, hasMovie, selectedMovies, selectedPersons } = useCaptureContent();
   const isCapturePage = pathname?.startsWith("/capture");
   const isCalendarMode = captureMode === "calendar";
   const maxCaptureMovies = getCaptureMovieMaxCount(captureMode);
@@ -219,8 +219,12 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
           {captureResults.map((result) => {
             const isPersonMode = captureMode === "person-cover";
             const mediaType = result?.media_type === "tv" ? "tv" : "movie";
-            const isAdded = !isPersonMode && hasMovie(Number(result.id), mediaType);
-            const isDisabled = !isPersonMode && (isAdded || selectedMovies.length >= maxCaptureMovies);
+            const isAdded = isPersonMode
+              ? selectedPersons.some((person) => person.id === Number(result.id))
+              : hasMovie(Number(result.id), mediaType);
+            const isDisabled = isPersonMode
+              ? !isAdded && selectedPersons.length >= CAPTURE_PERSON_MAX_COUNT
+              : isAdded || selectedMovies.length >= maxCaptureMovies;
             const yearSource = result.release_date || result.first_air_date;
             const year = yearSource ? String(yearSource).slice(0, 4) : "";
             const imagePath = isPersonMode ? result.profile_path : result.poster_path || result.backdrop_path;

@@ -45,6 +45,8 @@ export type CapturePerson = {
   profileOptions?: string[];
 };
 
+export const CAPTURE_PERSON_MAX_COUNT = 3;
+
 type CaptureContentContextValue = {
   captureMode: CaptureMode;
   setCaptureMode: (mode: CaptureMode) => void;
@@ -146,7 +148,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       if (existingIndex >= 0) {
         return current.map((entry, index) => (index === existingIndex ? person : entry));
       }
-      if (current.length >= 2) {
+      if (current.length >= CAPTURE_PERSON_MAX_COUNT) {
         return current;
       }
       return [...current, person];

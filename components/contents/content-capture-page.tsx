@@ -5,7 +5,7 @@ import { CalendarCaptureControls } from "@/components/contents/content-capture-c
 import { CaptureSizeControls, CaptureTextArea, CaptureToggleButton } from "@/components/contents/content-capture-controls";
 import CalendarView from "@/components/contents/calendar-view";
 import { MovieSlotsPanel } from "@/components/contents/content-capture-movie-controls";
-import { CaptureMovie, CapturePerson, getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
+import { CAPTURE_PERSON_MAX_COUNT, CaptureMovie, CapturePerson, getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
 import { faDownload, faRotateLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toPng } from "html-to-image";
@@ -98,7 +98,7 @@ function getTextOverlayClass(textPosition: "top" | "center" | "bottom") {
     return "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.2)_28%,rgba(0,0,0,0.42)_50%,rgba(0,0,0,0.2)_72%,rgba(0,0,0,0)_100%)]";
   }
 
-  return "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_54%,rgba(0,0,0,0.46)_100%)]";
+  return "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_38%,rgba(0,0,0,0.35)_68%,rgba(0,0,0,0.78)_100%)]";
 }
 
 function getCalendarPosterUrl(item: any) {
@@ -212,8 +212,7 @@ function getCoverSubtitleClass(tone: SubtitleChipTone) {
 
 function getDualPersonTitle(persons: CapturePerson[]) {
   if (!persons.length) return "인물 이름";
-  if (persons.length === 1) return persons[0].name;
-  return `${persons[0].name} & ${persons[1].name}`;
+  return persons.map((person) => person.name).join(" & ");
 }
 
 function MovieCaptureRow({
@@ -249,7 +248,14 @@ function MovieCaptureRow({
       ) : null}
 
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.24)_0%,rgba(0,0,0,0.10)_28%,rgba(0,0,0,0)_58%,rgba(0,0,0,0.18)_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]" />
+      <div
+        className={[
+          "absolute inset-0",
+          bottomAligned
+            ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_42%,rgba(0,0,0,0.32)_72%,rgba(0,0,0,0.68)_100%)]"
+            : "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]",
+        ].join(" ")}
+      />
 
       <div className={["relative z-[1] flex h-full gap-2 px-[17px] py-[10px]", bottomAligned ? "items-end" : "items-center"].join(" ")}>
         {/* <div className="flex w-8 shrink-0 items-baseline">
@@ -532,7 +538,7 @@ function SingleMovieTemplate({
         ) : null}
         <div className="absolute inset-0 bg-black/32" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_28%,rgba(0,0,0,0)_58%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.18)_25%,rgba(0,0,0,0.1)_58%,rgba(0,0,0,0.5)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.18)_25%,rgba(0,0,0,0.16)_52%,rgba(0,0,0,0.72)_100%)]" />
 
         <div className="relative z-[1] flex h-full flex-col items-center px-7 pb-10 pt-12 text-center">
           <p style={titleFontStyle} className="text-[30px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.48)]">
@@ -591,7 +597,7 @@ function SingleMovieTemplate({
           crossOrigin="anonymous"
         />
       ) : null}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.48)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_38%,rgba(0,0,0,0.35)_68%,rgba(0,0,0,0.78)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1 pt-24">
         <div className={["w-full text-left", hasDetailText ? "pb-1" : "pb-[36px]"].join(" ")}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
@@ -644,15 +650,37 @@ function PersonCoverTemplate({
 }) {
   const primaryPerson = persons[0] ?? null;
   const secondaryPerson = persons[1] ?? null;
+  const tertiaryPerson = persons[2] ?? null;
   const profileUrl = getProfileUrl(primaryPerson?.profile_path);
   const secondaryProfileUrl = getProfileUrl(secondaryPerson?.profile_path);
+  const tertiaryProfileUrl = getProfileUrl(tertiaryPerson?.profile_path);
   const bodyValue = body || primaryPerson?.biography || "";
   const isDualLayout = Boolean(primaryPerson && secondaryPerson);
+  const isTripleLayout = Boolean(primaryPerson && secondaryPerson && tertiaryPerson);
   const hasDetailText = (showSubbody && Boolean(subbody)) || (showBody && Boolean(bodyValue));
 
   return (
     <div className="relative h-full overflow-hidden bg-slate-950 text-white">
-      {isDualLayout ? (
+      {isTripleLayout ? (
+        <div className="absolute inset-0 flex">
+          {[
+            { person: primaryPerson, url: profileUrl },
+            { person: secondaryPerson, url: secondaryProfileUrl },
+            { person: tertiaryPerson, url: tertiaryProfileUrl },
+          ].map(({ person, url }) => (
+            <div key={person?.id} className="h-full w-1/3 bg-slate-900">
+              {url ? (
+                <img
+                  alt=""
+                  src={url}
+                  className="h-full w-full object-cover object-bottom"
+                  crossOrigin={isExternalImageUrl(person?.profile_path) ? undefined : "anonymous"}
+                />
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : isDualLayout ? (
         <>
           {profileUrl ? (
             <img
@@ -680,7 +708,7 @@ function PersonCoverTemplate({
         />
       ) : null}
 
-      <div className={["absolute inset-0", isDualLayout ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.02)_40%,rgba(0,0,0,0.48)_100%)]" : "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.03)_42%,rgba(0,0,0,0.48)_100%)]"].join(" ")} />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_38%,rgba(0,0,0,0.35)_68%,rgba(0,0,0,0.78)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1 pt-24">
         <div className={hasDetailText ? "pb-1" : "pb-[36px]"}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
@@ -1026,7 +1054,7 @@ export default function ContentCapturePage() {
       setPersonTitle(selectedPersons[0].name);
       return;
     }
-    if (selectedPersons.length === 2) {
+    if (selectedPersons.length >= 2) {
       setPersonTitle(getDualPersonTitle(selectedPersons));
     }
   }, [movieSlotCount, selectedPersons]);
@@ -1772,7 +1800,7 @@ export default function ContentCapturePage() {
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                 <div className="mb-3 flex items-center justify-between">
                   <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Person</p>
-                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedPersons.length}/2</p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedPersons.length}/{CAPTURE_PERSON_MAX_COUNT}</p>
                 </div>
                 <div className="flex flex-col gap-3">
                   {selectedPersons.length ? (
@@ -1836,7 +1864,7 @@ export default function ContentCapturePage() {
                     ))
                   ) : (
                     <div className="flex items-center justify-center border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400">
-                      상단 검색으로 인물을 최대 2명까지 추가하세요
+                      상단 검색으로 인물을 최대 {CAPTURE_PERSON_MAX_COUNT}명까지 추가하세요
                     </div>
                   )}
                 </div>

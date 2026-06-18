@@ -74,6 +74,7 @@ function handleImageFallback(event: SyntheticEvent<HTMLImageElement>, candidates
 
 const titleFontStyle: CSSProperties = {
   fontFamily: '"Gmarket Sans", "지마켓 산스", sans-serif',
+  letterSpacing: "-0.02em",
 };
 
 function getTitleBlockStyle(titleSize: number): CSSProperties {
@@ -171,7 +172,7 @@ function CaptureFooter({
 }) {
   return (
     <footer className="pt-0.5 text-center">
-      <span className="text-[10px] font-semibold tracking-[0.03em] text-white/72">{footerRight || "@scena.kr"}</span>
+      <span className="text-[10px] font-semibold tracking-[0.01em] text-white/72">{footerRight || "@scena.kr"}</span>
     </footer>
   );
 }
@@ -188,25 +189,25 @@ const subtitleChipToneOptions: Array<{ key: SubtitleChipTone; label: string; swa
 
 function getCoverSubtitleClass(tone: SubtitleChipTone) {
   const base =
-    "inline-flex w-fit max-w-full self-start rounded-full px-3 pb-[4px] pt-[5px] text-[12px] font-medium leading-none tracking-[0.01em]";
+    "inline-flex w-fit max-w-full self-start rounded-full px-3 pb-[4px] pt-[5px] text-[12px] font-medium leading-none tracking-[-0.01em]";
 
   if (tone === "navy") {
-    return `${base} border border-sky-300/18 bg-sky-950/38 text-sky-100 shadow-[0_4px_14px_rgba(8,47,73,0.18)]`;
+    return `${base} border border-sky-300/18 bg-sky-950/38 text-white shadow-[0_4px_14px_rgba(8,47,73,0.18)]`;
   }
 
   if (tone === "slate") {
-    return `${base} border border-slate-200/14 bg-slate-950/44 text-slate-100 shadow-[0_4px_14px_rgba(2,6,23,0.2)]`;
+    return `${base} border border-slate-200/14 bg-slate-950/44 text-white shadow-[0_4px_14px_rgba(2,6,23,0.2)]`;
   }
 
   if (tone === "olive") {
-    return `${base} border border-lime-200/16 bg-lime-950/40 text-lime-100 shadow-[0_4px_14px_rgba(26,46,5,0.18)]`;
+    return `${base} border border-lime-200/16 bg-lime-950/40 text-white shadow-[0_4px_14px_rgba(26,46,5,0.18)]`;
   }
 
   if (tone === "amber") {
-    return `${base} border border-amber-200/16 bg-amber-950/34 text-amber-100 shadow-[0_4px_14px_rgba(120,53,15,0.16)]`;
+    return `${base} border border-amber-200/16 bg-amber-950/34 text-white shadow-[0_4px_14px_rgba(120,53,15,0.16)]`;
   }
 
-  return `${base} border border-rose-200/16 bg-rose-950/42 text-rose-100 shadow-[0_4px_14px_rgba(76,5,25,0.18)]`;
+  return `${base} border border-rose-200/16 bg-rose-950/42 text-white shadow-[0_4px_14px_rgba(76,5,25,0.18)]`;
 }
 
 function getDualPersonTitle(persons: CapturePerson[]) {
@@ -440,26 +441,46 @@ function MovieCoverTemplate({
       </div>
       <div className={["pointer-events-none absolute inset-0 z-[0]", getTextOverlayClass(textPosition)].join(" ")} />
 
-      <div
-        className={[
-          "absolute inset-x-0 z-[1] px-7",
-          textPosition === "top" ? "top-0 pt-14" : textPosition === "center" ? "top-1/2 -translate-y-1/2" : "bottom-0 pb-[36px] pt-24",
-        ].join(" ")}
-      >
-        <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
-          {showSubtitle ? <p style={titleFontStyle} className={subtitleChipClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
-          {showTitle ? (
-            <div className="mt-2">
-              <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
-                {title || "영화 커버"}
-              </h1>
+      {textPosition === "bottom" ? (
+        <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1 pt-24">
+          <div className="pb-[36px]">
+            <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
+              {showSubtitle ? <p style={titleFontStyle} className={subtitleChipClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
+              {showTitle ? (
+                <div className="mt-2">
+                  <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
+                    {title || "영화 커버"}
+                  </h1>
+                </div>
+              ) : null}
             </div>
-          ) : null}
+          </div>
+          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
         </div>
-      </div>
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1">
-        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
-      </div>
+      ) : (
+        <>
+          <div
+            className={[
+              "absolute inset-x-0 z-[1] px-7",
+              textPosition === "top" ? "top-0 pt-14" : "top-1/2 -translate-y-1/2",
+            ].join(" ")}
+          >
+            <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
+              {showSubtitle ? <p style={titleFontStyle} className={subtitleChipClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
+              {showTitle ? (
+                <div className="mt-2">
+                  <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
+                    {title || "영화 커버"}
+                  </h1>
+                </div>
+              ) : null}
+            </div>
+          </div>
+          <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1">
+            <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -487,8 +508,8 @@ function SingleMovieTemplate({
   const showSubbody = movie?.singlePreviewShowSubbody ?? true;
   const showBody = movie?.singlePreviewShowBody ?? true;
   const subtitleValue = movie?.note || subtitle;
-  const subbodyClass = "mt-1 whitespace-pre-line text-[11px] font-normal leading-relaxed text-white/72";
-  const bodyClass = "mt-1 whitespace-pre-line text-[13px] font-normal leading-relaxed text-white/82";
+  const subbodyClass = "mt-1 whitespace-pre-line text-[11px] font-normal leading-[1.4] text-white/72";
+  const bodyClass = "mt-1 whitespace-pre-line text-[13px] font-normal leading-[1.42] text-white";
   const hasDetailText = (showSubbody && Boolean(subbody)) || showBody;
 
   return (
@@ -606,12 +627,12 @@ function PersonCoverTemplate({
             ) : null}
           </div>
           {showSubbody && subbody ? (
-            <p style={titleFontStyle} className="mt-1 whitespace-pre-line text-[11px] font-normal leading-relaxed text-white/72">
+            <p style={titleFontStyle} className="mt-1 whitespace-pre-line text-[11px] font-normal leading-[1.4] text-white/72">
               {subbody}
             </p>
           ) : null}
           {showBody && bodyValue ? (
-            <p style={titleFontStyle} className="mt-1 whitespace-pre-line text-[13px] font-normal leading-relaxed text-white/82">
+            <p style={titleFontStyle} className="mt-1 whitespace-pre-line text-[13px] font-normal leading-[1.42] text-white">
               {bodyValue}
             </p>
           ) : null}
@@ -687,7 +708,7 @@ function CalendarDayPreviewTemplate({
       <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/36 via-black/12 to-transparent px-7">
         <div className="flex h-full items-center justify-between gap-3">
           <p style={titleFontStyle} className="text-[14px] font-black leading-tight text-white">{date.getMonth() + 1}월 {date.getDate()}일 ({weekdays[date.getDay()]})</p>
-          <span className="shrink-0 text-[11px] font-bold text-white/88">@scena.kr</span>
+          <span className="shrink-0 text-[11px] font-bold text-white">@scena.kr</span>
         </div>
       </div>
 
@@ -766,7 +787,7 @@ function CalendarReleaseBoardTemplate({
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
         <div className="flex flex-col items-start -mx-4">
           <div className="flex items-end justify-start">
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="inline-flex max-w-full items-center justify-center rounded-r-[1.1rem] rounded-l-none bg-white pb-1 pl-2 pr-4 pt-2 break-keep whitespace-pre-line text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]">
+            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="inline-flex max-w-full items-center justify-center rounded-r-[1.1rem] rounded-l-none bg-slate-950/82 pb-1 pl-2 pr-4 pt-2 break-keep whitespace-pre-line text-left font-black leading-[0.94] tracking-[-0.09em] text-white">
               {title}
             </h1>
           </div>
@@ -782,7 +803,7 @@ function CalendarReleaseBoardTemplate({
                   className="px-2 py-0.5 text-center"
                   style={{ backgroundColor: labelColors[index] || RELEASE_BOARD_DEFAULT_COLORS[index] || "#1f2937" }}
                 >
-                  <p style={titleFontStyle} className="text-[12px] font-black tracking-[0.06em] text-white">{formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}</p>
+                  <p style={titleFontStyle} className="text-[12px] font-black tracking-[0.02em] text-white">{formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}</p>
                 </div>
                 <div className="relative min-h-0 flex-1 bg-white">
                   {posterUrl ? (
@@ -808,7 +829,7 @@ function CalendarReleaseBoardTemplate({
           })}
         </div>
         <div className="pt-0.5 text-center">
-          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/92">@scena.kr</span>
+          <span className="text-[10px] font-semibold tracking-[0.01em] text-white/92">@scena.kr</span>
         </div>
       </div>
     </div>

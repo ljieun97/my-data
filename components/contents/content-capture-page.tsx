@@ -898,7 +898,7 @@ function CalendarReleaseBoardTemplate({
                   className="px-2 py-0.5 text-center"
                   style={{ backgroundColor: labelColors[index] || RELEASE_BOARD_DEFAULT_COLORS[index] || "#1f2937" }}
                 >
-                  <p style={titleFontStyle} className="text-[12px] font-black tracking-[0.02em] text-white">{formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}</p>
+                  <p style={titleFontStyle} className="mt-px text-[11px] font-normal tracking-[0.02em] text-white">{formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}</p>
                 </div>
                 <div className="relative min-h-0 flex-1 bg-white">
                   {posterUrl ? (
@@ -998,7 +998,7 @@ export default function ContentCapturePage() {
   const [showCalendarTitle, setShowCalendarTitle] = useState(true);
   const [calendarPreviewDateKey, setCalendarPreviewDateKey] = useState("");
   const [calendarReleaseTitle, setCalendarReleaseTitle] = useState("6월 개봉예정 영화 라인업");
-  const [calendarReleaseTitleSize, setCalendarReleaseTitleSize] = useState(25);
+  const [calendarReleaseTitleSize, setCalendarReleaseTitleSize] = useState(23);
   const [calendarReleaseLabelColors, setCalendarReleaseLabelColors] = useState(RELEASE_BOARD_DEFAULT_COLORS);
   const [calendarReleaseDates, setCalendarReleaseDates] = useState(() => Array.from({ length: 8 }, () => ""));
   const [releaseBoardProviderOptions, setReleaseBoardProviderOptions] = useState<ProviderLogoOption[]>([]);

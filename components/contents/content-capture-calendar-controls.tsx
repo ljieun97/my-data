@@ -93,7 +93,7 @@ export function CalendarCaptureControls({
           <>
             <CaptureField label="Title" className="mb-3">
               <CaptureTextArea value={calendarReleaseTitle} onChange={(event) => setCalendarReleaseTitle(event.target.value)} rows={2} />
-              <CaptureSizeControls value={calendarReleaseTitleSize} defaultValue={25} onChange={setCalendarReleaseTitleSize} step={2} min={18} max={36} />
+              <CaptureSizeControls value={calendarReleaseTitleSize} defaultValue={23} onChange={setCalendarReleaseTitleSize} step={2} min={18} max={36} />
             </CaptureField>
 
             <div className="mb-3">

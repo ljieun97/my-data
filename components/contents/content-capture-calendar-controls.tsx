@@ -145,7 +145,7 @@ export function CalendarCaptureControls({
           <>
             <CaptureField label="Title" className="mb-3">
               <CaptureTextArea value={calendarTitle} onChange={(event) => setCalendarTitle(event.target.value)} rows={2} />
-              <CaptureSizeControls value={calendarTitleSize} defaultValue={36} onChange={setCalendarTitleSize} step={2} min={24} max={48} />
+              <CaptureSizeControls value={calendarTitleSize} defaultValue={28} onChange={setCalendarTitleSize} step={2} min={24} max={48} />
             </CaptureField>
             <CaptureToggleButton type="button" active={showCalendarTitle} onClick={() => setShowCalendarTitle((current) => !current)}>
               Title {showCalendarTitle ? "ON" : "OFF"}

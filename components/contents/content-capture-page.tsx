@@ -489,16 +489,21 @@ function SingleMovieTemplate({
   movie,
   titleSize,
   subtitleChipClass,
+  variant,
+  rank,
   footerLeft,
   footerRight,
 }: {
   movie: CaptureMovie | undefined;
   titleSize: number;
   subtitleChipClass: string;
+  variant: "default" | "spotlight";
+  rank: number;
   footerLeft: string;
   footerRight: string;
 }) {
   const imageCandidates = buildImageCandidates(getPosterUrl(movie), getBackdropUrl(movie));
+  const backgroundCandidates = buildImageCandidates(getPosterUrl(movie));
   const title = movie?.singlePreviewTitle ?? movie?.title ?? "영화를 추가하세요";
   const subtitle = movie?.singlePreviewSubtitle ?? movie?.original_title ?? movie?.title ?? "설명 텍스트";
   const subbody = movie?.singlePreviewSubbody ?? "";
@@ -511,6 +516,68 @@ function SingleMovieTemplate({
   const subbodyClass = "mt-1 whitespace-pre-line text-[11px] font-normal leading-[1.4] text-white/72";
   const bodyClass = "mt-1 whitespace-pre-line text-[13px] font-normal leading-[1.42] text-white";
   const hasDetailText = (showSubbody && Boolean(subbody)) || showBody;
+
+  if (variant === "spotlight") {
+    return (
+      <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
+        {backgroundCandidates[0] ? (
+          <img
+            alt=""
+            src={backgroundCandidates[0]}
+            data-fallback-index="0"
+            onError={(event) => handleImageFallback(event, backgroundCandidates)}
+            className="absolute inset-0 h-full w-full object-cover object-center blur-md"
+            crossOrigin="anonymous"
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-black/32" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_28%,rgba(0,0,0,0)_58%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.18)_25%,rgba(0,0,0,0.1)_58%,rgba(0,0,0,0.5)_100%)]" />
+
+        <div className="relative z-[1] flex h-full flex-col items-center px-7 pb-10 pt-12 text-center">
+          <p style={titleFontStyle} className="text-[30px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.48)]">
+            {rank}위
+          </p>
+
+          <div className="flex min-h-0 flex-1 -translate-y-5 items-center justify-center py-5">
+            <div className="w-[42%]">
+              {imageCandidates[0] ? (
+                <img
+                  alt=""
+                  src={imageCandidates[0]}
+                  data-fallback-index="0"
+                  onError={(event) => handleImageFallback(event, imageCandidates)}
+                  className="w-full rounded-[0.25rem] object-cover shadow-[0_12px_28px_rgba(0,0,0,0.3)]"
+                  crossOrigin="anonymous"
+                />
+              ) : (
+                <div className="aspect-[2/3] w-full rounded-[0.25rem] bg-white/12" />
+              )}
+            </div>
+          </div>
+
+          <div className="w-full -translate-y-5">
+            {showTitle ? (
+              <p
+                style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
+                className="line-clamp-2 whitespace-pre-line text-center font-black leading-[1.14] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] [word-break:keep-all]"
+              >
+                {title ? `<${title}>` : "<영화를 추가하세요>"}
+              </p>
+            ) : null}
+            {subtitleValue ? (
+              <p style={titleFontStyle} className="mt-3 text-center text-[11px] font-normal leading-tight text-white/88">
+                {subtitleValue}
+              </p>
+            ) : null}
+          </div>
+        </div>
+        <div className="absolute inset-x-0 bottom-0 z-[2] px-7 pb-1">
+          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
@@ -877,15 +944,16 @@ export default function ContentCapturePage() {
   const [movieListVariant, setMovieListVariant] = useState<"default" | "edge">("default");
   const [movieListColumns, setMovieListColumns] = useState<1 | 2>(1);
   const [movieCoverTitle, setMovieCoverTitle] = useState("영화 묶음");
-  const [movieCoverTitleSize, setMovieCoverTitleSize] = useState(36);
+  const [movieCoverTitleSize, setMovieCoverTitleSize] = useState(28);
   const [movieCoverSubtitle, setMovieCoverSubtitle] = useState("TOVIE MOVIE COVER");
   const [subtitleChipTone, setSubtitleChipTone] = useState<SubtitleChipTone>("burgundy");
   const [movieCoverShowTitle, setMovieCoverShowTitle] = useState(true);
   const [movieCoverShowSubtitle, setMovieCoverShowSubtitle] = useState(false);
   const [movieCoverTextPosition, setMovieCoverTextPosition] = useState<"top" | "center" | "bottom">("bottom");
   const [movieCoverLayout, setMovieCoverLayout] = useState<"stack" | "grid">("stack");
-  const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(36);
-  const [personTitleSize, setPersonTitleSize] = useState(36);
+  const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
+  const [singlePreviewVariant, setSinglePreviewVariant] = useState<"default" | "spotlight">("default");
+  const [personTitleSize, setPersonTitleSize] = useState(28);
   const [footerLeft, setFooterLeft] = useState("셰나코리아");
   const [footerRight, setFooterRight] = useState("@scena.kr");
   const [isCapturing, setIsCapturing] = useState(false);
@@ -898,7 +966,7 @@ export default function ContentCapturePage() {
   const [isCalendarLoading, setIsCalendarLoading] = useState(false);
   const [calendarError, setCalendarError] = useState("");
   const [calendarTitle, setCalendarTitle] = useState(`${new Date().getMonth() + 1}월 개봉 일정`);
-  const [calendarTitleSize, setCalendarTitleSize] = useState(36);
+  const [calendarTitleSize, setCalendarTitleSize] = useState(28);
   const [showCalendarTitle, setShowCalendarTitle] = useState(true);
   const [calendarPreviewDateKey, setCalendarPreviewDateKey] = useState("");
   const [calendarReleaseTitle, setCalendarReleaseTitle] = useState("6월 개봉예정 영화 라인업");
@@ -1464,7 +1532,7 @@ export default function ContentCapturePage() {
                   onChange={(event) => setMovieCoverTitle(event.target.value)}
                   rows={2}
                 />
-                <CaptureSizeControls value={movieCoverTitleSize} defaultValue={36} onChange={setMovieCoverTitleSize} step={2} min={24} max={48} />
+                <CaptureSizeControls value={movieCoverTitleSize} defaultValue={28} onChange={setMovieCoverTitleSize} step={2} min={24} max={48} />
               </label>
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle</span>
@@ -1572,6 +1640,17 @@ export default function ContentCapturePage() {
           {isMovieListMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Single Preview Text</p>
+              <div className="mb-3">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Preview Version</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <CaptureToggleButton type="button" active={singlePreviewVariant === "default"} onClick={() => setSinglePreviewVariant("default")}>
+                    기본
+                  </CaptureToggleButton>
+                  <CaptureToggleButton type="button" active={singlePreviewVariant === "spotlight"} onClick={() => setSinglePreviewVariant("spotlight")}>
+                    포스터형
+                  </CaptureToggleButton>
+                </div>
+              </div>
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
                 <CaptureTextArea
@@ -1580,7 +1659,7 @@ export default function ContentCapturePage() {
                   placeholder={currentSingleMovie?.title ?? "제목"}
                   rows={2}
                 />
-                <CaptureSizeControls value={singlePreviewTitleSize} defaultValue={36} onChange={setSinglePreviewTitleSize} step={2} min={24} max={48} />
+                <CaptureSizeControls value={singlePreviewTitleSize} defaultValue={28} onChange={setSinglePreviewTitleSize} step={2} min={16} max={48} />
               </label>
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle</span>
@@ -1772,7 +1851,7 @@ export default function ContentCapturePage() {
                     onChange={(event) => setPersonTitle(event.target.value)}
                     rows={2}
                   />
-                  <CaptureSizeControls value={personTitleSize} defaultValue={36} onChange={setPersonTitleSize} step={2} min={24} max={48} />
+                  <CaptureSizeControls value={personTitleSize} defaultValue={28} onChange={setPersonTitleSize} step={2} min={24} max={48} />
                 </label>
                 <label className="mb-3 block">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle</span>
@@ -2170,6 +2249,8 @@ export default function ContentCapturePage() {
                           movie={selectedMovies[previewMovieIndex]}
                           titleSize={singlePreviewTitleSize}
                           subtitleChipClass={subtitleChipClass}
+                          variant={singlePreviewVariant}
+                          rank={previewMovieIndex + 1}
                           footerLeft={footerLeft}
                           footerRight={footerRight}
                         />

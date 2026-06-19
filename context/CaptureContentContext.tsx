@@ -28,7 +28,7 @@ export type CaptureMovie = {
   singlePreviewShowBody?: boolean;
 };
 
-export type CaptureMode = "movie-list" | "movie-cover" | "person-cover" | "calendar" | "calendar-release";
+export type CaptureMode = "movie-list" | "person-cover" | "calendar" | "calendar-release";
 
 export function getCaptureMovieMaxCount(captureMode: CaptureMode) {
   return captureMode === "calendar-release" ? 8 : captureMode === "movie-list" ? 10 : 5;

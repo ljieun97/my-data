@@ -373,124 +373,6 @@ function MovieListTemplate({
   );
 }
 
-function MovieCoverTemplate({
-  slots,
-  title,
-  titleSize,
-  subtitle,
-  subtitleChipClass,
-  showTitle,
-  showSubtitle,
-  textPosition,
-  layout,
-  footerLeft,
-  footerRight,
-}: {
-  slots: Array<CaptureMovie | undefined>;
-  title: string;
-  titleSize: number;
-  subtitle: string;
-  subtitleChipClass: string;
-  showTitle: boolean;
-  showSubtitle: boolean;
-  textPosition: "top" | "center" | "bottom";
-  layout: "stack" | "grid";
-  footerLeft: string;
-  footerRight: string;
-}) {
-  const movies = slots.filter(Boolean) as CaptureMovie[];
-  const gridTemplateColumns =
-    movies.length <= 2
-      ? "repeat(2, minmax(0, 1fr))"
-      : movies.length === 3
-        ? "repeat(3, minmax(0, 1fr))"
-        : movies.length === 4
-          ? "repeat(2, minmax(0, 1fr))"
-          : "repeat(3, minmax(0, 1fr))";
-  const gridTemplateRows = `repeat(${movies.length || 1}, minmax(0, 1fr))`;
-  const contentClass = "gap-0";
-
-  return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-slate-950 text-white">
-      <div className="relative z-[0] flex-1 overflow-hidden">
-        <div
-          className={["grid h-full", contentClass].join(" ")}
-          style={
-            layout === "stack"
-              ? { gridTemplateRows }
-              : { gridTemplateColumns }
-          }
-        >
-          {movies.map((movie, index) => {
-            const imageCandidates =
-              layout === "grid"
-                ? buildImageCandidates(getPosterUrl(movie), getBackdropUrl(movie))
-                : buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
-
-            return (
-              <div key={movie.id} className="relative overflow-hidden bg-slate-900">
-                {imageCandidates[0] ? (
-                  <img
-                    alt=""
-                    src={imageCandidates[0]}
-                    data-fallback-index="0"
-                    onError={(event) => handleImageFallback(event, imageCandidates)}
-                    className={["h-full w-full object-cover", layout === "stack" ? "object-top" : "object-center"].join(" ")}
-                    crossOrigin="anonymous"
-                  />
-                ) : null}
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02)_0%,rgba(0,0,0,0.22)_100%)]" />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <div className={["pointer-events-none absolute inset-0 z-[0]", getTextOverlayClass(textPosition)].join(" ")} />
-
-      {textPosition === "bottom" ? (
-        <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1 pt-24">
-          <div className="pb-[36px]">
-            <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
-              {showSubtitle ? <p style={titleFontStyle} className={subtitleChipClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
-              {showTitle ? (
-                <div className="mt-2">
-                  <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
-                    {title || "영화 커버"}
-                  </h1>
-                </div>
-              ) : null}
-            </div>
-          </div>
-          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
-        </div>
-      ) : (
-        <>
-          <div
-            className={[
-              "absolute inset-x-0 z-[1] px-7",
-              textPosition === "top" ? "top-0 pt-14" : "top-1/2 -translate-y-1/2",
-            ].join(" ")}
-          >
-            <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
-              {showSubtitle ? <p style={titleFontStyle} className={subtitleChipClass}>{subtitle || "TOVIE MOVIE COVER"}</p> : null}
-              {showTitle ? (
-                <div className="mt-2">
-                  <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
-                    {title || "영화 커버"}
-                  </h1>
-                </div>
-              ) : null}
-            </div>
-          </div>
-          <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1">
-            <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
 function SingleMovieTemplate({
   movie,
   titleSize,
@@ -956,7 +838,6 @@ export default function ContentCapturePage() {
   } = useCaptureContent();
   const captureRef = useRef<HTMLDivElement | null>(null);
   const singleMovieCaptureRef = useRef<HTMLDivElement | null>(null);
-  const movieCoverCaptureRef = useRef<HTMLDivElement | null>(null);
   const personCaptureRef = useRef<HTMLDivElement | null>(null);
   const calendarCaptureRef = useRef<HTMLDivElement | null>(null);
   const calendarReleaseCaptureRef = useRef<HTMLDivElement | null>(null);
@@ -974,14 +855,7 @@ export default function ContentCapturePage() {
   const [movieListTitleSize, setMovieListTitleSize] = useState(16);
   const [movieListVariant, setMovieListVariant] = useState<"default" | "edge">("default");
   const [movieListColumns, setMovieListColumns] = useState<1 | 2>(1);
-  const [movieCoverTitle, setMovieCoverTitle] = useState("영화 묶음");
-  const [movieCoverTitleSize, setMovieCoverTitleSize] = useState(28);
-  const [movieCoverSubtitle, setMovieCoverSubtitle] = useState("TOVIE MOVIE COVER");
   const [subtitleChipTone, setSubtitleChipTone] = useState<SubtitleChipTone>("burgundy");
-  const [movieCoverShowTitle, setMovieCoverShowTitle] = useState(true);
-  const [movieCoverShowSubtitle, setMovieCoverShowSubtitle] = useState(false);
-  const [movieCoverTextPosition, setMovieCoverTextPosition] = useState<"top" | "center" | "bottom">("bottom");
-  const [movieCoverLayout, setMovieCoverLayout] = useState<"stack" | "grid">("stack");
   const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
   const [singlePreviewVariant, setSinglePreviewVariant] = useState<"default" | "spotlight">("default");
   const [personTitleSize, setPersonTitleSize] = useState(28);
@@ -1009,12 +883,11 @@ export default function ContentCapturePage() {
 
   const isPersonMode = captureMode === "person-cover";
   const isMovieListMode = captureMode === "movie-list";
-  const isMovieCoverMode = captureMode === "movie-cover";
   const isCalendarMode = captureMode === "calendar";
   const isCalendarReleaseMode = captureMode === "calendar-release";
   const isCalendarDataMode = isCalendarMode;
-  const isMovieMode = isMovieListMode || isMovieCoverMode || isCalendarReleaseMode;
-  const movieMinCount = isMovieCoverMode ? 2 : 3;
+  const isMovieMode = isMovieListMode || isCalendarReleaseMode;
+  const movieMinCount = 3;
   const movieMaxCount = getCaptureMovieMaxCount(captureMode);
   const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
   const currentSingleMovie = selectedMovies[previewMovieIndex];
@@ -1157,9 +1030,7 @@ export default function ContentCapturePage() {
         ? calendarReleaseCaptureRef
       : isPersonMode
         ? personCaptureRef
-        : isMovieCoverMode
-          ? movieCoverCaptureRef
-          : captureRef;
+        : captureRef;
     if (!targetRef.current || isCapturing) return;
 
     try {
@@ -1419,7 +1290,6 @@ export default function ContentCapturePage() {
       <div className="flex w-full flex-wrap border border-slate-200 bg-white/72 p-1 dark:border-slate-800 dark:bg-slate-950/70 sm:inline-flex sm:w-fit">
         {[
           { key: "person-cover", label: "Person Cover" },
-          { key: "movie-cover", label: "Movie Cover" },
           { key: "movie-list", label: "Movie List" },
           { key: "calendar", label: "Calendar" },
           { key: "calendar-release", label: "Release Board" },
@@ -1427,7 +1297,7 @@ export default function ContentCapturePage() {
           <button
             key={item.key}
             type="button"
-            onClick={() => setCaptureMode(item.key as "movie-list" | "movie-cover" | "person-cover" | "calendar" | "calendar-release")}
+            onClick={() => setCaptureMode(item.key as "movie-list" | "person-cover" | "calendar" | "calendar-release")}
             className={[
               "h-9 min-w-0 flex-[1_1_calc(50%-0.25rem)] px-3 text-sm font-bold transition sm:flex-none sm:px-4",
               captureMode === item.key
@@ -1552,121 +1422,6 @@ export default function ContentCapturePage() {
                 </pre>
               </div>
             </>
-          ) : null}
-          {isMovieCoverMode ? (
-            <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-              <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Cover Text</p>
-              <label className="mb-3 block">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                <CaptureTextArea
-                  value={movieCoverTitle}
-                  onChange={(event) => setMovieCoverTitle(event.target.value)}
-                  rows={2}
-                />
-                <CaptureSizeControls value={movieCoverTitleSize} defaultValue={28} onChange={setMovieCoverTitleSize} step={2} min={24} max={48} />
-              </label>
-              <label className="mb-3 block">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle</span>
-                <input
-                  value={movieCoverSubtitle}
-                  onChange={(event) => setMovieCoverSubtitle(event.target.value)}
-                  className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                />
-              </label>
-              <div className="mb-3">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle Chip</span>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {subtitleChipToneOptions.map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setSubtitleChipTone(item.key)}
-                      className={[
-                        "flex h-9 items-center gap-2 border px-2 text-xs font-bold transition",
-                        subtitleChipTone === item.key
-                          ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                          : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                      ].join(" ")}
-                    >
-                      <span className={["h-3 w-3 rounded-full", item.swatchClass].join(" ")} />
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="mb-3 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setMovieCoverShowTitle((current) => !current)}
-                  className={[
-                    "h-8 border px-2 text-xs font-bold transition",
-                    movieCoverShowTitle
-                      ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                      : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                  ].join(" ")}
-                >
-                  Title {movieCoverShowTitle ? "ON" : "OFF"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMovieCoverShowSubtitle((current) => !current)}
-                  className={[
-                    "h-8 border px-2 text-xs font-bold transition",
-                    movieCoverShowSubtitle
-                      ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                      : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                  ].join(" ")}
-                >
-                  Subtitle
-                </button>
-              </div>
-              <div className="mb-3">
-                <div className="inline-flex w-full border border-slate-300 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
-                  {[
-                    { key: "top", label: "Top" },
-                    { key: "center", label: "Center" },
-                    { key: "bottom", label: "Bottom" },
-                  ].map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setMovieCoverTextPosition(item.key as "top" | "center" | "bottom")}
-                      className={[
-                        "h-8 flex-1 text-[11px] font-bold transition",
-                        movieCoverTextPosition === item.key
-                          ? "bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-950"
-                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
-                      ].join(" ")}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="mb-3">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Layout</span>
-                <div className="inline-flex w-full border border-slate-300 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
-                  {[
-                    { key: "stack", label: "세로" },
-                    { key: "grid", label: "가로" },
-                  ].map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => setMovieCoverLayout(item.key as "stack" | "grid")}
-                      className={[
-                        "h-8 flex-1 text-xs font-bold transition",
-                        movieCoverLayout === item.key
-                          ? "bg-slate-950 text-white dark:bg-slate-100 dark:text-slate-950"
-                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
-                      ].join(" ")}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
           ) : null}
           {isMovieListMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
@@ -1962,7 +1717,7 @@ export default function ContentCapturePage() {
         <section className="flex justify-center lg:justify-end">
           <div className="w-full max-w-[min(100%,390px)] sm:max-w-[420px]">
             <div
-              ref={isCalendarMode ? calendarCaptureRef : isCalendarReleaseMode ? calendarReleaseCaptureRef : captureMode === "person-cover" ? personCaptureRef : isMovieCoverMode ? movieCoverCaptureRef : captureRef}
+              ref={isCalendarMode ? calendarCaptureRef : isCalendarReleaseMode ? calendarReleaseCaptureRef : captureMode === "person-cover" ? personCaptureRef : captureRef}
               className={[
                 isCalendarMode ? "aspect-[4/5] w-full overflow-hidden bg-white text-slate-900" : isCalendarReleaseMode ? "aspect-[4/5] w-full overflow-hidden bg-[#221f2e] text-white" : "aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white",
                 "shadow-[0_24px_64px_rgba(15,23,42,0.24)]",
@@ -1999,20 +1754,6 @@ export default function ContentCapturePage() {
                   showSubtitle={personShowSubtitle}
                   showSubbody={personShowSubbody}
                   showBody={personShowBody}
-                  footerLeft={footerLeft}
-                  footerRight={footerRight}
-                />
-              ) : isMovieCoverMode ? (
-                <MovieCoverTemplate
-                  slots={slots}
-                  title={movieCoverTitle}
-                  titleSize={movieCoverTitleSize}
-                  subtitle={movieCoverSubtitle}
-                  subtitleChipClass={subtitleChipClass}
-                  showTitle={movieCoverShowTitle}
-                  showSubtitle={movieCoverShowSubtitle}
-                  textPosition={movieCoverTextPosition}
-                  layout={movieCoverLayout}
                   footerLeft={footerLeft}
                   footerRight={footerRight}
                 />
@@ -2174,71 +1915,6 @@ export default function ContentCapturePage() {
                     </div>
                   </div>
                 ) : null}
-              </div>
-            ) : null}
-            {isMovieCoverMode && movieCoverLayout === "grid" ? (
-              <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
-                <div className="p-4 pb-3">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Movie Cover Poster</p>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                      {selectedMovies.length ? `${previewMovieIndex + 1}/${selectedMovies.length}` : "empty"}
-                    </p>
-                  </div>
-
-                  {selectedMovies.length ? (
-                    <div className="flex gap-1.5 overflow-x-auto pb-1">
-                      {selectedMovies.map((movie, index) => (
-                        <button
-                          key={`movie-cover-${movie.id}-${index}`}
-                          type="button"
-                          onClick={() => setPreviewMovieIndex(index)}
-                          className={[
-                            "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
-                            previewMovieIndex === index
-                              ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                              : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                          ].join(" ")}
-                        >
-                          {index + 1}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-
-                {selectedMovies[previewMovieIndex]?.posterOptions?.length ? (
-                  <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Poster</p>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        {selectedMovies[previewMovieIndex]?.posterOptions?.length ?? 0}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-                      {selectedMovies[previewMovieIndex]?.posterOptions?.map((posterPath) => (
-                        <button
-                          key={`movie-cover-poster-${posterPath}`}
-                          type="button"
-                          onClick={() => updateMoviePoster(selectedMovies[previewMovieIndex].id, posterPath)}
-                          className={[
-                            "aspect-[4/5] overflow-hidden border transition",
-                            selectedMovies[previewMovieIndex]?.poster_path === posterPath
-                              ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
-                              : "border-slate-200 dark:border-slate-800",
-                          ].join(" ")}
-                          aria-label="Select movie cover poster"
-                        >
-                          <img alt="" src={getPosterThumbUrl(posterPath)} className="h-full w-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="px-4 pb-4 text-xs text-slate-500 dark:text-slate-400">
-                    {selectedMovies.length ? "선택한 영화에 포스터 옵션이 없으면 현재 포스터가 그대로 사용됩니다." : "영화를 추가하면 포스터 선택이 표시됩니다."}
-                  </div>
-                )}
               </div>
             ) : null}
             {isMovieListMode ? (

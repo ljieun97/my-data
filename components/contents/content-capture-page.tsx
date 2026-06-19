@@ -540,8 +540,8 @@ function SingleMovieTemplate({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_28%,rgba(0,0,0,0)_58%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.18)_25%,rgba(0,0,0,0.16)_52%,rgba(0,0,0,0.72)_100%)]" />
 
-        <div className="relative z-[1] flex h-full flex-col items-center px-7 pb-10 pt-12 text-center">
-          <p style={titleFontStyle} className="text-[30px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.48)]">
+        <div className="relative z-[1] flex h-full flex-col items-center px-7 pb-10 pt-10 text-center">
+          <p style={titleFontStyle} className="text-[26px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.48)]">
             {rank}위
           </p>
 
@@ -562,20 +562,23 @@ function SingleMovieTemplate({
             </div>
           </div>
 
-          <div className="w-full -translate-y-5">
-            {showTitle ? (
-              <p
-                style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-                className="line-clamp-2 whitespace-pre-line text-center font-black leading-[1.14] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] [word-break:keep-all]"
-              >
-                {title ? `<${title}>` : "<영화를 추가하세요>"}
-              </p>
-            ) : null}
-            {subtitleValue ? (
-              <p style={titleFontStyle} className="mt-3 text-center text-[11px] font-normal leading-tight text-white/88">
-                {subtitleValue}
-              </p>
-            ) : null}
+          <div className="flex w-full -translate-y-5 items-stretch gap-3 text-left">
+            <span className="w-0.5 shrink-0 bg-red-500/90" />
+            <div className="min-w-0 py-0.5">
+              {showTitle ? (
+                <p
+                  style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
+                  className="line-clamp-2 whitespace-pre-line text-left font-black leading-[1.14] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] [word-break:keep-all]"
+                >
+                  {title || "영화를 추가하세요"}
+                </p>
+              ) : null}
+              {subtitleValue ? (
+                <p style={titleFontStyle} className="mt-2 text-left text-[11px] font-normal leading-tight text-white/88">
+                  {subtitleValue}
+                </p>
+              ) : null}
+            </div>
           </div>
         </div>
         <div className="absolute inset-x-0 bottom-0 z-[2] px-7 pb-1">

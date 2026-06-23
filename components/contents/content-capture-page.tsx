@@ -257,7 +257,7 @@ function MovieCaptureRow({
         ].join(" ")}
       />
 
-      <div className={["items-stretch relative z-[1] flex gap-2 p-[17px]", bottomAligned ? "items-end" : "items-start"].join(" ")}>
+      <div className={["items-stretch relative z-[1] flex gap-2 p-[14px]", bottomAligned ? "items-end" : "items-start"].join(" ")}>
         {/* <div className="flex w-8 shrink-0 items-baseline">
           <span className="text-xl font-black leading-tight text-white drop-shadow">
             {index + 1}위
@@ -268,15 +268,14 @@ function MovieCaptureRow({
           <p
             style={titleFontStyle}
             className={[
-              "leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
-              bottomAligned ? "line-clamp-2 whitespace-normal" : "truncate",
-              textSizeClass,
+              "text-[10px] leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
+              bottomAligned ? "line-clamp-2 whitespace-normal" : "truncate"
             ].join(" ")}
           >
             {movie?.title ?? "영화를 추가하세요"}
             <br/>
             {movie?.note ? (
-              <span className={"text-[11px] text-white/72"}>{noteValue}</span>
+              <span className={"text-[8px] text-white/72"}>{noteValue}</span>
             ) : null}
           </p>
         </div>

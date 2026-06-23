@@ -258,28 +258,33 @@ function MovieCaptureRow({
       />
 
       <div className={["items-stretch relative z-[1] flex gap-2 p-[14px]", bottomAligned ? "items-end" : "items-start"].join(" ")}>
-        {/* <div className="flex w-8 shrink-0 items-baseline">
-          <span className="text-xl font-black leading-tight text-white drop-shadow">
-            {index + 1}위
-          </span>
-        </div> */}
         <span className="w-0.5 shrink-0 bg-amber-400/90" />
-        <div className="min-w-0 flex-1">
-          <p
-            style={titleFontStyle}
-            className={[
-              "text-[10px] leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
-              bottomAligned ? "line-clamp-2 whitespace-normal" : "truncate"
-            ].join(" ")}
-          >
-            {movie?.title ?? "영화를 추가하세요"}
-            <br/>
-            {movie?.note ? (
-              <span className={"text-[8px] text-white/72"}>{noteValue}</span>
-            ) : null}
-          </p>
-        </div>
+        <p
+          style={titleFontStyle}
+          className={[
+            "text-[10px] leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
+            bottomAligned ? "line-clamp-2 whitespace-normal" : "truncate"
+          ].join(" ")}
+        >
+          {movie?.title ?? "영화를 추가하세요"}
+          <br/>
+          {movie?.release_date ? (
+            <span className={"text-[8px] text-white/72"}>{movie?.release_date.split("-")[0]}</span>
+          ) : null}
+        </p>
       </div>
+      {movie?.note ? (
+        <div
+          style={titleFontStyle}
+          className={[
+            "p-[14px] shrink-0 text-right font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
+            bottomAligned ? "line-clamp-2 whitespace-normal self-end" : "truncate",
+            textSizeClass,
+          ].join(" ")}
+        >
+          {noteValue}
+        </div>
+      ) : null}
     </div>
   );
 }

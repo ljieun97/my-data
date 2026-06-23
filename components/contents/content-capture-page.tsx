@@ -257,7 +257,7 @@ function MovieCaptureRow({
         ].join(" ")}
       />
 
-      <div className={["items-stretch relative z-[1] flex gap-2 p-[14px]", bottomAligned ? "items-end" : "items-start"].join(" ")}>
+      <div className={["items-stretch relative z-[1] flex gap-1 p-[12px]", bottomAligned ? "items-end" : "items-start"].join(" ")}>
         <span className="w-0.5 shrink-0 bg-amber-400/90" />
         <p
           style={titleFontStyle}
@@ -273,15 +273,17 @@ function MovieCaptureRow({
           ) : null}
         </p>
       </div>
+
       {movie?.note ? (
-        <div
-          style={titleFontStyle}
-          className={[
-            "p-[14px] shrink-0 text-right font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
-            bottomAligned ? "line-clamp-2 whitespace-normal self-end" : "truncate",
-            textSizeClass,
-          ].join(" ")}
-        >
+         <div
+            style={titleFontStyle}
+            className={[
+              "absolute right-[12px] top-1/2 -translate-y-1/2 z-[1]",
+              "shrink-0 text-right font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
+              bottomAligned ? "line-clamp-2 whitespace-normal" : "truncate",
+              textSizeClass,
+            ].join(" ")}
+          >
           {noteValue}
         </div>
       ) : null}
@@ -419,7 +421,7 @@ function SingleMovieTemplate({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_28%,rgba(0,0,0,0)_58%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.18)_25%,rgba(0,0,0,0.16)_52%,rgba(0,0,0,0.72)_100%)]" />
 
-        <div className="relative z-[1] flex h-full flex-col items-center px-7 pb-10 pt-10 text-center">
+        <div className="relative z-[1] flex h-full flex-col items-center px-10 pb-10 pt-10 text-center">
           <p style={titleFontStyle} className="text-[26px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.48)]">
             {rank}위
           </p>
@@ -460,7 +462,7 @@ function SingleMovieTemplate({
             </div>
           </div>
         </div>
-        <div className="absolute inset-x-0 bottom-0 z-[2] px-7 pb-1">
+        <div className="absolute inset-x-0 bottom-0 z-[2] px-10 pb-1">
           <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
         </div>
       </div>
@@ -480,7 +482,7 @@ function SingleMovieTemplate({
         />
       ) : null}
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_38%,rgba(0,0,0,0.35)_68%,rgba(0,0,0,0.78)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1 pt-24">
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-10 pb-1 pt-24">
         <div className={["w-full text-left", hasDetailText ? "pb-1" : "pb-[36px]"].join(" ")}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
             {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleChipClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
@@ -591,7 +593,7 @@ function PersonCoverTemplate({
       ) : null}
 
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_38%,rgba(0,0,0,0.35)_68%,rgba(0,0,0,0.78)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-7 pb-1 pt-24">
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-10 pb-1 pt-24">
         <div className={hasDetailText ? "pb-1" : "pb-[36px]"}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
             {showSubtitle ? <p style={titleFontStyle} className={subtitleChipClass}>{kicker || "TOVIE PERSON"}</p> : null}
@@ -642,7 +644,7 @@ function CalendarCoverTemplate({
       <CalendarView results={results} option={option} hideCaptureButton embedCalendarOnly />
       <div
         className={[
-          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-7 pb-1 pt-24",
+          "pointer-events-none absolute inset-x-0 bottom-0 z-[2] flex flex-col justify-end px-10 pb-1 pt-24",
           showTitle ? "" : "bg-gradient-to-t from-black/18 via-black/0 to-transparent",
         ].join(" ")}
       >
@@ -682,7 +684,7 @@ function CalendarDayPreviewTemplate({
 
   return (
     <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white">
-      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/36 via-black/12 to-transparent px-7">
+      <div className="absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-b from-black/36 via-black/12 to-transparent px-10">
         <div className="flex h-full items-center justify-between gap-3">
           <p style={titleFontStyle} className="text-[14px] font-black leading-tight text-white">{date.getMonth() + 1}월 {date.getDate()}일 ({weekdays[date.getDay()]})</p>
           <span className="shrink-0 text-[11px] font-bold text-white">@scena.kr</span>
@@ -728,7 +730,7 @@ function CalendarDayPreviewTemplate({
         </div>
       )}
 
-      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/44 via-black/12 to-transparent px-7 pb-6 pt-0"].join(" ")}>
+      <div className={["pointer-events-none absolute inset-x-0 bottom-0 z-[2] bg-gradient-to-t from-black/44 via-black/12 to-transparent px-10 pb-6 pt-0"].join(" ")}>
         {!showBackdropGrid ? (
           <h2 style={titleFontStyle} className="mb-0 whitespace-pre-line [word-break:keep-all] text-[36px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
             {leadTitle}

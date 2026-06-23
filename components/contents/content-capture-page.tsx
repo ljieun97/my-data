@@ -268,7 +268,7 @@ function MovieCaptureRow({
           <p
             style={titleFontStyle}
             className={[
-              "text-[10px] leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
+              "text-[10px] leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
               bottomAligned ? "line-clamp-2 whitespace-normal" : "truncate"
             ].join(" ")}
           >

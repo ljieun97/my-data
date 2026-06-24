@@ -257,7 +257,7 @@ function MovieCaptureRow({
         ].join(" ")}
       />
 
-      <div className={["items-stretch relative z-[1] flex gap-1 p-[12px]", bottomAligned ? "items-end" : "items-start"].join(" ")}>
+      <div className={["items-stretch relative z-[1] flex gap-1 px-[16px] py-[14px]", bottomAligned ? "items-end" : "items-start"].join(" ")}>
         <span className="w-0.5 shrink-0 bg-amber-400/90" />
         <p
           style={titleFontStyle}
@@ -278,7 +278,7 @@ function MovieCaptureRow({
          <div
             style={titleFontStyle}
             className={[
-              "absolute right-[12px] top-1/2 -translate-y-1/2 z-[1]",
+              "absolute right-[16px] top-1/2 -translate-y-1/2 z-[1]",
               "shrink-0 text-right font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
               bottomAligned ? "line-clamp-2 whitespace-normal" : "truncate",
               textSizeClass,

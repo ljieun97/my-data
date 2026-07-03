@@ -234,7 +234,7 @@ function MovieCaptureRow({
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
 
   return (
-    <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "rounded-md" : "rounded-none"].join(" ")}>
+    <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "" : "rounded-none"].join(" ")}>
       {imageCandidates[0] ? (
         <img
           alt=""
@@ -328,10 +328,10 @@ function MovieListTemplate({
         className={[
           "min-h-0 flex-1 bg-slate-950",
           isTwoColumn ? "grid grid-cols-2" : "flex flex-col",
-          isEdgeVariant ? "gap-0 px-0 pt-0" : "gap-1 px-[26px] pt-0",
+          isEdgeVariant ? "gap-0 px-0 pt-0" : "gap-1 pt-0",
         ].join(" ")}
       >
-        <div className={["flex min-h-0 flex-1 flex-col", isEdgeVariant ? "gap-0" : "gap-1"].join(" ")}>
+        <div className={["flex min-h-0 flex-1 flex-col", isEdgeVariant ? "gap-0" : ""].join(" ")}>
           {leftSlots.map((movie, index) => (
             <MovieCaptureRow
               key={movie?.id ?? `preview-left-${index}`}
@@ -886,7 +886,7 @@ export default function ContentCapturePage() {
   const isCalendarReleaseMode = captureMode === "calendar-release";
   const isCalendarDataMode = isCalendarMode;
   const isMovieMode = isMovieListMode || isCalendarReleaseMode;
-  const movieMinCount = 3;
+  const movieMinCount = 2;
   const movieMaxCount = getCaptureMovieMaxCount(captureMode);
   const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
   const currentSingleMovie = selectedMovies[previewMovieIndex];

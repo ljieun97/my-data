@@ -422,12 +422,12 @@ function SingleMovieTemplate({
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.48)_0%,rgba(0,0,0,0.18)_25%,rgba(0,0,0,0.16)_52%,rgba(0,0,0,0.72)_100%)]" />
 
         <div className="relative z-[1] flex h-full flex-col items-center px-10 pb-10 pt-10 text-center">
-          <p style={titleFontStyle} className="text-[26px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.48)]">
+          {/* <p style={titleFontStyle} className="text-[26px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.48)]">
             {rank}위
-          </p>
+          </p> */}
 
           <div className="flex min-h-0 flex-1 -translate-y-5 items-center justify-center py-5">
-            <div className="w-[42%]">
+            <div className="w-[50%]">
               {imageCandidates[0] ? (
                 <img
                   alt=""

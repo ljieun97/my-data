@@ -227,17 +227,22 @@ function MovieCaptureRow({
   rounded = true,
   stackCount = 5,
   bottomAligned = false,
+  titleLayout = "corner",
+  showTitle = true,
 }: {
   movie?: CaptureMovie;
   index: number;
   rounded?: boolean;
   stackCount?: number;
   bottomAligned?: boolean;
+  titleLayout?: "corner" | "center";
+  showTitle?: boolean;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
   const noteValue = movie?.note ?? "";
   const textSizeClass = stackCount >= 8 ? "text-[13px]" : stackCount >= 6 ? "text-[14px]" : "text-[16px]";
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
+  const isCenterTitle = titleLayout === "center";
 
   return (
     <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "" : "rounded-none"].join(" ")}>
@@ -257,30 +262,43 @@ function MovieCaptureRow({
       <div
         className={[
           "absolute inset-0",
-          bottomAligned
+          isCenterTitle
+            ? "bg-[linear-gradient(180deg,rgba(0,0,0,0.10)_0%,rgba(0,0,0,0.38)_50%,rgba(0,0,0,0.10)_100%)]"
+            : bottomAligned
             ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_42%,rgba(0,0,0,0.32)_72%,rgba(0,0,0,0.68)_100%)]"
             : "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]",
         ].join(" ")}
       />
 
-      <div className={["items-stretch relative z-[1] flex gap-1 px-[16px] py-[14px]", bottomAligned ? "items-end" : "items-start"].join(" ")}>
-        <span className="w-0.5 shrink-0 bg-amber-400/90" />
-        <p
-          style={titleFontStyle}
+      {showTitle ? (
+        <div
           className={[
-            "text-[10px] leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
-            bottomAligned ? "line-clamp-2 whitespace-normal" : "truncate"
+            "relative z-[1] flex px-[16px] py-[14px]",
+            isCenterTitle ? "h-full items-center justify-center text-center" : "items-stretch gap-1",
+            !isCenterTitle && bottomAligned ? "items-end" : "",
+            !isCenterTitle && !bottomAligned ? "items-start" : "",
           ].join(" ")}
         >
-          {movie?.title ?? "영화를 추가하세요"}
-          <br/>
-          {movie?.release_date ? (
-            <span className={"text-[8px] text-white/72"}>{movie?.release_date.split("-")[0]}</span>
-          ) : null}
-        </p>
-      </div>
+          {!isCenterTitle ? <span className="w-0.5 shrink-0 bg-amber-400/90" /> : null}
+          <p
+            style={titleFontStyle}
+            className={[
+              "leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
+              isCenterTitle ? "line-clamp-2 text-center text-[12px] font-black whitespace-normal" : "text-[10px]",
+              !isCenterTitle && bottomAligned ? "line-clamp-2 whitespace-normal" : "",
+              !isCenterTitle && !bottomAligned ? "truncate" : "",
+            ].join(" ")}
+          >
+            {movie?.title ?? "영화를 추가하세요"}
+            {!isCenterTitle ? <br /> : null}
+            {!isCenterTitle && movie?.release_date ? (
+              <span className={"text-[8px] text-white/72"}>{movie?.release_date.split("-")[0]}</span>
+            ) : null}
+          </p>
+        </div>
+      ) : null}
 
-      {movie?.note ? (
+      {movie?.note && !isCenterTitle ? (
          <div
             style={titleFontStyle}
             className={[
@@ -299,81 +317,111 @@ function MovieCaptureRow({
 
 function MovieListTemplate({
   slots,
-  title,
-  titleSize,
-  variant,
   columns,
+  twoColumnTextMode,
   footerLeft,
   footerRight,
 }: {
   slots: Array<CaptureMovie | undefined>;
-  title: string;
-  titleSize: number;
-  variant: "default" | "edge";
   columns: 1 | 2;
+  twoColumnTextMode: "corner" | "center";
   footerLeft: string;
   footerRight: string;
 }) {
-  const isEdgeVariant = variant === "edge";
   const isTwoColumn = columns === 2;
+  const titleLayout = isTwoColumn ? twoColumnTextMode : "corner";
+  const shouldUseSharedRowTitle = isTwoColumn && twoColumnTextMode === "center";
   const leftSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 0) : slots;
   const rightSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 1) : [];
+  const pairedSlots = shouldUseSharedRowTitle
+    ? Array.from({ length: Math.ceil(slots.length / 2) }, (_, index) => ({
+        left: slots[index * 2],
+        right: slots[index * 2 + 1],
+        rowIndex: index,
+      }))
+    : [];
 
   return (
     <div className="relative flex h-full flex-col bg-slate-950 text-white">
-      {!isEdgeVariant && title ? (
-        <div className="px-[26px] py-4">
-          <div className="flex items-end justify-center">
-            <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="break-keep whitespace-pre-line text-center font-black leading-[1.08] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
-              {title}
-            </h1>
-          </div>
+      {shouldUseSharedRowTitle ? (
+        <div className="flex min-h-0 flex-1 flex-col gap-0 bg-slate-950 px-0 pt-0">
+          {pairedSlots.map(({ left, right, rowIndex }) => {
+            const title = [left?.title, right?.title].filter(Boolean).join(" · ") || "영화를 추가하세요";
+
+            return (
+              <div key={`preview-row-${rowIndex}`} className="relative grid min-h-0 flex-1 grid-cols-2 overflow-hidden">
+                <MovieCaptureRow
+                  movie={left}
+                  index={rowIndex * 2}
+                  rounded={false}
+                  stackCount={pairedSlots.length}
+                  bottomAligned
+                  titleLayout="center"
+                  showTitle={false}
+                />
+                <MovieCaptureRow
+                  movie={right}
+                  index={rowIndex * 2 + 1}
+                  rounded={false}
+                  stackCount={pairedSlots.length}
+                  bottomAligned
+                  titleLayout="center"
+                  showTitle={false}
+                />
+                <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center px-5 text-center">
+                  <p
+                    style={titleFontStyle}
+                    className="line-clamp-2 max-w-[82%] break-normal text-center text-[13px] font-black leading-tight text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.72)]"
+                  >
+                    {title}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      ) : null}
-      <div
-        className={[
-          "min-h-0 flex-1 bg-slate-950",
-          isTwoColumn ? "grid grid-cols-2" : "flex flex-col",
-          isEdgeVariant ? "gap-0 px-0 pt-0" : "gap-1 pt-0",
-        ].join(" ")}
-      >
-        <div className={["flex min-h-0 flex-1 flex-col", isEdgeVariant ? "gap-0" : ""].join(" ")}>
-          {leftSlots.map((movie, index) => (
-            <MovieCaptureRow
-              key={movie?.id ?? `preview-left-${index}`}
-              movie={movie}
-              index={index}
-              rounded={!isEdgeVariant}
-              stackCount={leftSlots.length}
-              bottomAligned={isTwoColumn}
-            />
-          ))}
-        </div>
-        {isTwoColumn ? (
-          <div className={["flex min-h-0 flex-1 flex-col", isEdgeVariant ? "gap-0" : "gap-1"].join(" ")}>
-            {rightSlots.map((movie, index) => (
+      ) : (
+        <div
+          className={[
+            "min-h-0 flex-1 bg-slate-950",
+            isTwoColumn ? "grid grid-cols-2" : "flex flex-col",
+            "gap-0 px-0 pt-0",
+          ].join(" ")}
+        >
+          <div className="flex min-h-0 flex-1 flex-col gap-0">
+            {leftSlots.map((movie, index) => (
               <MovieCaptureRow
-                key={movie?.id ?? `preview-right-${index * 2 + 1}`}
+                key={movie?.id ?? `preview-left-${index}`}
                 movie={movie}
-                index={index * 2 + 1}
-                rounded={!isEdgeVariant}
-                stackCount={rightSlots.length}
+                index={index}
+                rounded={false}
+                stackCount={leftSlots.length}
                 bottomAligned={isTwoColumn}
+                titleLayout={titleLayout}
               />
             ))}
           </div>
-        ) : null}
-      </div>
-
-      {isEdgeVariant ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] px-0 pb-1">
-          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
-        </div>
-      ) : (
-        <div className="px-[26px] pb-1">
-          <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+          {isTwoColumn ? (
+            <div className="flex min-h-0 flex-1 flex-col gap-0">
+              {rightSlots.map((movie, index) => (
+                <MovieCaptureRow
+                  key={movie?.id ?? `preview-right-${index * 2 + 1}`}
+                  movie={movie}
+                  index={index * 2 + 1}
+                  rounded={false}
+                  stackCount={rightSlots.length}
+                  bottomAligned={isTwoColumn}
+                  titleLayout={titleLayout}
+                />
+              ))}
+            </div>
+          ) : null}
         </div>
       )}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] px-0 pb-1">
+        <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
+      </div>
     </div>
   );
 }
@@ -856,10 +904,8 @@ export default function ContentCapturePage() {
   const [personShowSubtitle, setPersonShowSubtitle] = useState(false);
   const [personShowSubbody, setPersonShowSubbody] = useState(true);
   const [personShowBody, setPersonShowBody] = useState(true);
-  const [movieListTitle, setMovieListTitle] = useState("영화 목록");
-  const [movieListTitleSize, setMovieListTitleSize] = useState(16);
-  const [movieListVariant, setMovieListVariant] = useState<"default" | "edge">("edge");
   const [movieListColumns, setMovieListColumns] = useState<1 | 2>(1);
+  const [movieListTwoColumnTextMode, setMovieListTwoColumnTextMode] = useState<"corner" | "center">("corner");
   const [subtitleChipTone, setSubtitleChipTone] = useState<SubtitleChipTone>("burgundy");
   const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
   const [singlePreviewVariant, setSinglePreviewVariant] = useState<"default" | "spotlight">("default");
@@ -1401,19 +1447,8 @@ export default function ContentCapturePage() {
           {isMovieListMode ? (
             <>
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Text</p>
-                <div className="mb-3">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Preview Version</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <CaptureToggleButton type="button" active={movieListVariant === "default"} onClick={() => setMovieListVariant("default")}>
-                      기본
-                    </CaptureToggleButton>
-                    <CaptureToggleButton type="button" active={movieListVariant === "edge"} onClick={() => setMovieListVariant("edge")}>
-                      여백 없음
-                    </CaptureToggleButton>
-                  </div>
-                </div>
-                <div className="mb-3">
+                <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Layout</p>
+                <div>
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Columns</span>
                   <div className="grid grid-cols-2 gap-2">
                     <CaptureToggleButton type="button" active={movieListColumns === 1} onClick={() => setMovieListColumns(1)}>
@@ -1424,16 +1459,26 @@ export default function ContentCapturePage() {
                     </CaptureToggleButton>
                   </div>
                 </div>
-                {movieListVariant === "default" ? (
-                <label className="mb-3 block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                  <CaptureTextArea
-                    value={movieListTitle}
-                    onChange={(event) => setMovieListTitle(event.target.value)}
-                    rows={2}
-                  />
-                  <CaptureSizeControls value={movieListTitleSize} defaultValue={16} onChange={setMovieListTitleSize} step={1} min={12} max={28} />
-                </label>
+                {movieListColumns === 2 ? (
+                  <div className="mt-3">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Text Mode</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <CaptureToggleButton
+                        type="button"
+                        active={movieListTwoColumnTextMode === "corner"}
+                        onClick={() => setMovieListTwoColumnTextMode("corner")}
+                      >
+                        각각 표시
+                      </CaptureToggleButton>
+                      <CaptureToggleButton
+                        type="button"
+                        active={movieListTwoColumnTextMode === "center"}
+                        onClick={() => setMovieListTwoColumnTextMode("center")}
+                      >
+                        중앙 제목
+                      </CaptureToggleButton>
+                    </div>
+                  </div>
                 ) : null}
               </div>
 
@@ -1792,10 +1837,8 @@ export default function ContentCapturePage() {
               ) : (
               <MovieListTemplate
                 slots={slots}
-                title={movieListTitle}
-                titleSize={movieListTitleSize}
-                variant={movieListVariant}
                 columns={movieListColumns}
+                twoColumnTextMode={movieListTwoColumnTextMode}
                 footerLeft={footerLeft}
                 footerRight={footerRight}
               />

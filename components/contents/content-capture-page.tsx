@@ -229,6 +229,7 @@ function MovieCaptureRow({
   bottomAligned = false,
   titleLayout = "corner",
   showTitle = true,
+  imageShift = "none",
 }: {
   movie?: CaptureMovie;
   index: number;
@@ -237,12 +238,19 @@ function MovieCaptureRow({
   bottomAligned?: boolean;
   titleLayout?: "corner" | "center";
   showTitle?: boolean;
+  imageShift?: "none" | "left" | "right";
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
   const noteValue = movie?.note ?? "";
   const textSizeClass = stackCount >= 8 ? "text-[13px]" : stackCount >= 6 ? "text-[14px]" : "text-[16px]";
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
+  const imageTransform =
+    imageShift === "left"
+      ? "scale(1.1) translateX(-5%)"
+      : imageShift === "right"
+        ? "scale(1.1) translateX(5%)"
+        : undefined;
 
   return (
     <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "" : "rounded-none"].join(" ")}>
@@ -253,7 +261,7 @@ function MovieCaptureRow({
           data-fallback-index="0"
           onError={(event) => handleImageFallback(event, imageCandidates)}
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ objectPosition }}
+          style={{ objectPosition, transform: imageTransform }}
           crossOrigin="anonymous"
         />
       ) : null}
@@ -331,6 +339,7 @@ function MovieListTemplate({
   const isTwoColumn = columns === 2;
   const titleLayout = isTwoColumn ? twoColumnTextMode : "corner";
   const shouldUseSharedRowTitle = isTwoColumn && twoColumnTextMode === "center";
+  const sharedRowTitleSizeClass = slots.length >= 8 ? "text-[13px]" : slots.length >= 6 ? "text-[14px]" : "text-[16px]";
   const leftSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 0) : slots;
   const rightSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 1) : [];
   const pairedSlots = shouldUseSharedRowTitle
@@ -358,6 +367,7 @@ function MovieListTemplate({
                   bottomAligned
                   titleLayout="center"
                   showTitle={false}
+                  imageShift="left"
                 />
                 <MovieCaptureRow
                   movie={right}
@@ -367,11 +377,15 @@ function MovieListTemplate({
                   bottomAligned
                   titleLayout="center"
                   showTitle={false}
+                  imageShift="right"
                 />
                 <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center px-5 text-center">
                   <p
                     style={titleFontStyle}
-                    className="line-clamp-2 max-w-[82%] break-normal text-center text-[13px] font-black leading-tight text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.72)]"
+                    className={[
+                      "line-clamp-2 max-w-[82%] shrink-0 break-normal text-center font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]",
+                      sharedRowTitleSizeClass,
+                    ].join(" ")}
                   >
                     {title}
                   </p>

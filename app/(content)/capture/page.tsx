@@ -1,4 +1,4 @@
-import ContentCapturePage from "@/components/contents/content-capture-page";
+import ContentCapturePage from "@/components/contents/capture/content-capture-page";
 
 export const metadata = {
   title: "Capture",

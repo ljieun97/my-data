@@ -241,6 +241,10 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
           ? {
               ...movie,
               poster_path: posterPath,
+              backdrop_path: posterPath,
+              posterOptions: posterPath
+                ? Array.from(new Set([...(movie.posterOptions ?? []), posterPath]))
+                : movie.posterOptions,
             }
           : movie,
       ),

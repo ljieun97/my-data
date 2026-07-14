@@ -22,32 +22,38 @@ function formatYear(movie: CaptureMovie) {
   return movie.release_date ? movie.release_date.slice(0, 4) : "";
 }
 
+function getExternalImageUrl(imagePath: string) {
+  const normalizedPath = imagePath.startsWith("//") ? `https:${imagePath}` : imagePath;
+  return `/api/proxy?url=${encodeURIComponent(normalizedPath)}`;
+}
+
 function getBackdropUrl(movie?: CaptureMovie) {
   if (!movie?.backdrop_path) return "";
+  if (isExternalImageUrl(movie.backdrop_path)) return getExternalImageUrl(movie.backdrop_path);
   return `https://image.tmdb.org/t/p/original${movie.backdrop_path}`;
 }
 
 function getPosterUrl(movie?: CaptureMovie) {
   if (!movie?.poster_path) return "";
+  if (isExternalImageUrl(movie.poster_path)) return getExternalImageUrl(movie.poster_path);
   return `https://image.tmdb.org/t/p/w780${movie.poster_path}`;
 }
 
 function getPosterThumbUrl(posterPath?: string) {
   if (!posterPath) return "";
+  if (isExternalImageUrl(posterPath)) return getExternalImageUrl(posterPath);
   return `https://image.tmdb.org/t/p/w185${posterPath}`;
 }
 
 function getProfileUrl(profilePath?: string) {
   if (!profilePath) return "";
-  if (profilePath.startsWith("http://") || profilePath.startsWith("https://")) return `/api/proxy?url=${encodeURIComponent(profilePath)}`;
-  if (profilePath.startsWith("//")) return `/api/proxy?url=${encodeURIComponent(`https:${profilePath}`)}`;
+  if (isExternalImageUrl(profilePath)) return getExternalImageUrl(profilePath);
   return `https://image.tmdb.org/t/p/original${profilePath}`;
 }
 
 function getProfileThumbUrl(profilePath?: string) {
   if (!profilePath) return "";
-  if (profilePath.startsWith("http://") || profilePath.startsWith("https://")) return `/api/proxy?url=${encodeURIComponent(profilePath)}`;
-  if (profilePath.startsWith("//")) return `/api/proxy?url=${encodeURIComponent(`https:${profilePath}`)}`;
+  if (isExternalImageUrl(profilePath)) return getExternalImageUrl(profilePath);
   return `https://image.tmdb.org/t/p/w185${profilePath}`;
 }
 
@@ -852,7 +858,7 @@ export default function ContentCapturePage() {
   const [personShowBody, setPersonShowBody] = useState(true);
   const [movieListTitle, setMovieListTitle] = useState("영화 목록");
   const [movieListTitleSize, setMovieListTitleSize] = useState(16);
-  const [movieListVariant, setMovieListVariant] = useState<"default" | "edge">("default");
+  const [movieListVariant, setMovieListVariant] = useState<"default" | "edge">("edge");
   const [movieListColumns, setMovieListColumns] = useState<1 | 2>(1);
   const [subtitleChipTone, setSubtitleChipTone] = useState<SubtitleChipTone>("burgundy");
   const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
@@ -878,6 +884,8 @@ export default function ContentCapturePage() {
   const [calendarReleaseLabelColors, setCalendarReleaseLabelColors] = useState(RELEASE_BOARD_DEFAULT_COLORS);
   const [calendarReleaseDates, setCalendarReleaseDates] = useState(() => Array.from({ length: 8 }, () => ""));
   const [releaseBoardProviderOptions, setReleaseBoardProviderOptions] = useState<ProviderLogoOption[]>([]);
+  const [externalImageUrl, setExternalImageUrl] = useState("");
+  const [externalImageError, setExternalImageError] = useState("");
   const subtitleChipClass = getCoverSubtitleClass(subtitleChipTone);
 
   const isPersonMode = captureMode === "person-cover";
@@ -890,6 +898,7 @@ export default function ContentCapturePage() {
   const movieMaxCount = getCaptureMovieMaxCount(captureMode);
   const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
   const currentSingleMovie = selectedMovies[previewMovieIndex];
+  const currentSingleMovieId = currentSingleMovie?.id ?? null;
   const calendarPreviewGroups = useMemo(() => {
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -946,6 +955,11 @@ export default function ContentCapturePage() {
 
     setPreviewMovieIndex((current) => Math.min(current, selectedMovies.length - 1));
   }, [selectedMovies.length]);
+
+  useEffect(() => {
+    setExternalImageUrl("");
+    setExternalImageError("");
+  }, [currentSingleMovieId]);
 
   useEffect(() => {
     if (!isCalendarReleaseMode || releaseBoardProviderOptions.length) {
@@ -1021,6 +1035,25 @@ export default function ContentCapturePage() {
 
     void loadCalendarData();
   }, [calendarResults.length, isCalendarMode]);
+
+  const handleApplyExternalImageUrl = () => {
+    const imageUrl = externalImageUrl.trim();
+    if (!imageUrl) {
+      setExternalImageError("이미지 URL을 입력해주세요.");
+      return;
+    }
+
+    if (!isExternalImageUrl(imageUrl)) {
+      setExternalImageError("http:// 또는 https://로 시작하는 이미지 URL을 넣어주세요.");
+      return;
+    }
+
+    if (!selectedMovies[previewMovieIndex]) return;
+
+    updateMoviePoster(selectedMovies[previewMovieIndex].id, imageUrl);
+    setExternalImageUrl("");
+    setExternalImageError("");
+  };
 
   const handleCapture = async () => {
     const targetRef = isCalendarMode
@@ -1991,6 +2024,54 @@ export default function ContentCapturePage() {
                         </div>
                       </div>
                     ) : null}
+
+                    <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                      <div className="mb-3">
+                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100">External Image</p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">구글 이미지 등에서 이미지 주소를 복사해 붙여넣으면 목록 배경과 개별 포스터에 적용됩니다.</p>
+                      </div>
+                      <form
+                        className="flex gap-2"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          handleApplyExternalImageUrl();
+                        }}
+                      >
+                        <input
+                          type="text"
+                          value={externalImageUrl}
+                          onChange={(event) => setExternalImageUrl(event.target.value)}
+                          className="min-w-0 flex-1 border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-950 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                          placeholder="https://example.com/image.jpg"
+                        />
+                        <button
+                          type="submit"
+                          className="shrink-0 border border-slate-950 bg-slate-950 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                        >
+                          적용
+                        </button>
+                      </form>
+                      {externalImageUrl && isExternalImageUrl(externalImageUrl.trim()) ? (
+                        <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
+                          <button
+                            type="button"
+                            onClick={handleApplyExternalImageUrl}
+                            className="aspect-[4/5] overflow-hidden border border-slate-200 transition hover:border-slate-950 dark:border-slate-800 dark:hover:border-white"
+                            aria-label="Apply external image"
+                          >
+                            <img
+                              alt=""
+                              src={getPosterThumbUrl(externalImageUrl.trim())}
+                              className="h-full w-full object-cover"
+                              crossOrigin="anonymous"
+                            />
+                          </button>
+                        </div>
+                      ) : null}
+                      {externalImageError ? (
+                        <p className="mt-2 text-xs font-semibold text-red-500">{externalImageError}</p>
+                      ) : null}
+                    </div>
 
                   </>
                 ) : (

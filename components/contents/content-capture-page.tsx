@@ -229,7 +229,7 @@ function MovieCaptureRow({
   bottomAligned = false,
   titleLayout = "corner",
   showTitle = true,
-  imageShift = "none",
+  showImageOverlay = true,
 }: {
   movie?: CaptureMovie;
   index: number;
@@ -238,19 +238,13 @@ function MovieCaptureRow({
   bottomAligned?: boolean;
   titleLayout?: "corner" | "center";
   showTitle?: boolean;
-  imageShift?: "none" | "left" | "right";
+  showImageOverlay?: boolean;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
   const noteValue = movie?.note ?? "";
   const textSizeClass = stackCount >= 8 ? "text-[13px]" : stackCount >= 6 ? "text-[14px]" : "text-[16px]";
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
-  const imageTransform =
-    imageShift === "left"
-      ? "scale(1.1) translateX(-5%)"
-      : imageShift === "right"
-        ? "scale(1.1) translateX(5%)"
-        : undefined;
 
   return (
     <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "" : "rounded-none"].join(" ")}>
@@ -261,22 +255,26 @@ function MovieCaptureRow({
           data-fallback-index="0"
           onError={(event) => handleImageFallback(event, imageCandidates)}
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ objectPosition, transform: imageTransform }}
+          style={{ objectPosition }}
           crossOrigin="anonymous"
         />
       ) : null}
 
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.24)_0%,rgba(0,0,0,0.10)_28%,rgba(0,0,0,0)_58%,rgba(0,0,0,0.18)_100%)]" />
-      <div
-        className={[
-          "absolute inset-0",
-          isCenterTitle
-            ? "bg-[linear-gradient(180deg,rgba(0,0,0,0.10)_0%,rgba(0,0,0,0.38)_50%,rgba(0,0,0,0.10)_100%)]"
-            : bottomAligned
-            ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_42%,rgba(0,0,0,0.32)_72%,rgba(0,0,0,0.68)_100%)]"
-            : "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]",
-        ].join(" ")}
-      />
+      {showImageOverlay ? (
+        <>
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.24)_0%,rgba(0,0,0,0.10)_28%,rgba(0,0,0,0)_58%,rgba(0,0,0,0.18)_100%)]" />
+          <div
+            className={[
+              "absolute inset-0",
+              isCenterTitle
+                ? "bg-[linear-gradient(180deg,rgba(0,0,0,0.10)_0%,rgba(0,0,0,0.38)_50%,rgba(0,0,0,0.10)_100%)]"
+                : bottomAligned
+                ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_42%,rgba(0,0,0,0.32)_72%,rgba(0,0,0,0.68)_100%)]"
+                : "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]",
+            ].join(" ")}
+          />
+        </>
+      ) : null}
 
       {showTitle ? (
         <div
@@ -327,12 +325,14 @@ function MovieListTemplate({
   slots,
   columns,
   twoColumnTextMode,
+  centerTitles,
   footerLeft,
   footerRight,
 }: {
   slots: Array<CaptureMovie | undefined>;
   columns: 1 | 2;
   twoColumnTextMode: "corner" | "center";
+  centerTitles: string[];
   footerLeft: string;
   footerRight: string;
 }) {
@@ -355,7 +355,8 @@ function MovieListTemplate({
       {shouldUseSharedRowTitle ? (
         <div className="flex min-h-0 flex-1 flex-col gap-0 bg-slate-950 px-0 pt-0">
           {pairedSlots.map(({ left, right, rowIndex }) => {
-            const title = [left?.title, right?.title].filter(Boolean).join(" · ") || "영화를 추가하세요";
+            const defaultTitle = [left?.title, right?.title].filter(Boolean).join(" · ") || "영화를 추가하세요";
+            const title = centerTitles[rowIndex]?.trim() || defaultTitle;
 
             return (
               <div key={`preview-row-${rowIndex}`} className="relative grid min-h-0 flex-1 grid-cols-2 overflow-hidden">
@@ -367,7 +368,7 @@ function MovieListTemplate({
                   bottomAligned
                   titleLayout="center"
                   showTitle={false}
-                  imageShift="left"
+                  showImageOverlay={false}
                 />
                 <MovieCaptureRow
                   movie={right}
@@ -377,7 +378,7 @@ function MovieListTemplate({
                   bottomAligned
                   titleLayout="center"
                   showTitle={false}
-                  imageShift="right"
+                  showImageOverlay={false}
                 />
                 <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center px-5 text-center">
                   <p
@@ -920,6 +921,7 @@ export default function ContentCapturePage() {
   const [personShowBody, setPersonShowBody] = useState(true);
   const [movieListColumns, setMovieListColumns] = useState<1 | 2>(1);
   const [movieListTwoColumnTextMode, setMovieListTwoColumnTextMode] = useState<"corner" | "center">("corner");
+  const [movieListCenterTitles, setMovieListCenterTitles] = useState<string[]>([]);
   const [subtitleChipTone, setSubtitleChipTone] = useState<SubtitleChipTone>("burgundy");
   const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
   const [singlePreviewVariant, setSinglePreviewVariant] = useState<"default" | "spotlight">("default");
@@ -1226,6 +1228,11 @@ export default function ContentCapturePage() {
   };
 
   const slots = Array.from({ length: movieSlotCount }, (_, index) => selectedMovies[index]);
+  const movieListCenterTitleDefaults = Array.from({ length: Math.ceil(slots.length / 2) }, (_, index) => {
+    const left = slots[index * 2];
+    const right = slots[index * 2 + 1];
+    return [left?.title, right?.title].filter(Boolean).join(" · ") || "영화를 추가하세요";
+  });
   const movieTextForCopy = useMemo(
     () =>
       selectedMovies
@@ -1301,6 +1308,14 @@ export default function ContentCapturePage() {
   ) => {
     if (!currentSingleMovie) return;
     updateMovieSinglePreview(currentSingleMovie.id, patch);
+  };
+
+  const updateMovieListCenterTitle = (index: number, title: string) => {
+    setMovieListCenterTitles((current) => {
+      const nextTitles = [...current];
+      nextTitles[index] = title;
+      return nextTitles;
+    });
   };
 
   const handleCopyMovieText = async () => {
@@ -1492,6 +1507,24 @@ export default function ContentCapturePage() {
                         중앙 제목
                       </CaptureToggleButton>
                     </div>
+                  </div>
+                ) : null}
+                {movieListColumns === 2 && movieListTwoColumnTextMode === "center" ? (
+                  <div className="mt-3 space-y-2">
+                    <span className="block text-xs font-semibold text-slate-500 dark:text-slate-400">Center Titles</span>
+                    {movieListCenterTitleDefaults.map((defaultTitle, index) => (
+                      <label key={`center-title-${index}`} className="block">
+                        <span className="mb-1 block text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+                          {index + 1}행
+                        </span>
+                        <CaptureTextArea
+                          value={movieListCenterTitles[index] ?? ""}
+                          onChange={(event) => updateMovieListCenterTitle(index, event.target.value)}
+                          placeholder={defaultTitle}
+                          rows={2}
+                        />
+                      </label>
+                    ))}
                   </div>
                 ) : null}
               </div>
@@ -1853,6 +1886,7 @@ export default function ContentCapturePage() {
                 slots={slots}
                 columns={movieListColumns}
                 twoColumnTextMode={movieListTwoColumnTextMode}
+                centerTitles={movieListCenterTitles}
                 footerLeft={footerLeft}
                 footerRight={footerRight}
               />

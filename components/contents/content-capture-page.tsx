@@ -1318,6 +1318,115 @@ export default function ContentCapturePage() {
     });
   };
 
+  const renderMovieListImagePicker = () => {
+    if (!isMovieListMode || !currentSingleMovie) return null;
+
+    return (
+      <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
+        <div className="p-4 pb-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">List Preview Image</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              {previewMovieIndex + 1}/{selectedMovies.length}
+            </p>
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {selectedMovies.map((movie, index) => (
+              <button
+                key={movie.id}
+                type="button"
+                onClick={() => setPreviewMovieIndex(index)}
+                className={[
+                  "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
+                  previewMovieIndex === index
+                    ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                    : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                ].join(" ")}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {currentSingleMovie.posterOptions?.length ? (
+          <div className="m-4 mt-0 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Poster</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{currentSingleMovie.posterOptions.length}</p>
+            </div>
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+              {currentSingleMovie.posterOptions.map((posterPath) => (
+                <button
+                  key={posterPath}
+                  type="button"
+                  onClick={() => updateMoviePoster(currentSingleMovie.id, posterPath)}
+                  className={[
+                    "aspect-[4/5] overflow-hidden border transition",
+                    currentSingleMovie.poster_path === posterPath
+                      ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
+                      : "border-slate-200 dark:border-slate-800",
+                  ].join(" ")}
+                  aria-label="Select list preview poster"
+                >
+                  <img alt="" src={getPosterThumbUrl(posterPath)} className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+          <div className="mb-3">
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-100">External Image</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">이미지 주소를 붙여넣으면 목록 프리뷰와 개별 프리뷰에 같이 적용됩니다.</p>
+          </div>
+          <form
+            className="flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleApplyExternalImageUrl();
+            }}
+          >
+            <input
+              type="text"
+              value={externalImageUrl}
+              onChange={(event) => setExternalImageUrl(event.target.value)}
+              className="min-w-0 flex-1 border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-950 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+              placeholder="https://example.com/image.jpg"
+            />
+            <button
+              type="submit"
+              className="shrink-0 border border-slate-950 bg-slate-950 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+            >
+              적용
+            </button>
+          </form>
+          {externalImageUrl && isExternalImageUrl(externalImageUrl.trim()) ? (
+            <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
+              <button
+                type="button"
+                onClick={handleApplyExternalImageUrl}
+                className="aspect-[4/5] overflow-hidden border border-slate-200 transition hover:border-slate-950 dark:border-slate-800 dark:hover:border-white"
+                aria-label="Apply external image"
+              >
+                <img
+                  alt=""
+                  src={getPosterThumbUrl(externalImageUrl.trim())}
+                  className="h-full w-full object-cover"
+                  crossOrigin="anonymous"
+                />
+              </button>
+            </div>
+          ) : null}
+          {externalImageError ? (
+            <p className="mt-2 text-xs font-semibold text-red-500">{externalImageError}</p>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
   const handleCopyMovieText = async () => {
     if (!movieTextForCopy) return;
 
@@ -1892,6 +2001,7 @@ export default function ContentCapturePage() {
               />
               )}
             </div>
+            {isMovieListMode && selectedMovies.length ? renderMovieListImagePicker() : null}
             {isCalendarMode ? (
               <div className="mt-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                 <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
@@ -2085,83 +2195,6 @@ export default function ContentCapturePage() {
                           footerRight={footerRight}
                         />
                       </div>
-                    </div>
-
-                    {selectedMovies[previewMovieIndex]?.posterOptions?.length ? (
-                      <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Poster</p>
-                          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                            {selectedMovies[previewMovieIndex]?.posterOptions?.length ?? 0}
-                          </p>
-                        </div>
-                        <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-                          {selectedMovies[previewMovieIndex]?.posterOptions?.map((posterPath) => (
-                            <button
-                              key={posterPath}
-                              type="button"
-                              onClick={() => updateMoviePoster(selectedMovies[previewMovieIndex].id, posterPath)}
-                              className={[
-                                "aspect-[4/5] overflow-hidden border transition",
-                                selectedMovies[previewMovieIndex]?.poster_path === posterPath
-                                  ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
-                                  : "border-slate-200 dark:border-slate-800",
-                              ].join(" ")}
-                              aria-label="Select poster"
-                            >
-                              <img alt="" src={getPosterThumbUrl(posterPath)} className="h-full w-full object-cover" />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                      <div className="mb-3">
-                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100">External Image</p>
-                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">구글 이미지 등에서 이미지 주소를 복사해 붙여넣으면 목록 배경과 개별 포스터에 적용됩니다.</p>
-                      </div>
-                      <form
-                        className="flex gap-2"
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          handleApplyExternalImageUrl();
-                        }}
-                      >
-                        <input
-                          type="text"
-                          value={externalImageUrl}
-                          onChange={(event) => setExternalImageUrl(event.target.value)}
-                          className="min-w-0 flex-1 border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-950 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                          placeholder="https://example.com/image.jpg"
-                        />
-                        <button
-                          type="submit"
-                          className="shrink-0 border border-slate-950 bg-slate-950 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                        >
-                          적용
-                        </button>
-                      </form>
-                      {externalImageUrl && isExternalImageUrl(externalImageUrl.trim()) ? (
-                        <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
-                          <button
-                            type="button"
-                            onClick={handleApplyExternalImageUrl}
-                            className="aspect-[4/5] overflow-hidden border border-slate-200 transition hover:border-slate-950 dark:border-slate-800 dark:hover:border-white"
-                            aria-label="Apply external image"
-                          >
-                            <img
-                              alt=""
-                              src={getPosterThumbUrl(externalImageUrl.trim())}
-                              className="h-full w-full object-cover"
-                              crossOrigin="anonymous"
-                            />
-                          </button>
-                        </div>
-                      ) : null}
-                      {externalImageError ? (
-                        <p className="mt-2 text-xs font-semibold text-red-500">{externalImageError}</p>
-                      ) : null}
                     </div>
 
                   </>

@@ -28,10 +28,12 @@ export type CaptureMovie = {
   singlePreviewShowBody?: boolean;
 };
 
-export type CaptureMode = "movie-list" | "person-cover" | "calendar-release";
+export type CaptureMode = "news-cover" | "news-body" | "ranking-cover" | "movie-list" | "person-cover" | "calendar-release";
 
 export function getCaptureMovieMaxCount(captureMode: CaptureMode) {
-  return captureMode === "calendar-release" ? 8 : captureMode === "movie-list" ? 10 : 5;
+  if (captureMode === "calendar-release") return 8;
+  if (captureMode === "movie-list" || captureMode === "ranking-cover") return 10;
+  return 5;
 }
 
 export type CapturePerson = {
@@ -61,6 +63,7 @@ type CaptureContentContextValue = {
   reorderMovie: (fromIndex: number, toIndex: number) => void;
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
+  updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   updateMovieProviderLogo: (id: number, providerLogoPath: string, providerLogoName?: string) => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
@@ -124,7 +127,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
 }
 
 export function CaptureContentProvider({ children }: { children: React.ReactNode }) {
-  const [captureMode, setCaptureMode] = useState<CaptureMode>("person-cover");
+  const [captureMode, setCaptureMode] = useState<CaptureMode>("news-cover");
   const [selectedMovies, setSelectedMovies] = useState<CaptureMovie[]>([]);
   const [selectedPersons, setSelectedPersons] = useState<CapturePerson[]>([]);
   const selectedPerson = selectedPersons[0] ?? null;
@@ -211,6 +214,18 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
   const updateMovieNote = (id: number, note: string) => {
     setSelectedMovies((current) =>
       current.map((movie) => (movie.id === id ? { ...movie, note } : movie)),
+    );
+  };
+
+  const updateMovieYear = (id: number, year: string) => {
+    const normalizedYear = year.replace(/\D/g, "").slice(0, 4);
+    setSelectedMovies((current) =>
+      current.map((movie) => {
+        if (movie.id !== id) return movie;
+        if (!normalizedYear) return { ...movie, release_date: "" };
+        const suffix = movie.release_date?.slice(4) || "-01-01";
+        return { ...movie, release_date: `${normalizedYear}${suffix}` };
+      }),
     );
   };
 
@@ -319,6 +334,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       reorderMovie,
       updateMovieTitle,
       updateMovieNote,
+      updateMovieYear,
       updateMovieImagePosition,
       updateMovieProviderLogo,
       updateMoviePoster,

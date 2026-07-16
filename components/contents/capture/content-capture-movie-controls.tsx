@@ -20,6 +20,7 @@ type MovieSlotsPanelProps = {
   removeMovie: (id: number) => void;
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
+  updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
 };
 
@@ -38,6 +39,7 @@ export function MovieSlotsPanel({
   removeMovie,
   updateMovieTitle,
   updateMovieNote,
+  updateMovieYear,
   updateMovieImagePosition,
 }: MovieSlotsPanelProps) {
   return (
@@ -106,6 +108,15 @@ export function MovieSlotsPanel({
                     onDragStart={(event) => event.preventDefault()}
                     maxLength={16}
                     placeholder="오른쪽 문구"
+                    className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                  />
+                  <input
+                    value={movie.release_date?.slice(0, 4) ?? ""}
+                    onChange={(event) => updateMovieYear(movie.id, event.target.value)}
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onDragStart={(event) => event.preventDefault()}
+                    maxLength={4}
+                    placeholder="연도"
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
                   <div className="flex items-center gap-1">

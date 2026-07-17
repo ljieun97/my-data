@@ -109,20 +109,23 @@ function TitleBlock({
   const headlineStyle = isSerif ? serifTitleStyle : titleFontStyle;
   const headlineColor = isSerif ? "#fff3d0" : "#ffffff";
   const footerColor = bodyCard ? "#ffffff" : headlineColor;
+  const hasHeadline = headline.length > 0;
   const content = isSerif || bodyCard
     ? bodyCard ? renderBodyHeadline(headline) : headline
     : renderGmarketHeadline(headline, highlightText, titleColor);
 
   return (
     <>
-    <div className={bodyCard ? "text-left" : ""}>
-      <h1
-        style={{ ...headlineStyle, fontSize: `${titleSize}px` }}
-        className={["break-keep whitespace-pre-line leading-[1.08]", isSerif ? "font-black" : bodyCard ? "font-medium" : "", bodyCard ? "" : shadowClass].join(" ")}
-      >
-        <span style={{ color: bodyCard ? "#111111" : headlineColor }}>{content}</span>
-      </h1>
-    </div>
+    {hasHeadline ? (
+      <div className={bodyCard ? "text-left" : ""}>
+        <h1
+          style={{ ...headlineStyle, fontSize: `${titleSize}px` }}
+          className={["break-keep whitespace-pre-line leading-[1.08]", isSerif ? "font-black" : bodyCard ? "font-medium" : "", bodyCard ? "" : shadowClass].join(" ")}
+        >
+          <span style={{ color: bodyCard ? "#111111" : headlineColor }}>{content}</span>
+        </h1>
+      </div>
+    ) : null}
     <p style={{ ...titleFontStyle, color: footerColor }} className="mt-3 text-[10px] font-semibold tracking-[0.01em] opacity-45">
       {footerRight || "35Flim"}
     </p>
@@ -155,6 +158,7 @@ export function NewsCoverTemplate({
 }) {
   const imageCandidates = getMovieImageCandidates(movie);
   const headlineValue = headline.trim() || movie?.singlePreviewTitle || movie?.title || "영화 소식";
+  const displayHeadline = bodyCard ? headline.trim() : headlineValue;
   const accentColor = titleFontMode === "serif" ? "#fff3d0" : "#ffffff";
 
   return (
@@ -176,7 +180,7 @@ export function NewsCoverTemplate({
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.06)_42%,rgba(0,0,0,0.48)_78%,rgba(0,0,0,0.78)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 px-9 pb-8 text-center">
         <TitleBlock
-          headline={headlineValue}
+          headline={displayHeadline}
           titleSize={titleSize}
           titleColor={titleColor}
           titleFontMode={titleFontMode}

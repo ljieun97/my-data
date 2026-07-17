@@ -83,7 +83,7 @@ export default function ContentCapturePage() {
   const [singlePreviewVariant, setSinglePreviewVariant] = useState<"default" | "spotlight">("default");
   const [personTitleSize, setPersonTitleSize] = useState(28);
   const [newsHeadline, setNewsHeadline] = useState("라라랜드 10주년 재개봉");
-  const [bodyHeadline, setBodyHeadline] = useState("작품에 대한 짧은 본문 문구를 입력하세요");
+  const [bodyHeadline, setBodyHeadline] = useState("");
   const [newsAccentText, setNewsAccentText] = useState("");
   const [newsTitleSize, setNewsTitleSize] = useState(24);
   const [titleFontMode, setTitleFontMode] = useState<TitleFontMode>("gmarket");

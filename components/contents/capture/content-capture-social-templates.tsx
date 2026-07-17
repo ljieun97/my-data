@@ -79,9 +79,8 @@ function renderGmarketHeadline(headline: string, highlightText: string, highligh
 
 function renderBodyHeadline(headline: string) {
   return headline.split("\n").map((line, index) => (
-    <span key={`${line}-${index}`} className="inline bg-white box-decoration-clone px-1.5 pb-0.5 pt-1 leading-[1.56] text-neutral-950 [-webkit-box-decoration-break:clone]">
+    <span key={`${line}-${index}`} className="inline-block w-fit bg-white px-1.5 pt-0.5 leading-[1.56] text-neutral-950">
       {line || " "}
-      {index < headline.split("\n").length - 1 ? <br /> : null}
     </span>
   ));
 }
@@ -120,9 +119,13 @@ function TitleBlock({
       <div className={bodyCard ? "text-left" : ""}>
         <h1
           style={{ ...headlineStyle, fontSize: `${titleSize}px` }}
-          className={["break-keep whitespace-pre-line leading-[1.08]", isSerif ? "font-black" : bodyCard ? "font-medium" : "", bodyCard ? "" : shadowClass].join(" ")}
+          className={[
+            "break-keep whitespace-pre-line leading-[1.08]",
+            isSerif ? "font-black" : bodyCard ? "flex flex-col items-start gap-[2px] font-medium" : "",
+            bodyCard ? "" : shadowClass,
+          ].join(" ")}
         >
-          <span style={{ color: bodyCard ? "#111111" : headlineColor }}>{content}</span>
+          {bodyCard ? content : <span style={{ color: headlineColor }}>{content}</span>}
         </h1>
       </div>
     ) : null}

@@ -79,8 +79,10 @@ function renderGmarketHeadline(headline: string, highlightText: string, highligh
 
 function renderBodyHeadline(headline: string) {
   return headline.split("\n").map((line, index) => (
-    <span key={`${line}-${index}`} className="inline-block w-fit bg-white px-1.5 pt-0.5 leading-[1.56] text-neutral-950">
-      {line || " "}
+    <span key={`${line}-${index}`} className="block leading-none">
+      <span className="inline bg-white px-1.5 pt-0.5 leading-[1.56] text-neutral-950">
+        {line || " "}
+      </span>
     </span>
   ));
 }
@@ -130,7 +132,7 @@ function TitleBlock({
       </div>
     ) : null}
     <p style={{ ...titleFontStyle, color: footerColor }} className="mt-3 text-[10px] font-semibold tracking-[0.01em] opacity-45">
-      {footerRight || "35Flim"}
+      {footerRight || "35Film"}
     </p>
     </>
   );

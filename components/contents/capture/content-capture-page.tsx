@@ -93,7 +93,7 @@ export default function ContentCapturePage() {
   const [rankingHeadline, setRankingHeadline] = useState("군체 500만 관객 돌파,\n박스오피스 1위");
   const [useFilmFilter, setUseFilmFilter] = useState(false);
   const [footerLeft, setFooterLeft] = useState("�γ��ڸ���");
-  const [footerRight, setFooterRight] = useState("35Flim");
+  const [footerRight, setFooterRight] = useState("35Film");
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
   const [releaseBoardPreviewIndex, setReleaseBoardPreviewIndex] = useState(0);
@@ -628,7 +628,7 @@ export default function ContentCapturePage() {
                   value={footerRight}
                   onChange={(event) => setFooterRight(event.target.value)}
                   className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                  placeholder="35Flim"
+                  placeholder="35Film"
                 />
               </label>
             </div>

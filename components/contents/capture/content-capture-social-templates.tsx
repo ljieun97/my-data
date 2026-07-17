@@ -124,7 +124,7 @@ function TitleBlock({
       </h1>
     </div>
     <p style={{ ...titleFontStyle, color: footerColor }} className="mt-3 text-[10px] font-semibold tracking-[0.01em] opacity-45">
-      {footerRight || "@scena.kr"}
+      {footerRight || "35Flim"}
     </p>
     </>
   );

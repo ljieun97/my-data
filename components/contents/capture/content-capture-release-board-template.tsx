@@ -75,7 +75,7 @@ export function CalendarReleaseBoardTemplate({
           })}
         </div>
         <div className="pt-0.5 text-center">
-          <span className="text-[10px] font-semibold tracking-[0.01em] text-white/92">@scena.kr</span>
+          <span className="text-[10px] font-semibold tracking-[0.01em] text-white/92">35Flim</span>
         </div>
       </div>
     </div>

@@ -167,7 +167,7 @@ export function CaptureFooter({
 }) {
   return (
     <footer className="pt-0.5 text-center">
-      <span className="text-[10px] font-semibold tracking-[0.01em] text-white/72">{footerRight || "@scena.kr"}</span>
+      <span className="text-[10px] font-semibold tracking-[0.01em] text-white/72">{footerRight || "35Flim"}</span>
     </footer>
   );
 }

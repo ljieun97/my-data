@@ -215,6 +215,7 @@ export function RankingCoverTemplate({
   highlightText = "",
   useFilmFilter,
   footerRight,
+  coverMovieId,
 }: {
   movies: Array<CaptureMovie | undefined>;
   headline: string;
@@ -224,9 +225,11 @@ export function RankingCoverTemplate({
   highlightText?: string;
   useFilmFilter: boolean;
   footerRight: string;
+  coverMovieId?: number;
 }) {
   const topMovie = movies[0];
-  const imageCandidates = getMovieImageCandidates(topMovie);
+  const coverMovie = coverMovieId ? movies.find((movie) => movie?.id === coverMovieId) ?? topMovie : topMovie;
+  const imageCandidates = getMovieImageCandidates(coverMovie);
   const rankingRows = Array.from({ length: 10 }, (_, index) => movies[index]);
   const headlineValue = headline.trim() || `${topMovie?.title ?? "1위 작품"} 박스오피스 1위`;
 
@@ -241,7 +244,7 @@ export function RankingCoverTemplate({
             data-fallback-index="0"
             onError={(event) => handleImageFallback(event, imageCandidates)}
             className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition: `center ${topMovie?.imagePosition ?? 30}%`, ...(useFilmFilter ? filmImageStyle : {}) }}
+            style={{ objectPosition: `center ${coverMovie?.imagePosition ?? 30}%`, ...(useFilmFilter ? filmImageStyle : {}) }}
             crossOrigin="anonymous"
           />
         ) : (
@@ -254,14 +257,19 @@ export function RankingCoverTemplate({
       <div className="absolute inset-x-0 top-0 px-5">
         <div className="m-3 space-y-0">
           {rankingRows.map((movie, index) => (
-            <div key={movie?.id ?? `ranking-placeholder-${index}`} className="grid grid-cols-[1.65rem_minmax(0,1fr)_2.2rem] items-baseline gap-1.5 py-[1px]">
-              <span style={titleFontStyle} className="text-[12px] font-black tabular-nums text-white/42">
+            <div
+              key={movie?.id ?? `ranking-placeholder-${index}`}
+              className={[
+                "grid grid-cols-[1.65rem_minmax(0,1fr)_3.8rem] items-baseline gap-1.5 py-[1px]",
+              ].join(" ")}
+            >
+              <span style={titleFontStyle} className={["text-[12px] font-black tabular-nums", movie?.id === coverMovie?.id ? "text-white/86" : "text-white/42"].join(" ")}>
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <p style={titleFontStyle} className="truncate text-[13px] font-black tracking-[-0.03em] text-white">
+              <p style={titleFontStyle} className={["truncate text-[13px] font-black tracking-[-0.03em]", movie?.id === coverMovie?.id ? "text-[#fff3d0]" : "text-white"].join(" ")}>
                 {movie?.title ?? "영화를 추가하세요"}
               </p>
-              <span className="text-right text-[8px] font-bold text-white/38">{movie ? formatYear(movie) : ""}</span>
+              <span className={["truncate text-right text-[8px] font-bold", movie?.id === coverMovie?.id ? "text-[#fff3d0]/80" : "text-white/38"].join(" ")}>{movie ? formatYear(movie) : ""}</span>
             </div>
           ))}
         </div>

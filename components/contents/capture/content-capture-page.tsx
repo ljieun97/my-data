@@ -96,6 +96,7 @@ export default function ContentCapturePage() {
   const [footerRight, setFooterRight] = useState("35Film");
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
+  const [rankingCoverMovieId, setRankingCoverMovieId] = useState<number | null>(null);
   const [releaseBoardPreviewIndex, setReleaseBoardPreviewIndex] = useState(0);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
@@ -119,7 +120,10 @@ export default function ContentCapturePage() {
   const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
   const currentSingleMovie = selectedMovies[previewMovieIndex];
   const currentSingleMovieId = currentSingleMovie?.id ?? null;
-  const currentCoverMovie = isRankingMode ? selectedMovies[0] : currentSingleMovie;
+  const rankingCoverMovie = rankingCoverMovieId
+    ? selectedMovies.find((movie) => movie.id === rankingCoverMovieId)
+    : undefined;
+  const currentCoverMovie = isRankingMode ? rankingCoverMovie ?? selectedMovies[0] : currentSingleMovie;
   const releaseBoardSlots = Array.from({ length: 8 }, (_, index) => selectedMovies[index]);
   const releaseBoardDateLabels = releaseBoardSlots.map((movie, index) => formatReleaseBoardDate(releaseBoardDates[index]) || getReleaseBoardAutoDate(movie));
   const currentReleaseBoardMovie = releaseBoardSlots[releaseBoardPreviewIndex];
@@ -145,10 +149,16 @@ export default function ContentCapturePage() {
   useEffect(() => {
     if (!selectedMovies.length) {
       setPreviewMovieIndex(0);
+      setRankingCoverMovieId(null);
       return;
     }
     setPreviewMovieIndex((current) => Math.min(current, selectedMovies.length - 1));
   }, [selectedMovies.length]);
+  useEffect(() => {
+    if (!isRankingMode || !selectedMovies.length) return;
+    if (rankingCoverMovieId && selectedMovies.some((movie) => movie.id === rankingCoverMovieId)) return;
+    setRankingCoverMovieId(selectedMovies[0].id);
+  }, [isRankingMode, rankingCoverMovieId, selectedMovies]);
   useEffect(() => {
     if (!(isNewsMode || isBodyMode || isRankingMode) || titleColorMode !== "auto") return;
     const imageUrl = getBackdropUrl(currentCoverMovie) || getPosterUrl(currentCoverMovie);
@@ -217,8 +227,9 @@ export default function ContentCapturePage() {
       setExternalImageError("http:// �Ǵ� https://�� �����ϴ� �̹��� URL�� �־��ּ���.");
       return;
     }
-    if (!selectedMovies[previewMovieIndex]) return;
-    updateMoviePoster(selectedMovies[previewMovieIndex].id, imageUrl);
+    const imagePickerMovie = isRankingMode ? currentCoverMovie : selectedMovies[previewMovieIndex];
+    if (!imagePickerMovie) return;
+    updateMoviePoster(imagePickerMovie.id, imageUrl);
     setExternalImageUrl("");
     setExternalImageError("");
   };
@@ -320,14 +331,16 @@ export default function ContentCapturePage() {
     });
   };
   const renderMovieListImagePicker = () => {
-    if (!(isMovieListMode || isNewsMode || isBodyMode || isRankingMode) || !currentSingleMovie) return null;
+    const imagePickerMovie = isRankingMode ? currentCoverMovie : currentSingleMovie;
+    if (!(isMovieListMode || isNewsMode || isBodyMode || isRankingMode) || !imagePickerMovie) return null;
+    const imagePickerIndex = selectedMovies.findIndex((movie) => movie.id === imagePickerMovie.id);
     return (
       <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
         <div className="p-4 pb-3">
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Cover Image</p>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              {previewMovieIndex + 1}/{selectedMovies.length}
+              {imagePickerIndex + 1}/{selectedMovies.length}
             </p>
           </div>
           <div className="flex gap-1.5 overflow-x-auto pb-1">
@@ -335,10 +348,15 @@ export default function ContentCapturePage() {
               <button
                 key={movie.id}
                 type="button"
-                onClick={() => setPreviewMovieIndex(index)}
+                onClick={() => {
+                  setPreviewMovieIndex(index);
+                  if (isRankingMode) {
+                    setRankingCoverMovieId(movie.id);
+                  }
+                }}
                 className={[
                   "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
-                  previewMovieIndex === index
+                  isRankingMode ? (rankingCoverMovieId ?? selectedMovies[0]?.id) === movie.id : previewMovieIndex === index
                     ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
                     : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
                 ].join(" ")}
@@ -348,21 +366,21 @@ export default function ContentCapturePage() {
             ))}
           </div>
         </div>
-        {currentSingleMovie.posterOptions?.length ? (
+        {imagePickerMovie.posterOptions?.length ? (
           <div className="m-4 mt-0 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Image</p>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{currentSingleMovie.posterOptions.length}</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{imagePickerMovie.posterOptions.length}</p>
             </div>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-              {currentSingleMovie.posterOptions.map((posterPath) => (
+              {imagePickerMovie.posterOptions.map((posterPath) => (
                 <button
                   key={posterPath}
                   type="button"
-                  onClick={() => updateMoviePoster(currentSingleMovie.id, posterPath)}
+                  onClick={() => updateMoviePoster(imagePickerMovie.id, posterPath)}
                   className={[
                     "aspect-[4/5] overflow-hidden border transition",
-                    currentSingleMovie.poster_path === posterPath
+                    imagePickerMovie.poster_path === posterPath
                       ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
                       : "border-slate-200 dark:border-slate-800",
                   ].join(" ")}
@@ -521,7 +539,9 @@ export default function ContentCapturePage() {
           <>
             <MovieSlotsPanel
               isCalendarReleaseMode={isCalendarReleaseMode}
+              isRankingMode={isRankingMode}
               isMovieListMode={isMovieListMode || isRankingMode}
+              rankingCoverMovieId={rankingCoverMovieId}
               selectedMoviesCount={selectedMovies.length}
               movieSlotCount={movieSlotCount}
               movies={isCalendarReleaseMode ? releaseBoardSlots : slots}
@@ -539,6 +559,11 @@ export default function ContentCapturePage() {
               updateMovieNote={updateMovieNote}
               updateMovieYear={updateMovieYear}
               updateMovieImagePosition={updateMovieImagePosition}
+              onSelectRankingCoverMovie={(id) => {
+                setRankingCoverMovieId(id);
+                const nextIndex = selectedMovies.findIndex((movie) => movie.id === id);
+                if (nextIndex >= 0) setPreviewMovieIndex(nextIndex);
+              }}
             />
           {(isNewsMode || isBodyMode || isRankingMode) ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
@@ -1110,6 +1135,7 @@ export default function ContentCapturePage() {
                   highlightText={highlightText}
                   useFilmFilter={useFilmFilter}
                   footerRight={footerRight}
+                  coverMovieId={currentCoverMovie?.id}
                 />
               ) : isCalendarReleaseMode ? (
                 <CalendarReleaseBoardTemplate

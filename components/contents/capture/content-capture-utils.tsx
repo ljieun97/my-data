@@ -8,7 +8,10 @@ export type ProviderLogoOption = {
 };
 
 export function formatYear(movie: CaptureMovie) {
-  return movie.release_date ? movie.release_date.slice(0, 4) : "";
+  if (!movie.release_date) return "";
+  const releaseLabel = movie.release_date.trim();
+  const yearMatch = releaseLabel.match(/^(\d{4})(?:-\d{2}-\d{2})?$/);
+  return yearMatch ? yearMatch[1] : releaseLabel;
 }
 
 export function getExternalImageUrl(imagePath: string) {

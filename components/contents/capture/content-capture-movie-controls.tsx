@@ -4,10 +4,13 @@ import { CaptureMovie } from "@/context/CaptureContentContext";
 import { faGripVertical, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CaptureHelperText, CapturePanel } from "@/components/contents/capture/content-capture-controls";
+import { formatYear } from "@/components/contents/capture/content-capture-utils";
 
 type MovieSlotsPanelProps = {
   isCalendarReleaseMode: boolean;
+  isRankingMode: boolean;
   isMovieListMode: boolean;
+  rankingCoverMovieId?: number | null;
   selectedMoviesCount: number;
   movieSlotCount: number;
   movies: Array<CaptureMovie | undefined>;
@@ -22,11 +25,14 @@ type MovieSlotsPanelProps = {
   updateMovieNote: (id: number, note: string) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
+  onSelectRankingCoverMovie?: (id: number) => void;
 };
 
 export function MovieSlotsPanel({
   isCalendarReleaseMode,
+  isRankingMode,
   isMovieListMode,
+  rankingCoverMovieId,
   selectedMoviesCount,
   movieSlotCount,
   movies,
@@ -41,6 +47,7 @@ export function MovieSlotsPanel({
   updateMovieNote,
   updateMovieYear,
   updateMovieImagePosition,
+  onSelectRankingCoverMovie,
 }: MovieSlotsPanelProps) {
   return (
     <CapturePanel>
@@ -111,11 +118,11 @@ export function MovieSlotsPanel({
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
                   <input
-                    value={movie.release_date?.slice(0, 4) ?? ""}
+                    value={movie.release_date ? formatYear(movie) : ""}
                     onChange={(event) => updateMovieYear(movie.id, event.target.value)}
                     onMouseDown={(event) => event.stopPropagation()}
                     onDragStart={(event) => event.preventDefault()}
-                    maxLength={4}
+                    maxLength={16}
                     placeholder="연도"
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
@@ -165,6 +172,20 @@ export function MovieSlotsPanel({
             </div>
             {movie ? (
               <div className="flex shrink-0 items-center gap-1">
+                {isRankingMode ? (
+                  <button
+                    type="button"
+                    onClick={() => onSelectRankingCoverMovie?.(movie.id)}
+                    className={[
+                      "inline-flex h-8 items-center justify-center border px-2 text-[11px] font-bold transition",
+                      (rankingCoverMovieId ?? movies.find((entry) => entry)?.id) === movie.id
+                        ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                        : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                    ].join(" ")}
+                  >
+                    Cover
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => removeMovie(movie.id)}

@@ -218,13 +218,11 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
   };
 
   const updateMovieYear = (id: number, year: string) => {
-    const normalizedYear = year.replace(/\D/g, "").slice(0, 4);
+    const yearLabel = year.trim();
     setSelectedMovies((current) =>
       current.map((movie) => {
         if (movie.id !== id) return movie;
-        if (!normalizedYear) return { ...movie, release_date: "" };
-        const suffix = movie.release_date?.slice(4) || "-01-01";
-        return { ...movie, release_date: `${normalizedYear}${suffix}` };
+        return { ...movie, release_date: yearLabel };
       }),
     );
   };

@@ -11,6 +11,7 @@ type MovieSlotsPanelProps = {
   isRankingMode: boolean;
   isMovieListMode: boolean;
   rankingCoverMovieId?: number | null;
+  rankingCoverRankText?: string;
   selectedMoviesCount: number;
   movieSlotCount: number;
   movies: Array<CaptureMovie | undefined>;
@@ -26,6 +27,7 @@ type MovieSlotsPanelProps = {
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   onSelectRankingCoverMovie?: (id: number) => void;
+  onChangeRankingCoverRankText?: (value: string) => void;
 };
 
 export function MovieSlotsPanel({
@@ -33,6 +35,7 @@ export function MovieSlotsPanel({
   isRankingMode,
   isMovieListMode,
   rankingCoverMovieId,
+  rankingCoverRankText = "",
   selectedMoviesCount,
   movieSlotCount,
   movies,
@@ -48,7 +51,10 @@ export function MovieSlotsPanel({
   updateMovieYear,
   updateMovieImagePosition,
   onSelectRankingCoverMovie,
+  onChangeRankingCoverRankText,
 }: MovieSlotsPanelProps) {
+  const activeRankingCoverMovieId = rankingCoverMovieId ?? movies.find((entry) => entry)?.id;
+
   return (
     <CapturePanel>
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -98,6 +104,19 @@ export function MovieSlotsPanel({
             </span>
             <span className="w-5 shrink-0 text-xs font-bold text-slate-400 sm:w-6">{index + 1}</span>
             <div className="min-w-0 flex-1">
+              {movie && isRankingMode && activeRankingCoverMovieId === movie.id ? (
+                <div className="mb-1.5">
+                  <input
+                    value={rankingCoverRankText}
+                    onChange={(event) => onChangeRankingCoverRankText?.(event.target.value)}
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onDragStart={(event) => event.preventDefault()}
+                    maxLength={8}
+                    placeholder={String(index + 1).padStart(2, "0")}
+                    className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                  />
+                </div>
+              ) : null}
               {movie && isMovieListMode ? (
                 <div className="mt-1 flex flex-col gap-1.5">
                   <input
@@ -108,15 +127,17 @@ export function MovieSlotsPanel({
                     placeholder="제목"
                     className="h-7 w-full border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
-                  <input
-                    value={movie.note ?? ""}
-                    onChange={(event) => updateMovieNote(movie.id, event.target.value)}
-                    onMouseDown={(event) => event.stopPropagation()}
-                    onDragStart={(event) => event.preventDefault()}
-                    maxLength={16}
-                    placeholder="오른쪽 문구"
-                    className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
-                  />
+                  {!isRankingMode ? (
+                    <input
+                      value={movie.note ?? ""}
+                      onChange={(event) => updateMovieNote(movie.id, event.target.value)}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onDragStart={(event) => event.preventDefault()}
+                      maxLength={16}
+                      placeholder="오른쪽 문구"
+                      className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                    />
+                  ) : null}
                   <input
                     value={movie.release_date ? formatYear(movie) : ""}
                     onChange={(event) => updateMovieYear(movie.id, event.target.value)}
@@ -126,40 +147,42 @@ export function MovieSlotsPanel({
                     placeholder="연도"
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onMouseDown={(event) => event.stopPropagation()}
-                      onClick={() => updateMovieImagePosition(movie.id, (movie.imagePosition ?? 20) - 5)}
-                      className="inline-flex h-7 min-w-8 items-center justify-center border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
-                    >
-                      -
-                    </button>
-                    <div className="flex h-7 min-w-0 flex-1 items-center justify-center border border-slate-200 bg-slate-50 px-2 text-[11px] font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
-                      Y {(movie.imagePosition ?? 20)}%
+                  {!isRankingMode ? (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={() => updateMovieImagePosition(movie.id, (movie.imagePosition ?? 20) - 5)}
+                        className="inline-flex h-7 min-w-8 items-center justify-center border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+                      >
+                        -
+                      </button>
+                      <div className="flex h-7 min-w-0 flex-1 items-center justify-center border border-slate-200 bg-slate-50 px-2 text-[11px] font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                        Y {(movie.imagePosition ?? 20)}%
+                      </div>
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={() => updateMovieImagePosition(movie.id, (movie.imagePosition ?? 20) + 5)}
+                        className="inline-flex h-7 min-w-8 items-center justify-center border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={() => updateMovieImagePosition(movie.id, 20)}
+                        className={[
+                          "h-7 border px-2 text-[11px] font-bold transition",
+                          (movie.imagePosition ?? 20) === 20
+                            ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                        ].join(" ")}
+                      >
+                        기본
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onMouseDown={(event) => event.stopPropagation()}
-                      onClick={() => updateMovieImagePosition(movie.id, (movie.imagePosition ?? 20) + 5)}
-                      className="inline-flex h-7 min-w-8 items-center justify-center border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
-                    >
-                      +
-                    </button>
-                    <button
-                      type="button"
-                      onMouseDown={(event) => event.stopPropagation()}
-                      onClick={() => updateMovieImagePosition(movie.id, 20)}
-                      className={[
-                        "h-7 border px-2 text-[11px] font-bold transition",
-                        (movie.imagePosition ?? 20) === 20
-                          ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                          : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                      ].join(" ")}
-                    >
-                      기본
-                    </button>
-                  </div>
+                  ) : null}
                 </div>
               ) : (
                 <>
@@ -178,7 +201,7 @@ export function MovieSlotsPanel({
                     onClick={() => onSelectRankingCoverMovie?.(movie.id)}
                     className={[
                       "inline-flex h-8 items-center justify-center border px-2 text-[11px] font-bold transition",
-                      (rankingCoverMovieId ?? movies.find((entry) => entry)?.id) === movie.id
+                      activeRankingCoverMovieId === movie.id
                         ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
                         : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
                     ].join(" ")}

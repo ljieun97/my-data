@@ -34,11 +34,15 @@ export default function ContentCapturePage() {
   const {
     captureMode,
     setCaptureMode,
+    rankingListVersion,
+    setRankingListVersion,
     selectedMovies,
     removeMovie,
     reorderMovie,
     updateMovieTitle,
     updateMovieNote,
+    updateMovieRankingText,
+    updateMovieRankingTotalAudience,
     updateMovieYear,
     updateMovieImagePosition,
     updateMoviePoster,
@@ -64,7 +68,7 @@ export default function ContentCapturePage() {
   const [titleColor, setTitleColor] = useState("#fff3d0");
   const [titleColorMode, setTitleColorMode] = useState<"auto" | TitleColorKey>("auto");
   const [rankingHeadline, setRankingHeadline] = useState("군체 500만 관객 돌파,\n박스오피스 1위");
-  const [rankingCoverRankText, setRankingCoverRankText] = useState("");
+  const [rankingListColorMode, setRankingListColorMode] = useState<"cover-only" | "all-muted">("cover-only");
   const [useFilmFilter, setUseFilmFilter] = useState(false);
   const [footerLeft, setFooterLeft] = useState("�γ��ڸ���");
   const [footerRight, setFooterRight] = useState("35Film");
@@ -82,8 +86,11 @@ export default function ContentCapturePage() {
   const isMovieListMode = captureMode === "movie-list";
   const isMovieMode = isNewsMode || isBodyMode || isRankingMode || isMovieListMode;
   const movieMinCount = isNewsMode ? 1 : 2;
-  const movieMaxCount = getCaptureMovieMaxCount(captureMode);
-  const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
+  const movieMaxCount = getCaptureMovieMaxCount(captureMode, rankingListVersion);
+  const rankingSlotCount = rankingListVersion === "top5-detail" ? 5 : 10;
+  const movieSlotCount = isRankingMode
+    ? rankingSlotCount
+    : Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
   const currentSingleMovie = selectedMovies[previewMovieIndex];
   const currentSingleMovieId = currentSingleMovie?.id ?? null;
   const rankingCoverMovie = rankingCoverMovieId
@@ -448,9 +455,9 @@ export default function ContentCapturePage() {
             <MovieSlotsPanel
               isRankingMode={isRankingMode}
               isMovieListMode={isMovieListMode || isRankingMode}
+              isRankingDetailMode={rankingListVersion === "top5-detail"}
               rankingCoverMovieId={rankingCoverMovieId}
-              rankingCoverRankText={rankingCoverRankText}
-              selectedMoviesCount={selectedMovies.length}
+              selectedMoviesCount={isRankingMode ? Math.min(selectedMovies.length, movieSlotCount) : selectedMovies.length}
               movieSlotCount={movieSlotCount}
               movies={slots}
               dragOverIndex={dragOverIndex}
@@ -465,9 +472,10 @@ export default function ContentCapturePage() {
               removeMovie={removeMovie}
               updateMovieTitle={updateMovieTitle}
               updateMovieNote={updateMovieNote}
+              updateMovieRankingText={updateMovieRankingText}
+              updateMovieRankingTotalAudience={updateMovieRankingTotalAudience}
               updateMovieYear={updateMovieYear}
               updateMovieImagePosition={updateMovieImagePosition}
-              onChangeRankingCoverRankText={setRankingCoverRankText}
               onSelectRankingCoverMovie={(id) => {
                 setRankingCoverMovieId(id);
                 const nextIndex = selectedMovies.findIndex((movie) => movie.id === id);
@@ -630,6 +638,44 @@ export default function ContentCapturePage() {
           {isRankingMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Ranking Cover</p>
+              <div className="mb-3">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">List Version</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <CaptureToggleButton
+                    type="button"
+                    active={rankingListVersion === "top10"}
+                    onClick={() => setRankingListVersion("top10")}
+                  >
+                    10개
+                  </CaptureToggleButton>
+                  <CaptureToggleButton
+                    type="button"
+                    active={rankingListVersion === "top5-detail"}
+                    onClick={() => setRankingListVersion("top5-detail")}
+                  >
+                    5개+2줄
+                  </CaptureToggleButton>
+                </div>
+              </div>
+              <div className="mb-3">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">List Color</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <CaptureToggleButton
+                    type="button"
+                    active={rankingListColorMode === "cover-only"}
+                    onClick={() => setRankingListColorMode("cover-only")}
+                  >
+                    커버만 흰색
+                  </CaptureToggleButton>
+                  <CaptureToggleButton
+                    type="button"
+                    active={rankingListColorMode === "all-muted"}
+                    onClick={() => setRankingListColorMode("all-muted")}
+                  >
+                    전체 회색
+                  </CaptureToggleButton>
+                </div>
+              </div>
               <label className="block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Photo Headline</span>
                 <CaptureTextArea
@@ -637,20 +683,6 @@ export default function ContentCapturePage() {
                   onChange={(event) => setRankingHeadline(event.target.value)}
                   rows={2}
                   placeholder="군체 500만 관객 돌파, 박스오피스 1위"
-                />
-              </label>
-              <label className="mt-3 block">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Cover Rank Text</span>
-                <input
-                  value={rankingCoverRankText}
-                  onChange={(event) => setRankingCoverRankText(event.target.value)}
-                  maxLength={8}
-                  placeholder={
-                    currentCoverMovie
-                      ? String(selectedMovies.findIndex((movie) => movie.id === currentCoverMovie.id) + 1).padStart(2, "0")
-                      : "01"
-                  }
-                  className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
                 />
               </label>
             </div>
@@ -904,7 +936,8 @@ export default function ContentCapturePage() {
                   useFilmFilter={useFilmFilter}
                   footerRight={footerRight}
                   coverMovieId={currentCoverMovie?.id}
-                  coverRankText={rankingCoverRankText}
+                  listVersion={rankingListVersion}
+                  listColorMode={rankingListColorMode}
                 />
               ) : (
               <MovieListTemplate

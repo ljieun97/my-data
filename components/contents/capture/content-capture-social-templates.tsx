@@ -224,7 +224,8 @@ export function RankingCoverTemplate({
   useFilmFilter,
   footerRight,
   coverMovieId,
-  coverRankText,
+  listVersion = "top10",
+  listColorMode = "cover-only",
 }: {
   movies: Array<CaptureMovie | undefined>;
   headline: string;
@@ -235,14 +236,21 @@ export function RankingCoverTemplate({
   useFilmFilter: boolean;
   footerRight: string;
   coverMovieId?: number;
-  coverRankText?: string;
+  listVersion?: "top10" | "top5-detail";
+  listColorMode?: "cover-only" | "all-muted";
 }) {
   const topMovie = movies[0];
   const coverMovie = coverMovieId ? movies.find((movie) => movie?.id === coverMovieId) ?? topMovie : topMovie;
   const imageCandidates = getMovieImageCandidates(coverMovie);
-  const rankingRows = Array.from({ length: 10 }, (_, index) => movies[index]);
+  const isDetailList = listVersion === "top5-detail";
+  const rankingRows = Array.from({ length: isDetailList ? 5 : 10 }, (_, index) => movies[index]);
   const headlineValue = headline.trim() || `${topMovie?.title ?? "1위 작품"} 박스오피스 1위`;
-  const coverRankTextValue = coverRankText?.trim();
+  const getRankText = (movie: CaptureMovie | undefined, index: number) =>
+    movie?.rankingText?.trim() || String(index + 1).padStart(2, "0");
+  const getPrimaryListTextColor = (movie?: CaptureMovie) =>
+    listColorMode === "cover-only" && movie?.id === coverMovie?.id ? "text-white" : "text-white/42";
+  const getSecondaryListTextColor = (movie?: CaptureMovie) =>
+    listColorMode === "cover-only" && movie?.id === coverMovie?.id ? "text-white/72" : "text-white/30";
 
   return (
     <div className="relative h-full overflow-hidden bg-neutral-950 text-white">
@@ -265,29 +273,63 @@ export function RankingCoverTemplate({
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.12)_46%,rgba(0,0,0,0.72)_100%)]" />
       </div>
       <div className="absolute inset-x-0 top-[42%] h-[18%] bg-[linear-gradient(180deg,#050505_0%,rgba(5,5,5,0.84)_36%,rgba(5,5,5,0)_100%)]" />
-      <div className="absolute inset-x-0 top-0 bg-[#050505] px-8 pb-3 pt-4">
-        <div className="space-y-[4px]">
-          {rankingRows.map((movie, index) => (
-            <div
-              key={movie?.id ?? `ranking-placeholder-${index}`}
-              className={[
-                "grid grid-cols-[1.65rem_minmax(0,1fr)_4.4rem] items-baseline gap-1.5 py-[2px]",
-              ].join(" ")}
-            >
-              <span style={rankingNumberStyle} className={["text-[12px] font-black tabular-nums", movie?.id === coverMovie?.id ? "text-white" : "text-white/42"].join(" ")}>
-                {movie?.id === coverMovie?.id && coverRankTextValue ? coverRankTextValue : String(index + 1).padStart(2, "0")}
-              </span>
-              <p
-                style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
-                className={["truncate text-[13px] font-medium", movie?.id === coverMovie?.id ? "text-white" : "text-white/42"].join(" ")}
+      {isDetailList ? (
+        <div className="absolute inset-x-0 top-0 h-[234px] bg-[#050505] px-8 pb-3 pt-4">
+          <div className="flex h-full flex-col justify-between">
+            {rankingRows.map((movie, index) => (
+              <div
+                key={movie?.id ?? `ranking-placeholder-${index}`}
+                className="grid min-h-[34px] grid-cols-[1.65rem_minmax(0,1fr)_4.9rem] items-center gap-1.5 py-[6px]"
               >
-                {movie?.title ?? "영화를 추가하세요"}
-              </p>
-              <span className={["truncate text-right text-[10px] font-bold", movie?.id === coverMovie?.id ? "text-white" : "text-white/42"].join(" ")}>{movie ? formatYear(movie) : ""}</span>
-            </div>
-          ))}
+                <span
+                  style={rankingNumberStyle}
+                  className={["text-[15px] font-black tabular-nums", getPrimaryListTextColor(movie)].join(" ")}
+                >
+                  {getRankText(movie, index)}
+                </span>
+                <p
+                  style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
+                  className={["truncate text-[16px] font-medium", getPrimaryListTextColor(movie)].join(" ")}
+                >
+                  {movie?.title ?? "영화를 추가하세요"}
+                </p>
+                <span className="flex min-w-0 flex-col items-end text-right leading-none">
+                  <span className={["max-w-full truncate text-[12px] font-bold", getPrimaryListTextColor(movie)].join(" ")}>
+                    {movie ? formatYear(movie) : ""}
+                  </span>
+                  <span className={["mt-[4px] max-w-full truncate text-[10px] font-medium", getSecondaryListTextColor(movie)].join(" ")}>
+                    {movie?.rankingTotalAudience ? `누적 ${movie.rankingTotalAudience}` : ""}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="absolute inset-x-0 top-0 bg-[#050505] px-8 pb-3 pt-4">
+          <div className="space-y-[4px]">
+            {rankingRows.map((movie, index) => (
+              <div
+                key={movie?.id ?? `ranking-placeholder-${index}`}
+                className={[
+                  "grid grid-cols-[1.65rem_minmax(0,1fr)_4.4rem] items-baseline gap-1.5 py-[2px]",
+                ].join(" ")}
+              >
+                <span style={rankingNumberStyle} className={["text-[12px] font-black tabular-nums", getPrimaryListTextColor(movie)].join(" ")}>
+                  {getRankText(movie, index)}
+                </span>
+                <p
+                  style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
+                  className={["truncate text-[13px] font-medium", getPrimaryListTextColor(movie)].join(" ")}
+                >
+                  {movie?.title ?? "영화를 추가하세요"}
+                </p>
+                <span className={["truncate text-right text-[10px] font-bold", getPrimaryListTextColor(movie)].join(" ")}>{movie ? formatYear(movie) : ""}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="absolute inset-x-0 bottom-0 px-9 pb-8 text-center">
         <TitleBlock
           headline={headlineValue}

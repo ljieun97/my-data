@@ -13,6 +13,8 @@ export type CaptureMovie = {
   backdrop_path?: string;
   vote_average?: number;
   note?: string;
+  rankingText?: string;
+  rankingTotalAudience?: string;
   imagePosition?: number;
   posterOptions?: string[];
   singlePreviewTitle?: string;
@@ -27,15 +29,19 @@ export type CaptureMovie = {
 };
 
 export type CaptureMode = "news-cover" | "news-body" | "ranking-cover" | "movie-list";
+export type RankingListVersion = "top10" | "top5-detail";
 
-export function getCaptureMovieMaxCount(captureMode: CaptureMode) {
-  if (captureMode === "movie-list" || captureMode === "ranking-cover") return 10;
+export function getCaptureMovieMaxCount(captureMode: CaptureMode, rankingListVersion: RankingListVersion = "top10") {
+  if (captureMode === "ranking-cover") return rankingListVersion === "top5-detail" ? 5 : 10;
+  if (captureMode === "movie-list") return 10;
   return 5;
 }
 
 type CaptureContentContextValue = {
   captureMode: CaptureMode;
   setCaptureMode: (mode: CaptureMode) => void;
+  rankingListVersion: RankingListVersion;
+  setRankingListVersion: (version: RankingListVersion) => void;
   selectedMovies: CaptureMovie[];
   addMovie: (movie: CaptureMovie) => boolean;
   removeMovie: (id: number) => void;
@@ -43,6 +49,8 @@ type CaptureContentContextValue = {
   reorderMovie: (fromIndex: number, toIndex: number) => void;
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
+  updateMovieRankingText: (id: number, value: string) => void;
+  updateMovieRankingTotalAudience: (id: number, value: string) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
@@ -89,6 +97,8 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     backdrop_path: movie.backdrop_path,
     vote_average: movie.vote_average,
     note: movie.note,
+    rankingText: movie.rankingText,
+    rankingTotalAudience: movie.rankingTotalAudience,
     imagePosition: typeof movie.imagePosition === "number" ? movie.imagePosition : 20,
     posterOptions: movie.posterOptions,
     singlePreviewTitle: movie.singlePreviewTitle ?? title,
@@ -103,12 +113,13 @@ function normalizeMovie(movie: any): CaptureMovie | null {
 
 export function CaptureContentProvider({ children }: { children: React.ReactNode }) {
   const [captureMode, setCaptureMode] = useState<CaptureMode>("news-cover");
+  const [rankingListVersion, setRankingListVersion] = useState<RankingListVersion>("top10");
   const [selectedMovies, setSelectedMovies] = useState<CaptureMovie[]>([]);
 
   const addMovie = (movie: CaptureMovie) => {
     const normalizedMovie = normalizeMovie(movie);
     if (!normalizedMovie) return false;
-    const maxMovies = getCaptureMovieMaxCount(captureMode);
+    const maxMovies = getCaptureMovieMaxCount(captureMode, rankingListVersion);
 
     if (selectedMovies.some((item) => item.id === normalizedMovie.id && item.media_type === normalizedMovie.media_type) || selectedMovies.length >= maxMovies) {
       return false;
@@ -170,6 +181,18 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
   const updateMovieNote = (id: number, note: string) => {
     setSelectedMovies((current) =>
       current.map((movie) => (movie.id === id ? { ...movie, note } : movie)),
+    );
+  };
+
+  const updateMovieRankingText = (id: number, value: string) => {
+    setSelectedMovies((current) =>
+      current.map((movie) => (movie.id === id ? { ...movie, rankingText: value.trim() } : movie)),
+    );
+  };
+
+  const updateMovieRankingTotalAudience = (id: number, value: string) => {
+    setSelectedMovies((current) =>
+      current.map((movie) => (movie.id === id ? { ...movie, rankingTotalAudience: value.trim() } : movie)),
     );
   };
 
@@ -246,6 +269,8 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     () => ({
       captureMode,
       setCaptureMode,
+      rankingListVersion,
+      setRankingListVersion,
       selectedMovies,
       addMovie,
       removeMovie,
@@ -253,6 +278,8 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       reorderMovie,
       updateMovieTitle,
       updateMovieNote,
+      updateMovieRankingText,
+      updateMovieRankingTotalAudience,
       updateMovieYear,
       updateMovieImagePosition,
       updateMoviePoster,
@@ -260,7 +287,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       clearMovies,
       hasMovie,
     }),
-    [captureMode, selectedMovies],
+    [captureMode, rankingListVersion, selectedMovies],
   );
 
   return <CaptureContentContext.Provider value={value}>{children}</CaptureContentContext.Provider>;

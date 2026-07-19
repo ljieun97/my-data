@@ -9,8 +9,8 @@ import { formatYear } from "@/components/contents/capture/content-capture-utils"
 type MovieSlotsPanelProps = {
   isRankingMode: boolean;
   isMovieListMode: boolean;
+  isRankingDetailMode?: boolean;
   rankingCoverMovieId?: number | null;
-  rankingCoverRankText?: string;
   selectedMoviesCount: number;
   movieSlotCount: number;
   movies: Array<CaptureMovie | undefined>;
@@ -23,17 +23,18 @@ type MovieSlotsPanelProps = {
   removeMovie: (id: number) => void;
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
+  updateMovieRankingText: (id: number, value: string) => void;
+  updateMovieRankingTotalAudience: (id: number, value: string) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   onSelectRankingCoverMovie?: (id: number) => void;
-  onChangeRankingCoverRankText?: (value: string) => void;
 };
 
 export function MovieSlotsPanel({
   isRankingMode,
   isMovieListMode,
+  isRankingDetailMode = false,
   rankingCoverMovieId,
-  rankingCoverRankText = "",
   selectedMoviesCount,
   movieSlotCount,
   movies,
@@ -46,10 +47,11 @@ export function MovieSlotsPanel({
   removeMovie,
   updateMovieTitle,
   updateMovieNote,
+  updateMovieRankingText,
+  updateMovieRankingTotalAudience,
   updateMovieYear,
   updateMovieImagePosition,
   onSelectRankingCoverMovie,
-  onChangeRankingCoverRankText,
 }: MovieSlotsPanelProps) {
   const activeRankingCoverMovieId = rankingCoverMovieId ?? movies.find((entry) => entry)?.id;
 
@@ -100,21 +102,19 @@ export function MovieSlotsPanel({
             </span>
             <span className="w-5 shrink-0 text-xs font-bold text-slate-400 sm:w-6">{index + 1}</span>
             <div className="min-w-0 flex-1">
-              {movie && isRankingMode && activeRankingCoverMovieId === movie.id ? (
-                <div className="mb-1.5">
-                  <input
-                    value={rankingCoverRankText}
-                    onChange={(event) => onChangeRankingCoverRankText?.(event.target.value)}
-                    onMouseDown={(event) => event.stopPropagation()}
-                    onDragStart={(event) => event.preventDefault()}
-                    maxLength={8}
-                    placeholder={String(index + 1).padStart(2, "0")}
-                    className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
-                  />
-                </div>
-              ) : null}
               {movie && isMovieListMode ? (
                 <div className="mt-1 flex flex-col gap-1.5">
+                  {isRankingMode ? (
+                    <input
+                      value={movie.rankingText ?? ""}
+                      onChange={(event) => updateMovieRankingText(movie.id, event.target.value)}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onDragStart={(event) => event.preventDefault()}
+                      maxLength={8}
+                      placeholder={String(index + 1).padStart(2, "0")}
+                      className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                    />
+                  ) : null}
                   <input
                     value={movie.title}
                     onChange={(event) => updateMovieTitle(movie.id, event.target.value)}
@@ -140,9 +140,20 @@ export function MovieSlotsPanel({
                     onMouseDown={(event) => event.stopPropagation()}
                     onDragStart={(event) => event.preventDefault()}
                     maxLength={16}
-                    placeholder="연도"
+                    placeholder={isRankingMode ? "일일 관객" : "연도"}
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
+                  {isRankingMode && isRankingDetailMode ? (
+                    <input
+                      value={movie.rankingTotalAudience ?? ""}
+                      onChange={(event) => updateMovieRankingTotalAudience(movie.id, event.target.value)}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onDragStart={(event) => event.preventDefault()}
+                      maxLength={16}
+                      placeholder="누적 관객"
+                      className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                    />
+                  ) : null}
                   {!isRankingMode ? (
                     <div className="flex items-center gap-1">
                       <button

@@ -14,8 +14,6 @@ export type CaptureMovie = {
   vote_average?: number;
   note?: string;
   imagePosition?: number;
-  providerLogoPath?: string;
-  providerLogoName?: string;
   posterOptions?: string[];
   singlePreviewTitle?: string;
   singlePreviewSubtitle?: string;
@@ -28,36 +26,18 @@ export type CaptureMovie = {
   singlePreviewShowBody?: boolean;
 };
 
-export type CaptureMode = "news-cover" | "news-body" | "ranking-cover" | "movie-list" | "person-cover" | "calendar-release";
+export type CaptureMode = "news-cover" | "news-body" | "ranking-cover" | "movie-list";
 
 export function getCaptureMovieMaxCount(captureMode: CaptureMode) {
-  if (captureMode === "calendar-release") return 8;
   if (captureMode === "movie-list" || captureMode === "ranking-cover") return 10;
   return 5;
 }
-
-export type CapturePerson = {
-  id: number;
-  name: string;
-  profile_path?: string;
-  known_for_department?: string;
-  birthday?: string;
-  place_of_birth?: string;
-  biography?: string;
-  profileOptions?: string[];
-};
-
-export const CAPTURE_PERSON_MAX_COUNT = 3;
 
 type CaptureContentContextValue = {
   captureMode: CaptureMode;
   setCaptureMode: (mode: CaptureMode) => void;
   selectedMovies: CaptureMovie[];
-  selectedPerson: CapturePerson | null;
-  selectedPersons: CapturePerson[];
   addMovie: (movie: CaptureMovie) => boolean;
-  setPerson: (person: CapturePerson) => void;
-  removePerson: (id: number) => void;
   removeMovie: (id: number) => void;
   moveMovie: (id: number, direction: "up" | "down") => void;
   reorderMovie: (fromIndex: number, toIndex: number) => void;
@@ -65,7 +45,6 @@ type CaptureContentContextValue = {
   updateMovieNote: (id: number, note: string) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
-  updateMovieProviderLogo: (id: number, providerLogoPath: string, providerLogoName?: string) => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
   updateMovieSinglePreview: (
     id: number,
@@ -84,9 +63,7 @@ type CaptureContentContextValue = {
       >
     >,
   ) => void;
-  updatePersonProfilePath: (id: number, profilePath: string) => void;
   clearMovies: () => void;
-  clearPerson: () => void;
   hasMovie: (id: number, mediaType?: CaptureMovie["media_type"]) => boolean;
 };
 
@@ -113,8 +90,6 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     vote_average: movie.vote_average,
     note: movie.note,
     imagePosition: typeof movie.imagePosition === "number" ? movie.imagePosition : 20,
-    providerLogoPath: movie.providerLogoPath,
-    providerLogoName: movie.providerLogoName,
     posterOptions: movie.posterOptions,
     singlePreviewTitle: movie.singlePreviewTitle ?? title,
     singlePreviewSubtitle: movie.singlePreviewSubtitle ?? (movie.original_title || movie.original_name || title),
@@ -129,8 +104,6 @@ function normalizeMovie(movie: any): CaptureMovie | null {
 export function CaptureContentProvider({ children }: { children: React.ReactNode }) {
   const [captureMode, setCaptureMode] = useState<CaptureMode>("news-cover");
   const [selectedMovies, setSelectedMovies] = useState<CaptureMovie[]>([]);
-  const [selectedPersons, setSelectedPersons] = useState<CapturePerson[]>([]);
-  const selectedPerson = selectedPersons[0] ?? null;
 
   const addMovie = (movie: CaptureMovie) => {
     const normalizedMovie = normalizeMovie(movie);
@@ -143,23 +116,6 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
 
     setSelectedMovies((current) => [...current, normalizedMovie]);
     return true;
-  };
-
-  const setPerson = (person: CapturePerson) => {
-    setSelectedPersons((current) => {
-      const existingIndex = current.findIndex((entry) => entry.id === person.id);
-      if (existingIndex >= 0) {
-        return current.map((entry, index) => (index === existingIndex ? person : entry));
-      }
-      if (current.length >= CAPTURE_PERSON_MAX_COUNT) {
-        return current;
-      }
-      return [...current, person];
-    });
-  };
-
-  const removePerson = (id: number) => {
-    setSelectedPersons((current) => current.filter((person) => person.id !== id));
   };
 
   const removeMovie = (id: number) => {
@@ -233,20 +189,6 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
-  const updateMovieProviderLogo = (id: number, providerLogoPath: string, providerLogoName?: string) => {
-    setSelectedMovies((current) =>
-      current.map((movie) =>
-        movie.id === id
-          ? {
-              ...movie,
-              providerLogoPath: providerLogoPath || undefined,
-              providerLogoName: providerLogoPath ? providerLogoName || movie.providerLogoName : undefined,
-            }
-          : movie,
-      ),
-    );
-  };
-
   const updateMoviePoster = (id: number, posterPath: string) => {
     setSelectedMovies((current) =>
       current.map((movie) =>
@@ -293,25 +235,8 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
-  const updatePersonProfilePath = (id: number, profilePath: string) => {
-    setSelectedPersons((current) =>
-      current.map((person) =>
-        person.id === id
-          ? {
-              ...person,
-              profile_path: profilePath,
-            }
-          : person,
-      ),
-    );
-  };
-
   const clearMovies = () => {
     setSelectedMovies([]);
-  };
-
-  const clearPerson = () => {
-    setSelectedPersons([]);
   };
 
   const hasMovie = (id: number, mediaType: CaptureMovie["media_type"] = "movie") =>
@@ -322,11 +247,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       captureMode,
       setCaptureMode,
       selectedMovies,
-      selectedPerson,
-      selectedPersons,
       addMovie,
-      setPerson,
-      removePerson,
       removeMovie,
       moveMovie,
       reorderMovie,
@@ -334,15 +255,12 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       updateMovieNote,
       updateMovieYear,
       updateMovieImagePosition,
-      updateMovieProviderLogo,
       updateMoviePoster,
       updateMovieSinglePreview,
-      updatePersonProfilePath,
       clearMovies,
-      clearPerson,
       hasMovie,
     }),
-    [captureMode, selectedMovies, selectedPerson, selectedPersons],
+    [captureMode, selectedMovies],
   );
 
   return <CaptureContentContext.Provider value={value}>{children}</CaptureContentContext.Provider>;

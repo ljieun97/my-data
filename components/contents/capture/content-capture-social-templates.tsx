@@ -265,25 +265,25 @@ export function RankingCoverTemplate({
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.12)_46%,rgba(0,0,0,0.72)_100%)]" />
       </div>
       <div className="absolute inset-x-0 top-[42%] h-[18%] bg-[linear-gradient(180deg,#050505_0%,rgba(5,5,5,0.84)_36%,rgba(5,5,5,0)_100%)]" />
-      <div className="absolute inset-x-0 top-0 bg-[#050505] px-8 py-3">
-        <div className="space-y-0">
+      <div className="absolute inset-x-0 top-0 bg-[#050505] px-8 pb-3 pt-4">
+        <div className="space-y-[4px]">
           {rankingRows.map((movie, index) => (
             <div
               key={movie?.id ?? `ranking-placeholder-${index}`}
               className={[
-                "grid grid-cols-[1.65rem_minmax(0,1fr)_3.8rem] items-baseline gap-1.5 py-[1px]",
+                "grid grid-cols-[1.65rem_minmax(0,1fr)_4.4rem] items-baseline gap-1.5 py-[2px]",
               ].join(" ")}
             >
               <span style={rankingNumberStyle} className={["text-[12px] font-black tabular-nums", movie?.id === coverMovie?.id ? "text-white" : "text-white/42"].join(" ")}>
                 {movie?.id === coverMovie?.id && coverRankTextValue ? coverRankTextValue : String(index + 1).padStart(2, "0")}
               </span>
               <p
-                style={{ ...titleFontStyle, fontWeight: 500, transform: "translateY(0.5px)" }}
-                className={["truncate text-[13px] font-medium tracking-[-0.03em]", movie?.id === coverMovie?.id ? "text-white" : "text-white/42"].join(" ")}
+                style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
+                className={["truncate text-[13px] font-medium", movie?.id === coverMovie?.id ? "text-white" : "text-white/42"].join(" ")}
               >
                 {movie?.title ?? "영화를 추가하세요"}
               </p>
-              <span className={["truncate text-right text-[8px] font-bold", movie?.id === coverMovie?.id ? "text-white" : "text-white/42"].join(" ")}>{movie ? formatYear(movie) : ""}</span>
+              <span className={["truncate text-right text-[10px] font-bold", movie?.id === coverMovie?.id ? "text-white" : "text-white/42"].join(" ")}>{movie ? formatYear(movie) : ""}</span>
             </div>
           ))}
         </div>

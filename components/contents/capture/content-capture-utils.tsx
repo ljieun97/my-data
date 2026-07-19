@@ -1,11 +1,5 @@
-import { CaptureMovie, CapturePerson } from "@/context/CaptureContentContext";
+import { CaptureMovie } from "@/context/CaptureContentContext";
 import type { CSSProperties, SyntheticEvent } from "react";
-
-export type ProviderLogoOption = {
-  provider_id: number;
-  provider_name: string;
-  logo_path?: string | null;
-};
 
 export function formatYear(movie: CaptureMovie) {
   if (!movie.release_date) return "";
@@ -35,18 +29,6 @@ export function getPosterThumbUrl(posterPath?: string) {
   if (!posterPath) return "";
   if (isExternalImageUrl(posterPath)) return getExternalImageUrl(posterPath);
   return `https://image.tmdb.org/t/p/w185${posterPath}`;
-}
-
-export function getProfileUrl(profilePath?: string) {
-  if (!profilePath) return "";
-  if (isExternalImageUrl(profilePath)) return getExternalImageUrl(profilePath);
-  return `https://image.tmdb.org/t/p/original${profilePath}`;
-}
-
-export function getProfileThumbUrl(profilePath?: string) {
-  if (!profilePath) return "";
-  if (isExternalImageUrl(profilePath)) return getExternalImageUrl(profilePath);
-  return `https://image.tmdb.org/t/p/w185${profilePath}`;
 }
 
 export function isExternalImageUrl(imagePath?: string) {
@@ -99,64 +81,6 @@ export function getTextOverlayClass(textPosition: "top" | "center" | "bottom") {
   return "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_38%,rgba(0,0,0,0.35)_68%,rgba(0,0,0,0.78)_100%)]";
 }
 
-export function getCalendarPosterUrl(item: any) {
-  const raw = String(item?.poster_path ?? item?.posterPath ?? item?.poster ?? "").trim();
-  if (!raw) return "";
-  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
-  if (raw.startsWith("//")) return `https:${raw}`;
-  if (raw.startsWith("/")) return `https://image.tmdb.org/t/p/w500${raw}`;
-  return "";
-}
-
-export function getCalendarBackdropUrl(item: any) {
-  const raw = String(item?.backdrop_path ?? item?.backdropPath ?? item?.backdrop ?? item?.src ?? "").trim();
-  if (!raw) return "";
-  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
-  if (raw.startsWith("//")) return `https:${raw}`;
-  if (raw.startsWith("/")) return `https://image.tmdb.org/t/p/original${raw}`;
-  return "";
-}
-
-export function formatEnglishMonthBadge(date: Date) {
-  return new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(date).toUpperCase();
-}
-
-export function formatEnglishDateBadge(dateKey: string) {
-  const date = new Date(`${dateKey}T00:00:00`);
-  return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric" }).format(date).toUpperCase();
-}
-
-export function formatReleaseBoardDate(value: string) {
-  return value.trim();
-}
-
-export function getProviderLogoUrl(logoPath?: string | null) {
-  if (!logoPath) return "";
-  if (logoPath.startsWith("http://") || logoPath.startsWith("https://")) return logoPath;
-  return `https://image.tmdb.org/t/p/w185${logoPath}`;
-}
-
-export function getReleaseBoardAutoDate(movie?: CaptureMovie) {
-  const rawDate = String(movie?.release_date ?? "").slice(0, 10);
-  if (!rawDate) return "";
-
-  const [year, month, day] = rawDate.split("-").map(Number);
-  if (!year || !month || !day) return "";
-
-  return `${month}/${day}`;
-}
-
-export const RELEASE_BOARD_DEFAULT_COLORS = [
-  "#b91c1c",
-  "#315f90",
-  "#374151",
-  "#111827",
-  "#d14d72",
-  "#7c1d5a",
-  "#caa13f",
-  "#ea6b00",
-];
-
 export function toSafeFilename(value: string) {
   return value.replace(/[\\/:*?"<>|]+/g, "-").trim().replace(/\s+/g, " ");
 }
@@ -207,9 +131,3 @@ export function getCoverSubtitleClass(tone: SubtitleChipTone) {
 
   return `${base} border border-rose-200/16 bg-rose-950/42 text-white shadow-[0_4px_14px_rgba(76,5,25,0.18)]`;
 }
-
-export function getDualPersonTitle(persons: CapturePerson[]) {
-  if (!persons.length) return "인물 이름";
-  return persons.map((person) => person.name).join(" & ");
-}
-

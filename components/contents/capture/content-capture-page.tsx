@@ -1,32 +1,22 @@
 "use client";
 
 import Title from "@/components/common/title";
-import { ReleaseBoardControls } from "@/components/contents/capture/content-capture-release-board-controls";
 import { CaptureSizeControls, CaptureTextArea, CaptureToggleButton } from "@/components/contents/capture/content-capture-controls";
 import { MovieSlotsPanel } from "@/components/contents/capture/content-capture-movie-controls";
-import { CAPTURE_PERSON_MAX_COUNT, CaptureMovie, CaptureMode, CapturePerson, getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
-import { faDownload, faRotateLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { CaptureMovie, CaptureMode, getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
+import { faDownload, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toPng } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  CalendarReleaseBoardTemplate,
   getCoverSubtitleClass,
-  getDualPersonTitle,
   getPosterThumbUrl,
-  getProfileThumbUrl,
-  getProviderLogoUrl,
-  getReleaseBoardAutoDate,
   isExternalImageUrl,
   MovieListTemplate,
-  PersonCoverTemplate,
-  RELEASE_BOARD_DEFAULT_COLORS,
   SingleMovieTemplate,
   subtitleChipToneOptions,
   toSafeFilename,
-  type ProviderLogoOption,
   type SubtitleChipTone,
-  formatReleaseBoardDate,
   formatYear,
 } from "@/components/contents/capture/content-capture-templates";
 import {
@@ -45,44 +35,26 @@ export default function ContentCapturePage() {
     captureMode,
     setCaptureMode,
     selectedMovies,
-    selectedPerson,
-    selectedPersons,
     removeMovie,
-    removePerson,
     reorderMovie,
     updateMovieTitle,
     updateMovieNote,
     updateMovieYear,
     updateMovieImagePosition,
-    updateMovieProviderLogo,
     updateMoviePoster,
     updateMovieSinglePreview,
-    updatePersonProfilePath,
     clearMovies,
-    clearPerson,
   } = useCaptureContent();
   const captureRef = useRef<HTMLDivElement | null>(null);
   const singleMovieCaptureRef = useRef<HTMLDivElement | null>(null);
-  const personCaptureRef = useRef<HTMLDivElement | null>(null);
-  const calendarReleaseCaptureRef = useRef<HTMLDivElement | null>(null);
-  const calendarDayPreviewCaptureRef = useRef<HTMLDivElement | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
   const previousMovieCountRef = useRef(0);
-  const [personTitle, setPersonTitle] = useState("?? ??");
-  const [personSubtitle, setPersonSubtitle] = useState("???? ??? ??");
-  const [personSubbody, setPersonSubbody] = useState("");
-  const [personBody, setPersonBody] = useState("");
-  const [personShowTitle, setPersonShowTitle] = useState(true);
-  const [personShowSubtitle, setPersonShowSubtitle] = useState(false);
-  const [personShowSubbody, setPersonShowSubbody] = useState(true);
-  const [personShowBody, setPersonShowBody] = useState(true);
   const [movieListColumns, setMovieListColumns] = useState<1 | 2>(1);
   const [movieListTwoColumnTextMode, setMovieListTwoColumnTextMode] = useState<"corner" | "center">("corner");
   const [movieListCenterTitles, setMovieListCenterTitles] = useState<string[]>([]);
   const [subtitleChipTone, setSubtitleChipTone] = useState<SubtitleChipTone>("burgundy");
   const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
   const [singlePreviewVariant, setSinglePreviewVariant] = useState<"default" | "spotlight">("default");
-  const [personTitleSize, setPersonTitleSize] = useState(28);
   const [newsHeadline, setNewsHeadline] = useState("라라랜드 10주년 재개봉");
   const [bodyHeadline, setBodyHeadline] = useState("");
   const [newsAccentText, setNewsAccentText] = useState("");
@@ -99,24 +71,16 @@ export default function ContentCapturePage() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
   const [rankingCoverMovieId, setRankingCoverMovieId] = useState<number | null>(null);
-  const [releaseBoardPreviewIndex, setReleaseBoardPreviewIndex] = useState(0);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
-  const [releaseBoardTitle, setReleaseBoardTitle] = useState("6? ???? ?? ???");
-  const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(23);
-  const [releaseBoardLabelColors, setReleaseBoardLabelColors] = useState(RELEASE_BOARD_DEFAULT_COLORS);
-  const [releaseBoardDates, setReleaseBoardDates] = useState(() => Array.from({ length: 8 }, () => ""));
-  const [releaseBoardProviderOptions, setReleaseBoardProviderOptions] = useState<ProviderLogoOption[]>([]);
   const [externalImageUrl, setExternalImageUrl] = useState("");
   const [externalImageError, setExternalImageError] = useState("");
   const subtitleChipClass = getCoverSubtitleClass(subtitleChipTone);
   const isNewsMode = captureMode === "news-cover";
   const isBodyMode = captureMode === "news-body";
   const isRankingMode = captureMode === "ranking-cover";
-  const isPersonMode = captureMode === "person-cover";
   const isMovieListMode = captureMode === "movie-list";
-  const isCalendarReleaseMode = captureMode === "calendar-release";
-  const isMovieMode = isNewsMode || isBodyMode || isRankingMode || isMovieListMode || isCalendarReleaseMode;
+  const isMovieMode = isNewsMode || isBodyMode || isRankingMode || isMovieListMode;
   const movieMinCount = isNewsMode ? 1 : 2;
   const movieMaxCount = getCaptureMovieMaxCount(captureMode);
   const movieSlotCount = Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
@@ -126,28 +90,12 @@ export default function ContentCapturePage() {
     ? selectedMovies.find((movie) => movie.id === rankingCoverMovieId)
     : undefined;
   const currentCoverMovie = isRankingMode ? rankingCoverMovie ?? selectedMovies[0] : currentSingleMovie;
-  const releaseBoardSlots = Array.from({ length: 8 }, (_, index) => selectedMovies[index]);
-  const releaseBoardDateLabels = releaseBoardSlots.map((movie, index) => formatReleaseBoardDate(releaseBoardDates[index]) || getReleaseBoardAutoDate(movie));
-  const currentReleaseBoardMovie = releaseBoardSlots[releaseBoardPreviewIndex];
-  const currentReleaseBoardProviderOptions = releaseBoardProviderOptions;
   const selectedTitleColor = titleColorMode === "auto" ? titleColor : getTitleColorValue(titleColorMode);
   const getReadableTitleColor = (rgb: [number, number, number]) => {
     const cream = [255, 243, 208];
     const mixed = cream.map((value, index) => Math.round(value * 0.68 + rgb[index] * 0.32));
     return `rgb(${mixed[0]}, ${mixed[1]}, ${mixed[2]})`;
   };
-  useEffect(() => {
-    if (selectedPersons.length === 1 && selectedPersons[0]?.name) {
-      setPersonTitle(selectedPersons[0].name);
-      return;
-    }
-    if (selectedPersons.length >= 2) {
-      setPersonTitle(getDualPersonTitle(selectedPersons));
-    }
-  }, [movieSlotCount, selectedPersons]);
-  useEffect(() => {
-    setPersonBody(selectedPerson?.biography || "");
-  }, [selectedPerson?.id, selectedPerson?.biography]);
   useEffect(() => {
     if (!selectedMovies.length) {
       setPreviewMovieIndex(0);
@@ -198,34 +146,6 @@ export default function ContentCapturePage() {
     setExternalImageUrl("");
     setExternalImageError("");
   }, [currentSingleMovieId]);
-  useEffect(() => {
-    if (!isCalendarReleaseMode || releaseBoardProviderOptions.length) {
-      return;
-    }
-    let cancelled = false;
-    const loadProviderOptions = async () => {
-      try {
-        const response = await fetch("/api/provider-catalog");
-        if (!response.ok) {
-          throw new Error(`Failed to load provider catalog: ${response.status}`);
-        }
-        const payload = (await response.json()) as {
-          results?: ProviderLogoOption[];
-        };
-        if (!cancelled) {
-          setReleaseBoardProviderOptions(Array.isArray(payload.results) ? payload.results : []);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error(error);
-        }
-      }
-    };
-    void loadProviderOptions();
-    return () => {
-      cancelled = true;
-    };
-  }, [isCalendarReleaseMode, releaseBoardProviderOptions.length]);
   const handleApplyExternalImageUrl = () => {
     const imageUrl = externalImageUrl.trim();
     if (!imageUrl) {
@@ -243,11 +163,7 @@ export default function ContentCapturePage() {
     setExternalImageError("");
   };
   const handleCapture = async () => {
-    const targetRef = isCalendarReleaseMode
-      ? calendarReleaseCaptureRef
-      : isPersonMode
-        ? personCaptureRef
-        : captureRef;
+    const targetRef = captureRef;
     if (!targetRef.current || isCapturing) return;
     try {
       setIsCapturing(true);
@@ -259,7 +175,7 @@ export default function ContentCapturePage() {
       const dataUrl = await toPng(targetRef.current, {
         cacheBust: true,
         pixelRatio: 2,
-        backgroundColor: isCalendarReleaseMode ? "#221f2e" : "#111827",
+        backgroundColor: "#111827",
         width: captureWidth,
         height: captureHeight,
         canvasWidth: captureWidth * 2,
@@ -473,8 +389,8 @@ export default function ContentCapturePage() {
         <div className="flex w-full items-center gap-2 sm:w-auto">
           <button
             type="button"
-            onClick={isPersonMode ? clearPerson : clearMovies}
-            disabled={isPersonMode ? !selectedPerson : !selectedMovies.length}
+            onClick={clearMovies}
+            disabled={!selectedMovies.length}
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-slate-300 bg-white text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
             aria-label="Reset selected movies"
             title="Reset"
@@ -484,7 +400,7 @@ export default function ContentCapturePage() {
           <button
             type="button"
             onClick={handleCapture}
-            disabled={isCapturing || (isPersonMode ? !selectedPerson : !selectedMovies.length)}
+            disabled={isCapturing || !selectedMovies.length}
             className="inline-flex h-10 flex-1 items-center justify-center gap-2 border border-slate-900 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-default disabled:opacity-45 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-white sm:flex-none"
           >
             <FontAwesomeIcon icon={faDownload} />
@@ -527,34 +443,16 @@ export default function ContentCapturePage() {
       </div>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
         <section className="flex flex-col gap-4">
-          {isCalendarReleaseMode ? (
-              <ReleaseBoardControls
-              selectedMoviesCount={selectedMovies.length}
-              releaseBoardTitle={releaseBoardTitle}
-              setReleaseBoardTitle={setReleaseBoardTitle}
-              releaseBoardTitleSize={releaseBoardTitleSize}
-              setReleaseBoardTitleSize={setReleaseBoardTitleSize}
-              releaseBoardLabelColors={releaseBoardLabelColors}
-              setReleaseBoardLabelColors={setReleaseBoardLabelColors}
-              releaseBoardDates={releaseBoardDates}
-              setReleaseBoardDates={setReleaseBoardDates}
-              releaseBoardPlaceholders={releaseBoardSlots.map((movie) => getReleaseBoardAutoDate(movie) || "6/5")}
-              footerLeft={footerLeft}
-              setFooterLeft={setFooterLeft}
-              footerRight={footerRight}
-              setFooterRight={setFooterRight}
-            />
-          ) : isMovieMode ? (
+          {isMovieMode ? (
           <>
             <MovieSlotsPanel
-              isCalendarReleaseMode={isCalendarReleaseMode}
               isRankingMode={isRankingMode}
               isMovieListMode={isMovieListMode || isRankingMode}
               rankingCoverMovieId={rankingCoverMovieId}
               rankingCoverRankText={rankingCoverRankText}
               selectedMoviesCount={selectedMovies.length}
               movieSlotCount={movieSlotCount}
-              movies={isCalendarReleaseMode ? releaseBoardSlots : slots}
+              movies={slots}
               dragOverIndex={dragOverIndex}
               onDragStart={handleDragStart}
               onDragOver={(index) => setDragOverIndex(index)}
@@ -959,169 +857,14 @@ export default function ContentCapturePage() {
             </div>
           ) : null}
           </>
-          ) : (
-            <>
-              <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Person</p>
-                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedPersons.length}/{CAPTURE_PERSON_MAX_COUNT}</p>
-                </div>
-                <div className="flex flex-col gap-3">
-                  {selectedPersons.length ? (
-                    selectedPersons.map((person, index) => (
-                      <div key={person.id} className="border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900/60">
-                        <div className="flex items-start gap-3">
-                          {person.profile_path ? (
-                            <img
-                              alt=""
-                              src={getProfileThumbUrl(person.profile_path)}
-                              className="h-20 w-14 shrink-0 object-cover"
-                            />
-                          ) : (
-                            <div className="h-20 w-14 shrink-0 bg-slate-200 dark:bg-slate-800" />
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">{person.name}</p>
-                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{person.known_for_department ?? "������ �̹����� ������ �� �ֽ��ϴ�"}</p>
-                            <p className="mt-2 text-[11px] font-semibold text-slate-400 dark:text-slate-500">�ι� {index + 1}</p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removePerson(person.id)}
-                            className="inline-flex h-8 w-8 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-                            aria-label={`${person.name} remove`}
-                            title="Remove"
-                          >
-                            <FontAwesomeIcon icon={faTrash} />
-                          </button>
-                        </div>
-                        <label className="mt-3 block">
-                          <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Custom image URL</span>
-                          <input
-                            value={person.profile_path?.startsWith("http") || person.profile_path?.startsWith("//") ? person.profile_path : ""}
-                            onChange={(event) => updatePersonProfilePath(person.id, event.target.value.trim())}
-                            placeholder="https://..."
-                            className="h-9 w-full border border-slate-200 bg-white px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
-                          />
-                        </label>
-                        {person.profileOptions?.length ? (
-                          <div className="mt-3 grid grid-cols-5 gap-2">
-                            {person.profileOptions.map((profilePath) => (
-                              <button
-                                key={`${person.id}-${profilePath}`}
-                                type="button"
-                                onClick={() => updatePersonProfilePath(person.id, profilePath)}
-                                className={[
-                                  "aspect-[4/5] overflow-hidden border transition",
-                                  person.profile_path === profilePath ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20" : "border-slate-200 dark:border-slate-800",
-                                ].join(" ")}
-                                aria-label="Select profile image"
-                              >
-                                <img alt="" src={`https://image.tmdb.org/t/p/w185${profilePath}`} className="h-full w-full object-cover" />
-                              </button>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="flex items-center justify-center border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400">
-                      ��� �˻����� �ι��� �ִ� {CAPTURE_PERSON_MAX_COUNT}������ �߰��ϼ���
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Cover Text</p>
-                <label className="mb-3 block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                  <CaptureTextArea
-                    value={personTitle}
-                    onChange={(event) => setPersonTitle(event.target.value)}
-                    rows={2}
-                  />
-                  <CaptureSizeControls value={personTitleSize} defaultValue={28} onChange={setPersonTitleSize} step={2} min={24} max={48} />
-                </label>
-                <label className="mb-3 block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle</span>
-                  <input
-                    value={personSubtitle}
-                    onChange={(event) => setPersonSubtitle(event.target.value)}
-                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                  />
-                </label>
-                <div className="mb-3">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle Chip</span>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {subtitleChipToneOptions.map((item) => (
-                      <button
-                        key={item.key}
-                        type="button"
-                        onClick={() => setSubtitleChipTone(item.key)}
-                        className={[
-                          "flex h-9 items-center gap-2 border px-2 text-xs font-bold transition",
-                          subtitleChipTone === item.key
-                            ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                        ].join(" ")}
-                      >
-                        <span className={["h-3 w-3 rounded-full", item.swatchClass].join(" ")} />
-                        <span>{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <label className="mb-3 block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body</span>
-                  <textarea
-                    value={personBody}
-                    onChange={(event) => setPersonBody(event.target.value)}
-                    placeholder={selectedPerson?.biography ? "" : "�ι� ����"}
-                    rows={2}
-                    className="min-h-20 w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                  />
-                </label>
-                <label className="mb-3 block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subbody</span>
-                  <textarea
-                    value={personSubbody}
-                    onChange={(event) => setPersonSubbody(event.target.value)}
-                    rows={2}
-                    className="min-h-16 w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                  />
-                </label>
-                <div className="mb-3 grid grid-cols-4 gap-2">
-                  {[
-                    { key: "title", label: "Title", checked: personShowTitle, setChecked: setPersonShowTitle },
-                    { key: "subtitle", label: "Subtitle", checked: personShowSubtitle, setChecked: setPersonShowSubtitle },
-                    { key: "subbody", label: "Subbody", checked: personShowSubbody, setChecked: setPersonShowSubbody },
-                    { key: "body", label: "Body", checked: personShowBody, setChecked: setPersonShowBody },
-                  ].map((item) => (
-                    <button
-                      key={item.key}
-                      type="button"
-                      onClick={() => item.setChecked((current) => !current)}
-                      className={[
-                        "h-8 border px-2 text-xs font-bold transition",
-                        item.checked
-                          ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                          : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                      ].join(" ")}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+          ) : null}
         </section>
         <section className="flex justify-center lg:justify-end">
           <div className="w-full max-w-[min(100%,390px)] sm:max-w-[420px]">
             <div
-              ref={isCalendarReleaseMode ? calendarReleaseCaptureRef : captureMode === "person-cover" ? personCaptureRef : captureRef}
+              ref={captureRef}
               className={[
-                isCalendarReleaseMode ? "aspect-[4/5] w-full overflow-hidden bg-[#221f2e] text-white" : "aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white",
+                "aspect-[4/5] w-full overflow-hidden bg-slate-950 text-white",
                 "shadow-[0_24px_64px_rgba(15,23,42,0.24)]",
               ].join(" ")}
             >
@@ -1163,30 +906,6 @@ export default function ContentCapturePage() {
                   coverMovieId={currentCoverMovie?.id}
                   coverRankText={rankingCoverRankText}
                 />
-              ) : isCalendarReleaseMode ? (
-                <CalendarReleaseBoardTemplate
-                  movies={releaseBoardSlots}
-                  title={releaseBoardTitle}
-                  titleSize={releaseBoardTitleSize}
-                  labelColors={releaseBoardLabelColors}
-                  dateLabels={releaseBoardDateLabels}
-                />
-              ) : captureMode === "person-cover" ? (
-                <PersonCoverTemplate
-                  persons={selectedPersons}
-                  headline={personTitle}
-                  titleSize={personTitleSize}
-                  kicker={personSubtitle}
-                  subtitleChipClass={subtitleChipClass}
-                  subbody={personSubbody}
-                  body={personBody}
-                  showTitle={personShowTitle}
-                  showSubtitle={personShowSubtitle}
-                  showSubbody={personShowSubbody}
-                  showBody={personShowBody}
-                  footerLeft={footerLeft}
-                  footerRight={footerRight}
-                />
               ) : (
               <MovieListTemplate
                 slots={slots}
@@ -1199,116 +918,6 @@ export default function ContentCapturePage() {
               )}
             </div>
             {(isMovieListMode || isNewsMode || isBodyMode || isRankingMode) && selectedMovies.length ? renderMovieListImagePicker() : null}
-            {isCalendarReleaseMode ? (
-              <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
-                <div className="p-4 pb-3">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Release Board Poster</p>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                      {selectedMovies.length ? `${releaseBoardPreviewIndex + 1}/${Math.min(selectedMovies.length, 8)}` : "empty"}
-                    </p>
-                  </div>
-                  {selectedMovies.length ? (
-                    <div className="flex gap-1.5 overflow-x-auto pb-1">
-                      {releaseBoardSlots.map((movie, index) => (
-                        <button
-                          key={`${movie?.id ?? "release-slot"}-${index}`}
-                          type="button"
-                          onClick={() => setReleaseBoardPreviewIndex(index)}
-                          className={[
-                            "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
-                            releaseBoardPreviewIndex === index
-                              ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                              : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                          ].join(" ")}
-                          disabled={!movie}
-                        >
-                          {index + 1}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-                {currentReleaseBoardMovie?.posterOptions?.length ? (
-                  <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Poster</p>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        {currentReleaseBoardMovie.posterOptions.length}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-                      {currentReleaseBoardMovie.posterOptions.map((posterPath) => (
-                        <button
-                          key={posterPath}
-                          type="button"
-                          onClick={() => updateMoviePoster(currentReleaseBoardMovie.id, posterPath)}
-                          className={[
-                            "aspect-[4/5] overflow-hidden border transition",
-                            currentReleaseBoardMovie.poster_path === posterPath
-                              ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
-                              : "border-slate-200 dark:border-slate-800",
-                          ].join(" ")}
-                          aria-label="Select release board poster"
-                        >
-                          <img alt="" src={getPosterThumbUrl(posterPath)} className="h-full w-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="px-4 pb-4 text-xs text-slate-500 dark:text-slate-400">
-                    {selectedMovies.length ? "������ ��ȭ�� ������ �ɼ��� ������ ���� �����Ͱ� �״�� ���˴ϴ�." : "��ȭ�� �߰��ϸ� ������ ������ ǥ�õ˴ϴ�."}
-                  </div>
-                )}
-                {currentReleaseBoardMovie ? (
-                  <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Provider Logo</p>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                        {currentReleaseBoardProviderOptions.length}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-                      <button
-                        type="button"
-                        onClick={() => updateMovieProviderLogo(currentReleaseBoardMovie.id, "")}
-                        className={[
-                          "flex aspect-square items-center justify-center border text-[11px] font-bold transition",
-                          !currentReleaseBoardMovie.providerLogoPath
-                            ? "border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-slate-950"
-                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                        ].join(" ")}
-                      >
-                        ����
-                      </button>
-                      {currentReleaseBoardProviderOptions.map((provider) => (
-                        <button
-                          key={`${provider.provider_id}-${provider.logo_path ?? "none"}`}
-                          type="button"
-                          onClick={() => updateMovieProviderLogo(currentReleaseBoardMovie.id, provider.logo_path ?? "", provider.provider_name)}
-                          className={[
-                            "aspect-square overflow-hidden border p-0.5 transition",
-                            currentReleaseBoardMovie.providerLogoPath === provider.logo_path
-                              ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
-                              : "border-slate-200 dark:border-slate-800",
-                          ].join(" ")}
-                          title={provider.provider_name}
-                          aria-label={`Select ${provider.provider_name} logo`}
-                        >
-                          <img
-                            alt={provider.provider_name}
-                            src={getProviderLogoUrl(provider.logo_path)}
-                            className="h-full w-full rounded-md object-cover"
-                            crossOrigin="anonymous"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
             {isMovieListMode ? (
               <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
                 <div className="p-4 pb-3">

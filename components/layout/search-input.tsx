@@ -3,8 +3,8 @@
 import { Input } from "@heroui/react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { CAPTURE_PERSON_MAX_COUNT, getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
-import { getDetail, getImages, getSearchMulti, getSearchPeople } from "@/lib/open-api/tmdb-client";
+import { getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
+import { getDetail, getImages, getSearchMulti } from "@/lib/open-api/tmdb-client";
 
 export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean }) {
   const router = useRouter();
@@ -17,7 +17,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const [isLoadingCaptureResults, setIsLoadingCaptureResults] = useState(false);
   const [captureSearchError, setCaptureSearchError] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const { captureMode, addMovie, setPerson, hasMovie, selectedMovies, selectedPersons } = useCaptureContent();
+  const { captureMode, addMovie, hasMovie, selectedMovies } = useCaptureContent();
   const isCapturePage = pathname?.startsWith("/capture");
   const maxCaptureMovies = getCaptureMovieMaxCount(captureMode);
 
@@ -69,34 +69,6 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
     }
   };
 
-  const handleSelectCapturePerson = async (person: any) => {
-    try {
-      setIsLoadingCaptureResults(true);
-      const [detail, images] = await Promise.all([
-        getDetail("person", person.id),
-        getImages("person", person.id),
-      ]);
-      const profileOptions = Array.isArray(images?.profiles)
-        ? images.profiles.map((profile: any) => profile.file_path).filter(Boolean).slice(0, 12)
-        : [];
-
-      setPerson({
-        id: Number(person.id),
-        name: detail?.name || person.name,
-        profile_path: detail?.profile_path || person.profile_path || profileOptions[0],
-        known_for_department: detail?.known_for_department || person.known_for_department,
-        birthday: detail?.birthday,
-        place_of_birth: detail?.place_of_birth,
-        biography: detail?.biography,
-        profileOptions,
-      });
-      setInputValue("");
-      setCaptureResults([]);
-    } finally {
-      setIsLoadingCaptureResults(false);
-    }
-  };
-
   useEffect(() => {
     if (!autoFocus) {
       return;
@@ -131,25 +103,21 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
 
     const timerId = window.setTimeout(async () => {
       try {
-        const data = captureMode === "person-cover"
-          ? await getSearchPeople(keyword, 1)
-          : await getSearchMulti(keyword, 1);
+        const data = await getSearchMulti(keyword, 1);
         if (isCancelled) return;
 
         const results = Array.isArray(data?.results)
-          ? captureMode === "person-cover"
-            ? data.results.filter((item: any) => item?.profile_path).slice(0, 6)
-            : data.results
-                .filter((item: any) => item?.media_type === "movie" || item?.media_type === "tv" || item?.title || item?.name)
-                .filter((item: any, index: number, items: any[]) => {
-                  const mediaType = item?.media_type === "tv" ? "tv" : "movie";
-                  const key = `${mediaType}-${item?.id}`;
-                  return items.findIndex((candidate: any) => {
-                    const candidateMediaType = candidate?.media_type === "tv" ? "tv" : "movie";
-                    return `${candidateMediaType}-${candidate?.id}` === key;
-                  }) === index;
-                })
-                .slice(0, 6)
+          ? data.results
+              .filter((item: any) => item?.media_type === "movie" || item?.media_type === "tv" || item?.title || item?.name)
+              .filter((item: any, index: number, items: any[]) => {
+                const mediaType = item?.media_type === "tv" ? "tv" : "movie";
+                const key = `${mediaType}-${item?.id}`;
+                return items.findIndex((candidate: any) => {
+                  const candidateMediaType = candidate?.media_type === "tv" ? "tv" : "movie";
+                  return `${candidateMediaType}-${candidate?.id}` === key;
+                }) === index;
+              })
+              .slice(0, 6)
           : [];
 
         setCaptureResults(results);
@@ -186,7 +154,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       <Input
         ref={inputRef}
         aria-label="Search title"
-        placeholder={isCapturePage ? (captureMode === "person-cover" ? "커버 인물 검색" : "추가할 영화 검색") : "제목을 입력하세요."}
+        placeholder={isCapturePage ? "추가할 영화 검색" : "제목을 입력하세요."}
         className="w-full min-w-0 border-none shadow-none outline-none ring-0
           focus:border-none focus:outline-none focus:ring-0
           focus-visible:outline-none focus-visible:ring-0"
@@ -211,36 +179,26 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
 
           {!isLoadingCaptureResults && !captureSearchError && inputValue.trim() && !captureResults.length ? (
             <div className="px-3 py-3 text-sm text-slate-500 dark:text-slate-400">
-              {captureMode === "person-cover" ? "프로필 이미지가 있는 인물이 없습니다" : "검색 결과가 없습니다"}
+              검색 결과가 없습니다
             </div>
           ) : null}
 
           {captureResults.map((result) => {
-            const isPersonMode = captureMode === "person-cover";
             const mediaType = result?.media_type === "tv" ? "tv" : "movie";
-            const isAdded = isPersonMode
-              ? selectedPersons.some((person) => person.id === Number(result.id))
-              : hasMovie(Number(result.id), mediaType);
-            const isDisabled = isPersonMode
-              ? !isAdded && selectedPersons.length >= CAPTURE_PERSON_MAX_COUNT
-              : isAdded || selectedMovies.length >= maxCaptureMovies;
+            const isAdded = hasMovie(Number(result.id), mediaType);
+            const isDisabled = isAdded || selectedMovies.length >= maxCaptureMovies;
             const yearSource = result.release_date || result.first_air_date;
             const year = yearSource ? String(yearSource).slice(0, 4) : "";
-            const imagePath = isPersonMode ? result.profile_path : result.poster_path || result.backdrop_path;
-            const title = isPersonMode ? result.name : result.title || result.name;
+            const imagePath = result.poster_path || result.backdrop_path;
+            const title = result.title || result.name;
 
             return (
               <button
-                key={isPersonMode ? result.id : `${mediaType}-${result.id}`}
+                key={`${mediaType}-${result.id}`}
                 type="button"
                 disabled={isDisabled}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
-                  if (isPersonMode) {
-                    void handleSelectCapturePerson(result);
-                    return;
-                  }
-
                   void handleSelectCaptureMovie(result);
                 }}
                 className="flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-50 dark:hover:bg-slate-900"
@@ -259,11 +217,11 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</span>
                   <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                    {isPersonMode ? result.known_for_department || "Person" : `${mediaType === "tv" ? "시리즈" : "영화"}${year ? ` · ${year}` : ""}`}
+                    {`${mediaType === "tv" ? "시리즈" : "영화"}${year ? ` · ${year}` : ""}`}
                   </span>
                 </span>
                 <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                  {isPersonMode ? "선택" : isAdded ? "추가됨" : selectedMovies.length >= maxCaptureMovies ? "가득참" : "추가"}
+                  {isAdded ? "추가됨" : selectedMovies.length >= maxCaptureMovies ? "가득참" : "추가"}
                 </span>
               </button>
             );

@@ -7,7 +7,6 @@ import { CaptureHelperText, CapturePanel } from "@/components/contents/capture/c
 import { formatYear } from "@/components/contents/capture/content-capture-utils";
 
 type MovieSlotsPanelProps = {
-  isCalendarReleaseMode: boolean;
   isRankingMode: boolean;
   isMovieListMode: boolean;
   rankingCoverMovieId?: number | null;
@@ -31,7 +30,6 @@ type MovieSlotsPanelProps = {
 };
 
 export function MovieSlotsPanel({
-  isCalendarReleaseMode,
   isRankingMode,
   isMovieListMode,
   rankingCoverMovieId,
@@ -62,9 +60,7 @@ export function MovieSlotsPanel({
         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedMoviesCount}/{movieSlotCount}</p>
       </div>
       <CaptureHelperText className="mb-3 font-semibold">
-        {isCalendarReleaseMode
-          ? "릴리즈보드는 최대 8개까지 추가되고 순서대로 반영됩니다."
-          : "영화는 추가한 만큼 자동으로 레이아웃이 확장됩니다."}
+        영화는 추가한 만큼 자동으로 레이아웃이 확장됩니다.
       </CaptureHelperText>
 
       <div className="flex flex-col gap-2">

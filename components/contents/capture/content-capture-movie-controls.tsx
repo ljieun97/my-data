@@ -9,6 +9,7 @@ import { formatYear } from "@/components/contents/capture/content-capture-utils"
 type MovieSlotsPanelProps = {
   isRankingMode: boolean;
   isMovieListMode: boolean;
+  showRankingTotalAudience?: boolean;
   rankingCoverMovieId?: number | null;
   selectedMoviesCount: number;
   movieSlotCount: number;
@@ -23,6 +24,7 @@ type MovieSlotsPanelProps = {
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
   updateMovieRankingText: (id: number, value: string) => void;
+  updateMovieRankingTotalAudience: (id: number, value: string) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   onSelectRankingCoverMovie?: (id: number) => void;
@@ -31,6 +33,7 @@ type MovieSlotsPanelProps = {
 export function MovieSlotsPanel({
   isRankingMode,
   isMovieListMode,
+  showRankingTotalAudience = false,
   rankingCoverMovieId,
   selectedMoviesCount,
   movieSlotCount,
@@ -45,6 +48,7 @@ export function MovieSlotsPanel({
   updateMovieTitle,
   updateMovieNote,
   updateMovieRankingText,
+  updateMovieRankingTotalAudience,
   updateMovieYear,
   updateMovieImagePosition,
   onSelectRankingCoverMovie,
@@ -139,6 +143,17 @@ export function MovieSlotsPanel({
                     placeholder={isRankingMode ? "일일 관객" : "연도"}
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
+                  {isRankingMode && showRankingTotalAudience ? (
+                    <input
+                      value={movie.rankingTotalAudience ?? ""}
+                      onChange={(event) => updateMovieRankingTotalAudience(movie.id, event.target.value)}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onDragStart={(event) => event.preventDefault()}
+                      maxLength={16}
+                      placeholder="누적 관객"
+                      className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                    />
+                  ) : null}
                   {!isRankingMode ? (
                     <div className="flex items-center gap-1">
                       <button

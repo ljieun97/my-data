@@ -40,6 +40,7 @@ export default function ContentCapturePage() {
     updateMovieTitle,
     updateMovieNote,
     updateMovieRankingText,
+    updateMovieRankingTotalAudience,
     updateMovieYear,
     updateMovieImagePosition,
     updateMoviePoster,
@@ -65,6 +66,7 @@ export default function ContentCapturePage() {
   const [titleColor, setTitleColor] = useState("#fff3d0");
   const [titleColorMode, setTitleColorMode] = useState<"auto" | TitleColorKey>("auto");
   const [rankingHeadline, setRankingHeadline] = useState("군체 500만 관객 돌파,\n박스오피스 1위");
+  const [showRankingTotalAudience, setShowRankingTotalAudience] = useState(false);
   const [useFilmFilter, setUseFilmFilter] = useState(false);
   const [footerLeft, setFooterLeft] = useState("占싸놂옙占쌘몌옙占쏙옙");
   const [footerRight, setFooterRight] = useState("35Film");
@@ -451,6 +453,7 @@ export default function ContentCapturePage() {
             <MovieSlotsPanel
               isRankingMode={isRankingMode}
               isMovieListMode={isMovieListMode || isRankingMode}
+              showRankingTotalAudience={showRankingTotalAudience}
               rankingCoverMovieId={rankingCoverMovieId}
               selectedMoviesCount={isRankingMode ? Math.min(selectedMovies.length, movieSlotCount) : selectedMovies.length}
               movieSlotCount={movieSlotCount}
@@ -468,6 +471,7 @@ export default function ContentCapturePage() {
               updateMovieTitle={updateMovieTitle}
               updateMovieNote={updateMovieNote}
               updateMovieRankingText={updateMovieRankingText}
+              updateMovieRankingTotalAudience={updateMovieRankingTotalAudience}
               updateMovieYear={updateMovieYear}
               updateMovieImagePosition={updateMovieImagePosition}
               onSelectRankingCoverMovie={(id) => {
@@ -632,6 +636,17 @@ export default function ContentCapturePage() {
           {isRankingMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Ranking Cover</p>
+              <div className="mb-3">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Audience</span>
+                <CaptureToggleButton
+                  type="button"
+                  active={showRankingTotalAudience}
+                  onClick={() => setShowRankingTotalAudience((current) => !current)}
+                  className="w-full"
+                >
+                  누적 관객 표시
+                </CaptureToggleButton>
+              </div>
               <label className="block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Photo Headline</span>
                 <CaptureTextArea
@@ -892,6 +907,7 @@ export default function ContentCapturePage() {
                   useFilmFilter={useFilmFilter}
                   footerRight={footerRight}
                   coverMovieId={currentCoverMovie?.id}
+                  showTotalAudience={showRankingTotalAudience}
                 />
               ) : (
               <MovieListTemplate

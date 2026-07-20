@@ -224,6 +224,7 @@ export function RankingCoverTemplate({
   useFilmFilter,
   footerRight,
   coverMovieId,
+  showTotalAudience = false,
 }: {
   movies: Array<CaptureMovie | undefined>;
   headline: string;
@@ -234,6 +235,7 @@ export function RankingCoverTemplate({
   useFilmFilter: boolean;
   footerRight: string;
   coverMovieId?: number;
+  showTotalAudience?: boolean;
 }) {
   const topMovie = movies[0];
   const coverMovie = coverMovieId ? movies.find((movie) => movie?.id === coverMovieId) ?? topMovie : topMovie;
@@ -242,8 +244,8 @@ export function RankingCoverTemplate({
   const headlineValue = headline.trim() || `${topMovie?.title ?? "1위 작품"} 박스오피스 1위`;
   const getRankText = (movie: CaptureMovie | undefined, index: number) =>
     movie?.rankingText?.trim() || String(index + 1).padStart(2, "0");
-  const getPrimaryListTextColor = (movie?: CaptureMovie) =>
-    movie?.id === coverMovie?.id ? "text-white" : "text-white/42";
+  const getDailyAudience = (movie?: CaptureMovie) => movie?.release_date?.trim() ?? "";
+  const getTotalAudience = (movie?: CaptureMovie) => movie?.rankingTotalAudience?.trim() ?? "";
 
   return (
     <div className="relative h-full overflow-hidden bg-neutral-950 text-white">
@@ -266,23 +268,36 @@ export function RankingCoverTemplate({
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.12)_46%,rgba(0,0,0,0.72)_100%)]" />
       </div>
       <div className="absolute inset-x-0 top-[42%] h-[18%] bg-[linear-gradient(180deg,#050505_0%,rgba(5,5,5,0.84)_36%,rgba(5,5,5,0)_100%)]" />
-      <div className="absolute inset-x-0 top-0 bg-[#050505] px-8 pb-3 pt-4">
-        <div className="space-y-[4px]">
+      <div className="absolute inset-x-0 top-0 h-[56%] bg-[#050505] px-8 pb-2 pt-4">
+        <div>
           {rankingRows.map((movie, index) => (
             <div
               key={movie?.id ?? `ranking-placeholder-${index}`}
-              className="grid grid-cols-[1.65rem_minmax(0,1fr)_4.4rem] items-baseline gap-1.5 py-[2px]"
+              className={[
+                "grid items-center gap-1 border-b border-white/10 py-[3px]",
+                showTotalAudience ? "grid-cols-[1.45rem_minmax(0,1fr)_4.2rem_4.7rem]" : "grid-cols-[1.45rem_minmax(0,1fr)_4.9rem]",
+              ].join(" ")}
             >
-              <span style={rankingNumberStyle} className={["text-[12px] font-black tabular-nums", getPrimaryListTextColor(movie)].join(" ")}>
+              <span
+                style={rankingNumberStyle}
+                className="inline-flex h-[18px] min-w-[22px] items-center justify-center rounded-[5px] bg-neutral-600 text-[10px] font-black tabular-nums text-white"
+              >
                 {getRankText(movie, index)}
               </span>
               <p
                 style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
-                className={["truncate text-[13px] font-medium", getPrimaryListTextColor(movie)].join(" ")}
+                className="truncate text-[12px] font-semibold text-white"
               >
                 {movie?.title ?? "영화를 추가하세요"}
               </p>
-              <span className={["truncate text-right text-[10px] font-bold", getPrimaryListTextColor(movie)].join(" ")}>{movie ? formatYear(movie) : ""}</span>
+              <span className="truncate text-right text-[11px] font-black text-white">
+                {getDailyAudience(movie)}
+              </span>
+              {showTotalAudience ? (
+                <span className="truncate text-right text-[9px] font-semibold text-white/46">
+                  {getTotalAudience(movie)}
+                </span>
+              ) : null}
             </div>
           ))}
         </div>

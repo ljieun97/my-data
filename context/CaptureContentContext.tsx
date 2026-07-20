@@ -47,6 +47,7 @@ type CaptureContentContextValue = {
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
   updateMovieRankingText: (id: number, value: string) => void;
+  updateMovieRankingTotalAudience: (id: number, value: string) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
@@ -185,6 +186,12 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
+  const updateMovieRankingTotalAudience = (id: number, value: string) => {
+    setSelectedMovies((current) =>
+      current.map((movie) => (movie.id === id ? { ...movie, rankingTotalAudience: value.trim() } : movie)),
+    );
+  };
+
   const updateMovieYear = (id: number, year: string) => {
     const yearLabel = year.trim();
     setSelectedMovies((current) =>
@@ -266,6 +273,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       updateMovieTitle,
       updateMovieNote,
       updateMovieRankingText,
+      updateMovieRankingTotalAudience,
       updateMovieYear,
       updateMovieImagePosition,
       updateMoviePoster,

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Title from "@/components/common/title";
 import { CaptureSizeControls, CaptureTextArea, CaptureToggleButton } from "@/components/contents/capture/content-capture-controls";
@@ -34,15 +34,12 @@ export default function ContentCapturePage() {
   const {
     captureMode,
     setCaptureMode,
-    rankingListVersion,
-    setRankingListVersion,
     selectedMovies,
     removeMovie,
     reorderMovie,
     updateMovieTitle,
     updateMovieNote,
     updateMovieRankingText,
-    updateMovieRankingTotalAudience,
     updateMovieYear,
     updateMovieImagePosition,
     updateMoviePoster,
@@ -68,9 +65,8 @@ export default function ContentCapturePage() {
   const [titleColor, setTitleColor] = useState("#fff3d0");
   const [titleColorMode, setTitleColorMode] = useState<"auto" | TitleColorKey>("auto");
   const [rankingHeadline, setRankingHeadline] = useState("군체 500만 관객 돌파,\n박스오피스 1위");
-  const [rankingListColorMode, setRankingListColorMode] = useState<"cover-only" | "all-muted">("cover-only");
   const [useFilmFilter, setUseFilmFilter] = useState(false);
-  const [footerLeft, setFooterLeft] = useState("�γ��ڸ���");
+  const [footerLeft, setFooterLeft] = useState("占싸놂옙占쌘몌옙占쏙옙");
   const [footerRight, setFooterRight] = useState("35Film");
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
@@ -86,8 +82,8 @@ export default function ContentCapturePage() {
   const isMovieListMode = captureMode === "movie-list";
   const isMovieMode = isNewsMode || isBodyMode || isRankingMode || isMovieListMode;
   const movieMinCount = isNewsMode ? 1 : 2;
-  const movieMaxCount = getCaptureMovieMaxCount(captureMode, rankingListVersion);
-  const rankingSlotCount = rankingListVersion === "top5-detail" ? 5 : 10;
+  const movieMaxCount = getCaptureMovieMaxCount(captureMode);
+  const rankingSlotCount = 10;
   const movieSlotCount = isRankingMode
     ? rankingSlotCount
     : Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
@@ -156,11 +152,11 @@ export default function ContentCapturePage() {
   const handleApplyExternalImageUrl = () => {
     const imageUrl = externalImageUrl.trim();
     if (!imageUrl) {
-      setExternalImageError("�̹��� URL�� �Է����ּ���.");
+      setExternalImageError("占싱뱄옙占쏙옙 URL占쏙옙 占쌉뤄옙占쏙옙占쌍쇽옙占쏙옙.");
       return;
     }
     if (!isExternalImageUrl(imageUrl)) {
-      setExternalImageError("http:// �Ǵ� https://�� �����ϴ� �̹��� URL�� �־��ּ���.");
+      setExternalImageError("http:// 占실댐옙 https://占쏙옙 占쏙옙占쏙옙占싹댐옙 占싱뱄옙占쏙옙 URL占쏙옙 占쌍억옙占쌍쇽옙占쏙옙.");
       return;
     }
     const imagePickerMovie = isRankingMode ? currentCoverMovie : selectedMovies[previewMovieIndex];
@@ -224,7 +220,7 @@ export default function ContentCapturePage() {
   const movieListCenterTitleDefaults = Array.from({ length: Math.ceil(slots.length / 2) }, (_, index) => {
     const left = slots[index * 2];
     const right = slots[index * 2 + 1];
-    return [left?.title, right?.title].filter(Boolean).join(" �� ") || "��ȭ�� �߰��ϼ���";
+    return [left?.title, right?.title].filter(Boolean).join(" 占쏙옙 ") || "占쏙옙화占쏙옙 占쌩곤옙占싹쇽옙占쏙옙";
   });
   const movieTextForCopy = useMemo(
     () =>
@@ -326,7 +322,7 @@ export default function ContentCapturePage() {
         <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
           <div className="mb-3">
             <p className="text-sm font-bold text-slate-900 dark:text-slate-100">External Image</p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">�̹��� �ּҸ� �ٿ������� ��� ������� ���� �����信 ���� ����˴ϴ�.</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">占싱뱄옙占쏙옙 占쌍소몌옙 占쌕울옙占쏙옙占쏙옙占쏙옙 占쏙옙占?占쏙옙占쏙옙占쏙옙占?占쏙옙占쏙옙 占쏙옙占쏙옙占썰에 占쏙옙占쏙옙 占쏙옙占쏙옙絳求占?</p>
           </div>
           <form
             className="flex gap-2"
@@ -346,7 +342,7 @@ export default function ContentCapturePage() {
               type="submit"
               className="shrink-0 border border-slate-950 bg-slate-950 px-3 py-2 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
             >
-              ����
+              占쏙옙占쏙옙
             </button>
           </form>
           {externalImageUrl && isExternalImageUrl(externalImageUrl.trim()) ? (
@@ -421,7 +417,7 @@ export default function ContentCapturePage() {
               className="inline-flex h-10 flex-1 items-center justify-center gap-2 border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900 sm:flex-none"
             >
               <FontAwesomeIcon icon={faDownload} />
-              ����
+              占쏙옙占쏙옙
             </button>
           ) : null}
         </div>
@@ -455,7 +451,6 @@ export default function ContentCapturePage() {
             <MovieSlotsPanel
               isRankingMode={isRankingMode}
               isMovieListMode={isMovieListMode || isRankingMode}
-              isRankingDetailMode={rankingListVersion === "top5-detail"}
               rankingCoverMovieId={rankingCoverMovieId}
               selectedMoviesCount={isRankingMode ? Math.min(selectedMovies.length, movieSlotCount) : selectedMovies.length}
               movieSlotCount={movieSlotCount}
@@ -473,7 +468,6 @@ export default function ContentCapturePage() {
               updateMovieTitle={updateMovieTitle}
               updateMovieNote={updateMovieNote}
               updateMovieRankingText={updateMovieRankingText}
-              updateMovieRankingTotalAudience={updateMovieRankingTotalAudience}
               updateMovieYear={updateMovieYear}
               updateMovieImagePosition={updateMovieImagePosition}
               onSelectRankingCoverMovie={(id) => {
@@ -491,7 +485,7 @@ export default function ContentCapturePage() {
                 onClick={() => setUseFilmFilter((current) => !current)}
                 className="w-full"
               >
-                필카 필터
+                ?꾩뭅 ?꾪꽣
               </CaptureToggleButton>
               <div className="mt-4">
                 <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title Font</span>
@@ -638,44 +632,6 @@ export default function ContentCapturePage() {
           {isRankingMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Ranking Cover</p>
-              <div className="mb-3">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">List Version</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <CaptureToggleButton
-                    type="button"
-                    active={rankingListVersion === "top10"}
-                    onClick={() => setRankingListVersion("top10")}
-                  >
-                    10개
-                  </CaptureToggleButton>
-                  <CaptureToggleButton
-                    type="button"
-                    active={rankingListVersion === "top5-detail"}
-                    onClick={() => setRankingListVersion("top5-detail")}
-                  >
-                    5개+2줄
-                  </CaptureToggleButton>
-                </div>
-              </div>
-              <div className="mb-3">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">List Color</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <CaptureToggleButton
-                    type="button"
-                    active={rankingListColorMode === "cover-only"}
-                    onClick={() => setRankingListColorMode("cover-only")}
-                  >
-                    커버만 흰색
-                  </CaptureToggleButton>
-                  <CaptureToggleButton
-                    type="button"
-                    active={rankingListColorMode === "all-muted"}
-                    onClick={() => setRankingListColorMode("all-muted")}
-                  >
-                    전체 회색
-                  </CaptureToggleButton>
-                </div>
-              </div>
               <label className="block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Photo Headline</span>
                 <CaptureTextArea
@@ -695,10 +651,10 @@ export default function ContentCapturePage() {
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Columns</span>
                   <div className="grid grid-cols-2 gap-2">
                     <CaptureToggleButton type="button" active={movieListColumns === 1} onClick={() => setMovieListColumns(1)}>
-                      1��
+                      1占쏙옙
                     </CaptureToggleButton>
                     <CaptureToggleButton type="button" active={movieListColumns === 2} onClick={() => setMovieListColumns(2)}>
-                      2��
+                      2占쏙옙
                     </CaptureToggleButton>
                   </div>
                 </div>
@@ -711,14 +667,14 @@ export default function ContentCapturePage() {
                         active={movieListTwoColumnTextMode === "corner"}
                         onClick={() => setMovieListTwoColumnTextMode("corner")}
                       >
-                        ���� ǥ��
+                        占쏙옙占쏙옙 표占쏙옙
                       </CaptureToggleButton>
                       <CaptureToggleButton
                         type="button"
                         active={movieListTwoColumnTextMode === "center"}
                         onClick={() => setMovieListTwoColumnTextMode("center")}
                       >
-                        �߾� ����
+                        占쌩억옙 占쏙옙占쏙옙
                       </CaptureToggleButton>
                     </div>
                   </div>
@@ -729,7 +685,7 @@ export default function ContentCapturePage() {
                     {movieListCenterTitleDefaults.map((defaultTitle, index) => (
                       <label key={`center-title-${index}`} className="block">
                         <span className="mb-1 block text-[11px] font-semibold text-slate-400 dark:text-slate-500">
-                          {index + 1}��
+                          {index + 1}占쏙옙
                         </span>
                         <CaptureTextArea
                           value={movieListCenterTitles[index] ?? ""}
@@ -755,7 +711,7 @@ export default function ContentCapturePage() {
                   </button>
                 </div>
                 <pre className="min-h-24 whitespace-pre-wrap border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-700 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-200">
-                  {movieTextForCopy || "��ȭ�� �߰��ϸ� ����� �ؽ�Ʈ�� ǥ�õ˴ϴ�."}
+                  {movieTextForCopy || "占쏙옙화占쏙옙 占쌩곤옙占싹몌옙 占쏙옙占쏙옙占?占쌔쏙옙트占쏙옙 표占시됩니댐옙."}
                 </pre>
               </div>
             </>
@@ -767,10 +723,10 @@ export default function ContentCapturePage() {
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Preview Version</span>
                 <div className="grid grid-cols-2 gap-2">
                   <CaptureToggleButton type="button" active={singlePreviewVariant === "default"} onClick={() => setSinglePreviewVariant("default")}>
-                    �⺻
+                    占썩본
                   </CaptureToggleButton>
                   <CaptureToggleButton type="button" active={singlePreviewVariant === "spotlight"} onClick={() => setSinglePreviewVariant("spotlight")}>
-                    ��������
+                    占쏙옙占쏙옙占쏙옙占쏙옙
                   </CaptureToggleButton>
                 </div>
               </div>
@@ -779,7 +735,7 @@ export default function ContentCapturePage() {
                 <CaptureTextArea
                   value={currentSingleMovie?.singlePreviewTitle ?? currentSingleMovie?.title ?? ""}
                   onChange={(event) => updateCurrentSinglePreview({ singlePreviewTitle: event.target.value })}
-                  placeholder={currentSingleMovie?.title ?? "����"}
+                  placeholder={currentSingleMovie?.title ?? "占쏙옙占쏙옙"}
                   rows={2}
                 />
                 <CaptureSizeControls value={singlePreviewTitleSize} defaultValue={28} onChange={setSinglePreviewTitleSize} step={2} min={16} max={48} />
@@ -789,7 +745,7 @@ export default function ContentCapturePage() {
                 <input
                   value={currentSingleMovie?.singlePreviewSubtitle ?? currentSingleMovie?.original_title ?? currentSingleMovie?.title ?? ""}
                   onChange={(event) => updateCurrentSinglePreview({ singlePreviewSubtitle: event.target.value })}
-                  placeholder="����Ÿ��Ʋ"
+                  placeholder="占쏙옙占쏙옙타占쏙옙틀"
                   className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
                 />
               </label>
@@ -826,7 +782,7 @@ export default function ContentCapturePage() {
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body</span>
                 <textarea
-                  value={currentSingleMovie?.singlePreviewBody ?? currentSingleMovie?.overview ?? "���⿡ ������ �����ּ���.\n�� �ٱ��� ǥ�õ˴ϴ�."}
+                  value={currentSingleMovie?.singlePreviewBody ?? currentSingleMovie?.overview ?? "占쏙옙占썩에 占쏙옙占쏙옙占쏙옙 占쏙옙占쏙옙占쌍쇽옙占쏙옙.\n占쏙옙 占쌕깍옙占쏙옙 표占시됩니댐옙."}
                   onChange={(event) => updateCurrentSinglePreview({ singlePreviewBody: event.target.value })}
                   rows={4}
                   className="w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
@@ -936,8 +892,6 @@ export default function ContentCapturePage() {
                   useFilmFilter={useFilmFilter}
                   footerRight={footerRight}
                   coverMovieId={currentCoverMovie?.id}
-                  listVersion={rankingListVersion}
-                  listColorMode={rankingListColorMode}
                 />
               ) : (
               <MovieListTemplate
@@ -998,7 +952,7 @@ export default function ContentCapturePage() {
                   </>
                 ) : (
                   <div className="flex h-56 items-center justify-center border border-dashed border-slate-300 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                    ��ȭ�� �߰��ϸ� ���� �̸����Ⱑ ǥ�õ˴ϴ�.
+                    占쏙옙화占쏙옙 占쌩곤옙占싹몌옙 占쏙옙占쏙옙 占싱몌옙占쏙옙占썩가 표占시됩니댐옙.
                   </div>
                 )}
               </div>

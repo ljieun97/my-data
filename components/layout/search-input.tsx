@@ -17,9 +17,9 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const [isLoadingCaptureResults, setIsLoadingCaptureResults] = useState(false);
   const [captureSearchError, setCaptureSearchError] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const { captureMode, rankingListVersion, addMovie, hasMovie, selectedMovies } = useCaptureContent();
+  const { captureMode, addMovie, hasMovie, selectedMovies } = useCaptureContent();
   const isCapturePage = pathname?.startsWith("/capture");
-  const maxCaptureMovies = getCaptureMovieMaxCount(captureMode, rankingListVersion);
+  const maxCaptureMovies = getCaptureMovieMaxCount(captureMode);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextKeyword = e.target.value;

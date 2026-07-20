@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { CaptureMovie } from "@/context/CaptureContentContext";
 import { faGripVertical, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -9,7 +9,6 @@ import { formatYear } from "@/components/contents/capture/content-capture-utils"
 type MovieSlotsPanelProps = {
   isRankingMode: boolean;
   isMovieListMode: boolean;
-  isRankingDetailMode?: boolean;
   rankingCoverMovieId?: number | null;
   selectedMoviesCount: number;
   movieSlotCount: number;
@@ -24,7 +23,6 @@ type MovieSlotsPanelProps = {
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieNote: (id: number, note: string) => void;
   updateMovieRankingText: (id: number, value: string) => void;
-  updateMovieRankingTotalAudience: (id: number, value: string) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   onSelectRankingCoverMovie?: (id: number) => void;
@@ -33,7 +31,6 @@ type MovieSlotsPanelProps = {
 export function MovieSlotsPanel({
   isRankingMode,
   isMovieListMode,
-  isRankingDetailMode = false,
   rankingCoverMovieId,
   selectedMoviesCount,
   movieSlotCount,
@@ -48,7 +45,6 @@ export function MovieSlotsPanel({
   updateMovieTitle,
   updateMovieNote,
   updateMovieRankingText,
-  updateMovieRankingTotalAudience,
   updateMovieYear,
   updateMovieImagePosition,
   onSelectRankingCoverMovie,
@@ -62,7 +58,7 @@ export function MovieSlotsPanel({
         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedMoviesCount}/{movieSlotCount}</p>
       </div>
       <CaptureHelperText className="mb-3 font-semibold">
-        영화는 추가한 만큼 자동으로 레이아웃이 확장됩니다.
+        ?곹솕??異붽???留뚰겮 ?먮룞?쇰줈 ?덉씠?꾩썐???뺤옣?⑸땲??
       </CaptureHelperText>
 
       <div className="flex flex-col gap-2">
@@ -120,7 +116,7 @@ export function MovieSlotsPanel({
                     onChange={(event) => updateMovieTitle(movie.id, event.target.value)}
                     onMouseDown={(event) => event.stopPropagation()}
                     onDragStart={(event) => event.preventDefault()}
-                    placeholder="제목"
+                    placeholder="?쒕ぉ"
                     className="h-7 w-full border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
                   {!isRankingMode ? (
@@ -130,7 +126,7 @@ export function MovieSlotsPanel({
                       onMouseDown={(event) => event.stopPropagation()}
                       onDragStart={(event) => event.preventDefault()}
                       maxLength={16}
-                      placeholder="오른쪽 문구"
+                      placeholder="?ㅻⅨ履?臾멸뎄"
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
                   ) : null}
@@ -143,17 +139,6 @@ export function MovieSlotsPanel({
                     placeholder={isRankingMode ? "일일 관객" : "연도"}
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
-                  {isRankingMode && isRankingDetailMode ? (
-                    <input
-                      value={movie.rankingTotalAudience ?? ""}
-                      onChange={(event) => updateMovieRankingTotalAudience(movie.id, event.target.value)}
-                      onMouseDown={(event) => event.stopPropagation()}
-                      onDragStart={(event) => event.preventDefault()}
-                      maxLength={16}
-                      placeholder="누적 관객"
-                      className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
-                    />
-                  ) : null}
                   {!isRankingMode ? (
                     <div className="flex items-center gap-1">
                       <button
@@ -186,16 +171,16 @@ export function MovieSlotsPanel({
                             : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
                         ].join(" ")}
                       >
-                        기본
+                        湲곕낯
                       </button>
                     </div>
                   ) : null}
                 </div>
               ) : (
                 <>
-                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{movie?.title ?? "빈 슬롯"}</p>
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{movie?.title ?? "鍮??щ’"}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {movie ? "목록형 커버에서는 선택한 이미지가 사용됩니다." : "상단 검색으로 영화를 추가하세요."}
+                    {movie ? "紐⑸줉??而ㅻ쾭?먯꽌???좏깮???대?吏媛 ?ъ슜?⑸땲??" : "?곷떒 寃?됱쑝濡??곹솕瑜?異붽??섏꽭??"}
                   </p>
                 </>
               )}

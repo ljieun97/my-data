@@ -274,8 +274,8 @@ export function RankingCoverTemplate({
             <div
               key={movie?.id ?? `ranking-placeholder-${index}`}
               className={[
-                "grid items-center gap-1 border-b border-white/10 py-[3px]",
-                showTotalAudience ? "grid-cols-[1.45rem_minmax(0,1fr)_4.2rem_4.7rem]" : "grid-cols-[1.45rem_minmax(0,1fr)_4.9rem]",
+                "grid items-center gap-1 py-[3px]",
+                showTotalAudience ? "grid-cols-[1.45rem_minmax(0,1fr)_max-content_max-content]" : "grid-cols-[1.45rem_minmax(0,1fr)_max-content]",
               ].join(" ")}
             >
               <span
@@ -286,15 +286,15 @@ export function RankingCoverTemplate({
               </span>
               <p
                 style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
-                className="truncate text-[12px] font-semibold text-white"
+                className="translate-y-[1px] truncate text-[12px] font-semibold text-white"
               >
                 {movie?.title ?? "영화를 추가하세요"}
               </p>
-              <span className="truncate text-right text-[11px] font-black text-white">
+              <span className="translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black text-white">
                 {getDailyAudience(movie)}
               </span>
               {showTotalAudience ? (
-                <span className="truncate text-right text-[9px] font-semibold text-white/46">
+                <span className="translate-y-[1px] whitespace-nowrap pl-2 text-right text-[9px] font-semibold text-white/46">
                   {getTotalAudience(movie)}
                 </span>
               ) : null}

@@ -99,7 +99,6 @@ function TitleBlock({
   headline,
   titleSize,
   titleColor,
-  titleFontMode,
   highlightText,
   footerRight,
   bodyCard = false,
@@ -114,14 +113,11 @@ function TitleBlock({
   bodyCard?: boolean;
   shadowClass?: string;
 }) {
-  const isSerif = titleFontMode === "serif";
-  const headlineStyle = isSerif ? serifTitleStyle : titleFontStyle;
-  const headlineColor = isSerif ? "#fff3d0" : "#ffffff";
+  const headlineStyle = titleFontStyle;
+  const headlineColor = "#ffffff";
   const footerColor = bodyCard ? "#ffffff" : headlineColor;
   const hasHeadline = headline.length > 0;
-  const content = isSerif || bodyCard
-    ? bodyCard ? renderBodyHeadline(headline) : headline
-    : renderGmarketHeadline(headline, highlightText, titleColor);
+  const content = bodyCard ? renderBodyHeadline(headline) : renderGmarketHeadline(headline, highlightText, titleColor);
 
   return (
     <>
@@ -131,7 +127,7 @@ function TitleBlock({
           style={{ ...headlineStyle, fontSize: `${titleSize}px` }}
           className={[
             "break-keep whitespace-pre-line leading-[1.08]",
-            isSerif ? "font-black" : bodyCard ? "flex flex-col items-start gap-[2px] font-medium" : "",
+            bodyCard ? "flex flex-col items-start gap-[2px] font-medium" : "",
             bodyCard ? "" : shadowClass,
           ].join(" ")}
         >

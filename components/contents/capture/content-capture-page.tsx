@@ -75,6 +75,7 @@ export default function ContentCapturePage() {
   const [rankingCoverMovieId, setRankingCoverMovieId] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
+  const [didCopyRankingText, setDidCopyRankingText] = useState(false);
   const [externalImageUrl, setExternalImageUrl] = useState("");
   const [externalImageError, setExternalImageError] = useState("");
   const subtitleChipClass = getCoverSubtitleClass(subtitleChipTone);
@@ -234,6 +235,10 @@ export default function ContentCapturePage() {
         .join("\n"),
     [selectedMovies],
   );
+  const rankingTextForCopy = useMemo(
+    () => Array.from({ length: 10 }, (_, index) => `${index + 1}위 ${selectedMovies[index]?.title ?? ""}`).join("\n"),
+    [selectedMovies],
+  );
   const updateCurrentSinglePreview = (
     patch: Partial<
       Pick<
@@ -376,6 +381,12 @@ export default function ContentCapturePage() {
     await navigator.clipboard.writeText(movieTextForCopy);
     setDidCopyText(true);
     window.setTimeout(() => setDidCopyText(false), 1200);
+  };
+  const handleCopyRankingText = async () => {
+    if (!rankingTextForCopy) return;
+    await navigator.clipboard.writeText(rankingTextForCopy);
+    setDidCopyRankingText(true);
+    window.setTimeout(() => setDidCopyRankingText(false), 1200);
   };
   const handleDragStart = (index: number) => {
     draggedIndexRef.current = index;
@@ -656,6 +667,21 @@ export default function ContentCapturePage() {
                   placeholder="군체 500만 관객 돌파, 박스오피스 1위"
                 />
               </label>
+              <div className="mt-4">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Ranking Copy</span>
+                  <button
+                    type="button"
+                    onClick={handleCopyRankingText}
+                    className="h-7 border border-slate-300 bg-white px-2.5 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    {didCopyRankingText ? "copied" : "copy"}
+                  </button>
+                </div>
+                <pre className="max-h-44 overflow-auto whitespace-pre-wrap border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-700 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-200">
+                  {rankingTextForCopy}
+                </pre>
+              </div>
             </div>
           ) : null}
           {isMovieListMode ? (

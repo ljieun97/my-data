@@ -240,6 +240,7 @@ export function RankingCoverTemplate({
   const topMovie = movies[0];
   const coverMovie = coverMovieId ? movies.find((movie) => movie?.id === coverMovieId) ?? topMovie : topMovie;
   const imageCandidates = getMovieImageCandidates(coverMovie);
+  const rankingImagePosition = Math.min(100, (coverMovie?.imagePosition ?? 30) + 15);
   const rankingRows = Array.from({ length: 10 }, (_, index) => movies[index]);
   const headlineValue = headline.trim() || `${topMovie?.title ?? "1위 작품"} 박스오피스 1위`;
   const getRankText = (movie: CaptureMovie | undefined, index: number) =>
@@ -258,24 +259,24 @@ export function RankingCoverTemplate({
             data-fallback-index="0"
             onError={(event) => handleImageFallback(event, imageCandidates)}
             className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition: `center ${coverMovie?.imagePosition ?? 30}%`, ...(useFilmFilter ? filmImageStyle : {}) }}
+            style={{ objectPosition: `center ${rankingImagePosition}%`, ...(useFilmFilter ? filmImageStyle : {}) }}
             crossOrigin="anonymous"
           />
         ) : (
           <EmptyBackdrop />
         )}
         <FilmToneOverlay enabled={useFilmFilter} />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.12)_46%,rgba(0,0,0,0.72)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_48%,rgba(0,0,0,0.68)_100%)]" />
       </div>
-      <div className="absolute inset-x-0 top-[42%] h-[18%] bg-[linear-gradient(180deg,#050505_0%,rgba(5,5,5,0.84)_36%,rgba(5,5,5,0)_100%)]" />
-      <div className="absolute inset-x-0 top-0 h-[56%] bg-[#050505] px-8 pb-2 pt-4">
+      <div className="absolute inset-x-0 top-[44%] h-[14%] bg-[linear-gradient(180deg,#050505_0%,rgba(5,5,5,0.78)_42%,rgba(5,5,5,0)_100%)]" />
+      <div className="absolute inset-x-0 top-0 h-[56%] bg-[linear-gradient(180deg,#050505_0%,#050505_86%,rgba(5,5,5,0)_100%)] px-8 pb-2 pt-4">
         <div>
           {rankingRows.map((movie, index) => (
             <div
               key={movie?.id ?? `ranking-placeholder-${index}`}
               className={[
-                "grid items-center gap-1 py-[3px]",
-                showTotalAudience ? "grid-cols-[1.45rem_minmax(0,1fr)_max-content_max-content]" : "grid-cols-[1.45rem_minmax(0,1fr)_max-content]",
+                "grid items-center gap-1 py-[2px]",
+                showTotalAudience ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_3.95rem]" : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]",
               ].join(" ")}
             >
               <span
@@ -286,15 +287,28 @@ export function RankingCoverTemplate({
               </span>
               <p
                 style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
-                className="translate-y-[1px] truncate text-[12px] font-semibold text-white"
+                className={[
+                  "translate-y-[1px] truncate text-[12px] font-semibold",
+                  index === 0 ? "text-white" : "text-white/68",
+                ].join(" ")}
               >
                 {movie?.title ?? "영화를 추가하세요"}
               </p>
-              <span className="translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black text-white">
+              <span
+                className={[
+                  "translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black",
+                  index === 0 ? "text-white" : "text-white/68",
+                ].join(" ")}
+              >
                 {getDailyAudience(movie)}
               </span>
               {showTotalAudience ? (
-                <span className="translate-y-[1px] whitespace-nowrap pl-2 text-right text-[9px] font-semibold text-white/46">
+                <span
+                  className={[
+                  "translate-y-[1px] whitespace-nowrap pl-0 text-right text-[9px] font-semibold",
+                    index === 0 ? "text-white" : "text-white/68",
+                  ].join(" ")}
+                >
                   {getTotalAudience(movie)}
                 </span>
               ) : null}

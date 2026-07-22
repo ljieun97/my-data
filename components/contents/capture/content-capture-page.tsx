@@ -60,6 +60,9 @@ export default function ContentCapturePage() {
   const [newsHeadline, setNewsHeadline] = useState("라라랜드 10주년 재개봉");
   const [bodyHeadline, setBodyHeadline] = useState("");
   const [newsAccentText, setNewsAccentText] = useState("");
+  const [showNewsReview, setShowNewsReview] = useState(false);
+  const [newsReviewRating, setNewsReviewRating] = useState("3.5");
+  const [newsReviewText, setNewsReviewText] = useState("");
   const [newsTitleSize, setNewsTitleSize] = useState(24);
   const [titleFontMode, setTitleFontMode] = useState<TitleFontMode>("gmarket");
   const [highlightText, setHighlightText] = useState("");
@@ -607,6 +610,43 @@ export default function ContentCapturePage() {
                     placeholder="예: 9월 재개봉"
                   />
                 </label>
+                <div className="mt-4">
+                  <CaptureToggleButton
+                    type="button"
+                    active={showNewsReview}
+                    onClick={() => setShowNewsReview((current) => !current)}
+                    className="w-full"
+                  >
+                    별점 + 한줄평
+                  </CaptureToggleButton>
+                </div>
+                {showNewsReview ? (
+                  <div className="mt-3 grid gap-3">
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Rating</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="5"
+                        step="0.5"
+                        value={newsReviewRating}
+                        onChange={(event) => setNewsReviewRating(event.target.value)}
+                        className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                        placeholder="3.5"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">One-line Review</span>
+                      <textarea
+                        value={newsReviewText}
+                        onChange={(event) => setNewsReviewText(event.target.value)}
+                        rows={2}
+                        className="w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-5 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
+                        placeholder="한줄평을 입력하세요"
+                      />
+                    </label>
+                  </div>
+                ) : null}
               </div>
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                 <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Background Image</p>
@@ -906,6 +946,8 @@ export default function ContentCapturePage() {
                   titleColor={selectedTitleColor}
                   titleFontMode={titleFontMode}
                   highlightText={highlightText}
+                  reviewRating={showNewsReview ? Number(newsReviewRating) : undefined}
+                  reviewText={showNewsReview ? newsReviewText : undefined}
                   useFilmFilter={useFilmFilter}
                   footerRight={footerRight}
                 />

@@ -142,6 +142,44 @@ function TitleBlock({
   );
 }
 
+function ReviewBlock({ rating, text }: { rating?: number; text?: string }) {
+  const normalizedRating = Math.min(5, Math.max(0, Number(rating) || 0));
+  const reviewText = text?.trim() ?? "";
+  const hasReview = normalizedRating > 0 || Boolean(reviewText);
+
+  if (!hasReview) return null;
+
+  return (
+    <div className="absolute inset-x-0 bottom-[148px] z-[2] px-9 text-center">
+      <div className="flex flex-col items-center gap-1.5">
+        {normalizedRating > 0 ? (
+          <div
+            style={{ ...titleFontStyle }}
+            className="relative inline-block text-[14px] font-bold leading-none tracking-[0.06em] drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]"
+            aria-label={`별점 ${normalizedRating.toFixed(1)}점`}
+          >
+            <span className="text-black">★★★★★</span>
+            <span
+              className="absolute inset-y-0 left-0 overflow-hidden whitespace-nowrap text-[#ffd43b]"
+              style={{ width: `${(normalizedRating / 5) * 100}%` }}
+            >
+              ★★★★★
+            </span>
+          </div>
+        ) : null}
+        {reviewText ? (
+          <p
+            style={{ ...titleFontStyle }}
+            className="max-w-full whitespace-pre-line break-keep text-[11px] font-normal leading-snug tracking-[-0.01em] text-white/82 drop-shadow-[0_1px_5px_rgba(0,0,0,0.52)]"
+          >
+            {reviewText}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function NewsCoverTemplate({
   movie,
   headline,
@@ -151,6 +189,8 @@ export function NewsCoverTemplate({
   titleFontMode = "serif",
   highlightText = "",
   bodyCard = false,
+  reviewRating,
+  reviewText,
   useFilmFilter,
   footerRight,
 }: {
@@ -162,6 +202,8 @@ export function NewsCoverTemplate({
   titleFontMode?: TitleFontMode;
   highlightText?: string;
   bodyCard?: boolean;
+  reviewRating?: number;
+  reviewText?: string;
   useFilmFilter: boolean;
   footerRight: string;
 }) {
@@ -187,6 +229,7 @@ export function NewsCoverTemplate({
       )}
       <FilmToneOverlay enabled={useFilmFilter} />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.06)_42%,rgba(0,0,0,0.48)_78%,rgba(0,0,0,0.78)_100%)]" />
+      {!bodyCard ? <ReviewBlock rating={reviewRating} text={reviewText} /> : null}
       <div className="absolute inset-x-0 bottom-0 px-9 pb-8 text-center">
         <TitleBlock
           headline={displayHeadline}

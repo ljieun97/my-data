@@ -124,7 +124,11 @@ function TitleBlock({
     {hasHeadline ? (
       <div className={bodyCard ? "text-left" : ""}>
         <h1
-          style={{ ...headlineStyle, fontSize: `${titleSize}px` }}
+          style={{
+            ...headlineStyle,
+            fontSize: `${titleSize}px`,
+            textShadow: bodyCard ? undefined : "0 1px 2px rgba(0,0,0,0.9), 0 3px 14px rgba(0,0,0,0.72)",
+          }}
           className={[
             "break-keep whitespace-pre-line leading-[1.08]",
             bodyCard ? "flex flex-col items-start gap-[2px] font-medium" : "",
@@ -150,15 +154,15 @@ function ReviewBlock({ rating, text }: { rating?: number; text?: string }) {
   if (!hasReview) return null;
 
   return (
-    <div className="absolute inset-x-0 bottom-[148px] z-[2] px-9 text-center">
+    <div className="absolute inset-x-0 bottom-[96px] z-[2] px-9 text-center">
       <div className="flex flex-col items-center gap-1.5">
         {normalizedRating > 0 ? (
           <div
-            style={{ ...titleFontStyle }}
-            className="relative inline-block text-[14px] font-bold leading-none tracking-[0.06em] drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]"
+            style={{ ...titleFontStyle, textShadow: "0 1px 2px rgba(0,0,0,0.88), 0 2px 8px rgba(0,0,0,0.72)" }}
+            className="relative inline-block text-[14px] font-bold leading-none tracking-[0.06em] drop-shadow-[0_2px_7px_rgba(0,0,0,0.72)]"
             aria-label={`별점 ${normalizedRating.toFixed(1)}점`}
           >
-            <span className="text-black">★★★★★</span>
+            <span className="text-[#555555]">★★★★★</span>
             <span
               className="absolute inset-y-0 left-0 overflow-hidden whitespace-nowrap text-[#ffd43b]"
               style={{ width: `${(normalizedRating / 5) * 100}%` }}
@@ -170,7 +174,7 @@ function ReviewBlock({ rating, text }: { rating?: number; text?: string }) {
         {reviewText ? (
           <p
             style={{ ...titleFontStyle }}
-            className="max-w-full whitespace-pre-line break-keep text-[11px] font-normal leading-snug tracking-[-0.01em] text-white/82 drop-shadow-[0_1px_5px_rgba(0,0,0,0.52)]"
+            className="max-w-full whitespace-pre-line break-keep text-[11px] font-medium leading-snug tracking-[-0.01em] text-white/92 drop-shadow-[0_2px_8px_rgba(0,0,0,0.76)]"
           >
             {reviewText}
           </p>

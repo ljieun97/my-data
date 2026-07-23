@@ -40,6 +40,11 @@ function getTodayBoxOfficeDateLabel() {
   return `${today.getMonth() + 1}/${today.getDate()}(${weekdays[today.getDay()]})`;
 }
 
+function toReleaseLabelColor(rgb: [number, number, number]) {
+  const [r, g, b] = rgb.map((value) => Math.round(value * 0.68));
+  return `#${[r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+}
+
 const rankingV2BackgroundPresets = [
   { key: "classic", label: "Classic", start: "#7a3f52", end: "#34384c" },
   { key: "boxoffice", label: "Box Office", start: "#3a3d42", end: "#31343a" },
@@ -100,6 +105,7 @@ export default function ContentCapturePage() {
   const [releaseBoardTitle, setReleaseBoardTitle] = useState("7월 개봉예정 영화 라인업");
   const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(25);
   const [releaseBoardLabelColors, setReleaseBoardLabelColors] = useState(() => getReleaseBoardDefaultColors());
+  const [isExtractingReleaseColors, setIsExtractingReleaseColors] = useState(false);
   const [releaseBoardDates, setReleaseBoardDates] = useState(() => Array.from({ length: 8 }, () => ""));
   const [useFilmFilter, setUseFilmFilter] = useState(false);
   const [footerLeft, setFooterLeft] = useState("占싸놂옙占쌘몌옙占쏙옙");
@@ -319,6 +325,33 @@ export default function ContentCapturePage() {
       nextTitles[index] = title;
       return nextTitles;
     });
+  };
+  const handleExtractReleaseLabelColors = async () => {
+    if (isExtractingReleaseColors) return;
+
+    const averageColor = new FastAverageColor();
+    setIsExtractingReleaseColors(true);
+
+    try {
+      const nextColors = await Promise.all(
+        slots.slice(0, releaseSlotCount).map(async (movie, index) => {
+          const imageUrl = getPosterUrl(movie) || getBackdropUrl(movie);
+          if (!imageUrl) return releaseBoardLabelColors[index] || getReleaseBoardDefaultColors()[index] || "#374151";
+
+          try {
+            const color = await averageColor.getColorAsync(imageUrl, { crossOrigin: "anonymous" });
+            return toReleaseLabelColor([color.value[0], color.value[1], color.value[2]]);
+          } catch {
+            return releaseBoardLabelColors[index] || getReleaseBoardDefaultColors()[index] || "#374151";
+          }
+        }),
+      );
+
+      setReleaseBoardLabelColors(nextColors);
+    } finally {
+      averageColor.destroy();
+      setIsExtractingReleaseColors(false);
+    }
   };
   const renderMovieListImagePicker = () => {
     const imagePickerMovie = isRankingTextMode ? currentCoverMovie : currentSingleMovie;
@@ -660,7 +693,17 @@ export default function ContentCapturePage() {
                 <CaptureSizeControls value={releaseBoardTitleSize} defaultValue={25} onChange={setReleaseBoardTitleSize} step={2} min={18} max={36} />
               </label>
               <div className="mb-3">
-                <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Date Label Colors</span>
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="block text-xs font-semibold text-slate-500 dark:text-slate-400">Date Label Colors</span>
+                  <button
+                    type="button"
+                    onClick={handleExtractReleaseLabelColors}
+                    disabled={isExtractingReleaseColors || !slots.some((movie) => getPosterUrl(movie) || getBackdropUrl(movie))}
+                    className="h-7 border border-slate-300 bg-white px-2 text-[11px] font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    {isExtractingReleaseColors ? "extracting" : "from poster"}
+                  </button>
+                </div>
                 <div className="grid grid-cols-4 gap-2">
                   {releaseBoardLabelColors.map((color, index) => (
                     <label key={`release-color-${index}`} className="flex items-center gap-2 border border-slate-200 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900/60">

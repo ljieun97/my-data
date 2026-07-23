@@ -98,7 +98,7 @@ export function ReleaseBoardTemplate({
                   className="px-2 py-0.5 text-center"
                   style={{ backgroundColor: labelColors[index] || releaseBoardDefaultColors[index] || "#1f2937" }}
                 >
-                  <p style={titleFontStyle} className="text-[12px] font-black tracking-[0.06em] text-white">
+                  <p style={titleFontStyle} className="translate-y-[1.5px] text-[12px] font-black tracking-[0.06em] text-white">
                     {formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}
                   </p>
                 </div>

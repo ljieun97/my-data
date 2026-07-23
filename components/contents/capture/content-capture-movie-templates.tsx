@@ -336,47 +336,60 @@ export function PosterRankingTemplate({
         </div>
 
         <div className="relative mt-1 min-h-0 flex-1 overflow-hidden px-0.5 py-1">
-          <div className="flex h-full flex-col px-4">
+          <div className="flex h-full flex-col gap-1">
             {rankingRows.map((movie, index) => (
-              <div
-                key={movie?.id ?? `poster-ranking-${index}`}
-                className={[
-                  "grid min-h-0 flex-1 items-center gap-1 py-[2px]",
-                  showDailyAudience
-                    ? showTotalAudience
-                      ? "grid-cols-[1.45rem_minmax(0,1fr)]"
-                      : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
-                    : "grid-cols-[1.45rem_minmax(0,1fr)]",
-                ].join(" ")}
-              >
-                <span
-                  style={rankingNumberStyle}
-                  className="inline-flex h-[18px] min-w-[22px] items-center justify-center rounded-[5px] text-[10px] font-black tabular-nums text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]"
+                <div
+                  key={movie?.id ?? `poster-ranking-${index}`}
+                  className="grid min-h-0 flex-1 items-stretch gap-2"
+                  style={{
+                    gridTemplateColumns: showDailyAudience
+                      ? showTotalAudience
+                        ? "minmax(0,1fr)"
+                        : "minmax(0,1fr) 3.65rem"
+                      : "minmax(0,1fr)",
+                  }}
                 >
-                  {getRankText(movie, index)}
-                </span>
-                <div className="min-w-0">
-                  <p
-                    style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
-                    className={["translate-y-[1px] truncate text-[12px] font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]", index === 0 ? "text-white" : "text-white/78"].join(" ")}
+                  <div
+                    className="grid min-w-0 overflow-hidden rounded-[0.2rem]"
+                    style={{
+                      gridTemplateColumns: "minmax(0,1fr)",
+                      clipPath: "polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%)",
+                    }}
                   >
-                    {movie?.title ?? "영화를 추가하세요"}
-                  </p>
-                  {showDailyAudience && showTotalAudience ? (
-                    <p className={["mt-[1px] truncate text-[8px] font-semibold drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]", index === 0 ? "text-white/82" : "text-white/58"].join(" ")}>
-                      일일 {getDailyAudience(movie) || "-"} · 누적 {getTotalAudience(movie) || "-"}
-                    </p>
+                    <div className="relative min-w-0 overflow-hidden">
+                      <div className="relative z-[1] flex h-full min-w-0 items-center gap-3 pl-2 pr-7">
+                        <span
+                          style={titleFontStyle}
+                          className="flex w-6 shrink-0 justify-center text-center text-[13px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]"
+                        >
+                          {getRankText(movie, index)}
+                        </span>
+                        <div className="min-w-0 translate-y-[0.75px]">
+                          <p
+                            style={titleFontStyle}
+                            className={["truncate text-[13px] font-black uppercase leading-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]", index === 0 ? "text-white" : "text-white/82"].join(" ")}
+                          >
+                            {movie?.title ?? "영화를 추가하세요"}
+                          </p>
+                          {showDailyAudience && showTotalAudience ? (
+                            <p className={["mt-[1px] truncate text-[8px] font-semibold leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]", index === 0 ? "text-white/82" : "text-white/58"].join(" ")}>
+                              일일 {getDailyAudience(movie) || "-"} · 누적 {getTotalAudience(movie) || "-"}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {showDailyAudience && !showTotalAudience ? (
+                    <span
+                      style={titleFontStyle}
+                      className={["flex h-full items-center justify-end truncate text-right text-[13px] font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]", index === 0 ? "text-white" : "text-white/78"].join(" ")}
+                    >
+                      {getDailyAudience(movie)}
+                    </span>
                   ) : null}
                 </div>
-                {showDailyAudience && !showTotalAudience ? (
-                  <span
-                    className={["translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]", index === 0 ? "text-white" : "text-white/78"].join(" ")}
-                  >
-                    {getDailyAudience(movie)}
-                  </span>
-                ) : null}
-              </div>
-            ))}
+              ))}
           </div>
         </div>
         <div className="pt-0.5 text-center">

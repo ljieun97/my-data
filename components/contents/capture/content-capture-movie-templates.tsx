@@ -64,7 +64,7 @@ export function ReleaseBoardTemplate({
 }) {
   const visibleMovies = movies.slice(0, 8).filter(Boolean) as CaptureMovie[];
   const gridColsClass =
-    visibleMovies.length <= 2 ? "grid-cols-2" : visibleMovies.length <= 6 ? "grid-cols-3" : "grid-cols-4";
+    visibleMovies.length <= 4 ? "grid-cols-2" : visibleMovies.length <= 6 ? "grid-cols-3" : "grid-cols-4";
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#221f2e] text-white">
@@ -85,7 +85,7 @@ export function ReleaseBoardTemplate({
           </div>
         </div>
 
-        <div className={["relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-0 pt-1.5 grid gap-2", gridColsClass].join(" ")}>
+        <div className={["relative mt-2 grid min-h-0 flex-1 auto-rows-fr overflow-hidden px-0.5 pb-0 pt-1.5 gap-2", gridColsClass].join(" ")}>
           {visibleMovies.map((movie, index) => {
             const posterUrl = getPosterUrl(movie) || getBackdropUrl(movie);
 

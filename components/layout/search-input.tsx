@@ -45,7 +45,15 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       ]);
       detail = detailResult;
       posterOptions = Array.isArray(images?.posters)
-        ? images.posters.map((poster: any) => poster.file_path).filter(Boolean).slice(0, 20)
+        ? [...images.posters]
+            .sort((a: any, b: any) => {
+              const aScore = a?.iso_639_1 === "ko" ? 0 : a?.iso_639_1 === "en" ? 1 : 2;
+              const bScore = b?.iso_639_1 === "ko" ? 0 : b?.iso_639_1 === "en" ? 1 : 2;
+              return aScore - bScore;
+            })
+            .map((poster: any) => poster.file_path)
+            .filter(Boolean)
+            .slice(0, 20)
         : [];
     } finally {
       setIsLoadingCaptureResults(false);

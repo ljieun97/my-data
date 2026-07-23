@@ -22,7 +22,7 @@ export function getBackdropUrl(movie?: CaptureMovie) {
 export function getPosterUrl(movie?: CaptureMovie) {
   if (!movie?.poster_path) return "";
   if (isExternalImageUrl(movie.poster_path)) return getExternalImageUrl(movie.poster_path);
-  return `https://image.tmdb.org/t/p/w780${movie.poster_path}`;
+  return `https://image.tmdb.org/t/p/original${movie.poster_path}`;
 }
 
 export function getPosterThumbUrl(posterPath?: string) {

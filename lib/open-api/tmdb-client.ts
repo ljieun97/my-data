@@ -86,7 +86,7 @@ export async function getTopRatedMovies() {
 
 export async function getPosters(type: string, id: string) {
   const URL = `${BASE_URL}/${type}/${id}/images?`
-    + 'include_image_language=en,ko,null&'
+    + 'include_image_language=ko,en,null&'
     + `&api_key=${API_KEY}`
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   const { posters } = await response.json()
@@ -95,7 +95,7 @@ export async function getPosters(type: string, id: string) {
 
 export async function getImages(type: string, id: string | number) {
   const URL = `${BASE_URL}/${type}/${id}/images?`
-    + 'include_image_language=en,ko,null&'
+    + 'include_image_language=ko,en,null&'
     + `&api_key=${API_KEY}`
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   return response.json()

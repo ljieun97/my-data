@@ -55,7 +55,7 @@ export function MovieSlotsPanel({
   updateMovieImagePosition,
   onSelectRankingCoverMovie,
 }: MovieSlotsPanelProps) {
-  const activeRankingCoverMovieId = rankingCoverMovieId ?? movies.find((entry) => entry)?.id;
+  const activeRankingCoverMovieId = rankingCoverMovieId;
 
   return (
     <CapturePanel>

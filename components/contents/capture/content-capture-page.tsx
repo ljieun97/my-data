@@ -15,7 +15,6 @@ import {
   MovieListTemplate,
   getReleaseBoardAutoDate,
   getReleaseBoardDefaultColors,
-  PosterRankingTemplate,
   ReleaseBoardTemplate,
   RankingV2Template,
   SingleMovieTemplate,
@@ -117,8 +116,7 @@ export default function ContentCapturePage() {
   const isBodyMode = captureMode === "news-body";
   const isRankingMode = captureMode === "ranking-cover";
   const isRankingV2Mode = captureMode === "ranking-cover-v2";
-  const isPosterRankingMode = captureMode === "poster-ranking";
-  const isRankingTextMode = isRankingMode || isRankingV2Mode || isPosterRankingMode;
+  const isRankingTextMode = isRankingMode || isRankingV2Mode;
   const isReleaseMode = captureMode === "release-board";
   const isMovieListMode = captureMode === "movie-list";
   const isMovieMode = isNewsMode || isBodyMode || isRankingTextMode || isReleaseMode || isMovieListMode;
@@ -136,7 +134,7 @@ export default function ContentCapturePage() {
   const rankingCoverMovie = rankingCoverMovieId
     ? selectedMovies.find((movie) => movie.id === rankingCoverMovieId)
     : undefined;
-  const currentCoverMovie = isRankingMode ? rankingCoverMovie ?? selectedMovies[0] : currentSingleMovie;
+  const currentCoverMovie = isRankingMode ? rankingCoverMovie ?? selectedMovies[0] : isRankingV2Mode ? rankingCoverMovie : currentSingleMovie;
   const selectedTitleColor = titleColorMode === "auto" ? titleColor : getTitleColorValue(titleColorMode);
   const getReadableTitleColor = (rgb: [number, number, number]) => {
     const cream = [255, 243, 208];
@@ -159,10 +157,14 @@ export default function ContentCapturePage() {
     previousMovieCountRef.current = selectedMovies.length;
   }, [isMovieListMode, selectedMovies.length]);
   useEffect(() => {
-    if (!isRankingTextMode || !selectedMovies.length) return;
+    if (!isRankingTextMode) return;
     if (rankingCoverMovieId && selectedMovies.some((movie) => movie.id === rankingCoverMovieId)) return;
-    setRankingCoverMovieId(selectedMovies[0].id);
-  }, [isRankingTextMode, rankingCoverMovieId, selectedMovies]);
+    if (rankingCoverMovieId) {
+      setRankingCoverMovieId(null);
+      return;
+    }
+    if (isRankingMode && selectedMovies.length) setRankingCoverMovieId(selectedMovies[0].id);
+  }, [isRankingMode, isRankingTextMode, rankingCoverMovieId, selectedMovies]);
   useEffect(() => {
     if (!(isNewsMode || isBodyMode || isRankingMode) || titleColorMode !== "auto") return;
     const imageUrl = getBackdropUrl(currentCoverMovie) || getPosterUrl(currentCoverMovie);
@@ -203,7 +205,7 @@ export default function ContentCapturePage() {
       setExternalImageError("http:// 占실댐옙 https://占쏙옙 占쏙옙占쏙옙占싹댐옙 占싱뱄옙占쏙옙 URL占쏙옙 占쌍억옙占쌍쇽옙占쏙옙.");
       return;
     }
-    const imagePickerMovie = isRankingMode ? currentCoverMovie : selectedMovies[previewMovieIndex];
+    const imagePickerMovie = isRankingTextMode ? currentCoverMovie : selectedMovies[previewMovieIndex];
     if (!imagePickerMovie) return;
     updateMoviePoster(imagePickerMovie.id, imageUrl);
     setExternalImageUrl("");
@@ -483,7 +485,6 @@ export default function ContentCapturePage() {
           { key: "news-body", label: "본문형" },
           { key: "ranking-cover", label: "순위형" },
           { key: "ranking-cover-v2", label: "순위형 v2" },
-          { key: "poster-ranking", label: "포스터순위형" },
           { key: "release-board", label: "릴리즈형" },
           { key: "movie-list", label: "목록형" },
         ].map((item) => (
@@ -510,7 +511,7 @@ export default function ContentCapturePage() {
               isRankingMode={isRankingTextMode}
               isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode}
               showRankingTotalAudience={showRankingTotalAudience}
-              showImagePositionControls={isRankingV2Mode || isPosterRankingMode}
+              showImagePositionControls={isRankingV2Mode}
               rankingCoverMovieId={rankingCoverMovieId}
               selectedMoviesCount={isRankingTextMode || isReleaseMode ? Math.min(selectedMovies.length, movieSlotCount) : selectedMovies.length}
               movieSlotCount={movieSlotCount}
@@ -1152,19 +1153,10 @@ export default function ContentCapturePage() {
                   dateLabel={rankingDateLabel}
                   backgroundStart={rankingV2BackgroundStart}
                   backgroundEnd={rankingV2BackgroundEnd}
+                  backgroundMovie={rankingCoverMovie}
                   showDailyAudience={showRankingDailyAudience}
                   showTotalAudience={showRankingTotalAudience}
                   showImages={showRankingV2Images}
-                />
-              ) : isPosterRankingMode ? (
-                <PosterRankingTemplate
-                  movies={slots}
-                  title={rankingHeadline}
-                  titleSize={newsTitleSize}
-                  footerRight={footerRight}
-                  dateLabel={rankingDateLabel}
-                  showDailyAudience={showRankingDailyAudience}
-                  showTotalAudience={showRankingTotalAudience}
                 />
               ) : isReleaseMode ? (
                 <ReleaseBoardTemplate

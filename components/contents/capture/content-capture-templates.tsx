@@ -11,7 +11,6 @@ export {
   getReleaseBoardAutoDate,
   getReleaseBoardDefaultColors,
   MovieListTemplate,
-  PosterRankingTemplate,
   RankingV2Template,
   ReleaseBoardTemplate,
   SingleMovieTemplate,

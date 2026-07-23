@@ -129,6 +129,7 @@ export function RankingV2Template({
   dateLabel,
   backgroundStart = "#07131a",
   backgroundEnd = "#221f2e",
+  backgroundMovie,
   showDailyAudience = true,
   showTotalAudience = false,
   showImages = true,
@@ -140,6 +141,7 @@ export function RankingV2Template({
   dateLabel?: string;
   backgroundStart?: string;
   backgroundEnd?: string;
+  backgroundMovie?: CaptureMovie;
   showDailyAudience?: boolean;
   showTotalAudience?: boolean;
   showImages?: boolean;
@@ -150,6 +152,7 @@ export function RankingV2Template({
     movie?.rankingText?.trim() || String(index + 1);
   const getDailyAudience = (movie?: CaptureMovie) => movie?.release_date?.trim() ?? "";
   const getTotalAudience = (movie?: CaptureMovie) => movie?.rankingTotalAudience?.trim() ?? "";
+  const backgroundCandidates = buildImageCandidates(getPosterUrl(backgroundMovie), getBackdropUrl(backgroundMovie));
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#221f2e] text-white">
@@ -159,6 +162,20 @@ export function RankingV2Template({
           background: `radial-gradient(circle at top right, rgba(236,72,153,0.22), transparent 34%), radial-gradient(circle at bottom left, rgba(59,130,246,0.16), transparent 36%), linear-gradient(180deg, ${backgroundStart} 0%, ${backgroundEnd} 100%)`,
         }}
       />
+      {backgroundCandidates[0] ? (
+        <>
+          <img
+            alt=""
+            src={backgroundCandidates[0]}
+            data-fallback-index="0"
+            onError={(event) => handleImageFallback(event, backgroundCandidates)}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: `center ${backgroundMovie?.imagePosition ?? 34}%` }}
+            crossOrigin="anonymous"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.78)_0%,rgba(2,6,23,0.58)_42%,rgba(2,6,23,0.9)_100%)]" />
+        </>
+      ) : null}
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
 
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
@@ -265,135 +282,6 @@ export function RankingV2Template({
         </div>
         <div className="pt-0.5 text-center">
           <span className="text-[10px] font-semibold tracking-[0.03em] text-white/92">{footerRight || "35Film"}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function PosterRankingTemplate({
-  movies,
-  title,
-  titleSize,
-  footerRight,
-  dateLabel,
-  showDailyAudience = false,
-  showTotalAudience = false,
-}: {
-  movies: Array<CaptureMovie | undefined>;
-  title: string;
-  titleSize: number;
-  footerRight: string;
-  dateLabel?: string;
-  showDailyAudience?: boolean;
-  showTotalAudience?: boolean;
-}) {
-  const rankingRows = Array.from({ length: 10 }, (_, index) => movies[index]);
-  const topMovie = movies[0];
-  const posterCandidates = buildImageCandidates(getPosterUrl(topMovie), getBackdropUrl(topMovie));
-  const titleValue = title.trim() || "TOP 10";
-  const getRankText = (movie: CaptureMovie | undefined, index: number) =>
-    movie?.rankingText?.trim() || String(index + 1);
-  const getDailyAudience = (movie?: CaptureMovie) => movie?.release_date?.trim() ?? "";
-  const getTotalAudience = (movie?: CaptureMovie) => movie?.rankingTotalAudience?.trim() ?? "";
-
-  return (
-    <div className="relative h-full overflow-hidden bg-slate-950 text-white">
-      {posterCandidates[0] ? (
-        <img
-          alt=""
-          src={posterCandidates[0]}
-          data-fallback-index="0"
-          onError={(event) => handleImageFallback(event, posterCandidates)}
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{ objectPosition: `center ${topMovie?.imagePosition ?? 34}%` }}
-          crossOrigin="anonymous"
-        />
-      ) : null}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.78)_0%,rgba(2,6,23,0.58)_42%,rgba(2,6,23,0.9)_100%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.16),transparent_28%),linear-gradient(90deg,rgba(2,6,23,0.88)_0%,rgba(2,6,23,0.62)_52%,rgba(2,6,23,0.36)_100%)]" />
-
-      <div className="relative z-[1] flex h-full flex-col px-4 pb-1 pt-4">
-        <div className="-mx-4 flex flex-col items-start">
-          <div className="flex items-end justify-start">
-            <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
-              <h1
-                style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-                className="min-w-0 text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)] break-keep whitespace-pre-line"
-              >
-                {titleValue}
-              </h1>
-              {dateLabel?.trim() ? (
-                <span
-                  style={titleFontStyle}
-                  className="shrink-0 pb-0.5 text-[10px] font-black leading-none tracking-[-0.03em] text-slate-500"
-                >
-                  {dateLabel.trim()}
-                </span>
-              ) : null}
-            </div>
-          </div>
-        </div>
-
-        <div className="relative mt-1 min-h-0 flex-1 overflow-hidden px-0.5 py-1">
-          <div className="flex h-full flex-col gap-1">
-            {rankingRows.map((movie, index) => (
-                <div
-                  key={movie?.id ?? `poster-ranking-${index}`}
-                  className="grid min-h-0 flex-1 items-stretch gap-2"
-                  style={{
-                    gridTemplateColumns: showDailyAudience
-                      ? showTotalAudience
-                        ? "minmax(0,1fr)"
-                        : "minmax(0,1fr) 3.65rem"
-                      : "minmax(0,1fr)",
-                  }}
-                >
-                  <div
-                    className="grid min-w-0 overflow-hidden rounded-[0.2rem]"
-                    style={{
-                      gridTemplateColumns: "minmax(0,1fr)",
-                      clipPath: "polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%)",
-                    }}
-                  >
-                    <div className="relative min-w-0 overflow-hidden">
-                      <div className="relative z-[1] flex h-full min-w-0 items-center gap-3 pl-2 pr-7">
-                        <span
-                          style={titleFontStyle}
-                          className="flex w-6 shrink-0 justify-center text-center text-[13px] font-black leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]"
-                        >
-                          {getRankText(movie, index)}
-                        </span>
-                        <div className="min-w-0 translate-y-[0.75px]">
-                          <p
-                            style={titleFontStyle}
-                            className={["truncate text-[13px] font-black uppercase leading-tight drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]", index === 0 ? "text-white" : "text-white/82"].join(" ")}
-                          >
-                            {movie?.title ?? "영화를 추가하세요"}
-                          </p>
-                          {showDailyAudience && showTotalAudience ? (
-                            <p className={["mt-[1px] truncate text-[8px] font-semibold leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]", index === 0 ? "text-white/82" : "text-white/58"].join(" ")}>
-                              일일 {getDailyAudience(movie) || "-"} · 누적 {getTotalAudience(movie) || "-"}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {showDailyAudience && !showTotalAudience ? (
-                    <span
-                      style={titleFontStyle}
-                      className={["flex h-full items-center justify-end truncate text-right text-[13px] font-black drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]", index === 0 ? "text-white" : "text-white/78"].join(" ")}
-                    >
-                      {getDailyAudience(movie)}
-                    </span>
-                  ) : null}
-                </div>
-              ))}
-          </div>
-        </div>
-        <div className="pt-0.5 text-center">
-          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/72">{footerRight || "35Film"}</span>
         </div>
       </div>
     </div>

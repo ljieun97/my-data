@@ -34,10 +34,12 @@ import {
 import { getBackdropUrl, getPosterUrl } from "@/components/contents/capture/content-capture-utils";
 import { FastAverageColor } from "fast-average-color";
 
-function getTodayBoxOfficeDateLabel() {
+function getYesterdayBoxOfficeDateLabel() {
   const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
   const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-  return `${today.getMonth() + 1}/${today.getDate()}(${weekdays[today.getDay()]})`;
+  return `${yesterday.getMonth() + 1}/${yesterday.getDate()}(${weekdays[yesterday.getDay()]})`;
 }
 
 function toReleaseLabelColor(rgb: [number, number, number]) {
@@ -94,18 +96,20 @@ export default function ContentCapturePage() {
   const [highlightText, setHighlightText] = useState("");
   const [titleColor, setTitleColor] = useState("#fff3d0");
   const [titleColorMode, setTitleColorMode] = useState<"auto" | TitleColorKey>("auto");
-  const [rankingHeadline, setRankingHeadline] = useState("일일 박스오피스");
-  const [rankingDateLabel, setRankingDateLabel] = useState(getTodayBoxOfficeDateLabel);
-  const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(false);
-  const [showRankingTotalAudience, setShowRankingTotalAudience] = useState(false);
-  const [showRankingV2Images, setShowRankingV2Images] = useState(false);
+  const [rankingHeadline, setRankingHeadline] = useState("오늘의 영화 순위");
+  const [rankingDateLabel, setRankingDateLabel] = useState(getYesterdayBoxOfficeDateLabel);
+  const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(true);
+  const [showRankingTotalAudience, setShowRankingTotalAudience] = useState(true);
+  const [showRankingV2Images, setShowRankingV2Images] = useState(true);
   const [showRankingV2RowBackgrounds, setShowRankingV2RowBackgrounds] = useState(true);
   const [rankingV2BackgroundStart, setRankingV2BackgroundStart] = useState("#7a3f52");
   const [rankingV2BackgroundEnd, setRankingV2BackgroundEnd] = useState("#34384c");
+  const [rankingV2RowBackgroundColors, setRankingV2RowBackgroundColors] = useState<string[]>([]);
   const [releaseBoardTitle, setReleaseBoardTitle] = useState("7월 개봉예정 영화 라인업");
   const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(25);
   const [releaseBoardLabelColors, setReleaseBoardLabelColors] = useState(() => getReleaseBoardDefaultColors());
   const [isExtractingReleaseColors, setIsExtractingReleaseColors] = useState(false);
+  const [isExtractingRankingRowColors, setIsExtractingRankingRowColors] = useState(false);
   const [releaseBoardDates, setReleaseBoardDates] = useState(() => Array.from({ length: 8 }, () => ""));
   const [useFilmFilter, setUseFilmFilter] = useState(false);
   const [footerLeft, setFooterLeft] = useState("占싸놂옙占쌘몌옙占쏙옙");
@@ -351,6 +355,33 @@ export default function ContentCapturePage() {
     } finally {
       averageColor.destroy();
       setIsExtractingReleaseColors(false);
+    }
+  };
+  const handleExtractRankingRowBackgroundColors = async () => {
+    if (isExtractingRankingRowColors) return;
+
+    const averageColor = new FastAverageColor();
+    setIsExtractingRankingRowColors(true);
+
+    try {
+      const nextColors = await Promise.all(
+        slots.slice(0, 10).map(async (movie, index) => {
+          const imageUrl = getPosterUrl(movie) || getBackdropUrl(movie);
+          if (!imageUrl) return rankingV2RowBackgroundColors[index] || "#221f2e";
+
+          try {
+            const color = await averageColor.getColorAsync(imageUrl, { crossOrigin: "anonymous" });
+            return toReleaseLabelColor([color.value[0], color.value[1], color.value[2]]);
+          } catch {
+            return rankingV2RowBackgroundColors[index] || "#221f2e";
+          }
+        }),
+      );
+
+      setRankingV2RowBackgroundColors(nextColors);
+    } finally {
+      averageColor.destroy();
+      setIsExtractingRankingRowColors(false);
     }
   };
   const renderMovieListImagePicker = () => {
@@ -919,6 +950,15 @@ export default function ContentCapturePage() {
                         </button>
                       ))}
                     </div>
+                    <CaptureToggleButton
+                      type="button"
+                      active={false}
+                      onClick={handleExtractRankingRowBackgroundColors}
+                      className="mt-2 w-full"
+                      disabled={isExtractingRankingRowColors}
+                    >
+                      {isExtractingRankingRowColors ? "추출 중..." : "행 배경 포스터색"}
+                    </CaptureToggleButton>
                   </div>
                 </>
               ) : null}
@@ -1221,6 +1261,7 @@ export default function ContentCapturePage() {
                   dateLabel={rankingDateLabel}
                   backgroundStart={rankingV2BackgroundStart}
                   backgroundEnd={rankingV2BackgroundEnd}
+                  rowBackgroundColors={rankingV2RowBackgroundColors}
                   backgroundMovie={rankingV2BackgroundMovie}
                   showDailyAudience={showRankingDailyAudience}
                   showTotalAudience={showRankingTotalAudience}

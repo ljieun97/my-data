@@ -18,6 +18,14 @@ const rankingNumberStyle: CSSProperties = {
   lineHeight: 1,
 };
 
+function hexToRgba(hexColor: string, alpha: number, fallback: string) {
+  const hex = hexColor.replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(hex)) return fallback;
+
+  const [r, g, b] = [0, 2, 4].map((index) => parseInt(hex.slice(index, index + 2), 16));
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 const releaseBoardDefaultColors = [
   "#b91c1c",
   "#315f90",
@@ -131,6 +139,7 @@ export function RankingV2Template({
   dateLabel,
   backgroundStart = "#07131a",
   backgroundEnd = "#221f2e",
+  rowBackgroundColors = [],
   backgroundMovie,
   showDailyAudience = true,
   showTotalAudience = false,
@@ -144,6 +153,7 @@ export function RankingV2Template({
   dateLabel?: string;
   backgroundStart?: string;
   backgroundEnd?: string;
+  rowBackgroundColors?: string[];
   backgroundMovie?: CaptureMovie;
   showDailyAudience?: boolean;
   showTotalAudience?: boolean;
@@ -208,13 +218,22 @@ export function RankingV2Template({
           <div className="flex h-full flex-col gap-1">
               {rankingRows.map((movie, index) => {
               const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
+              const rowBackgroundColor = rowBackgroundColors[index] || "#221f2e";
+              const rowBackgroundFull = hexToRgba(rowBackgroundColor, 0.96, "rgba(34,31,46,0.96)");
+              const rowBackgroundStrong = hexToRgba(rowBackgroundColor, 1, "rgba(34,31,46,1)");
+              const rowBackgroundMid = hexToRgba(rowBackgroundColor, 0.38, "rgba(34,31,46,0.38)");
+              const rowBackgroundSoft = hexToRgba(rowBackgroundColor, 0.74, "rgba(34,31,46,0.74)");
+              const rowBackgroundBase =
+                showImages
+                  ? `linear-gradient(90deg,rgba(6,8,14,0.98) 0%,rgba(12,13,20,0.96) 22%,${rowBackgroundStrong} 72%,${rowBackgroundStrong} 100%)`
+                  : `linear-gradient(90deg,rgba(6,8,14,0.98) 0%,rgba(12,13,20,0.98) 34%,${rowBackgroundFull} 100%)`;
 
               return (
                 <div
                   key={movie?.id ?? `ranking-v2-placeholder-${index}`}
-                  className="grid min-h-0 flex-1 items-stretch gap-2"
+                  className="grid min-h-0 flex-1 items-stretch"
                   style={{
-                    gridTemplateColumns: showDailyAudience ? "minmax(0,1fr) 3.65rem" : "minmax(0,1fr)",
+                    gridTemplateColumns: showDailyAudience ? "minmax(0,1fr) 5.2rem" : "minmax(0,1fr)",
                   }}
                 >
                   <div
@@ -224,18 +243,24 @@ export function RankingV2Template({
                     ].join(" ")}
                     style={{
                       gridTemplateColumns: "minmax(0,1fr)",
-                      clipPath: "polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%)",
+                      clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)",
                     }}
                   >
-                    <div className={["relative min-w-0 overflow-hidden", showRowBackgrounds ? "bg-white/10" : ""].join(" ")}>
+                    <div
+                      className="relative min-w-0 overflow-hidden"
+                      style={{ background: showRowBackgrounds ? rowBackgroundBase : undefined }}
+                    >
                       {showRowBackgrounds && showImages && imageCandidates[0] ? (
                         <img
                           alt=""
                           src={imageCandidates[0]}
                           data-fallback-index="0"
                           onError={(event) => handleImageFallback(event, imageCandidates)}
-                          className="absolute inset-y-0 right-0 block h-full w-1/2 object-cover"
-                          style={{ objectPosition: `center ${movie?.imagePosition ?? 35}%` }}
+                          className="absolute inset-y-0 right-0 block h-full object-cover"
+                          style={{
+                            objectPosition: `center ${movie?.imagePosition ?? 35}%`,
+                            width: "50%",
+                          }}
                           crossOrigin="anonymous"
                         />
                       ) : null}
@@ -244,8 +269,8 @@ export function RankingV2Template({
                           className="absolute inset-0"
                           style={{
                             background: showImages
-                              ? "linear-gradient(90deg,rgba(34,31,46,0.96) 0%,rgba(34,31,46,0.92) 50%,rgba(34,31,46,0.18) 100%)"
-                              : "linear-gradient(90deg,rgba(34,31,46,0.96) 0%,rgba(34,31,46,0.74) 100%)",
+                              ? `linear-gradient(90deg,rgba(6,8,14,0.98) 0%,rgba(12,13,20,0.96) 24%,${rowBackgroundStrong} 46%,${rowBackgroundFull} 55%,${rowBackgroundMid} 68%,rgba(34,31,46,0) 84%)`
+                              : `linear-gradient(90deg,rgba(6,8,14,0.98) 0%,rgba(12,13,20,0.98) 34%,${rowBackgroundSoft} 100%)`,
                           }}
                         />
                       ) : null}
@@ -269,12 +294,12 @@ export function RankingV2Template({
                   </div>
                   {showDailyAudience ? (
                     <div
-                      style={titleFontStyle}
+                      style={rankingNumberStyle}
                       className="flex h-full min-w-0 flex-col items-end justify-center py-[1px] text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.28)]"
                     >
-                      <span className="w-full truncate text-[12px] leading-[1.05]">{getDailyAudience(movie)}</span>
+                      <span className="w-full whitespace-nowrap text-[12px] leading-[1.05]">{getDailyAudience(movie)}</span>
                       {showTotalAudience ? (
-                        <span className="mt-[1px] w-full truncate text-[8px] leading-[1.05] text-white/68">
+                        <span className="mt-[1px] w-full whitespace-nowrap text-[8px] leading-[1.05] text-white/68">
                           {getTotalAudience(movie)}
                         </span>
                       ) : null}

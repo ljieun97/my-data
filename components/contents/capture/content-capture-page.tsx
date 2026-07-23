@@ -94,6 +94,7 @@ export default function ContentCapturePage() {
   const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(false);
   const [showRankingTotalAudience, setShowRankingTotalAudience] = useState(false);
   const [showRankingV2Images, setShowRankingV2Images] = useState(false);
+  const [showRankingV2RowBackgrounds, setShowRankingV2RowBackgrounds] = useState(true);
   const [rankingV2BackgroundStart, setRankingV2BackgroundStart] = useState("#07131a");
   const [rankingV2BackgroundEnd, setRankingV2BackgroundEnd] = useState("#221f2e");
   const [releaseBoardTitle, setReleaseBoardTitle] = useState("7월 개봉예정 영화 라인업");
@@ -106,6 +107,7 @@ export default function ContentCapturePage() {
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
   const [rankingCoverMovieId, setRankingCoverMovieId] = useState<number | null>(null);
+  const [rankingV2BackgroundMovieId, setRankingV2BackgroundMovieId] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
   const [didCopyRankingText, setDidCopyRankingText] = useState(false);
@@ -134,7 +136,10 @@ export default function ContentCapturePage() {
   const rankingCoverMovie = rankingCoverMovieId
     ? selectedMovies.find((movie) => movie.id === rankingCoverMovieId)
     : undefined;
-  const currentCoverMovie = isRankingMode ? rankingCoverMovie ?? selectedMovies[0] : isRankingV2Mode ? rankingCoverMovie : currentSingleMovie;
+  const rankingV2BackgroundMovie = rankingV2BackgroundMovieId
+    ? selectedMovies.find((movie) => movie.id === rankingV2BackgroundMovieId)
+    : undefined;
+  const currentCoverMovie = isRankingMode ? rankingCoverMovie ?? selectedMovies[0] : isRankingV2Mode ? rankingV2BackgroundMovie : currentSingleMovie;
   const selectedTitleColor = titleColorMode === "auto" ? titleColor : getTitleColorValue(titleColorMode);
   const getReadableTitleColor = (rgb: [number, number, number]) => {
     const cream = [255, 243, 208];
@@ -145,6 +150,7 @@ export default function ContentCapturePage() {
     if (!selectedMovies.length) {
       setPreviewMovieIndex(0);
       setRankingCoverMovieId(null);
+      setRankingV2BackgroundMovieId(null);
       previousMovieCountRef.current = 0;
       return;
     }
@@ -165,6 +171,11 @@ export default function ContentCapturePage() {
     }
     if (isRankingMode && selectedMovies.length) setRankingCoverMovieId(selectedMovies[0].id);
   }, [isRankingMode, isRankingTextMode, rankingCoverMovieId, selectedMovies]);
+  useEffect(() => {
+    if (!rankingV2BackgroundMovieId) return;
+    if (selectedMovies.some((movie) => movie.id === rankingV2BackgroundMovieId)) return;
+    setRankingV2BackgroundMovieId(null);
+  }, [rankingV2BackgroundMovieId, selectedMovies]);
   useEffect(() => {
     if (!(isNewsMode || isBodyMode || isRankingMode) || titleColorMode !== "auto") return;
     const imageUrl = getBackdropUrl(currentCoverMovie) || getPosterUrl(currentCoverMovie);
@@ -512,7 +523,7 @@ export default function ContentCapturePage() {
               isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode}
               showRankingTotalAudience={showRankingTotalAudience}
               showImagePositionControls={isRankingV2Mode}
-              rankingCoverMovieId={rankingCoverMovieId}
+              rankingCoverMovieId={isRankingV2Mode ? rankingV2BackgroundMovieId : rankingCoverMovieId}
               selectedMoviesCount={isRankingTextMode || isReleaseMode ? Math.min(selectedMovies.length, movieSlotCount) : selectedMovies.length}
               movieSlotCount={movieSlotCount}
               movies={slots}
@@ -533,7 +544,11 @@ export default function ContentCapturePage() {
               updateMovieYear={updateMovieYear}
               updateMovieImagePosition={updateMovieImagePosition}
               onSelectRankingCoverMovie={(id) => {
-                setRankingCoverMovieId(id);
+                if (isRankingV2Mode) {
+                  setRankingV2BackgroundMovieId((current) => (current === id ? null : id));
+                } else {
+                  setRankingCoverMovieId(id);
+                }
                 const nextIndex = selectedMovies.findIndex((movie) => movie.id === id);
                 if (nextIndex >= 0) setPreviewMovieIndex(nextIndex);
               }}
@@ -815,12 +830,22 @@ export default function ContentCapturePage() {
               {isRankingV2Mode ? (
                 <>
                   <div className="mb-3">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Row Background</span>
+                    <CaptureToggleButton
+                      type="button"
+                      active={showRankingV2RowBackgrounds}
+                      onClick={() => setShowRankingV2RowBackgrounds((current) => !current)}
+                      className="mb-3 w-full"
+                    >
+                      행 배경 표시
+                    </CaptureToggleButton>
                     <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Images</span>
                     <CaptureToggleButton
                       type="button"
                       active={showRankingV2Images}
                       onClick={() => setShowRankingV2Images((current) => !current)}
                       className="w-full"
+                      disabled={!showRankingV2RowBackgrounds}
                     >
                       사진 표시
                     </CaptureToggleButton>
@@ -1153,10 +1178,11 @@ export default function ContentCapturePage() {
                   dateLabel={rankingDateLabel}
                   backgroundStart={rankingV2BackgroundStart}
                   backgroundEnd={rankingV2BackgroundEnd}
-                  backgroundMovie={rankingCoverMovie}
+                  backgroundMovie={rankingV2BackgroundMovie}
                   showDailyAudience={showRankingDailyAudience}
                   showTotalAudience={showRankingTotalAudience}
                   showImages={showRankingV2Images}
+                  showRowBackgrounds={showRankingV2RowBackgrounds}
                 />
               ) : isReleaseMode ? (
                 <ReleaseBoardTemplate

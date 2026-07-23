@@ -71,19 +71,21 @@ export function ReleaseBoardTemplate({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(236,72,153,0.34),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.22),transparent_36%),linear-gradient(180deg,#7a3f52_0%,#4a364a_52%,#262b3d_100%)]" />
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
 
-      <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-3">
+      <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
         <div className="-mx-4 flex flex-col items-start">
           <div className="flex items-end justify-start">
-            <h1
-              style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-              className="inline-flex max-w-full items-center justify-center rounded-l-none rounded-r-[1.1rem] bg-white pb-1 pl-2 pr-4 pt-2 text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)] break-keep whitespace-pre-line"
-            >
-              {title}
-            </h1>
+            <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
+              <h1
+                style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
+                className="min-w-0 text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)] break-keep whitespace-pre-line"
+              >
+                {title}
+              </h1>
+            </div>
           </div>
         </div>
 
-        <div className={["mt-2.5 grid min-h-0 flex-1 gap-2", gridColsClass].join(" ")}>
+        <div className={["relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-1 pt-1.5 grid gap-2", gridColsClass].join(" ")}>
           {visibleMovies.map((movie, index) => {
             const posterUrl = getPosterUrl(movie) || getBackdropUrl(movie);
 
@@ -133,6 +135,7 @@ export function RankingV2Template({
   showDailyAudience = true,
   showTotalAudience = false,
   showImages = true,
+  showRowBackgrounds = true,
 }: {
   movies: Array<CaptureMovie | undefined>;
   title: string;
@@ -145,6 +148,7 @@ export function RankingV2Template({
   showDailyAudience?: boolean;
   showTotalAudience?: boolean;
   showImages?: boolean;
+  showRowBackgrounds?: boolean;
 }) {
   const rankingRows = Array.from({ length: 10 }, (_, index) => movies[index]);
   const titleValue = title.trim() || `${movies[0]?.title ?? "1위 작품"} 박스오피스 1위`;
@@ -200,7 +204,7 @@ export function RankingV2Template({
           </div>
         </div>
 
-        <div className="relative mt-1 min-h-0 flex-1 overflow-hidden px-0.5 py-1">
+        <div className="relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-1 pt-1.5">
           <div className="flex h-full flex-col gap-1">
               {rankingRows.map((movie, index) => {
               const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
@@ -218,32 +222,37 @@ export function RankingV2Template({
                   }}
                 >
                   <div
-                    className="grid min-w-0 overflow-hidden rounded-[0.2rem] shadow-[0_5px_12px_rgba(0,0,0,0.18)]"
+                    className={[
+                      "grid min-w-0 overflow-hidden rounded-[0.2rem]",
+                      showRowBackgrounds ? "shadow-[0_5px_12px_rgba(0,0,0,0.18)]" : "",
+                    ].join(" ")}
                     style={{
                       gridTemplateColumns: "minmax(0,1fr)",
                       clipPath: "polygon(0 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 0 100%)",
                     }}
                   >
-                    <div className="relative min-w-0 overflow-hidden bg-white/10">
-                      {showImages && imageCandidates[0] ? (
+                    <div className={["relative min-w-0 overflow-hidden", showRowBackgrounds ? "bg-white/10" : ""].join(" ")}>
+                      {showRowBackgrounds && showImages && imageCandidates[0] ? (
                         <img
                           alt=""
                           src={imageCandidates[0]}
                           data-fallback-index="0"
                           onError={(event) => handleImageFallback(event, imageCandidates)}
-                          className="absolute inset-0 block h-full w-full object-cover"
+                          className="absolute inset-y-0 left-11 right-0 block h-full w-auto object-cover"
                           style={{ objectPosition: `center ${movie?.imagePosition ?? 35}%` }}
                           crossOrigin="anonymous"
                         />
                       ) : null}
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          background: showImages
-                            ? "linear-gradient(90deg,rgba(34,31,46,0.9) 0%,rgba(34,31,46,0.62) 46%,rgba(34,31,46,0.18) 100%)"
-                            : "linear-gradient(90deg,rgba(34,31,46,0.96) 0%,rgba(34,31,46,0.74) 100%)",
-                        }}
-                      />
+                      {showRowBackgrounds ? (
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            background: showImages
+                              ? "linear-gradient(90deg,rgba(34,31,46,0.9) 0%,rgba(34,31,46,0.62) 46%,rgba(34,31,46,0.18) 100%)"
+                              : "linear-gradient(90deg,rgba(34,31,46,0.96) 0%,rgba(34,31,46,0.74) 100%)",
+                          }}
+                        />
+                      ) : null}
                       <div className="relative z-[1] flex h-full min-w-0 items-center gap-3 pl-2 pr-7">
                         <span
                           style={titleFontStyle}

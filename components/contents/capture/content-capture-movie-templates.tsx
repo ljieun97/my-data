@@ -71,7 +71,7 @@ export function ReleaseBoardTemplate({
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(236,72,153,0.34),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.22),transparent_36%),linear-gradient(180deg,#7a3f52_0%,#4a364a_52%,#262b3d_100%)]" />
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
 
-      <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
+      <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
         <div className="-mx-4 flex flex-col items-start">
           <div className="flex items-end justify-start">
             <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
@@ -85,7 +85,7 @@ export function ReleaseBoardTemplate({
           </div>
         </div>
 
-        <div className={["relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-1 pt-1.5 grid gap-2", gridColsClass].join(" ")}>
+        <div className={["relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-0 pt-1.5 grid gap-2", gridColsClass].join(" ")}>
           {visibleMovies.map((movie, index) => {
             const posterUrl = getPosterUrl(movie) || getBackdropUrl(movie);
 
@@ -115,8 +115,8 @@ export function ReleaseBoardTemplate({
             );
           })}
         </div>
-        <div className="pt-0.5 text-center">
-          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/92">{footerRight || "35Film"}</span>
+        <div className="pt-0 text-center">
+          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || "35Film"}</span>
         </div>
       </div>
     </div>
@@ -163,7 +163,7 @@ export function RankingV2Template({
       <div
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(circle at top right, rgba(236,72,153,0.22), transparent 34%), radial-gradient(circle at bottom left, rgba(59,130,246,0.16), transparent 36%), linear-gradient(180deg, ${backgroundStart} 0%, ${backgroundEnd} 100%)`,
+          background: `radial-gradient(circle at top right, rgba(236,72,153,0.12), transparent 34%), radial-gradient(circle at bottom left, rgba(59,130,246,0.1), transparent 36%), linear-gradient(180deg, ${backgroundStart} 0%, ${backgroundEnd} 100%)`,
         }}
       />
       {backgroundCandidates[0] ? (
@@ -182,7 +182,7 @@ export function RankingV2Template({
       ) : null}
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
 
-      <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-1 pt-4">
+      <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
         <div className="-mx-4 flex flex-col items-start">
           <div className="flex items-end justify-start">
             <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
@@ -204,7 +204,7 @@ export function RankingV2Template({
           </div>
         </div>
 
-        <div className="relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-1 pt-1.5">
+        <div className="relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-0 pt-1.5">
           <div className="flex h-full flex-col gap-1">
               {rankingRows.map((movie, index) => {
               const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
@@ -214,11 +214,7 @@ export function RankingV2Template({
                   key={movie?.id ?? `ranking-v2-placeholder-${index}`}
                   className="grid min-h-0 flex-1 items-stretch gap-2"
                   style={{
-                    gridTemplateColumns: showDailyAudience
-                      ? showTotalAudience
-                        ? "minmax(0,1fr)"
-                        : "minmax(0,1fr) 3.65rem"
-                      : "minmax(0,1fr)",
+                    gridTemplateColumns: showDailyAudience ? "minmax(0,1fr) 3.65rem" : "minmax(0,1fr)",
                   }}
                 >
                   <div
@@ -238,7 +234,7 @@ export function RankingV2Template({
                           src={imageCandidates[0]}
                           data-fallback-index="0"
                           onError={(event) => handleImageFallback(event, imageCandidates)}
-                          className="absolute inset-y-0 left-11 right-0 block h-full w-auto object-cover"
+                          className="absolute inset-y-0 right-0 block h-full w-1/2 object-cover"
                           style={{ objectPosition: `center ${movie?.imagePosition ?? 35}%` }}
                           crossOrigin="anonymous"
                         />
@@ -248,7 +244,7 @@ export function RankingV2Template({
                           className="absolute inset-0"
                           style={{
                             background: showImages
-                              ? "linear-gradient(90deg,rgba(34,31,46,0.9) 0%,rgba(34,31,46,0.62) 46%,rgba(34,31,46,0.18) 100%)"
+                              ? "linear-gradient(90deg,rgba(34,31,46,0.96) 0%,rgba(34,31,46,0.92) 50%,rgba(34,31,46,0.18) 100%)"
                               : "linear-gradient(90deg,rgba(34,31,46,0.96) 0%,rgba(34,31,46,0.74) 100%)",
                           }}
                         />
@@ -267,30 +263,30 @@ export function RankingV2Template({
                           >
                             {movie?.title ?? "영화를 추가하세요"}
                           </p>
-                          {showDailyAudience && showTotalAudience ? (
-                            <p className="mt-[1px] truncate text-[8px] font-semibold leading-none text-white/72">
-                              일일 {getDailyAudience(movie) || "-"} · 누적 {getTotalAudience(movie) || "-"}
-                            </p>
-                          ) : null}
                         </div>
                       </div>
                     </div>
                   </div>
-                  {showDailyAudience && !showTotalAudience ? (
-                    <span
+                  {showDailyAudience ? (
+                    <div
                       style={titleFontStyle}
-                      className="flex h-full items-center justify-end truncate text-right text-[13px] font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.28)]"
+                      className="flex h-full min-w-0 flex-col items-end justify-center py-[1px] text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.28)]"
                     >
-                      {getDailyAudience(movie)}
-                    </span>
+                      <span className="w-full truncate text-[12px] leading-[1.05]">{getDailyAudience(movie)}</span>
+                      {showTotalAudience ? (
+                        <span className="mt-[1px] w-full truncate text-[8px] leading-[1.05] text-white/68">
+                          {getTotalAudience(movie)}
+                        </span>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
               );
             })}
           </div>
         </div>
-        <div className="pt-0.5 text-center">
-          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/92">{footerRight || "35Film"}</span>
+        <div className="pt-0 text-center">
+          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || "35Film"}</span>
         </div>
       </div>
     </div>
@@ -510,7 +506,7 @@ export function MovieListTemplate({
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] px-0 pb-1">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] px-0 pb-2">
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>
@@ -607,7 +603,7 @@ export function SingleMovieTemplate({
             </div>
           </div>
         </div>
-        <div className="absolute inset-x-0 bottom-0 z-[2] px-10 pb-1">
+        <div className="absolute inset-x-0 bottom-0 z-[2] px-10 pb-2">
           <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
         </div>
       </div>
@@ -627,7 +623,7 @@ export function SingleMovieTemplate({
         />
       ) : null}
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_38%,rgba(0,0,0,0.35)_68%,rgba(0,0,0,0.78)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 z-[1] px-10 pb-1 pt-24">
+      <div className="absolute inset-x-0 bottom-0 z-[1] px-10 pb-2 pt-24">
         <div className={["w-full text-left", hasDetailText ? "pb-1" : "pb-[36px]"].join(" ")}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
             {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleChipClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}

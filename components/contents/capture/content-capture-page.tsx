@@ -41,14 +41,14 @@ function getTodayBoxOfficeDateLabel() {
 }
 
 const rankingV2BackgroundPresets = [
-  { key: "boxoffice", label: "Box Office", start: "#07131a", end: "#221f2e" },
-  { key: "netflix", label: "Netflix", start: "#210304", end: "#0b0203" },
-  { key: "watcha", label: "Watcha", start: "#ff0558", end: "#251029" },
-  { key: "tving", label: "TVING", start: "#d71920", end: "#171717" },
-  { key: "disney", label: "Disney+", start: "#061a44", end: "#020713" },
-  { key: "coupang", label: "Coupang", start: "#123d8c", end: "#101827" },
-  { key: "purple", label: "Purple", start: "#4c1d95", end: "#1e1b4b" },
-  { key: "mono", label: "Mono", start: "#202020", end: "#050505" },
+  { key: "classic", label: "Classic", start: "#7a3f52", end: "#34384c" },
+  { key: "boxoffice", label: "Box Office", start: "#3a3d42", end: "#31343a" },
+  { key: "netflix", label: "Netflix", start: "#7a2228", end: "#402744" },
+  { key: "watcha", label: "Watcha", start: "#8b2c54", end: "#34264f" },
+  { key: "tving", label: "TVING", start: "#8b2428", end: "#34303b" },
+  { key: "disney", label: "Disney+", start: "#1d4a55", end: "#493454" },
+  { key: "coupang", label: "Coupang", start: "#24518c", end: "#273f59" },
+  { key: "purple", label: "Purple", start: "#533878", end: "#27395f" },
 ];
 
 export default function ContentCapturePage() {
@@ -95,8 +95,8 @@ export default function ContentCapturePage() {
   const [showRankingTotalAudience, setShowRankingTotalAudience] = useState(false);
   const [showRankingV2Images, setShowRankingV2Images] = useState(false);
   const [showRankingV2RowBackgrounds, setShowRankingV2RowBackgrounds] = useState(true);
-  const [rankingV2BackgroundStart, setRankingV2BackgroundStart] = useState("#07131a");
-  const [rankingV2BackgroundEnd, setRankingV2BackgroundEnd] = useState("#221f2e");
+  const [rankingV2BackgroundStart, setRankingV2BackgroundStart] = useState("#7a3f52");
+  const [rankingV2BackgroundEnd, setRankingV2BackgroundEnd] = useState("#34384c");
   const [releaseBoardTitle, setReleaseBoardTitle] = useState("7월 개봉예정 영화 라인업");
   const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(25);
   const [releaseBoardLabelColors, setReleaseBoardLabelColors] = useState(() => getReleaseBoardDefaultColors());

@@ -93,8 +93,8 @@ export function CaptureFooter({
   borderless?: boolean;
 }) {
   return (
-    <footer className="pt-0.5 text-center">
-      <span className="text-[10px] font-semibold tracking-[0.01em] text-white/72">{footerRight || "35Film"}</span>
+    <footer className="pt-0 text-center">
+      <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || "35Film"}</span>
     </footer>
   );
 }

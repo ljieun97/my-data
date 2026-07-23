@@ -139,7 +139,7 @@ function TitleBlock({
         </h1>
       </div>
     ) : null}
-    <p style={{ ...titleFontStyle, color: footerColor }} className="mt-3 text-[10px] font-semibold tracking-[0.01em] opacity-45">
+    <p style={{ ...titleFontStyle, color: footerColor }} className="mt-3 text-[10px] font-semibold tracking-[0.03em] opacity-45">
       {footerRight || "35Film"}
     </p>
     </>
@@ -234,7 +234,7 @@ export function NewsCoverTemplate({
       <FilmToneOverlay enabled={useFilmFilter} />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.06)_42%,rgba(0,0,0,0.48)_78%,rgba(0,0,0,0.78)_100%)]" />
       {!bodyCard ? <ReviewBlock rating={reviewRating} text={reviewText} /> : null}
-      <div className="absolute inset-x-0 bottom-0 px-9 pb-8 text-center">
+      <div className="absolute inset-x-0 bottom-0 px-9 pb-[34px] text-center">
         <TitleBlock
           headline={displayHeadline}
           titleSize={titleSize}
@@ -366,7 +366,7 @@ export function RankingCoverTemplate({
           ))}
         </div>
       </div>
-      <div className="absolute inset-x-0 bottom-0 px-9 pb-8 text-center">
+      <div className="absolute inset-x-0 bottom-0 px-9 pb-[34px] text-center">
         {dateLabel?.trim() ? (
           <p
             style={titleFontStyle}

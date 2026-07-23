@@ -17,13 +17,26 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const [isLoadingCaptureResults, setIsLoadingCaptureResults] = useState(false);
   const [captureSearchError, setCaptureSearchError] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [highlightedCaptureIndex, setHighlightedCaptureIndex] = useState(-1);
   const { captureMode, addMovie, hasMovie, selectedMovies } = useCaptureContent();
   const isCapturePage = pathname?.startsWith("/capture");
   const maxCaptureMovies = getCaptureMovieMaxCount(captureMode);
 
+  const getCaptureResultMediaType = (result: any) => (result?.media_type === "tv" ? "tv" : "movie");
+  const isCaptureResultDisabled = (result: any) => {
+    const mediaType = getCaptureResultMediaType(result);
+    return hasMovie(Number(result.id), mediaType) || selectedMovies.length >= maxCaptureMovies;
+  };
+  const getSelectableCaptureIndexes = () =>
+    captureResults.reduce<number[]>((indexes, result, index) => {
+      if (!isCaptureResultDisabled(result)) indexes.push(index);
+      return indexes;
+    }, []);
+
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nextKeyword = e.target.value;
     setInputValue(nextKeyword);
+    setHighlightedCaptureIndex(-1);
 
     if (isCapturePage) {
       return;
@@ -74,6 +87,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
     if (didAdd) {
       setInputValue("");
       setCaptureResults([]);
+      setHighlightedCaptureIndex(-1);
     }
   };
 
@@ -102,6 +116,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       setCaptureResults([]);
       setIsLoadingCaptureResults(false);
       setCaptureSearchError("");
+      setHighlightedCaptureIndex(-1);
       return;
     }
 
@@ -129,10 +144,17 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
           : [];
 
         setCaptureResults(results);
+        setHighlightedCaptureIndex(() =>
+          results.findIndex((result: any) => {
+            const mediaType = result?.media_type === "tv" ? "tv" : "movie";
+            return !hasMovie(Number(result.id), mediaType) && selectedMovies.length < maxCaptureMovies;
+          }),
+        );
       } catch (error) {
         if (!isCancelled) {
           setCaptureResults([]);
           setCaptureSearchError("검색 결과를 불러오지 못했습니다");
+          setHighlightedCaptureIndex(-1);
         }
       } finally {
         if (!isCancelled) {
@@ -145,7 +167,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       isCancelled = true;
       window.clearTimeout(timerId);
     };
-  }, [captureMode, inputValue, isCapturePage]);
+  }, [captureMode, hasMovie, inputValue, isCapturePage, maxCaptureMovies, selectedMovies.length]);
 
   useEffect(() => {
     if (isCapturePage) {
@@ -156,6 +178,41 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   }, [isCapturePage, queryKeyword]);
 
   const showCaptureResults = isCapturePage && isFocused && (inputValue.trim() || captureResults.length);
+  const handleCaptureInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isCapturePage || !showCaptureResults) return;
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      const selectableIndexes = getSelectableCaptureIndexes();
+      if (!selectableIndexes.length) return;
+
+      event.preventDefault();
+      setHighlightedCaptureIndex((current) => {
+        const currentPosition = selectableIndexes.indexOf(current);
+        if (currentPosition < 0) {
+          return event.key === "ArrowDown" ? selectableIndexes[0] : selectableIndexes[selectableIndexes.length - 1];
+        }
+
+        const nextPosition =
+          event.key === "ArrowDown"
+            ? (currentPosition + 1) % selectableIndexes.length
+            : (currentPosition - 1 + selectableIndexes.length) % selectableIndexes.length;
+        return selectableIndexes[nextPosition];
+      });
+      return;
+    }
+
+    if (event.key === "Enter") {
+      const selectableIndexes = getSelectableCaptureIndexes();
+      const selectedIndex = selectableIndexes.includes(highlightedCaptureIndex)
+        ? highlightedCaptureIndex
+        : selectableIndexes[0];
+      const selectedResult = captureResults[selectedIndex];
+      if (!selectedResult) return;
+
+      event.preventDefault();
+      void handleSelectCaptureMovie(selectedResult);
+    }
+  };
 
   return (
     <div className="relative w-full min-w-0">
@@ -172,6 +229,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
         onBlur={() => {
           window.setTimeout(() => setIsFocused(false), 120);
         }}
+        onKeyDown={handleCaptureInputKeyDown}
         autoFocus={autoFocus}
       />
 
@@ -191,14 +249,15 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
             </div>
           ) : null}
 
-          {captureResults.map((result) => {
-            const mediaType = result?.media_type === "tv" ? "tv" : "movie";
+          {captureResults.map((result, index) => {
+            const mediaType = getCaptureResultMediaType(result);
             const isAdded = hasMovie(Number(result.id), mediaType);
-            const isDisabled = isAdded || selectedMovies.length >= maxCaptureMovies;
+            const isDisabled = isCaptureResultDisabled(result);
             const yearSource = result.release_date || result.first_air_date;
             const year = yearSource ? String(yearSource).slice(0, 4) : "";
             const imagePath = result.poster_path || result.backdrop_path;
             const title = result.title || result.name;
+            const isHighlighted = highlightedCaptureIndex === index;
 
             return (
               <button
@@ -206,10 +265,18 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
                 type="button"
                 disabled={isDisabled}
                 onMouseDown={(event) => event.preventDefault()}
+                onMouseEnter={() => {
+                  if (!isDisabled) setHighlightedCaptureIndex(index);
+                }}
                 onClick={() => {
                   void handleSelectCaptureMovie(result);
                 }}
-                className="flex w-full items-center gap-3 px-3 py-2 text-left transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-50 dark:hover:bg-slate-900"
+                className={[
+                  "flex w-full items-center gap-3 px-3 py-2 text-left transition disabled:cursor-default disabled:opacity-50",
+                  isHighlighted
+                    ? "bg-slate-100 dark:bg-slate-900"
+                    : "hover:bg-slate-50 dark:hover:bg-slate-900",
+                ].join(" ")}
               >
                 {imagePath ? (
                   <img

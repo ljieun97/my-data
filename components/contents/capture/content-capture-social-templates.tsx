@@ -267,6 +267,8 @@ export function RankingCoverTemplate({
   useFilmFilter,
   footerRight,
   coverMovieId,
+  dateLabel,
+  showDailyAudience = true,
   showTotalAudience = false,
 }: {
   movies: Array<CaptureMovie | undefined>;
@@ -278,6 +280,8 @@ export function RankingCoverTemplate({
   useFilmFilter: boolean;
   footerRight: string;
   coverMovieId?: number;
+  dateLabel?: string;
+  showDailyAudience?: boolean;
   showTotalAudience?: boolean;
 }) {
   const topMovie = movies[0];
@@ -319,7 +323,11 @@ export function RankingCoverTemplate({
               key={movie?.id ?? `ranking-placeholder-${index}`}
               className={[
                 "grid items-center gap-1 py-[2px]",
-                showTotalAudience ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_3.95rem]" : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]",
+                showDailyAudience
+                  ? showTotalAudience
+                    ? "grid-cols-[1.45rem_minmax(0,1fr)]"
+                    : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
+                  : "grid-cols-[1.45rem_minmax(0,1fr)]",
               ].join(" ")}
             >
               <span
@@ -328,31 +336,30 @@ export function RankingCoverTemplate({
               >
                 {getRankText(movie, index)}
               </span>
-              <p
-                style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
-                className={[
-                  "translate-y-[1px] truncate text-[12px] font-semibold",
-                  index === 0 ? "text-white" : "text-white/68",
-                ].join(" ")}
-              >
-                {movie?.title ?? "영화를 추가하세요"}
-              </p>
-              <span
-                className={[
-                  "translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black",
-                  index === 0 ? "text-white" : "text-white/68",
-                ].join(" ")}
-              >
-                {getDailyAudience(movie)}
-              </span>
-              {showTotalAudience ? (
-                <span
+              <div className="min-w-0">
+                <p
+                  style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
                   className={[
-                  "translate-y-[1px] whitespace-nowrap pl-0 text-right text-[9px] font-semibold",
+                    "translate-y-[1px] truncate text-[12px] font-semibold",
                     index === 0 ? "text-white" : "text-white/68",
                   ].join(" ")}
                 >
-                  {getTotalAudience(movie)}
+                  {movie?.title ?? "영화를 추가하세요"}
+                </p>
+                {showDailyAudience && showTotalAudience ? (
+                  <p className={["mt-[1px] truncate text-[8px] font-semibold", index === 0 ? "text-white/72" : "text-white/48"].join(" ")}>
+                    일일 {getDailyAudience(movie) || "-"} · 누적 {getTotalAudience(movie) || "-"}
+                  </p>
+                ) : null}
+              </div>
+              {showDailyAudience && !showTotalAudience ? (
+                <span
+                  className={[
+                    "translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black",
+                    index === 0 ? "text-white" : "text-white/68",
+                  ].join(" ")}
+                >
+                  {getDailyAudience(movie)}
                 </span>
               ) : null}
             </div>
@@ -360,6 +367,14 @@ export function RankingCoverTemplate({
         </div>
       </div>
       <div className="absolute inset-x-0 bottom-0 px-9 pb-8 text-center">
+        {dateLabel?.trim() ? (
+          <p
+            style={titleFontStyle}
+            className="mb-2 text-[11px] font-semibold tracking-[0.02em] text-white/72 drop-shadow-[0_1px_4px_rgba(0,0,0,0.48)]"
+          >
+            {dateLabel.trim()}
+          </p>
+        ) : null}
         <TitleBlock
           headline={headlineValue}
           titleSize={titleSize}

@@ -7,4 +7,12 @@ export {
   toSafeFilename,
   type SubtitleChipTone,
 } from "@/components/contents/capture/content-capture-utils";
-export { MovieListTemplate, SingleMovieTemplate } from "@/components/contents/capture/content-capture-movie-templates";
+export {
+  getReleaseBoardAutoDate,
+  getReleaseBoardDefaultColors,
+  MovieListTemplate,
+  PosterRankingTemplate,
+  RankingV2Template,
+  ReleaseBoardTemplate,
+  SingleMovieTemplate,
+} from "@/components/contents/capture/content-capture-movie-templates";

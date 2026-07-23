@@ -10,6 +10,7 @@ type MovieSlotsPanelProps = {
   isRankingMode: boolean;
   isMovieListMode: boolean;
   showRankingTotalAudience?: boolean;
+  showImagePositionControls?: boolean;
   rankingCoverMovieId?: number | null;
   selectedMoviesCount: number;
   movieSlotCount: number;
@@ -34,6 +35,7 @@ export function MovieSlotsPanel({
   isRankingMode,
   isMovieListMode,
   showRankingTotalAudience = false,
+  showImagePositionControls = false,
   rankingCoverMovieId,
   selectedMoviesCount,
   movieSlotCount,
@@ -111,7 +113,7 @@ export function MovieSlotsPanel({
                       onMouseDown={(event) => event.stopPropagation()}
                       onDragStart={(event) => event.preventDefault()}
                       maxLength={8}
-                      placeholder={String(index + 1).padStart(2, "0")}
+                      placeholder={String(index + 1)}
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
                   ) : null}
@@ -154,7 +156,7 @@ export function MovieSlotsPanel({
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
                   ) : null}
-                  {!isRankingMode ? (
+                  {(!isRankingMode || showImagePositionControls) ? (
                     <div className="flex items-center gap-1">
                       <button
                         type="button"

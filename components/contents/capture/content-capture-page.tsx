@@ -23,14 +23,7 @@ import {
   type SubtitleChipTone,
   formatYear,
 } from "@/components/contents/capture/content-capture-templates";
-import {
-  getTitleColorValue,
-  NewsCoverTemplate,
-  RankingCoverTemplate,
-  titleColorOptions,
-  type TitleColorKey,
-  type TitleFontMode,
-} from "@/components/contents/capture/content-capture-social-templates";
+import { NewsCoverTemplate } from "@/components/contents/capture/content-capture-social-templates";
 import { getBackdropUrl, getPosterUrl } from "@/components/contents/capture/content-capture-utils";
 import { FastAverageColor } from "fast-average-color";
 
@@ -86,16 +79,11 @@ export default function ContentCapturePage() {
   const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
   const [singlePreviewVariant, setSinglePreviewVariant] = useState<"default" | "spotlight">("default");
   const [newsHeadline, setNewsHeadline] = useState("라라랜드 10주년 재개봉");
-  const [bodyHeadline, setBodyHeadline] = useState("");
   const [newsAccentText, setNewsAccentText] = useState("");
-  const [showNewsReview, setShowNewsReview] = useState(false);
+  const [newsDisplayMode, setNewsDisplayMode] = useState<"default" | "review" | "body">("default");
   const [newsReviewRating, setNewsReviewRating] = useState("3.5");
   const [newsReviewText, setNewsReviewText] = useState("");
   const [newsTitleSize, setNewsTitleSize] = useState(22);
-  const [titleFontMode, setTitleFontMode] = useState<TitleFontMode>("gmarket");
-  const [highlightText, setHighlightText] = useState("");
-  const [titleColor, setTitleColor] = useState("#fff3d0");
-  const [titleColorMode, setTitleColorMode] = useState<"auto" | TitleColorKey>("auto");
   const [rankingHeadline, setRankingHeadline] = useState("오늘의 영화 순위");
   const [rankingDateLabel, setRankingDateLabel] = useState(getYesterdayBoxOfficeDateLabel);
   const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(true);
@@ -111,12 +99,10 @@ export default function ContentCapturePage() {
   const [isExtractingReleaseColors, setIsExtractingReleaseColors] = useState(false);
   const [isExtractingRankingRowColors, setIsExtractingRankingRowColors] = useState(false);
   const [releaseBoardDates, setReleaseBoardDates] = useState(() => Array.from({ length: 8 }, () => ""));
-  const [useFilmFilter, setUseFilmFilter] = useState(false);
   const [footerLeft, setFooterLeft] = useState("占싸놂옙占쌘몌옙占쏙옙");
   const [footerRight, setFooterRight] = useState("35Film");
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
-  const [rankingCoverMovieId, setRankingCoverMovieId] = useState<number | null>(null);
   const [rankingV2BackgroundMovieId, setRankingV2BackgroundMovieId] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
@@ -125,13 +111,11 @@ export default function ContentCapturePage() {
   const [externalImageError, setExternalImageError] = useState("");
   const subtitleChipClass = getCoverSubtitleClass(subtitleChipTone);
   const isNewsMode = captureMode === "news-cover";
-  const isBodyMode = captureMode === "news-body";
-  const isRankingMode = captureMode === "ranking-cover";
   const isRankingV2Mode = captureMode === "ranking-cover-v2";
-  const isRankingTextMode = isRankingMode || isRankingV2Mode;
+  const isRankingTextMode = isRankingV2Mode;
   const isReleaseMode = captureMode === "release-board";
   const isMovieListMode = captureMode === "movie-list";
-  const isMovieMode = isNewsMode || isBodyMode || isRankingTextMode || isReleaseMode || isMovieListMode;
+  const isMovieMode = isNewsMode || isRankingTextMode || isReleaseMode || isMovieListMode;
   const movieMinCount = isNewsMode ? 1 : isReleaseMode ? 8 : 2;
   const movieMaxCount = getCaptureMovieMaxCount(captureMode);
   const rankingSlotCount = 10;
@@ -143,23 +127,13 @@ export default function ContentCapturePage() {
     : Math.min(Math.max(selectedMovies.length, movieMinCount), movieMaxCount);
   const currentSingleMovie = selectedMovies[previewMovieIndex];
   const currentSingleMovieId = currentSingleMovie?.id ?? null;
-  const rankingCoverMovie = rankingCoverMovieId
-    ? selectedMovies.find((movie) => movie.id === rankingCoverMovieId)
-    : undefined;
   const rankingV2BackgroundMovie = rankingV2BackgroundMovieId
     ? selectedMovies.find((movie) => movie.id === rankingV2BackgroundMovieId)
     : undefined;
-  const currentCoverMovie = isRankingMode ? rankingCoverMovie ?? selectedMovies[0] : isRankingV2Mode ? rankingV2BackgroundMovie : currentSingleMovie;
-  const selectedTitleColor = titleColorMode === "auto" ? titleColor : getTitleColorValue(titleColorMode);
-  const getReadableTitleColor = (rgb: [number, number, number]) => {
-    const cream = [255, 243, 208];
-    const mixed = cream.map((value, index) => Math.round(value * 0.68 + rgb[index] * 0.32));
-    return `rgb(${mixed[0]}, ${mixed[1]}, ${mixed[2]})`;
-  };
+  const currentCoverMovie = isRankingV2Mode ? rankingV2BackgroundMovie : currentSingleMovie;
   useEffect(() => {
     if (!selectedMovies.length) {
       setPreviewMovieIndex(0);
-      setRankingCoverMovieId(null);
       setRankingV2BackgroundMovieId(null);
       previousMovieCountRef.current = 0;
       return;
@@ -173,45 +147,10 @@ export default function ContentCapturePage() {
     previousMovieCountRef.current = selectedMovies.length;
   }, [isMovieListMode, selectedMovies.length]);
   useEffect(() => {
-    if (!isRankingTextMode) return;
-    if (rankingCoverMovieId && selectedMovies.some((movie) => movie.id === rankingCoverMovieId)) return;
-    if (rankingCoverMovieId) {
-      setRankingCoverMovieId(null);
-      return;
-    }
-    if (isRankingMode && selectedMovies.length) setRankingCoverMovieId(selectedMovies[0].id);
-  }, [isRankingMode, isRankingTextMode, rankingCoverMovieId, selectedMovies]);
-  useEffect(() => {
     if (!rankingV2BackgroundMovieId) return;
     if (selectedMovies.some((movie) => movie.id === rankingV2BackgroundMovieId)) return;
     setRankingV2BackgroundMovieId(null);
   }, [rankingV2BackgroundMovieId, selectedMovies]);
-  useEffect(() => {
-    if (!(isNewsMode || isBodyMode || isRankingMode) || titleColorMode !== "auto") return;
-    const imageUrl = getBackdropUrl(currentCoverMovie) || getPosterUrl(currentCoverMovie);
-    if (!imageUrl) {
-      setTitleColor("#fff3d0");
-      return;
-    }
-
-    let cancelled = false;
-    const averageColor = new FastAverageColor();
-
-    averageColor
-      .getColorAsync(imageUrl, { crossOrigin: "anonymous" })
-      .then((color) => {
-        if (cancelled) return;
-        setTitleColor(getReadableTitleColor([color.value[0], color.value[1], color.value[2]]));
-      })
-      .catch(() => {
-        if (!cancelled) setTitleColor("#fff3d0");
-      });
-
-    return () => {
-      cancelled = true;
-      averageColor.destroy();
-    };
-  }, [currentCoverMovie?.backdrop_path, currentCoverMovie?.poster_path, currentCoverMovie?.id, isNewsMode, isBodyMode, isRankingMode, titleColorMode]);
   useEffect(() => {
     setExternalImageUrl("");
     setExternalImageError("");
@@ -386,38 +325,34 @@ export default function ContentCapturePage() {
   };
   const renderMovieListImagePicker = () => {
     const imagePickerMovie = isRankingTextMode ? currentCoverMovie : currentSingleMovie;
-    if (!(isMovieListMode || isNewsMode || isBodyMode || isRankingTextMode || isReleaseMode) || !imagePickerMovie) return null;
+    if (!(isMovieListMode || isNewsMode || isRankingTextMode || isReleaseMode) || !imagePickerMovie) return null;
     const imagePickerIndex = selectedMovies.findIndex((movie) => movie.id === imagePickerMovie.id);
     return (
       <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
         <div className="p-4 pb-3">
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Cover Image</p>
-            {!isRankingMode ? (
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {imagePickerIndex + 1}/{selectedMovies.length}
-              </p>
-            ) : null}
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              {imagePickerIndex + 1}/{selectedMovies.length}
+            </p>
           </div>
-          {!isRankingMode ? (
-            <div className="flex gap-1.5 overflow-x-auto pb-1">
-              {selectedMovies.map((movie, index) => (
-                <button
-                  key={movie.id}
-                  type="button"
-                  onClick={() => setPreviewMovieIndex(index)}
-                  className={[
-                    "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
-                    previewMovieIndex === index
-                      ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                      : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                  ].join(" ")}
-                >
-                  {index + 1}
-                </button>
-              ))}
-            </div>
-          ) : null}
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {selectedMovies.map((movie, index) => (
+              <button
+                key={movie.id}
+                type="button"
+                onClick={() => setPreviewMovieIndex(index)}
+                className={[
+                  "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
+                  previewMovieIndex === index
+                    ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                    : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                ].join(" ")}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
         </div>
         {imagePickerMovie.posterOptions?.length ? (
           <div className="m-4 mt-0 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
@@ -557,9 +492,7 @@ export default function ContentCapturePage() {
       <div className="flex w-full flex-wrap border border-slate-200 bg-white/72 p-1 dark:border-slate-800 dark:bg-slate-950/70 sm:inline-flex sm:w-fit">
         {[
           { key: "news-cover", label: "뉴스형" },
-          { key: "news-body", label: "본문형" },
-          { key: "ranking-cover", label: "순위형" },
-          { key: "ranking-cover-v2", label: "순위형 v2" },
+          { key: "ranking-cover-v2", label: "순위형" },
           { key: "release-board", label: "릴리즈형" },
           { key: "movie-list", label: "목록형" },
         ].map((item) => (
@@ -587,7 +520,7 @@ export default function ContentCapturePage() {
               isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode}
               showRankingTotalAudience={showRankingTotalAudience}
               showImagePositionControls={isRankingV2Mode}
-              rankingCoverMovieId={isRankingV2Mode ? rankingV2BackgroundMovieId : rankingCoverMovieId}
+              rankingCoverMovieId={rankingV2BackgroundMovieId}
               selectedMoviesCount={isRankingTextMode || isReleaseMode ? Math.min(selectedMovies.length, movieSlotCount) : selectedMovies.length}
               movieSlotCount={movieSlotCount}
               movies={slots}
@@ -608,95 +541,12 @@ export default function ContentCapturePage() {
               updateMovieYear={updateMovieYear}
               updateMovieImagePosition={updateMovieImagePosition}
               onSelectRankingCoverMovie={(id) => {
-                if (isRankingV2Mode) {
-                  setRankingV2BackgroundMovieId((current) => (current === id ? null : id));
-                } else {
-                  setRankingCoverMovieId(id);
-                }
+                setRankingV2BackgroundMovieId((current) => (current === id ? null : id));
                 const nextIndex = selectedMovies.findIndex((movie) => movie.id === id);
                 if (nextIndex >= 0) setPreviewMovieIndex(nextIndex);
               }}
             />
-          {(isNewsMode || isBodyMode || isRankingMode) ? (
-            <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-              <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Photo Tone</p>
-              <CaptureToggleButton
-                type="button"
-                active={useFilmFilter}
-                onClick={() => setUseFilmFilter((current) => !current)}
-                className="w-full"
-              >
-                ?꾩뭅 ?꾪꽣
-              </CaptureToggleButton>
-              <div className="mt-4">
-                <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title Font</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <CaptureToggleButton
-                    type="button"
-                    active={titleFontMode === "gmarket"}
-                    onClick={() => setTitleFontMode("gmarket")}
-                  >
-                    Gmarket
-                  </CaptureToggleButton>
-                  <CaptureToggleButton
-                    type="button"
-                    active={titleFontMode === "serif"}
-                    onClick={() => setTitleFontMode("serif")}
-                  >
-                    Serif
-                  </CaptureToggleButton>
-                </div>
-              </div>
-              {!isRankingMode && titleFontMode === "gmarket" ? (
-                <label className="mt-4 block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Highlight Word</span>
-                  <input
-                    value={highlightText}
-                    onChange={(event) => setHighlightText(event.target.value)}
-                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                    placeholder="예: 500만, 1위, 재개봉"
-                  />
-                </label>
-              ) : null}
-              {!isRankingMode && titleFontMode === "gmarket" ? (
-              <div className="mt-4">
-                <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title Color</span>
-                <div className="grid grid-cols-6 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setTitleColorMode("auto")}
-                    className={[
-                      "h-9 border px-2 text-[11px] font-bold transition",
-                      titleColorMode === "auto"
-                        ? "border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-slate-950"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:border-slate-500",
-                    ].join(" ")}
-                  >
-                    Auto
-                  </button>
-                  {titleColorOptions.map((option) => (
-                    <button
-                      key={option.key}
-                      type="button"
-                      onClick={() => setTitleColorMode(option.key)}
-                      className={[
-                        "flex h-9 items-center justify-center border transition",
-                        titleColorMode === option.key
-                          ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
-                          : "border-slate-200 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-500",
-                      ].join(" ")}
-                      title={option.label}
-                      aria-label={`Title color ${option.label}`}
-                    >
-                      <span className="h-4 w-4 rounded-full" style={{ backgroundColor: option.value }} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              ) : null}
-            </div>
-          ) : null}
-          {(isNewsMode || isBodyMode || isRankingTextMode || isReleaseMode) ? (
+          {(isNewsMode || isRankingTextMode || isReleaseMode) ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Footer</p>
               <label className="block">
@@ -782,16 +632,38 @@ export default function ContentCapturePage() {
             <>
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                 <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">News Cover</p>
+                <div className="mb-3">
+                  <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Type</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: "default", label: "기본" },
+                      { key: "review", label: "별점+한줄평" },
+                      { key: "body", label: "본문형" },
+                    ].map((item) => (
+                      <CaptureToggleButton
+                        key={item.key}
+                        type="button"
+                        active={newsDisplayMode === item.key}
+                        onClick={() => setNewsDisplayMode(item.key as "default" | "review" | "body")}
+                      >
+                        {item.label}
+                      </CaptureToggleButton>
+                    ))}
+                  </div>
+                </div>
                 <label className="mb-3 block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Headline</span>
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {newsDisplayMode === "body" ? "Body Text" : "Headline"}
+                  </span>
                   <CaptureTextArea
                     value={newsHeadline}
                     onChange={(event) => setNewsHeadline(event.target.value)}
-                    rows={2}
-                    placeholder="라라랜드 10주년 재개봉"
+                    rows={newsDisplayMode === "body" ? 4 : 2}
+                    placeholder={newsDisplayMode === "body" ? "본문에 들어갈 짧은 문구" : "라라랜드 10주년 재개봉"}
                   />
                   <CaptureSizeControls value={newsTitleSize} defaultValue={24} onChange={setNewsTitleSize} step={2} min={18} max={34} />
                 </label>
+                {newsDisplayMode !== "body" ? (
                 <label className="block">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Accent Text</span>
                   <input
@@ -801,17 +673,8 @@ export default function ContentCapturePage() {
                     placeholder="예: 9월 재개봉"
                   />
                 </label>
-                <div className="mt-4">
-                  <CaptureToggleButton
-                    type="button"
-                    active={showNewsReview}
-                    onClick={() => setShowNewsReview((current) => !current)}
-                    className="w-full"
-                  >
-                    별점 + 한줄평
-                  </CaptureToggleButton>
-                </div>
-                {showNewsReview ? (
+                ) : null}
+                {newsDisplayMode === "review" ? (
                   <div className="mt-3 grid gap-3">
                     <label className="block">
                       <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Rating</span>
@@ -861,23 +724,9 @@ export default function ContentCapturePage() {
               </div>
             </>
           ) : null}
-          {isBodyMode ? (
-            <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-              <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Body Text</p>
-              <label className="block">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Text</span>
-                <CaptureTextArea
-                  value={bodyHeadline}
-                  onChange={(event) => setBodyHeadline(event.target.value)}
-                  rows={4}
-                  placeholder="본문에 들어갈 짧은 문구"
-                />
-              </label>
-            </div>
-          ) : null}
           {isRankingTextMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-              <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">{isRankingV2Mode ? "Ranking Cover v2" : "Ranking Cover"}</p>
+              <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Ranking Cover</p>
               <div className="mb-3">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Daily Audience</span>
                 <CaptureToggleButton
@@ -1216,41 +1065,10 @@ export default function ContentCapturePage() {
                   headline={newsHeadline}
                   accentText={newsAccentText}
                   titleSize={newsTitleSize}
-                  titleColor={selectedTitleColor}
-                  titleFontMode={titleFontMode}
-                  highlightText={highlightText}
-                  reviewRating={showNewsReview ? Number(newsReviewRating) : undefined}
-                  reviewText={showNewsReview ? newsReviewText : undefined}
-                  useFilmFilter={useFilmFilter}
+                  bodyCard={newsDisplayMode === "body"}
+                  reviewRating={newsDisplayMode === "review" ? Number(newsReviewRating) : undefined}
+                  reviewText={newsDisplayMode === "review" ? newsReviewText : undefined}
                   footerRight={footerRight}
-                />
-              ) : isBodyMode ? (
-                <NewsCoverTemplate
-                  movie={selectedMovies[previewMovieIndex]}
-                  headline={bodyHeadline}
-                  accentText=""
-                  titleSize={14}
-                  titleColor="#ffffff"
-                  titleFontMode="gmarket"
-                  highlightText=""
-                  bodyCard
-                  useFilmFilter={useFilmFilter}
-                  footerRight={footerRight}
-                />
-              ) : isRankingMode ? (
-                <RankingCoverTemplate
-                  movies={slots}
-                  headline={rankingHeadline}
-                  titleSize={newsTitleSize}
-                  titleColor={selectedTitleColor}
-                  titleFontMode={titleFontMode}
-                  highlightText={highlightText}
-                  useFilmFilter={useFilmFilter}
-                  footerRight={footerRight}
-                  coverMovieId={currentCoverMovie?.id}
-                  dateLabel={rankingDateLabel}
-                  showDailyAudience={showRankingDailyAudience}
-                  showTotalAudience={showRankingTotalAudience}
                 />
               ) : isRankingV2Mode ? (
                 <RankingV2Template
@@ -1288,7 +1106,7 @@ export default function ContentCapturePage() {
               />
               )}
             </div>
-            {(isMovieListMode || isNewsMode || isBodyMode || isRankingTextMode || isReleaseMode) && selectedMovies.length ? renderMovieListImagePicker() : null}
+            {(isMovieListMode || isNewsMode || isRankingTextMode || isReleaseMode) && selectedMovies.length ? renderMovieListImagePicker() : null}
             {isMovieListMode ? (
               <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
                 <div className="p-4 pb-3">

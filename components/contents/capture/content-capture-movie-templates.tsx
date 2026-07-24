@@ -2,6 +2,7 @@
 import {
   buildImageCandidates,
   CaptureFooter,
+  CaptureV2Header,
   getBackdropUrl,
   getPosterUrl,
   getTextOverlayClass,
@@ -80,18 +81,7 @@ export function ReleaseBoardTemplate({
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
 
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
-        <div className="-mx-4 flex flex-col items-start">
-          <div className="flex items-end justify-start">
-            <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
-              <h1
-                style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-                className="min-w-0 text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)] break-keep whitespace-pre-line"
-              >
-                {title}
-              </h1>
-            </div>
-          </div>
-        </div>
+        <CaptureV2Header title={title} titleSize={titleSize} />
 
         <div className={["relative mt-2 grid min-h-0 flex-1 auto-rows-fr overflow-hidden px-0.5 pb-0 pt-1.5 gap-2", gridColsClass].join(" ")}>
           {visibleMovies.map((movie, index) => {
@@ -193,26 +183,7 @@ export function RankingV2Template({
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
 
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
-        <div className="-mx-4 flex flex-col items-start">
-          <div className="flex items-end justify-start">
-            <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
-              <h1
-                style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-                className="min-w-0 text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)] break-keep whitespace-pre-line"
-              >
-                {titleValue}
-              </h1>
-              {dateLabel?.trim() ? (
-                <span
-                  style={titleFontStyle}
-                  className="shrink-0 pb-0.5 text-[10px] font-black leading-none tracking-[-0.03em] text-slate-500"
-                >
-                  {dateLabel.trim()}
-                </span>
-              ) : null}
-            </div>
-          </div>
-        </div>
+        <CaptureV2Header title={titleValue} titleSize={titleSize} dateLabel={dateLabel} />
 
         <div className="relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-0 pt-1.5">
           <div className="flex h-full flex-col gap-1">

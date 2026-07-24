@@ -28,12 +28,11 @@ export type CaptureMovie = {
   singlePreviewShowBody?: boolean;
 };
 
-export type CaptureMode = "news-cover" | "news-body" | "ranking-cover" | "ranking-cover-v2" | "release-board" | "movie-list";
+export type CaptureMode = "news-cover" | "ranking-cover-v2" | "release-board" | "movie-list";
 
 export function getCaptureMovieMaxCount(captureMode: CaptureMode) {
   if (captureMode === "release-board") return 8;
   if (captureMode === "ranking-cover-v2") return 10;
-  if (captureMode === "ranking-cover") return 10;
   if (captureMode === "movie-list") return 10;
   return 5;
 }

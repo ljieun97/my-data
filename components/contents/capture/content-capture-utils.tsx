@@ -99,6 +99,39 @@ export function CaptureFooter({
   );
 }
 
+export function CaptureV2Header({
+  title,
+  titleSize,
+  dateLabel,
+}: {
+  title: string;
+  titleSize: number;
+  dateLabel?: string;
+}) {
+  return (
+    <div className="-mx-4 flex flex-col items-start">
+      <div className="flex items-end justify-start">
+        <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
+          <h1
+            style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
+            className="min-w-0 break-keep whitespace-pre-line text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]"
+          >
+            {title}
+          </h1>
+          {dateLabel?.trim() ? (
+            <span
+              style={titleFontStyle}
+              className="shrink-0 pb-0.5 text-[10px] font-black leading-none tracking-[-0.03em] text-slate-500"
+            >
+              {dateLabel.trim()}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export type SubtitleChipTone = "burgundy" | "navy" | "slate" | "olive" | "amber";
 
 export const subtitleChipToneOptions: Array<{ key: SubtitleChipTone; label: string; swatchClass: string }> = [

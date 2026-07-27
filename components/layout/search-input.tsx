@@ -50,6 +50,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
     let posterOptions: string[] = [];
     let detail: any = null;
     const mediaType = movie?.media_type === "tv" ? "tv" : "movie";
+    const posterLanguageOrder = [null, "en"];
     try {
       setIsLoadingCaptureResults(true);
       const [images, detailResult] = await Promise.all([
@@ -60,8 +61,9 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       posterOptions = Array.isArray(images?.posters)
         ? [...images.posters]
             .sort((a: any, b: any) => {
-              const aScore = a?.iso_639_1 === "ko" ? 0 : a?.iso_639_1 === "en" ? 1 : 2;
-              const bScore = b?.iso_639_1 === "ko" ? 0 : b?.iso_639_1 === "en" ? 1 : 2;
+              const aScore = posterLanguageOrder.indexOf(a?.iso_639_1);
+              const bScore = posterLanguageOrder.indexOf(b?.iso_639_1);
+              if (aScore !== bScore) return (aScore < 0 ? posterLanguageOrder.length : aScore) - (bScore < 0 ? posterLanguageOrder.length : bScore);
               return aScore - bScore;
             })
             .map((poster: any) => poster.file_path)

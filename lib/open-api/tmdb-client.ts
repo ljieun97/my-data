@@ -93,7 +93,7 @@ export async function getPosters(type: string, id: string) {
   return posters
 }
 
-export async function getImages(type: string, id: string | number, includeImageLanguage = "null,en") {
+export async function getImages(type: string, id: string | number, includeImageLanguage = "null,en,ko") {
   const URL = `${BASE_URL}/${type}/${id}/images?`
     + `include_image_language=${includeImageLanguage}&`
     + `&api_key=${API_KEY}`

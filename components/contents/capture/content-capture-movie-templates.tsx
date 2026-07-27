@@ -102,7 +102,17 @@ export function ReleaseBoardTemplate({
                 </div>
                 <div className="relative min-h-0 flex-1 bg-white">
                   {posterUrl ? (
-                    <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
+                    <>
+                      <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
+                      <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.66)_64%,rgba(0,0,0,0.86)_100%)] px-1.5 pb-1.5 pt-5">
+                        <p
+                          style={titleFontStyle}
+                          className="line-clamp-2 break-keep text-center text-[9px] font-medium leading-[1.18] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
+                        >
+                          {movie.title}
+                        </p>
+                      </div>
+                    </>
                   ) : (
                     <div className="flex h-full items-center justify-center bg-white/90 text-center text-[12px] font-bold tracking-[0.08em] text-slate-400">
                       ADD MOVIE

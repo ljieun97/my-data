@@ -8,6 +8,14 @@ import {
   handleImageFallback,
   titleFontStyle,
 } from "@/components/contents/capture/content-capture-utils";
+import type { CSSProperties } from "react";
+
+const rankingNumberStyle: CSSProperties = {
+  fontFamily: '"Helvetica Neue", Arial, sans-serif',
+  fontVariantNumeric: "tabular-nums",
+  letterSpacing: "0",
+  lineHeight: 1,
+};
 
 function getMovieImageCandidates(movie?: CaptureMovie) {
   return buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
@@ -16,6 +24,143 @@ function getMovieImageCandidates(movie?: CaptureMovie) {
 function EmptyBackdrop() {
   return (
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,rgba(255,255,255,0.16),transparent_34%),linear-gradient(135deg,#0f172a_0%,#020617_54%,#111827_100%)]" />
+  );
+}
+
+export function RankingCoverTemplate({
+  movies,
+  headline,
+  titleSize,
+  footerRight,
+  coverMovieId,
+  dateLabel,
+  showDailyAudience = true,
+  showTotalAudience = false,
+}: {
+  movies: Array<CaptureMovie | undefined>;
+  headline: string;
+  titleSize: number;
+  footerRight: string;
+  coverMovieId?: number;
+  dateLabel?: string;
+  showDailyAudience?: boolean;
+  showTotalAudience?: boolean;
+}) {
+  const topMovie = movies[0];
+  const coverMovie = coverMovieId ? movies.find((movie) => movie?.id === coverMovieId) ?? topMovie : topMovie;
+  const imageCandidates = getMovieImageCandidates(coverMovie);
+  const rankingImagePosition = Math.min(100, (coverMovie?.imagePosition ?? 30) + 15);
+  const rankingRows = Array.from({ length: 10 }, (_, index) => movies[index]);
+  const headlineValue = headline.trim() || `${topMovie?.title ?? "1위 작품"} 박스오피스 1위`;
+  const subtextValue = dateLabel?.trim().replace(/\s*\n\s*/g, " ");
+  const getRankText = (movie: CaptureMovie | undefined, index: number) =>
+    movie?.rankingText?.trim() || String(index + 1);
+  const getDailyAudience = (movie?: CaptureMovie) => movie?.release_date?.trim() ?? "";
+  const getTotalAudience = (movie?: CaptureMovie) => movie?.rankingTotalAudience?.trim() ?? "";
+
+  return (
+    <div className="relative h-full overflow-hidden bg-neutral-950 text-white">
+      <div className="absolute inset-x-0 top-0 h-[48%] overflow-hidden bg-neutral-900">
+        {imageCandidates[0] ? (
+          <img
+            alt=""
+            src={imageCandidates[0]}
+            data-fallback-index="0"
+            onError={(event) => handleImageFallback(event, imageCandidates)}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: `center ${rankingImagePosition}%` }}
+            crossOrigin="anonymous"
+          />
+        ) : (
+          <EmptyBackdrop />
+        )}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.22)_0%,rgba(0,0,0,0.02)_34%,rgba(0,0,0,0.72)_100%)]" />
+      </div>
+      <div className="absolute inset-x-0 top-[36%] h-[18%] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,#050505_72%,#050505_100%)]" />
+      <div className="absolute inset-x-0 bottom-0 h-[64%] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,#050505_14%,#050505_100%)] px-8 pb-9 pt-11">
+        <div className="flex h-full flex-col">
+          {rankingRows.map((movie, index) => {
+            const isCoverRow = Boolean(movie?.id && coverMovie?.id && movie.id === coverMovie.id);
+
+            return (
+              <div
+                key={movie?.id ?? `ranking-placeholder-${index}`}
+                className={[
+                  "grid min-h-0 flex-1 items-center gap-1",
+                  showDailyAudience
+                    ? showTotalAudience
+                      ? "grid-cols-[1.45rem_minmax(0,1fr)]"
+                      : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
+                    : "grid-cols-[1.45rem_minmax(0,1fr)]",
+                ].join(" ")}
+              >
+                <span
+                  style={rankingNumberStyle}
+                  className={[
+                    "inline-flex h-[16px] min-w-[22px] translate-y-[1.5px] items-center justify-center rounded-[5px] text-[10px] font-black tabular-nums",
+                    isCoverRow ? "bg-white/28 text-white" : "bg-neutral-600 text-white",
+                  ].join(" ")}
+                >
+                  {getRankText(movie, index)}
+                </span>
+                <div className="min-w-0">
+                  <p
+                    style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
+                    className={[
+                      "translate-y-[1px] truncate text-[12px] font-semibold",
+                      isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.38)]" : "text-white/68",
+                    ].join(" ")}
+                  >
+                    {movie?.title ?? "영화를 추가하세요"}
+                  </p>
+                  {showDailyAudience && showTotalAudience ? (
+                    <p
+                      style={rankingNumberStyle}
+                      className={["mt-[1px] truncate text-[8px] font-semibold", isCoverRow ? "text-white" : "text-white/48"].join(" ")}
+                    >
+                      일일 {getDailyAudience(movie) || "-"} · 누적 {getTotalAudience(movie) || "-"}
+                    </p>
+                  ) : null}
+                </div>
+                {showDailyAudience && !showTotalAudience ? (
+                  <span
+                    style={rankingNumberStyle}
+                    className={[
+                      "translate-y-[1px] whitespace-nowrap pl-2 text-right text-[10px] font-black",
+                      isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.36)]" : "text-white/68",
+                    ].join(" ")}
+                  >
+                    {getDailyAudience(movie)}
+                  </span>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="relative z-[2] flex h-full flex-col px-4 pb-2 pt-4">
+        <div className="-mx-4 flex flex-col items-start">
+          <div className="inline-flex max-w-full rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
+            <h1
+              style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
+              className="min-w-0 break-keep whitespace-pre-line text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]"
+            >
+              {headlineValue}
+            </h1>
+          </div>
+          {subtextValue ? (
+            <p
+              style={titleFontStyle}
+              className="ml-2 mt-1 max-w-[calc(100%-0.5rem)] truncate text-left text-[10px] font-black leading-none tracking-[-0.03em] text-white/72 drop-shadow-[0_1px_4px_rgba(0,0,0,0.48)]"
+            >
+              {subtextValue}
+            </p>
+          ) : null}
+        </div>
+        <div className="min-h-0 flex-1" />
+        <CaptureFooter footerLeft="" footerRight={footerRight} />
+      </div>
+    </div>
   );
 }
 

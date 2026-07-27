@@ -23,7 +23,7 @@ import {
   type SubtitleChipTone,
   formatYear,
 } from "@/components/contents/capture/content-capture-templates";
-import { NewsCoverTemplate } from "@/components/contents/capture/content-capture-social-templates";
+import { NewsCoverTemplate, RankingCoverTemplate } from "@/components/contents/capture/content-capture-social-templates";
 import { getBackdropUrl, getPosterUrl } from "@/components/contents/capture/content-capture-utils";
 import { FastAverageColor } from "fast-average-color";
 
@@ -32,7 +32,7 @@ function getYesterdayBoxOfficeDateLabel() {
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
   const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-  return `${yesterday.getMonth() + 1}/${yesterday.getDate()}(${weekdays[yesterday.getDay()]})`;
+  return `${yesterday.getFullYear()}년\n${yesterday.getMonth() + 1}/${yesterday.getDate()}(${weekdays[yesterday.getDay()]})`;
 }
 
 function toReleaseLabelColor(rgb: [number, number, number]) {
@@ -111,8 +111,9 @@ export default function ContentCapturePage() {
   const [externalImageError, setExternalImageError] = useState("");
   const subtitleChipClass = getCoverSubtitleClass(subtitleChipTone);
   const isNewsMode = captureMode === "news-cover";
+  const isRankingMode = captureMode === "ranking-cover";
   const isRankingV2Mode = captureMode === "ranking-cover-v2";
-  const isRankingTextMode = isRankingV2Mode;
+  const isRankingTextMode = isRankingMode || isRankingV2Mode;
   const isReleaseMode = captureMode === "release-board";
   const isMovieListMode = captureMode === "movie-list";
   const isMovieMode = isNewsMode || isRankingTextMode || isReleaseMode || isMovieListMode;
@@ -492,7 +493,8 @@ export default function ContentCapturePage() {
       <div className="flex w-full flex-wrap border border-slate-200 bg-white/72 p-1 dark:border-slate-800 dark:bg-slate-950/70 sm:inline-flex sm:w-fit">
         {[
           { key: "news-cover", label: "뉴스형" },
-          { key: "ranking-cover-v2", label: "순위형" },
+          { key: "ranking-cover", label: "순위형" },
+          { key: "ranking-cover-v2", label: "순위형 V2" },
           { key: "release-board", label: "릴리즈형" },
           { key: "movie-list", label: "목록형" },
         ].map((item) => (
@@ -822,11 +824,11 @@ export default function ContentCapturePage() {
               </label>
               <label className="mt-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Date / Sub Text</span>
-                <input
+                <CaptureTextArea
                   value={rankingDateLabel}
                   onChange={(event) => setRankingDateLabel(event.target.value)}
-                  className="h-9 w-full border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                  placeholder="7/23(목) 또는 넷플릭스 영화 TOP 10"
+                  rows={2}
+                  placeholder={"2026년\n7/24(금)"}
                 />
               </label>
               <div className="mt-4">
@@ -1069,6 +1071,17 @@ export default function ContentCapturePage() {
                   reviewRating={newsDisplayMode === "review" ? Number(newsReviewRating) : undefined}
                   reviewText={newsDisplayMode === "review" ? newsReviewText : undefined}
                   footerRight={footerRight}
+                />
+              ) : isRankingMode ? (
+                <RankingCoverTemplate
+                  movies={slots}
+                  headline={rankingHeadline}
+                  titleSize={newsTitleSize}
+                  footerRight={footerRight}
+                  coverMovieId={currentCoverMovie?.id}
+                  dateLabel={rankingDateLabel}
+                  showDailyAudience={showRankingDailyAudience}
+                  showTotalAudience={showRankingTotalAudience}
                 />
               ) : isRankingV2Mode ? (
                 <RankingV2Template

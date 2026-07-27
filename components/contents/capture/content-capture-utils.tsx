@@ -121,7 +121,7 @@ export function CaptureV2Header({
           {dateLabel?.trim() ? (
             <span
               style={titleFontStyle}
-              className="shrink-0 pb-0.5 text-[10px] font-black leading-none tracking-[-0.03em] text-slate-500"
+              className="shrink-0 whitespace-pre-line pb-0.5 text-right text-[10px] font-black leading-[1.05] tracking-[-0.03em] text-slate-500"
             >
               {dateLabel.trim()}
             </span>

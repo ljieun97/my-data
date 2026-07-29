@@ -88,6 +88,7 @@ export default function ContentCapturePage() {
   const [rankingDateLabel, setRankingDateLabel] = useState(getYesterdayBoxOfficeDateLabel);
   const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(true);
   const [showRankingTotalAudience, setShowRankingTotalAudience] = useState(true);
+  const [showRankingV2Ranks, setShowRankingV2Ranks] = useState(true);
   const [showRankingV2Images, setShowRankingV2Images] = useState(true);
   const [showRankingV2RowBackgrounds, setShowRankingV2RowBackgrounds] = useState(true);
   const [rankingV2BackgroundStart, setRankingV2BackgroundStart] = useState("#7a3f52");
@@ -755,6 +756,15 @@ export default function ContentCapturePage() {
               {isRankingV2Mode ? (
                 <>
                   <div className="mb-3">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Rank</span>
+                    <CaptureToggleButton
+                      type="button"
+                      active={showRankingV2Ranks}
+                      onClick={() => setShowRankingV2Ranks((current) => !current)}
+                      className="mb-3 w-full"
+                    >
+                      순위 표시
+                    </CaptureToggleButton>
                     <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Row Background</span>
                     <CaptureToggleButton
                       type="button"
@@ -1096,6 +1106,7 @@ export default function ContentCapturePage() {
                   backgroundMovie={rankingV2BackgroundMovie}
                   showDailyAudience={showRankingDailyAudience}
                   showTotalAudience={showRankingTotalAudience}
+                  showRanks={showRankingV2Ranks}
                   showImages={showRankingV2Images}
                   showRowBackgrounds={showRankingV2RowBackgrounds}
                 />

@@ -143,6 +143,7 @@ export function RankingV2Template({
   backgroundMovie,
   showDailyAudience = true,
   showTotalAudience = false,
+  showRanks = true,
   showImages = true,
   showRowBackgrounds = true,
 }: {
@@ -157,6 +158,7 @@ export function RankingV2Template({
   backgroundMovie?: CaptureMovie;
   showDailyAudience?: boolean;
   showTotalAudience?: boolean;
+  showRanks?: boolean;
   showImages?: boolean;
   showRowBackgrounds?: boolean;
 }) {
@@ -255,13 +257,15 @@ export function RankingV2Template({
                           }}
                         />
                       ) : null}
-                      <div className="relative z-[1] flex h-full min-w-0 items-center gap-3 pl-2 pr-7">
-                        <span
-                          style={titleFontStyle}
-                          className="flex w-6 shrink-0 justify-center text-center text-[13px] font-black leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
-                        >
-                          {getRankText(movie, index)}
-                        </span>
+                      <div className={["relative z-[1] flex h-full min-w-0 items-center pr-7", showRanks ? "gap-3 pl-2" : "gap-0 pl-2.5"].join(" ")}>
+                        {showRanks ? (
+                          <span
+                            style={titleFontStyle}
+                            className="flex w-6 shrink-0 justify-center text-center text-[13px] font-black leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+                          >
+                            {getRankText(movie, index)}
+                          </span>
+                        ) : null}
                         <div className="min-w-0 translate-y-[0.75px]">
                           <p
                             style={titleFontStyle}

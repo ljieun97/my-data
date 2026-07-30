@@ -120,7 +120,7 @@ export function CaptureHeadlineBlock({
         <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
           <h1
             style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-            className="min-w-0 break-keep whitespace-pre-line pl-[2px] text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]"
+            className="min-w-0 break-keep whitespace-pre-line pl-[2px] text-left font-black leading-[0.94] tracking-[-0.095em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]"
           >
             {title}
           </h1>

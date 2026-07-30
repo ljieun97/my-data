@@ -37,6 +37,7 @@ export function RankingCoverTemplate({
   dateLabel,
   showDailyAudience = true,
   showTotalAudience = false,
+  isCapturing = false,
 }: {
   movies: Array<CaptureMovie | undefined>;
   headline: string;
@@ -46,6 +47,7 @@ export function RankingCoverTemplate({
   dateLabel?: string;
   showDailyAudience?: boolean;
   showTotalAudience?: boolean;
+  isCapturing?: boolean;
 }) {
   const topMovie = movies[0];
   const coverMovie = coverMovieId ? movies.find((movie) => movie?.id === coverMovieId) ?? topMovie : topMovie;
@@ -98,7 +100,8 @@ export function RankingCoverTemplate({
                 <span
                   style={rankingNumberStyle}
                   className={[
-                    "inline-flex h-[16px] min-w-[22px] translate-y-[1.5px] items-center justify-center rounded-[5px] pt-[0.5px] text-[10px] font-black tabular-nums",
+                    "inline-flex h-[16px] min-w-[22px] items-center justify-center rounded-[5px] pt-[0.5px] text-[10px] font-black tabular-nums",
+                    isCapturing ? "translate-y-[2px]" : "translate-y-[1.5px]",
                     isCoverRow ? "bg-white/28 text-white" : "bg-neutral-600 text-white",
                   ].join(" ")}
                 >

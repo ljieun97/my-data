@@ -1092,6 +1092,7 @@ export default function ContentCapturePage() {
                   dateLabel={rankingDateLabel}
                   showDailyAudience={showRankingDailyAudience}
                   showTotalAudience={showRankingTotalAudience}
+                  isCapturing={isCapturing}
                 />
               ) : isRankingV2Mode ? (
                 <RankingV2Template

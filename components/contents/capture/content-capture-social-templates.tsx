@@ -2,6 +2,7 @@
 import {
   buildImageCandidates,
   CaptureFooter,
+  CaptureHeadlineBlock,
   CaptureV2Header,
   getBackdropUrl,
   getPosterUrl,
@@ -139,24 +140,13 @@ export function RankingCoverTemplate({
         </div>
       </div>
       <div className="relative z-[2] flex h-full flex-col px-4 pb-2 pt-4">
-        <div className="-mx-4 flex flex-col items-start">
-          <div className="inline-flex max-w-full rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
-            <h1
-              style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-              className="min-w-0 break-keep whitespace-pre-line text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]"
-            >
-              {headlineValue}
-            </h1>
-          </div>
-          {subtextValue ? (
-            <p
-              style={titleFontStyle}
-              className="ml-2 mt-1 max-w-[calc(100%-0.5rem)] truncate text-left text-[10px] font-black leading-none tracking-[-0.03em] text-white/72 drop-shadow-[0_1px_4px_rgba(0,0,0,0.48)]"
-            >
-              {subtextValue}
-            </p>
-          ) : null}
-        </div>
+        <CaptureHeadlineBlock
+          title={headlineValue}
+          titleSize={titleSize}
+          subtitle={subtextValue}
+          subtitlePlacement="below"
+          subtitleTone="light"
+        />
         <div className="min-h-0 flex-1" />
         <CaptureFooter footerLeft="" footerRight={footerRight} />
       </div>

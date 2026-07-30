@@ -373,6 +373,7 @@ function MovieCaptureRow({
             className={[
               "leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
               isCenterTitle ? "line-clamp-2 text-center text-[12px] font-black whitespace-normal" : "text-[10px]",
+              !isCenterTitle ? "pl-[2px]" : "",
               !isCenterTitle && bottomAligned ? "line-clamp-2 whitespace-normal" : "",
               !isCenterTitle && !bottomAligned ? "truncate" : "",
             ].join(" ")}
@@ -600,13 +601,13 @@ export function SingleMovieTemplate({
               {showTitle ? (
                 <p
                   style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-                  className="line-clamp-2 whitespace-pre-line text-left font-black leading-[1.14] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] [word-break:keep-all]"
+                  className="line-clamp-2 whitespace-pre-line pl-[2px] text-left font-black leading-[1.14] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] [word-break:keep-all]"
                 >
                   {title || "영화를 추가하세요"}
                 </p>
               ) : null}
               {subtitleValue ? (
-                <p style={titleFontStyle} className="mt-2 text-left text-[11px] font-normal leading-tight text-white/88">
+                <p style={titleFontStyle} className="mt-2 pl-[2px] text-left text-[11px] font-normal leading-tight text-white/88">
                   {subtitleValue}
                 </p>
               ) : null}
@@ -636,10 +637,10 @@ export function SingleMovieTemplate({
       <div className="absolute inset-x-0 bottom-0 z-[1] px-10 pb-2 pt-24">
         <div className={["w-full text-left", hasDetailText ? "pb-1" : "pb-[36px]"].join(" ")}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
-            {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleChipClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
+            {showSubtitle ? <p style={{ ...titleFontStyle, paddingLeft: "14px" }} className={["truncate", subtitleChipClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
             {showTitle ? (
               <div className="mt-2">
-                <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
+                <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line pl-[2px] font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
                   {title || movie?.title || "영화를 추가하세요"}
                 </h1>
               </div>

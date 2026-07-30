@@ -98,7 +98,7 @@ export function RankingCoverTemplate({
                 <span
                   style={rankingNumberStyle}
                   className={[
-                    "inline-flex h-[16px] min-w-[22px] translate-y-[1.5px] items-center justify-center rounded-[5px] text-[10px] font-black tabular-nums",
+                    "inline-flex h-[16px] min-w-[22px] translate-y-[1.5px] items-center justify-center rounded-[5px] pt-[0.5px] text-[10px] font-black tabular-nums",
                     isCoverRow ? "bg-white/28 text-white" : "bg-neutral-600 text-white",
                   ].join(" ")}
                 >
@@ -108,7 +108,7 @@ export function RankingCoverTemplate({
                   <p
                     style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
                     className={[
-                      "translate-y-[1px] truncate text-[12px] font-semibold",
+                      "translate-y-[1px] truncate text-[13px] font-semibold",
                       isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.38)]" : "text-white/68",
                     ].join(" ")}
                   >
@@ -127,7 +127,7 @@ export function RankingCoverTemplate({
                   <span
                     style={rankingNumberStyle}
                     className={[
-                      "translate-y-[1px] whitespace-nowrap pl-2 text-right text-[10px] font-black",
+                      "translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black",
                       isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.36)]" : "text-white/68",
                     ].join(" ")}
                   >

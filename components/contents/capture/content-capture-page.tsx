@@ -1062,8 +1062,8 @@ export default function ContentCapturePage() {
           </>
           ) : null}
         </section>
-        <section className="flex justify-center lg:justify-end">
-          <div className="w-full max-w-[min(100%,390px)] sm:max-w-[420px]">
+        <section className="flex w-full justify-start overflow-x-auto pb-2 sm:justify-center lg:justify-end">
+          <div className="w-[420px] max-w-none shrink-0">
             <div
               ref={captureRef}
               className={[

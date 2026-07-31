@@ -79,6 +79,7 @@ export default function ContentCapturePage() {
   const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
   const [singlePreviewVariant, setSinglePreviewVariant] = useState<"default" | "spotlight">("default");
   const [newsHeadline, setNewsHeadline] = useState("라라랜드 10주년 재개봉");
+  const [newsBodyText, setNewsBodyText] = useState("데이비드 존슨 주연의\n새로운 블랙 팬서\n2028.12.15 개봉");
   const [newsAccentText, setNewsAccentText] = useState("");
   const [newsDisplayMode, setNewsDisplayMode] = useState<"default" | "review" | "body">("default");
   const [newsReviewRating, setNewsReviewRating] = useState("3.5");
@@ -655,17 +656,26 @@ export default function ContentCapturePage() {
                   </div>
                 </div>
                 <label className="mb-3 block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {newsDisplayMode === "body" ? "Body Text" : "Headline"}
-                  </span>
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Headline</span>
                   <CaptureTextArea
                     value={newsHeadline}
                     onChange={(event) => setNewsHeadline(event.target.value)}
-                    rows={newsDisplayMode === "body" ? 4 : 2}
-                    placeholder={newsDisplayMode === "body" ? "본문에 들어갈 짧은 문구" : "라라랜드 10주년 재개봉"}
+                    rows={2}
+                    placeholder="라라랜드 10주년 재개봉"
                   />
                   <CaptureSizeControls value={newsTitleSize} defaultValue={24} onChange={setNewsTitleSize} step={2} min={18} max={34} />
                 </label>
+                {newsDisplayMode === "body" ? (
+                  <label className="mb-3 block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Bottom Text</span>
+                    <CaptureTextArea
+                      value={newsBodyText}
+                      onChange={(event) => setNewsBodyText(event.target.value)}
+                      rows={4}
+                      placeholder="하단에 들어갈 짧은 문구"
+                    />
+                  </label>
+                ) : null}
                 {newsDisplayMode !== "body" ? (
                 <label className="block">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Accent Text</span>
@@ -1074,10 +1084,12 @@ export default function ContentCapturePage() {
               {isNewsMode ? (
                 <NewsCoverTemplate
                   movie={selectedMovies[previewMovieIndex]}
+                  secondaryMovie={newsDisplayMode === "body" ? selectedMovies.find((_, index) => index !== previewMovieIndex) : undefined}
                   headline={newsHeadline}
                   accentText={newsAccentText}
                   titleSize={newsTitleSize}
                   bodyCard={newsDisplayMode === "body"}
+                  bodyText={newsDisplayMode === "body" ? newsBodyText : undefined}
                   reviewRating={newsDisplayMode === "review" ? Number(newsReviewRating) : undefined}
                   reviewText={newsDisplayMode === "review" ? newsReviewText : undefined}
                   footerRight={footerRight}

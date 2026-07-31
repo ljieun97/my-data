@@ -197,31 +197,80 @@ function ReviewBlock({ rating, text }: { rating?: number; text?: string }) {
 
 export function NewsCoverTemplate({
   movie,
+  secondaryMovie,
   headline,
   accentText,
   titleSize,
   bodyCard = false,
+  bodyText,
   reviewRating,
   reviewText,
   footerRight,
 }: {
   movie?: CaptureMovie;
+  secondaryMovie?: CaptureMovie;
   headline: string;
   accentText: string;
   titleSize: number;
   bodyCard?: boolean;
+  bodyText?: string;
   reviewRating?: number;
   reviewText?: string;
   footerRight: string;
 }) {
   const imageCandidates = getMovieImageCandidates(movie);
+  const secondaryImageCandidates = getMovieImageCandidates(secondaryMovie);
   const headlineValue = headline.trim() || movie?.singlePreviewTitle || movie?.title || "?곹솕 ?뚯떇";
-  const displayHeadline = bodyCard ? headline.trim() || headlineValue : headlineValue;
+  const displayHeadline = headlineValue;
+  const bottomText = bodyText?.trim() || "";
   const accentColor = "#fff3d0";
 
   return (
     <div className="relative h-full overflow-hidden bg-neutral-950 text-white">
-      {imageCandidates[0] ? (
+      {bodyCard ? (
+        <div className="absolute inset-0 grid grid-cols-2 bg-neutral-950">
+          <div className="relative min-w-0 overflow-hidden bg-neutral-900">
+            {imageCandidates[0] ? (
+              <img
+                alt=""
+                src={imageCandidates[0]}
+                data-fallback-index="0"
+                onError={(event) => handleImageFallback(event, imageCandidates)}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: `center ${movie?.imagePosition ?? 42}%` }}
+                crossOrigin="anonymous"
+              />
+            ) : (
+              <EmptyBackdrop />
+            )}
+          </div>
+          <div className="relative min-w-0 overflow-hidden bg-neutral-900">
+            {secondaryImageCandidates[0] ? (
+              <img
+                alt=""
+                src={secondaryImageCandidates[0]}
+                data-fallback-index="0"
+                onError={(event) => handleImageFallback(event, secondaryImageCandidates)}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: `center ${secondaryMovie?.imagePosition ?? 42}%` }}
+                crossOrigin="anonymous"
+              />
+            ) : imageCandidates[0] ? (
+              <img
+                alt=""
+                src={imageCandidates[0]}
+                data-fallback-index="0"
+                onError={(event) => handleImageFallback(event, imageCandidates)}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: `center ${movie?.imagePosition ?? 42}%` }}
+                crossOrigin="anonymous"
+              />
+            ) : (
+              <EmptyBackdrop />
+            )}
+          </div>
+        </div>
+      ) : imageCandidates[0] ? (
         <img
           alt=""
           src={imageCandidates[0]}
@@ -237,7 +286,7 @@ export function NewsCoverTemplate({
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.34)_0%,rgba(0,0,0,0.04)_32%,rgba(0,0,0,0.32)_78%,rgba(0,0,0,0.72)_100%)]" />
       {!bodyCard ? <ReviewBlock rating={reviewRating} text={reviewText} /> : null}
       <div className="relative z-[2] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
-        {bodyCard ? <BodyTextBlock text={displayHeadline} titleSize={titleSize} /> : <CaptureV2Header title={displayHeadline} titleSize={titleSize} />}
+        <CaptureV2Header title={displayHeadline} titleSize={titleSize} />
         {!bodyCard && accentText ? (
           <p
             style={{ ...titleFontStyle, borderColor: `${accentColor}8c`, color: accentColor }}
@@ -247,20 +296,28 @@ export function NewsCoverTemplate({
           </p>
         ) : null}
         <div className="min-h-0 flex-1" />
+        {bodyCard && bottomText ? (
+          <div className="w-1/2 pb-16 pl-5 pr-3">
+            <BodyTextBlock text={bottomText} titleSize={titleSize} />
+          </div>
+        ) : null}
         <CaptureFooter footerLeft="" footerRight={footerRight} />
       </div>
     </div>
   );
 }
 
-function BodyTextBlock({ text, titleSize }: { text: string; titleSize: number }) {
+function BodyTextBlock({ text }: { text: string; titleSize: number }) {
   return (
-    <div className="mt-2 flex flex-col items-start gap-[3px]">
+    <div className="flex flex-col items-start gap-2">
       {text.split("\n").map((line, index) => (
         <span
           key={`${line}-${index}`}
-          style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-          className="inline bg-white px-1.5 pb-0.5 pt-1 font-black leading-[1.52] tracking-[-0.06em] text-neutral-950"
+          style={{
+            ...titleFontStyle,
+            fontSize: "14px",
+          }}
+          className="block whitespace-pre-line pl-[2px] font-medium leading-[1.56] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.72)]"
         >
           {line || " "}
         </span>

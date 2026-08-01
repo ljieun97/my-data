@@ -2,12 +2,21 @@
 import {
   buildImageCandidates,
   CaptureFooter,
+  CaptureHeadlineBlock,
   CaptureV2Header,
   getBackdropUrl,
   getPosterUrl,
   handleImageFallback,
   titleFontStyle,
 } from "@/components/contents/capture/content-capture-utils";
+import type { CSSProperties } from "react";
+
+const rankingNumberStyle: CSSProperties = {
+  fontFamily: '"Helvetica Neue", Arial, sans-serif',
+  fontVariantNumeric: "tabular-nums",
+  letterSpacing: "0",
+  lineHeight: 1,
+};
 
 function getMovieImageCandidates(movie?: CaptureMovie) {
   return buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
@@ -19,53 +28,131 @@ function EmptyBackdrop() {
   );
 }
 
-function NewsBackdrop({ movies }: { movies: CaptureMovie[] }) {
-  if (!movies.length) return <EmptyBackdrop />;
-
-  if (movies.length === 1) {
-    const movie = movies[0];
-    const imageCandidates = getMovieImageCandidates(movie);
-
-    return imageCandidates[0] ? (
-      <img
-        key={imageCandidates[0]}
-        alt=""
-        src={imageCandidates[0]}
-        data-fallback-index="0"
-        onError={(event) => handleImageFallback(event, imageCandidates)}
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ objectPosition: `${movie.imagePositionX ?? 50}% ${movie.imagePosition ?? 42}%` }}
-        crossOrigin="anonymous"
-      />
-    ) : (
-      <EmptyBackdrop />
-    );
-  }
+export function RankingCoverTemplate({
+  movies,
+  headline,
+  titleSize,
+  footerRight,
+  coverMovieId,
+  dateLabel,
+  showDailyAudience = true,
+  showTotalAudience = false,
+  isCapturing = false,
+}: {
+  movies: Array<CaptureMovie | undefined>;
+  headline: string;
+  titleSize: number;
+  footerRight: string;
+  coverMovieId?: number;
+  dateLabel?: string;
+  showDailyAudience?: boolean;
+  showTotalAudience?: boolean;
+  isCapturing?: boolean;
+}) {
+  const topMovie = movies[0];
+  const coverMovie = coverMovieId ? movies.find((movie) => movie?.id === coverMovieId) ?? topMovie : topMovie;
+  const imageCandidates = getMovieImageCandidates(coverMovie);
+  const rankingImagePosition = Math.min(100, (coverMovie?.imagePosition ?? 30) + 15);
+  const rankingRows = Array.from({ length: 10 }, (_, index) => movies[index]);
+  const headlineValue = headline.trim() || `${topMovie?.title ?? "1위 작품"} 박스오피스 1위`;
+  const subtextValue = dateLabel?.trim().replace(/\s*\n\s*/g, " ");
+  const getRankText = (movie: CaptureMovie | undefined, index: number) =>
+    movie?.rankingText?.trim() || String(index + 1);
+  const getDailyAudience = (movie?: CaptureMovie) => movie?.release_date?.trim() ?? "";
+  const getTotalAudience = (movie?: CaptureMovie) => movie?.rankingTotalAudience?.trim() ?? "";
 
   return (
-    <div className="absolute inset-0 flex">
-      {movies.map((movie, index) => {
-        const imageCandidates = getMovieImageCandidates(movie);
+    <div className="relative h-full overflow-hidden bg-neutral-950 text-white">
+      <div className="absolute inset-x-0 top-0 h-[48%] overflow-hidden bg-neutral-900">
+        {imageCandidates[0] ? (
+          <img
+            alt=""
+            src={imageCandidates[0]}
+            data-fallback-index="0"
+            onError={(event) => handleImageFallback(event, imageCandidates)}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: `center ${rankingImagePosition}%` }}
+            crossOrigin="anonymous"
+          />
+        ) : (
+          <EmptyBackdrop />
+        )}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.22)_0%,rgba(0,0,0,0.02)_34%,rgba(0,0,0,0.72)_100%)]" />
+      </div>
+      <div className="absolute inset-x-0 top-[36%] h-[18%] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,#050505_72%,#050505_100%)]" />
+      <div className="absolute inset-x-0 bottom-0 h-[64%] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,#050505_14%,#050505_100%)] px-8 pb-9 pt-11">
+        <div className="flex h-full flex-col">
+          {rankingRows.map((movie, index) => {
+            const isCoverRow = Boolean(movie?.id && coverMovie?.id && movie.id === coverMovie.id);
 
-        return (
-          <div key={`${movie.id}-${index}`} className="relative h-full min-w-0 flex-1 overflow-hidden">
-            {imageCandidates[0] ? (
-              <img
-                key={imageCandidates[0]}
-                alt=""
-                src={imageCandidates[0]}
-                data-fallback-index="0"
-                onError={(event) => handleImageFallback(event, imageCandidates)}
-                className="h-full w-full object-cover"
-                style={{ objectPosition: `${movie.imagePositionX ?? 50}% ${movie.imagePosition ?? 42}%` }}
-                crossOrigin="anonymous"
-              />
-            ) : (
-              <EmptyBackdrop />
-            )}
-          </div>
-        );
-      })}
+            return (
+              <div
+                key={movie?.id ?? `ranking-placeholder-${index}`}
+                className={[
+                  "grid min-h-0 flex-1 items-center gap-1",
+                  showDailyAudience
+                    ? showTotalAudience
+                      ? "grid-cols-[1.45rem_minmax(0,1fr)]"
+                      : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
+                    : "grid-cols-[1.45rem_minmax(0,1fr)]",
+                ].join(" ")}
+              >
+                <span
+                  style={rankingNumberStyle}
+                  className={[
+                    "inline-flex h-[16px] min-w-[22px] items-center justify-center rounded-[5px] pt-[0.5px] text-[10px] font-black tabular-nums",
+                    isCapturing ? "translate-y-[2px]" : "translate-y-[1.5px]",
+                    isCoverRow ? "bg-white/28 text-white" : "bg-neutral-600 text-white",
+                  ].join(" ")}
+                >
+                  {getRankText(movie, index)}
+                </span>
+                <div className="min-w-0">
+                  <p
+                    style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
+                    className={[
+                      "translate-y-[1px] truncate text-[13px] font-semibold",
+                      isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.38)]" : "text-white/68",
+                    ].join(" ")}
+                  >
+                    {movie?.title ?? "영화를 추가하세요"}
+                  </p>
+                  {showDailyAudience && showTotalAudience ? (
+                    <p
+                      style={rankingNumberStyle}
+                      className={["mt-[1px] truncate text-[8px] font-semibold", isCoverRow ? "text-white" : "text-white/48"].join(" ")}
+                    >
+                      일일 {getDailyAudience(movie) || "-"} · 누적 {getTotalAudience(movie) || "-"}
+                    </p>
+                  ) : null}
+                </div>
+                {showDailyAudience && !showTotalAudience ? (
+                  <span
+                    style={rankingNumberStyle}
+                    className={[
+                      "translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black",
+                      isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.36)]" : "text-white/68",
+                    ].join(" ")}
+                  >
+                    {getDailyAudience(movie)}
+                  </span>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="relative z-[2] flex h-full flex-col px-4 pb-2 pt-4">
+        <CaptureHeadlineBlock
+          title={headlineValue}
+          titleSize={titleSize}
+          subtitle={subtextValue}
+          subtitlePlacement="below"
+          subtitleTone="light"
+        />
+        <div className="min-h-0 flex-1" />
+        <CaptureFooter footerLeft="" footerRight={footerRight} />
+      </div>
     </div>
   );
 }
@@ -110,86 +197,132 @@ function ReviewBlock({ rating, text }: { rating?: number; text?: string }) {
 
 export function NewsCoverTemplate({
   movie,
-  movies,
+  secondaryMovie,
   headline,
+  accentText,
   titleSize,
-  displayMode = "default",
-  bottomTitle,
+  bodyCard = false,
   bodyText,
   reviewRating,
   reviewText,
   footerRight,
 }: {
   movie?: CaptureMovie;
-  movies?: CaptureMovie[];
+  secondaryMovie?: CaptureMovie;
   headline: string;
+  accentText: string;
   titleSize: number;
-  displayMode?: "default" | "review" | "body";
-  bottomTitle?: string;
+  bodyCard?: boolean;
   bodyText?: string;
   reviewRating?: number;
   reviewText?: string;
   footerRight: string;
 }) {
-  const backdropMovies = movies?.length ? movies : movie ? [movie] : [];
-  const primaryMovie = backdropMovies[0];
-  const headlineValue = headline.trim() || primaryMovie?.singlePreviewTitle || primaryMovie?.title || "?곹솕 ?뚯떇";
-  const bottomTitleValue = bottomTitle?.trim() || primaryMovie?.singlePreviewTitle || primaryMovie?.title || headlineValue;
-  const bodyValue = bodyText?.trim() ?? "";
-  const isDefaultMode = displayMode === "default";
-  const isReviewMode = displayMode === "review";
-  const isBodyMode = displayMode === "body";
+  const imageCandidates = getMovieImageCandidates(movie);
+  const secondaryImageCandidates = getMovieImageCandidates(secondaryMovie);
+  const headlineValue = headline.trim() || movie?.singlePreviewTitle || movie?.title || "?곹솕 ?뚯떇";
+  const displayHeadline = headlineValue;
+  const bottomText = bodyText?.trim() || "";
+  const accentColor = "#fff3d0";
 
   return (
     <div className="relative h-full overflow-hidden bg-neutral-950 text-white">
-      <NewsBackdrop movies={backdropMovies} />
-      <div
-        className={
-          isBodyMode
-            ? "absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.34)_0%,rgba(0,0,0,0.06)_28%,rgba(0,0,0,0.56)_70%,rgba(0,0,0,0.9)_100%)]"
-            : "absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.34)_0%,rgba(0,0,0,0.04)_32%,rgba(0,0,0,0.32)_78%,rgba(0,0,0,0.72)_100%)]"
-        }
-      />
-      {isReviewMode ? <ReviewBlock rating={reviewRating} text={reviewText} /> : null}
+      {bodyCard ? (
+        <div className="absolute inset-0 grid grid-cols-2 bg-neutral-950">
+          <div className="relative min-w-0 overflow-hidden bg-neutral-900">
+            {imageCandidates[0] ? (
+              <img
+                alt=""
+                src={imageCandidates[0]}
+                data-fallback-index="0"
+                onError={(event) => handleImageFallback(event, imageCandidates)}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: `center ${movie?.imagePosition ?? 42}%` }}
+                crossOrigin="anonymous"
+              />
+            ) : (
+              <EmptyBackdrop />
+            )}
+          </div>
+          <div className="relative min-w-0 overflow-hidden bg-neutral-900">
+            {secondaryImageCandidates[0] ? (
+              <img
+                alt=""
+                src={secondaryImageCandidates[0]}
+                data-fallback-index="0"
+                onError={(event) => handleImageFallback(event, secondaryImageCandidates)}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: `center ${secondaryMovie?.imagePosition ?? 42}%` }}
+                crossOrigin="anonymous"
+              />
+            ) : imageCandidates[0] ? (
+              <img
+                alt=""
+                src={imageCandidates[0]}
+                data-fallback-index="0"
+                onError={(event) => handleImageFallback(event, imageCandidates)}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: `center ${movie?.imagePosition ?? 42}%` }}
+                crossOrigin="anonymous"
+              />
+            ) : (
+              <EmptyBackdrop />
+            )}
+          </div>
+        </div>
+      ) : imageCandidates[0] ? (
+        <img
+          alt=""
+          src={imageCandidates[0]}
+          data-fallback-index="0"
+          onError={(event) => handleImageFallback(event, imageCandidates)}
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ objectPosition: `center ${movie?.imagePosition ?? 42}%` }}
+          crossOrigin="anonymous"
+        />
+      ) : (
+        <EmptyBackdrop />
+      )}
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.34)_0%,rgba(0,0,0,0.04)_32%,rgba(0,0,0,0.32)_78%,rgba(0,0,0,0.72)_100%)]" />
+      {!bodyCard ? <ReviewBlock rating={reviewRating} text={reviewText} /> : null}
       <div className="relative z-[2] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
-        <CaptureV2Header title={headlineValue} titleSize={titleSize} />
+        <CaptureV2Header title={displayHeadline} titleSize={titleSize} />
+        {!bodyCard && accentText ? (
+          <p
+            style={{ ...titleFontStyle, borderColor: `${accentColor}8c`, color: accentColor }}
+            className="mt-2 inline-flex w-fit border px-3 py-1.5 text-[12px] font-bold leading-none tracking-[-0.02em] opacity-90"
+          >
+            {accentText}
+          </p>
+        ) : null}
         <div className="min-h-0 flex-1" />
-        {isDefaultMode ? <BottomHeadlineBlock title={bottomTitleValue} titleSize={titleSize} /> : null}
-        {isBodyMode && bodyValue ? <BodyTextBlock text={bodyValue} /> : null}
+        {bodyCard && bottomText ? (
+          <div className="w-1/2 pb-16 pl-5 pr-3">
+            <BodyTextBlock text={bottomText} titleSize={titleSize} />
+          </div>
+        ) : null}
         <CaptureFooter footerLeft="" footerRight={footerRight} />
       </div>
     </div>
   );
 }
 
-function BottomHeadlineBlock({
-  title,
-  titleSize,
-}: {
-  title: string;
-  titleSize: number;
-}) {
+function BodyTextBlock({ text }: { text: string; titleSize: number }) {
   return (
-    <div className="mb-7 flex flex-col items-center text-center">
-      <h1
-        style={{ ...titleFontStyle, fontSize: `${titleSize}px`, textShadow: "0 2px 12px rgba(0,0,0,0.72)" }}
-        className="max-w-full whitespace-pre-line break-keep text-center font-black leading-[1.14] text-white"
-      >
-        {title}
-      </h1>
+    <div className="flex flex-col items-start gap-2">
+      {text.split("\n").map((line, index) => (
+        <span
+          key={`${line}-${index}`}
+          style={{
+            ...titleFontStyle,
+            fontSize: "14px",
+          }}
+          className="block whitespace-pre-line pl-[2px] font-medium leading-[1.56] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.72)]"
+        >
+          {line || " "}
+        </span>
+      ))}
     </div>
   );
 }
 
-function BodyTextBlock({ text }: { text: string }) {
-  return (
-    <div className="mb-7 px-3">
-      <p
-        style={{ ...titleFontStyle, textShadow: "0 2px 10px rgba(0,0,0,0.72)" }}
-        className="whitespace-pre-line break-keep text-[16px] font-medium leading-[1.55] text-white/94"
-      >
-        {text}
-      </p>
-    </div>
-  );
-}

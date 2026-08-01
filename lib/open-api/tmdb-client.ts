@@ -93,9 +93,9 @@ export async function getPosters(type: string, id: string) {
   return posters
 }
 
-export async function getImages(type: string, id: string | number) {
+export async function getImages(type: string, id: string | number, includeImageLanguage = "null,en,ko") {
   const URL = `${BASE_URL}/${type}/${id}/images?`
-    + 'include_image_language=ko,en,null&'
+    + `include_image_language=${includeImageLanguage}&`
     + `&api_key=${API_KEY}`
   const response = await fetch(URL, { next: { revalidate: 3600 } })
   return response.json()

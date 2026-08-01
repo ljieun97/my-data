@@ -99,6 +99,56 @@ export function CaptureFooter({
   );
 }
 
+export function CaptureHeadlineBlock({
+  title,
+  titleSize,
+  subtitle,
+  subtitlePlacement = "inline",
+  subtitleTone = "dark",
+}: {
+  title: string;
+  titleSize: number;
+  subtitle?: string;
+  subtitlePlacement?: "inline" | "below";
+  subtitleTone?: "dark" | "light";
+}) {
+  const subtitleValue = subtitle?.trim();
+
+  return (
+    <div className="-mx-4 flex flex-col items-start">
+      <div className="flex items-end justify-start">
+        <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
+          <h1
+            style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
+            className="min-w-0 break-keep whitespace-pre-line pl-[2px] text-left font-black leading-[0.94] tracking-[-0.095em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]"
+          >
+            {title}
+          </h1>
+          {subtitlePlacement === "inline" && subtitleValue ? (
+            <span
+              style={titleFontStyle}
+              className="shrink-0 whitespace-pre-line pb-0.5 pl-[2px] text-right text-[10px] font-black leading-[1.05] tracking-[-0.03em] text-slate-500"
+            >
+              {subtitleValue}
+            </span>
+          ) : null}
+        </div>
+      </div>
+      {subtitlePlacement === "below" && subtitleValue ? (
+        <p
+          style={titleFontStyle}
+          className={[
+            "ml-2 mt-1 max-w-[calc(100%-0.5rem)] truncate pl-[2px] text-left text-[10px] font-black leading-none tracking-[-0.03em] drop-shadow-[0_1px_4px_rgba(0,0,0,0.48)]",
+            subtitleTone === "light" ? "text-white/72" : "text-slate-500",
+          ].join(" ")}
+        >
+          {subtitleValue}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export function CaptureV2Header({
   title,
   titleSize,
@@ -108,28 +158,7 @@ export function CaptureV2Header({
   titleSize: number;
   dateLabel?: string;
 }) {
-  return (
-    <div className="-mx-4 flex flex-col items-start">
-      <div className="flex items-end justify-start">
-        <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
-          <h1
-            style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-            className="min-w-0 break-keep whitespace-pre-line text-left font-black leading-[0.94] tracking-[-0.09em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]"
-          >
-            {title}
-          </h1>
-          {dateLabel?.trim() ? (
-            <span
-              style={titleFontStyle}
-              className="shrink-0 pb-0.5 text-[10px] font-black leading-none tracking-[-0.03em] text-slate-500"
-            >
-              {dateLabel.trim()}
-            </span>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
+  return <CaptureHeadlineBlock title={title} titleSize={titleSize} subtitle={dateLabel} />;
 }
 
 export type SubtitleChipTone = "burgundy" | "navy" | "slate" | "olive" | "amber";

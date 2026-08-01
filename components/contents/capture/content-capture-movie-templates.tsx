@@ -102,7 +102,17 @@ export function ReleaseBoardTemplate({
                 </div>
                 <div className="relative min-h-0 flex-1 bg-white">
                   {posterUrl ? (
-                    <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
+                    <>
+                      <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
+                      <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.66)_64%,rgba(0,0,0,0.86)_100%)] px-1.5 pb-1.5 pt-5">
+                        <p
+                          style={titleFontStyle}
+                          className="line-clamp-2 break-keep text-center text-[9px] font-medium leading-[1.18] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
+                        >
+                          {movie.title}
+                        </p>
+                      </div>
+                    </>
                   ) : (
                     <div className="flex h-full items-center justify-center bg-white/90 text-center text-[12px] font-bold tracking-[0.08em] text-slate-400">
                       ADD MOVIE
@@ -133,6 +143,7 @@ export function RankingV2Template({
   backgroundMovie,
   showDailyAudience = true,
   showTotalAudience = false,
+  showRanks = true,
   showImages = true,
   showRowBackgrounds = true,
 }: {
@@ -147,6 +158,7 @@ export function RankingV2Template({
   backgroundMovie?: CaptureMovie;
   showDailyAudience?: boolean;
   showTotalAudience?: boolean;
+  showRanks?: boolean;
   showImages?: boolean;
   showRowBackgrounds?: boolean;
 }) {
@@ -245,13 +257,15 @@ export function RankingV2Template({
                           }}
                         />
                       ) : null}
-                      <div className="relative z-[1] flex h-full min-w-0 items-center gap-3 pl-2 pr-7">
-                        <span
-                          style={titleFontStyle}
-                          className="flex w-6 shrink-0 justify-center text-center text-[13px] font-black leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
-                        >
-                          {getRankText(movie, index)}
-                        </span>
+                      <div className={["relative z-[1] flex h-full min-w-0 items-center pr-7", showRanks ? "gap-3 pl-2" : "gap-0 pl-2.5"].join(" ")}>
+                        {showRanks ? (
+                          <span
+                            style={titleFontStyle}
+                            className="flex w-6 shrink-0 justify-center text-center text-[13px] font-black leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+                          >
+                            {getRankText(movie, index)}
+                          </span>
+                        ) : null}
                         <div className="min-w-0 translate-y-[0.75px]">
                           <p
                             style={titleFontStyle}
@@ -359,6 +373,7 @@ function MovieCaptureRow({
             className={[
               "leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
               isCenterTitle ? "line-clamp-2 text-center text-[12px] font-black whitespace-normal" : "text-[10px]",
+              !isCenterTitle ? "pl-[2px]" : "",
               !isCenterTitle && bottomAligned ? "line-clamp-2 whitespace-normal" : "",
               !isCenterTitle && !bottomAligned ? "truncate" : "",
             ].join(" ")}
@@ -586,13 +601,13 @@ export function SingleMovieTemplate({
               {showTitle ? (
                 <p
                   style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-                  className="line-clamp-2 whitespace-pre-line text-left font-black leading-[1.14] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] [word-break:keep-all]"
+                  className="line-clamp-2 whitespace-pre-line pl-[2px] text-left font-black leading-[1.14] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] [word-break:keep-all]"
                 >
                   {title || "영화를 추가하세요"}
                 </p>
               ) : null}
               {subtitleValue ? (
-                <p style={titleFontStyle} className="mt-2 text-left text-[11px] font-normal leading-tight text-white/88">
+                <p style={titleFontStyle} className="mt-2 pl-[2px] text-left text-[11px] font-normal leading-tight text-white/88">
                   {subtitleValue}
                 </p>
               ) : null}
@@ -622,10 +637,10 @@ export function SingleMovieTemplate({
       <div className="absolute inset-x-0 bottom-0 z-[1] px-10 pb-2 pt-24">
         <div className={["w-full text-left", hasDetailText ? "pb-1" : "pb-[36px]"].join(" ")}>
           <div className="flex flex-col justify-end" style={getTitleGroupStyle(titleSize)}>
-            {showSubtitle ? <p style={titleFontStyle} className={["truncate", subtitleChipClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
+            {showSubtitle ? <p style={{ ...titleFontStyle, paddingLeft: "14px" }} className={["truncate", subtitleChipClass].join(" ")}>{subtitleValue || "설명 텍스트"}</p> : null}
             {showTitle ? (
               <div className="mt-2">
-                <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
+                <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line pl-[2px] font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
                   {title || movie?.title || "영화를 추가하세요"}
                 </h1>
               </div>

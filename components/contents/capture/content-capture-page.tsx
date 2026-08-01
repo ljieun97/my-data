@@ -95,6 +95,7 @@ export default function ContentCapturePage() {
   const [rankingV2RowBackgroundColors, setRankingV2RowBackgroundColors] = useState<string[]>([]);
   const [releaseBoardTitle, setReleaseBoardTitle] = useState<string>(CAPTURE_TEXT.releaseBoardTitle);
   const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(NEWS_HEADER_DEFAULT_SIZE);
+  const [releaseBoardColumns, setReleaseBoardColumns] = useState(4);
   const [isExtractingRankingRowColors, setIsExtractingRankingRowColors] = useState(false);
   const [footerLeft, setFooterLeft] = useState(CAPTURE_TEXT.footerLeft);
   const [footerRight, setFooterRight] = useState<string>(CAPTURE_TEXT.footerRight);
@@ -118,7 +119,7 @@ export default function ContentCapturePage() {
   const movieMinCount = isNewsMode ? 1 : isReleaseMode ? 8 : 2;
   const movieMaxCount = getCaptureMovieMaxCount(captureMode);
   const rankingSlotCount = 10;
-  const releaseSlotCount = getCaptureMovieMaxCount("release-board");
+  const releaseSlotCount = Math.max(selectedMovies.length, 8);
   const movieSlotCount = isRankingTextMode
     ? rankingSlotCount
     : isReleaseMode
@@ -556,6 +557,21 @@ export default function ContentCapturePage() {
                   max={NEWS_HEADER_MAX_SIZE}
                 />
               </label>
+              <div>
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Grid Columns</span>
+                <div className="grid grid-cols-5 gap-2">
+                  {[2, 3, 4, 5, 6].map((count) => (
+                    <CaptureToggleButton
+                      key={`release-columns-${count}`}
+                      type="button"
+                      active={releaseBoardColumns === count}
+                      onClick={() => setReleaseBoardColumns(count)}
+                    >
+                      {count}
+                    </CaptureToggleButton>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : null}
           {isNewsMode ? (
@@ -1035,6 +1051,7 @@ export default function ContentCapturePage() {
                   movies={slots}
                   title={releaseBoardTitle}
                   titleSize={releaseBoardTitleSize}
+                  columns={releaseBoardColumns}
                   footerRight={footerRight}
                 />
               ) : (

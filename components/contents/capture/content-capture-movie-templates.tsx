@@ -43,6 +43,14 @@ function getMovieListMetaLabel(movie: CaptureMovie | undefined, mode: MovieListM
   return yearMatch?.[1] ?? releaseDate;
 }
 
+function getReleaseBoardDateLabel(movie: CaptureMovie | undefined) {
+  const releaseDate = movie?.release_date?.trim();
+  if (!releaseDate) return "";
+  const [, month, day] = releaseDate.match(/^\d{4}-(\d{2})-(\d{2})$/) ?? [];
+  if (!month || !day) return releaseDate;
+  return `${Number(month)}/${Number(day)}`;
+}
+
 function getMovieListSubbodyLines(value: string) {
   return value
     .split("\n")
@@ -65,17 +73,20 @@ export function ReleaseBoardTemplate({
   movies,
   title,
   titleSize,
+  columns,
   footerRight,
 }: {
   movies: Array<CaptureMovie | undefined>;
   title: string;
   titleSize: number;
+  columns: number;
   footerRight: string;
 }) {
-  const visibleMovies = movies.slice(0, 24).filter(Boolean) as CaptureMovie[];
-  const columnCount = visibleMovies.length <= 4 ? 2 : visibleMovies.length <= 12 ? 3 : 4;
-  const isDense = visibleMovies.length > 12;
-  const isVeryDense = visibleMovies.length > 18;
+  const visibleMovies = movies.filter(Boolean) as CaptureMovie[];
+  const columnCount = Math.max(1, Math.min(8, columns));
+  const rowCount = Math.max(1, Math.ceil(visibleMovies.length / columnCount));
+  const isDense = rowCount >= 4 || columnCount >= 5;
+  const isVeryDense = rowCount >= 6 || columnCount >= 6;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#221f2e] text-white">
@@ -94,13 +105,14 @@ export function ReleaseBoardTemplate({
         >
           {visibleMovies.map((movie, index) => {
             const posterUrl = getPosterUrl(movie) || getBackdropUrl(movie);
+            const releaseDateLabel = getReleaseBoardDateLabel(movie);
 
             return (
               <div
                 key={`${movie.id}-${index}`}
                 className={[
                   "flex min-h-0 flex-col overflow-hidden bg-white/6 shadow-[0_10px_20px_rgba(0,0,0,0.22)]",
-                  isDense ? "rounded-[0.55rem]" : "rounded-[0.95rem]",
+                  isDense ? "rounded-[0.25rem]" : "rounded-[0.45rem]",
                 ].join(" ")}
               >
                 <div className="relative min-h-0 flex-1 bg-white">
@@ -111,12 +123,23 @@ export function ReleaseBoardTemplate({
                         <p
                           style={titleFontStyle}
                           className={[
-                            "line-clamp-2 break-keep text-center font-medium leading-[1.18] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                            "truncate break-keep text-center font-medium leading-[1.15] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
                             isVeryDense ? "text-[7px]" : isDense ? "text-[8px]" : "text-[9px]",
                           ].join(" ")}
                         >
                           {movie.title}
                         </p>
+                        {releaseDateLabel ? (
+                          <p
+                            style={titleFontStyle}
+                            className={[
+                              "mt-0.5 truncate text-center font-normal leading-none text-white/72 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                              isVeryDense ? "text-[6px]" : isDense ? "text-[7px]" : "text-[8px]",
+                            ].join(" ")}
+                          >
+                            {releaseDateLabel}
+                          </p>
+                        ) : null}
                       </div>
                     </>
                   ) : (
@@ -547,6 +570,7 @@ export function MovieListTemplate({
                     showImageOverlay={false}
                     metaMode={metaMode}
                   />
+                  <span className="pointer-events-none absolute inset-y-0 right-0 z-[3] w-px bg-white/16" />
                 </div>
                 <div className="min-h-0">
                   <MovieCaptureRow
@@ -572,6 +596,9 @@ export function MovieListTemplate({
                     {title}
                   </p>
                 </div>
+                {rowIndex < pairedSlots.length - 1 ? (
+                  <span className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-px bg-white/16" />
+                ) : null}
               </div>
             );
           })}
@@ -599,11 +626,15 @@ export function MovieListTemplate({
                   titleLayout={titleLayout}
                   metaMode={metaMode}
                 />
+                {index < leftSlots.length - 1 ? (
+                  <span className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-px bg-white/16" />
+                ) : null}
               </div>
             ))}
           </div>
           {isTwoColumn ? (
             <div className="relative flex min-h-0 flex-1 flex-col gap-0">
+              <span className="pointer-events-none absolute inset-y-0 left-0 z-[3] w-px bg-white/16" />
               {rightSlots.map((movie, index) => (
                 <div
                   key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-right-${index}` : `preview-right-${index * 2 + 1}`}
@@ -618,6 +649,9 @@ export function MovieListTemplate({
                     titleLayout={titleLayout}
                     metaMode={metaMode}
                   />
+                  {index < rightSlots.length - 1 ? (
+                    <span className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-px bg-white/16" />
+                  ) : null}
                 </div>
               ))}
             </div>

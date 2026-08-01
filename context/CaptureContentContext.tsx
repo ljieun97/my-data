@@ -15,6 +15,8 @@ export type CaptureMovie = {
   vote_average?: number;
   note?: string;
   rankingText?: string;
+  rankingDailyAudience?: string;
+  rankingDailyAudienceUnit?: string;
   rankingTotalAudience?: string;
   releaseBadge?: boolean;
   imagePositionX?: number;
@@ -51,6 +53,8 @@ type CaptureContentContextValue = {
   reorderMovie: (fromIndex: number, toIndex: number) => void;
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieRankingText: (id: number, value: string) => void;
+  updateMovieRankingDailyAudience: (id: number, value: string) => void;
+  updateMovieRankingDailyAudienceUnit: (id: number, value: string) => void;
   updateMovieRankingTotalAudience: (id: number, value: string) => void;
   updateMovieReleaseBadge: (id: number, value: boolean) => void;
   updateMovieYear: (id: number, year: string) => void;
@@ -119,6 +123,8 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     vote_average: movie.vote_average,
     note: movie.note,
     rankingText: movie.rankingText,
+    rankingDailyAudience: movie.rankingDailyAudience ?? "1,000",
+    rankingDailyAudienceUnit: movie.rankingDailyAudienceUnit,
     rankingTotalAudience: movie.rankingTotalAudience,
     releaseBadge: Boolean(movie.releaseBadge),
     imagePositionX: typeof movie.imagePositionX === "number" ? movie.imagePositionX : 50,
@@ -207,6 +213,18 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
   const updateMovieRankingText = (id: number, value: string) => {
     setSelectedMovies((current) =>
       current.map((movie) => (movie.id === id ? { ...movie, rankingText: value.trim() } : movie)),
+    );
+  };
+
+  const updateMovieRankingDailyAudience = (id: number, value: string) => {
+    setSelectedMovies((current) =>
+      current.map((movie) => (movie.id === id ? { ...movie, rankingDailyAudience: value.trim() } : movie)),
+    );
+  };
+
+  const updateMovieRankingDailyAudienceUnit = (id: number, value: string) => {
+    setSelectedMovies((current) =>
+      current.map((movie) => (movie.id === id ? { ...movie, rankingDailyAudienceUnit: value.trim() } : movie)),
     );
   };
 
@@ -312,6 +330,8 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       reorderMovie,
       updateMovieTitle,
       updateMovieRankingText,
+      updateMovieRankingDailyAudience,
+      updateMovieRankingDailyAudienceUnit,
       updateMovieRankingTotalAudience,
       updateMovieReleaseBadge,
       updateMovieYear,

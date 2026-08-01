@@ -30,6 +30,23 @@ function hexToRgba(hexColor: string, alpha: number, fallback: string) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+function parseAudienceCount(value: string | undefined) {
+  const normalizedValue = value?.trim();
+  if (!normalizedValue) return null;
+
+  const numericValue = Number(normalizedValue.replace(/[^\d.]/g, ""));
+  if (!Number.isFinite(numericValue)) return null;
+
+  return numericValue;
+}
+
+function getRankingDailyAudience(movie?: CaptureMovie) {
+  if (!movie) return "";
+  const audience = movie.rankingDailyAudience?.trim() || "1,000";
+  const unit = movie.rankingDailyAudienceUnit?.trim() || "만명";
+  return `${audience}${unit}`;
+}
+
 function getMovieListMetaLabel(movie: CaptureMovie | undefined, mode: MovieListMetaMode) {
   const releaseDate = movie?.release_date?.trim();
   if (!releaseDate) return "";
@@ -215,10 +232,26 @@ export function RankingV2Template({
   const isDenseRanking = rankingRows.length > 10;
   const titleValue = title.trim() || `${movies[0]?.title ?? "1위 작품"} 박스오피스 1위`;
   const subtextValue = dateLabel?.trim().replace(/\s*\n\s*/g, " ");
+  const dailyAudienceCounts = rankingRows.map((movie) => parseAudienceCount(movie?.rankingDailyAudience));
+  const dailyAudienceRankByCount = Array.from(
+    new Set(dailyAudienceCounts.filter((value): value is number => value !== null)),
+  )
+    .sort((a, b) => b - a)
+    .reduce<Record<number, number>>((ranks, audienceCount, rankIndex) => {
+      ranks[audienceCount] = rankIndex;
+      return ranks;
+    }, {});
   const getRankText = (movie: CaptureMovie | undefined, index: number) =>
     movie?.rankingText?.trim() || String(index + 1);
-  const getDailyAudience = (movie?: CaptureMovie) => movie?.release_date?.trim() ?? "";
+  const getDailyAudience = getRankingDailyAudience;
   const getTotalAudience = (movie?: CaptureMovie) => movie?.rankingTotalAudience?.trim() ?? "";
+  const audienceColumnCharacterCount = Math.max(
+    0,
+    ...rankingRows.map((movie) =>
+      Math.max(getDailyAudience(movie).length, showTotalAudience ? getTotalAudience(movie).length : 0),
+    ),
+  );
+  const audienceColumnWidthRem = Math.max(5, Math.min(7.2, audienceColumnCharacterCount * 0.62));
   const backgroundCandidates = buildImageCandidates(getPosterUrl(backgroundMovie), getBackdropUrl(backgroundMovie));
 
   return (
@@ -256,9 +289,11 @@ export function RankingV2Template({
 
         <div className="relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-0 pt-1.5">
           <div className={["flex h-full flex-col", isDenseRanking ? "gap-0.5" : "gap-1"].join(" ")}>
-              {rankingRows.map((movie, index) => {
+            {rankingRows.map((movie, index) => {
               const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
               const rowBackgroundColor = rowBackgroundColors[index] || "#221f2e";
+              const audienceCount = dailyAudienceCounts[index];
+              const rowTipInsetPx = (audienceCount === null ? 0 : dailyAudienceRankByCount[audienceCount] ?? 0) * 6;
               const rowBackgroundFull = hexToRgba(rowBackgroundColor, 0.96, "rgba(34,31,46,0.96)");
               const rowBackgroundStrong = hexToRgba(rowBackgroundColor, 1, "rgba(34,31,46,1)");
               const rowBackgroundMid = hexToRgba(rowBackgroundColor, 0.38, "rgba(34,31,46,0.38)");
@@ -273,7 +308,8 @@ export function RankingV2Template({
                   key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-${index}` : `ranking-v2-placeholder-${index}`}
                   className="grid min-h-0 flex-1 items-stretch"
                   style={{
-                    gridTemplateColumns: showDailyAudience ? "minmax(0,1fr) 5.2rem" : "minmax(0,1fr)",
+                    columnGap: showDailyAudience ? "0.35rem" : undefined,
+                    gridTemplateColumns: showDailyAudience ? `minmax(0,1fr) ${audienceColumnWidthRem.toFixed(2)}rem` : "minmax(0,1fr)",
                   }}
                 >
                   <div
@@ -283,6 +319,8 @@ export function RankingV2Template({
                     ].join(" ")}
                     style={{
                       gridTemplateColumns: "minmax(0,1fr)",
+                      justifySelf: "start",
+                      width: `calc(100% - ${rowTipInsetPx}px)`,
                       clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)",
                     }}
                   >
@@ -320,7 +358,7 @@ export function RankingV2Template({
                             style={titleFontStyle}
                             className={[
                               "flex w-6 shrink-0 justify-center text-center font-black leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
-                              isDenseRanking ? "text-[12px]" : "text-[13px]",
+                              isDenseRanking ? "text-[13px]" : "text-[14px]",
                             ].join(" ")}
                           >
                             {getRankText(movie, index)}
@@ -330,8 +368,8 @@ export function RankingV2Template({
                           <p
                             style={titleFontStyle}
                             className={[
-                              "truncate font-black uppercase leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
-                              isDenseRanking ? "text-[12px]" : "text-[13px]",
+                              "truncate font-bold uppercase leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
+                              isDenseRanking ? "text-[13px]" : "text-[14px]",
                             ].join(" ")}
                           >
                             {movie?.title ?? CAPTURE_TEXT.addMovie}
@@ -345,11 +383,11 @@ export function RankingV2Template({
                       style={rankingNumberStyle}
                       className="flex h-full min-w-0 flex-col items-end justify-center py-[1px] text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.28)]"
                     >
-                      <span className={["w-full whitespace-nowrap leading-[1.05]", isDenseRanking ? "text-[11px]" : "text-[12px]"].join(" ")}>
+                      <span className={["w-full whitespace-nowrap leading-[1.05]", isDenseRanking ? "text-[12px]" : "text-[13px]"].join(" ")}>
                         {getDailyAudience(movie)}
                       </span>
                       {showTotalAudience ? (
-                        <span className="mt-[1px] w-full whitespace-nowrap text-[8px] leading-[1.05] text-white/68">
+                        <span className="mt-[1px] w-full whitespace-nowrap text-[8px] font-extrabold leading-[1.05] text-white/48">
                           {getTotalAudience(movie)}
                         </span>
                       ) : null}

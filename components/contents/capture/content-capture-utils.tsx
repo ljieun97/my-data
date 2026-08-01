@@ -114,7 +114,7 @@ export function CaptureHeadlineBlock({
   return (
     <div className="-mx-4 flex flex-col items-start">
       <div className="flex items-end justify-start">
-        <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-2 pr-4 pt-1.5">
+        <div className="inline-flex max-w-full items-end gap-2 rounded-l-none rounded-r-[1.1rem] bg-white pb-0.5 pl-4 pr-4 pt-1.5">
           <h1
             style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
             className="min-w-0 break-keep whitespace-pre-line pl-[2px] text-left font-black leading-[0.94] tracking-[-0.095em] text-slate-950 [text-shadow:0_1px_0_rgba(255,255,255,0.3)]"
@@ -135,7 +135,7 @@ export function CaptureHeadlineBlock({
         <p
           style={titleFontStyle}
           className={[
-            "ml-2 mt-1 max-w-[calc(100%-0.5rem)] truncate pl-[2px] text-left text-[10px] font-black leading-none tracking-[-0.03em] drop-shadow-[0_1px_4px_rgba(0,0,0,0.48)]",
+            "ml-4 mt-1.5 max-w-[calc(100%-1.5rem)] truncate pl-[2px] text-left text-[10px] font-black leading-[1.15] tracking-[-0.03em] drop-shadow-[0_1px_4px_rgba(0,0,0,0.48)]",
             subtitleTone === "light" ? "text-white/72" : "text-slate-500",
           ].join(" ")}
         >

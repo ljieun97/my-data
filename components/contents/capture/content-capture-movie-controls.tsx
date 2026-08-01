@@ -26,6 +26,7 @@ type MovieSlotsPanelProps = {
   isRankingMode: boolean;
   isMovieListMode: boolean;
   isMovieListCaptureMode?: boolean;
+  isRankingV2Mode?: boolean;
   isReleaseMode?: boolean;
   movieListMetaMode?: MovieListMetaMode;
   showRankingTotalAudience?: boolean;
@@ -43,6 +44,8 @@ type MovieSlotsPanelProps = {
   removeMovie: (id: number) => void;
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieRankingText: (id: number, value: string) => void;
+  updateMovieRankingDailyAudience: (id: number, value: string) => void;
+  updateMovieRankingDailyAudienceUnit: (id: number, value: string) => void;
   updateMovieRankingTotalAudience: (id: number, value: string) => void;
   updateMovieReleaseBadge: (id: number, value: boolean) => void;
   updateMovieYear: (id: number, year: string) => void;
@@ -54,6 +57,7 @@ export function MovieSlotsPanel({
   isRankingMode,
   isMovieListMode,
   isMovieListCaptureMode = false,
+  isRankingV2Mode = false,
   isReleaseMode = false,
   movieListMetaMode = "year",
   showRankingTotalAudience = false,
@@ -71,6 +75,8 @@ export function MovieSlotsPanel({
   removeMovie,
   updateMovieTitle,
   updateMovieRankingText,
+  updateMovieRankingDailyAudience,
+  updateMovieRankingDailyAudienceUnit,
   updateMovieRankingTotalAudience,
   updateMovieReleaseBadge,
   updateMovieYear,
@@ -78,6 +84,7 @@ export function MovieSlotsPanel({
   onSelectRankingCoverMovie,
 }: MovieSlotsPanelProps) {
   const activeRankingCoverMovieId = rankingCoverMovieId;
+  const defaultRankingDailyAudienceUnit = isRankingV2Mode ? "만명" : "명";
 
   return (
     <CapturePanel>
@@ -147,23 +154,46 @@ export function MovieSlotsPanel({
                     placeholder={CAPTURE_TEXT.titlePlaceholder}
                     className="h-7 w-full border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
-                  <input
-                    value={
-                      isReleaseMode
-                        ? formatReleaseBoardDateText(movie)
-                        : isMovieListCaptureMode && !isRankingMode && movieListMetaMode === "release-date"
-                        ? formatMovieListReleaseText(movie)
-                        : movie.release_date
-                        ? formatYear(movie)
-                        : ""
-                    }
-                    onChange={(event) => updateMovieYear(movie.id, event.target.value)}
-                    onMouseDown={(event) => event.stopPropagation()}
-                    onDragStart={(event) => event.preventDefault()}
-                    maxLength={16}
-                    placeholder={isRankingMode ? "일일 관객" : isReleaseMode ? "7/15" : movieListMetaMode === "release-date" ? "7/15 개봉" : "연도"}
-                    className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
-                  />
+                  {isRankingMode ? (
+                    <div className="grid grid-cols-[minmax(0,1fr)_4rem] gap-1">
+                      <input
+                        value={movie.rankingDailyAudience ?? "1,000"}
+                        onChange={(event) => updateMovieRankingDailyAudience(movie.id, event.target.value)}
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onDragStart={(event) => event.preventDefault()}
+                        maxLength={16}
+                        placeholder="1,000"
+                        className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                      />
+                      <input
+                        value={movie.rankingDailyAudienceUnit ?? defaultRankingDailyAudienceUnit}
+                        onChange={(event) => updateMovieRankingDailyAudienceUnit(movie.id, event.target.value)}
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onDragStart={(event) => event.preventDefault()}
+                        maxLength={8}
+                        placeholder={defaultRankingDailyAudienceUnit}
+                        className="h-7 border border-slate-200 bg-slate-50 px-1 text-xs font-semibold text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                      />
+                    </div>
+                  ) : (
+                    <input
+                      value={
+                        isReleaseMode
+                          ? formatReleaseBoardDateText(movie)
+                          : isMovieListCaptureMode && movieListMetaMode === "release-date"
+                          ? formatMovieListReleaseText(movie)
+                          : movie.release_date
+                          ? formatYear(movie)
+                          : ""
+                      }
+                      onChange={(event) => updateMovieYear(movie.id, event.target.value)}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onDragStart={(event) => event.preventDefault()}
+                      maxLength={16}
+                      placeholder={isReleaseMode ? "7/15" : movieListMetaMode === "release-date" ? "7/15 개봉" : "연도"}
+                      className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                    />
+                  )}
                   {isRankingMode && showRankingTotalAudience ? (
                     <input
                       value={movie.rankingTotalAudience ?? ""}

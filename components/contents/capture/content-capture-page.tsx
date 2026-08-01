@@ -27,7 +27,9 @@ function getYesterdayBoxOfficeDateLabel() {
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
   const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
-  return `${yesterday.getFullYear()}년\n${yesterday.getMonth() + 1}/${yesterday.getDate()}(${weekdays[yesterday.getDay()]})`;
+  const month = String(yesterday.getMonth() + 1).padStart(2, "0");
+  const date = String(yesterday.getDate()).padStart(2, "0");
+  return `*${yesterday.getFullYear()}.${month}.${date}(${weekdays[yesterday.getDay()]}) 박스오피스 기준`;
 }
 
 function toReleaseLabelColor(rgb: [number, number, number]) {
@@ -62,6 +64,8 @@ export default function ContentCapturePage() {
     reorderMovie,
     updateMovieTitle,
     updateMovieRankingText,
+    updateMovieRankingDailyAudience,
+    updateMovieRankingDailyAudienceUnit,
     updateMovieRankingTotalAudience,
     updateMovieReleaseBadge,
     updateMovieYear,
@@ -496,6 +500,7 @@ export default function ContentCapturePage() {
               isRankingMode={isRankingTextMode}
               isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode}
               isMovieListCaptureMode={isMovieListMode}
+              isRankingV2Mode={isRankingV2Mode}
               isReleaseMode={isReleaseMode}
               movieListMetaMode={movieListMetaMode}
               showRankingTotalAudience={showRankingTotalAudience}
@@ -516,6 +521,8 @@ export default function ContentCapturePage() {
               removeMovie={removeMovie}
               updateMovieTitle={updateMovieTitle}
               updateMovieRankingText={updateMovieRankingText}
+              updateMovieRankingDailyAudience={updateMovieRankingDailyAudience}
+              updateMovieRankingDailyAudienceUnit={updateMovieRankingDailyAudienceUnit}
               updateMovieRankingTotalAudience={updateMovieRankingTotalAudience}
               updateMovieReleaseBadge={updateMovieReleaseBadge}
               updateMovieYear={updateMovieYear}

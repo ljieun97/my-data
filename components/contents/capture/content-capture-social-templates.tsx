@@ -23,6 +23,13 @@ function getMovieImageCandidates(movie?: CaptureMovie) {
   return buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
 }
 
+function getRankingDailyAudience(movie?: CaptureMovie) {
+  if (!movie) return "";
+  const audience = movie.rankingDailyAudience?.trim() || "1,000";
+  const unit = movie.rankingDailyAudienceUnit?.trim() || "명";
+  return `${audience}${unit}`;
+}
+
 function EmptyBackdrop() {
   return (
     <div className="absolute inset-0 bg-[radial-gradient(circle_at_28%_18%,rgba(255,255,255,0.16),transparent_34%),linear-gradient(135deg,#0f172a_0%,#020617_54%,#111827_100%)]" />
@@ -59,7 +66,7 @@ export function RankingCoverTemplate({
   const subtextValue = dateLabel?.trim().replace(/\s*\n\s*/g, " ");
   const getRankText = (movie: CaptureMovie | undefined, index: number) =>
     movie?.rankingText?.trim() || String(index + 1);
-  const getDailyAudience = (movie?: CaptureMovie) => movie?.release_date?.trim() ?? "";
+  const getDailyAudience = getRankingDailyAudience;
   const getTotalAudience = (movie?: CaptureMovie) => movie?.rankingTotalAudience?.trim() ?? "";
 
   return (
@@ -81,69 +88,86 @@ export function RankingCoverTemplate({
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.22)_0%,rgba(0,0,0,0.02)_34%,rgba(0,0,0,0.72)_100%)]" />
       </div>
       <div className="absolute inset-x-0 top-[36%] h-[18%] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,#050505_72%,#050505_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-[64%] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,#050505_14%,#050505_100%)] px-8 pb-9 pt-11">
+      <div className="absolute inset-x-0 bottom-0 h-[calc(64%+1rem)] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,#050505_14%,#050505_100%)] px-8 pb-9 pt-11">
         <div className="flex h-full flex-col">
-          {rankingRows.map((movie, index) => {
-            const isCoverRow = Boolean(movie?.id && coverMovie?.id && movie.id === coverMovie.id);
+          <div
+            style={rankingNumberStyle}
+            className={[
+              "grid h-4 shrink-0 items-center gap-1 text-[8px] font-bold leading-none text-white/38",
+              showDailyAudience
+                ? showTotalAudience
+                  ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_4.6rem]"
+                  : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
+                : "grid-cols-[1.45rem_minmax(0,1fr)]",
+            ].join(" ")}
+          >
+            <span />
+            <span className="truncate pr-px" />
+            {showDailyAudience ? <span className="whitespace-nowrap pl-2 pr-px text-right">일일 관객</span> : null}
+            {showDailyAudience && showTotalAudience ? <span className="whitespace-nowrap pl-2 pr-px text-right">누적 관객</span> : null}
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col">
+            {rankingRows.map((movie, index) => {
+              const isCoverRow = Boolean(movie?.id && coverMovie?.id && movie.id === coverMovie.id);
 
-            return (
-              <div
-                key={movie?.id ?? `ranking-placeholder-${index}`}
-                className={[
-                  "grid min-h-0 flex-1 items-center gap-1",
-                  showDailyAudience
-                    ? showTotalAudience
-                      ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_4.6rem]"
-                      : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
-                    : "grid-cols-[1.45rem_minmax(0,1fr)]",
-                ].join(" ")}
-              >
-                <span
-                  style={rankingNumberStyle}
+              return (
+                <div
+                  key={movie?.id ?? `ranking-placeholder-${index}`}
                   className={[
-                    "inline-flex h-[16px] min-w-[22px] items-center justify-center rounded-[5px] pt-[0.5px] text-[10px] font-black tabular-nums",
-                    isCapturing ? "translate-y-[2px]" : "translate-y-[1.5px]",
-                    isCoverRow ? "bg-white/28 text-white" : "bg-neutral-600 text-white",
+                    "grid min-h-0 flex-1 items-center gap-1",
+                    showDailyAudience
+                      ? showTotalAudience
+                        ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_4.6rem]"
+                        : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
+                      : "grid-cols-[1.45rem_minmax(0,1fr)]",
                   ].join(" ")}
                 >
-                  {getRankText(movie, index)}
-                </span>
-                <div className="min-w-0">
-                  <p
-                    style={{ ...rankingNumberStyle, fontWeight: 500, transform: "translateY(0.35px)" }}
+                  <span
+                    style={rankingNumberStyle}
                     className={[
-                      "translate-y-[1px] truncate text-[13px] font-semibold",
-                      isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.38)]" : "text-white/68",
+                      "inline-flex h-[16px] min-w-[22px] -translate-y-[1px] items-center justify-center rounded-[5px] text-[10px] font-black tabular-nums",
+                      isCoverRow ? "bg-white/28 text-white" : "bg-neutral-600 text-white",
                     ].join(" ")}
                   >
-                    {movie?.title ?? CAPTURE_TEXT.addMovie}
-                  </p>
+                    {getRankText(movie, index)}
+                  </span>
+                  <div className="flex h-full min-w-0 items-center">
+                    <p
+                      style={{ ...rankingNumberStyle, fontWeight: 500 }}
+                      className={[
+                        "min-w-0 truncate text-[13px] font-semibold leading-none",
+                        isCoverRow ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]" : "text-white/68",
+                      ].join(" ")}
+                    >
+                      {movie?.title ?? CAPTURE_TEXT.addMovie}
+                    </p>
+                  </div>
+                  {showDailyAudience ? (
+                    <span
+                      style={rankingNumberStyle}
+                      className={[
+                        "flex h-full min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-2 text-right text-[11px] font-black leading-none",
+                        isCoverRow ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]" : "text-white/68",
+                      ].join(" ")}
+                    >
+                      {getDailyAudience(movie)}
+                    </span>
+                  ) : null}
+                  {showDailyAudience && showTotalAudience ? (
+                    <span
+                      style={rankingNumberStyle}
+                      className={[
+                        "flex h-full min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-2 text-right text-[11px] font-black leading-none",
+                        isCoverRow ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]" : "text-white/68",
+                      ].join(" ")}
+                    >
+                      {getTotalAudience(movie)}
+                    </span>
+                  ) : null}
                 </div>
-                {showDailyAudience ? (
-                  <span
-                    style={rankingNumberStyle}
-                    className={[
-                      "translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black",
-                      isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.36)]" : "text-white/68",
-                    ].join(" ")}
-                  >
-                    {getDailyAudience(movie)}
-                  </span>
-                ) : null}
-                {showDailyAudience && showTotalAudience ? (
-                  <span
-                    style={rankingNumberStyle}
-                    className={[
-                      "translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black",
-                      isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.36)]" : "text-white/68",
-                    ].join(" ")}
-                  >
-                    {getTotalAudience(movie)}
-                  </span>
-                ) : null}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
       <div className="relative z-[2] flex h-full flex-col px-4 pb-2 pt-4">

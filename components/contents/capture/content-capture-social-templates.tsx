@@ -92,7 +92,7 @@ export function RankingCoverTemplate({
                   "grid min-h-0 flex-1 items-center gap-1",
                   showDailyAudience
                     ? showTotalAudience
-                      ? "grid-cols-[1.45rem_minmax(0,1fr)]"
+                      ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_4.6rem]"
                       : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
                     : "grid-cols-[1.45rem_minmax(0,1fr)]",
                 ].join(" ")}
@@ -117,16 +117,8 @@ export function RankingCoverTemplate({
                   >
                     {movie?.title ?? "영화를 추가하세요"}
                   </p>
-                  {showDailyAudience && showTotalAudience ? (
-                    <p
-                      style={rankingNumberStyle}
-                      className={["mt-[1px] truncate text-[8px] font-semibold", isCoverRow ? "text-white" : "text-white/48"].join(" ")}
-                    >
-                      일일 {getDailyAudience(movie) || "-"} · 누적 {getTotalAudience(movie) || "-"}
-                    </p>
-                  ) : null}
                 </div>
-                {showDailyAudience && !showTotalAudience ? (
+                {showDailyAudience ? (
                   <span
                     style={rankingNumberStyle}
                     className={[
@@ -135,6 +127,17 @@ export function RankingCoverTemplate({
                     ].join(" ")}
                   >
                     {getDailyAudience(movie)}
+                  </span>
+                ) : null}
+                {showDailyAudience && showTotalAudience ? (
+                  <span
+                    style={rankingNumberStyle}
+                    className={[
+                      "translate-y-[1px] whitespace-nowrap pl-2 text-right text-[11px] font-black",
+                      isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.36)]" : "text-white/68",
+                    ].join(" ")}
+                  >
+                    {getTotalAudience(movie)}
                   </span>
                 ) : null}
               </div>
@@ -325,4 +328,3 @@ function BodyTextBlock({ text }: { text: string; titleSize: number }) {
     </div>
   );
 }
-

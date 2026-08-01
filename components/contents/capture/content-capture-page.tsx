@@ -51,6 +51,9 @@ const rankingV2BackgroundPresets = [
   { key: "purple", label: "Purple", start: "#533878", end: "#27395f" },
 ];
 
+const NEWS_HEADER_DEFAULT_SIZE = 22;
+const NEWS_HEADER_MAX_SIZE = 34;
+
 export default function ContentCapturePage() {
   const {
     captureMode,
@@ -84,7 +87,7 @@ export default function ContentCapturePage() {
   const [newsDisplayMode, setNewsDisplayMode] = useState<"default" | "review" | "body">("default");
   const [newsReviewRating, setNewsReviewRating] = useState("3.5");
   const [newsReviewText, setNewsReviewText] = useState("");
-  const [newsTitleSize, setNewsTitleSize] = useState(22);
+  const [newsTitleSize, setNewsTitleSize] = useState(NEWS_HEADER_DEFAULT_SIZE);
   const [rankingHeadline, setRankingHeadline] = useState("오늘의 영화 순위");
   const [rankingDateLabel, setRankingDateLabel] = useState(getYesterdayBoxOfficeDateLabel);
   const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(true);
@@ -96,7 +99,7 @@ export default function ContentCapturePage() {
   const [rankingV2BackgroundEnd, setRankingV2BackgroundEnd] = useState("#34384c");
   const [rankingV2RowBackgroundColors, setRankingV2RowBackgroundColors] = useState<string[]>([]);
   const [releaseBoardTitle, setReleaseBoardTitle] = useState("7월 개봉예정 영화 라인업");
-  const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(25);
+  const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(NEWS_HEADER_DEFAULT_SIZE);
   const [releaseBoardLabelColors, setReleaseBoardLabelColors] = useState(() => getReleaseBoardDefaultColors());
   const [isExtractingReleaseColors, setIsExtractingReleaseColors] = useState(false);
   const [isExtractingRankingRowColors, setIsExtractingRankingRowColors] = useState(false);
@@ -575,7 +578,14 @@ export default function ContentCapturePage() {
                   rows={2}
                   placeholder="7월 개봉예정 영화 라인업"
                 />
-                <CaptureSizeControls value={releaseBoardTitleSize} defaultValue={25} onChange={setReleaseBoardTitleSize} step={2} min={18} max={36} />
+                <CaptureSizeControls
+                  value={releaseBoardTitleSize}
+                  defaultValue={NEWS_HEADER_DEFAULT_SIZE}
+                  onChange={setReleaseBoardTitleSize}
+                  step={2}
+                  min={18}
+                  max={NEWS_HEADER_MAX_SIZE}
+                />
               </label>
               <div className="mb-3">
                 <div className="mb-2 flex items-center justify-between gap-2">
@@ -663,7 +673,14 @@ export default function ContentCapturePage() {
                     rows={2}
                     placeholder="라라랜드 10주년 재개봉"
                   />
-                  <CaptureSizeControls value={newsTitleSize} defaultValue={24} onChange={setNewsTitleSize} step={2} min={18} max={34} />
+                  <CaptureSizeControls
+                    value={newsTitleSize}
+                    defaultValue={NEWS_HEADER_DEFAULT_SIZE}
+                    onChange={setNewsTitleSize}
+                    step={2}
+                    min={18}
+                    max={NEWS_HEADER_MAX_SIZE}
+                  />
                 </label>
                 {newsDisplayMode === "body" ? (
                   <label className="mb-3 block">

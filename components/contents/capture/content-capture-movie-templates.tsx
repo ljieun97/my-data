@@ -195,7 +195,15 @@ export function RankingV2Template({
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
 
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
-        <CaptureV2Header title={titleValue} titleSize={titleSize} dateLabel={dateLabel} />
+        <CaptureV2Header title={titleValue} titleSize={titleSize} />
+        {dateLabel?.trim() ? (
+          <p
+            style={titleFontStyle}
+            className="ml-2 mt-1 max-w-[calc(100%-0.5rem)] truncate pl-[2px] text-left text-[10px] font-black leading-none tracking-[-0.03em] text-white/72 drop-shadow-[0_1px_4px_rgba(0,0,0,0.48)]"
+          >
+            {dateLabel.trim()}
+          </p>
+        ) : null}
 
         <div className="relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-0 pt-1.5">
           <div className="flex h-full flex-col gap-1">

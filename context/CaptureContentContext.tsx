@@ -15,6 +15,7 @@ export type CaptureMovie = {
   note?: string;
   rankingText?: string;
   rankingTotalAudience?: string;
+  imagePositionX?: number;
   imagePosition?: number;
   posterOptions?: string[];
   singlePreviewTitle?: string;
@@ -51,6 +52,7 @@ type CaptureContentContextValue = {
   updateMovieRankingTotalAudience: (id: number, value: string) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
+  updateMovieImagePositionX: (id: number, imagePositionX: number) => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
   updateMovieSinglePreview: (
     id: number,
@@ -97,6 +99,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     note: movie.note,
     rankingText: movie.rankingText,
     rankingTotalAudience: movie.rankingTotalAudience,
+    imagePositionX: typeof movie.imagePositionX === "number" ? movie.imagePositionX : 50,
     imagePosition: typeof movie.imagePosition === "number" ? movie.imagePosition : 20,
     posterOptions: movie.posterOptions,
     singlePreviewTitle: movie.singlePreviewTitle ?? title,
@@ -117,13 +120,16 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     const normalizedMovie = normalizeMovie(movie);
     if (!normalizedMovie) return false;
     const maxMovies = getCaptureMovieMaxCount(captureMode);
+    let didAdd = false;
 
-    if (selectedMovies.some((item) => item.id === normalizedMovie.id && item.media_type === normalizedMovie.media_type) || selectedMovies.length >= maxMovies) {
-      return false;
-    }
-
-    setSelectedMovies((current) => [...current, normalizedMovie]);
-    return true;
+    setSelectedMovies((current) => {
+      if (current.some((item) => item.id === normalizedMovie.id && item.media_type === normalizedMovie.media_type) || current.length >= maxMovies) {
+        return current;
+      }
+      didAdd = true;
+      return [...current, normalizedMovie];
+    });
+    return didAdd;
   };
 
   const removeMovie = (id: number) => {
@@ -209,6 +215,12 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
+  const updateMovieImagePositionX = (id: number, imagePositionX: number) => {
+    setSelectedMovies((current) =>
+      current.map((movie) => (movie.id === id ? { ...movie, imagePositionX: Math.max(0, Math.min(100, imagePositionX)) } : movie)),
+    );
+  };
+
   const updateMoviePoster = (id: number, posterPath: string) => {
     setSelectedMovies((current) =>
       current.map((movie) =>
@@ -277,6 +289,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       updateMovieRankingTotalAudience,
       updateMovieYear,
       updateMovieImagePosition,
+      updateMovieImagePositionX,
       updateMoviePoster,
       updateMovieSinglePreview,
       clearMovies,

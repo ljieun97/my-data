@@ -201,7 +201,7 @@ export function RankingV2Template({
 
               return (
                 <div
-                  key={movie?.id ?? `ranking-v2-placeholder-${index}`}
+                  key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-${index}` : `ranking-v2-placeholder-${index}`}
                   className="grid min-h-0 flex-1 items-stretch"
                   style={{
                     gridTemplateColumns: showDailyAudience ? "minmax(0,1fr) 5.2rem" : "minmax(0,1fr)",
@@ -474,7 +474,7 @@ export function MovieListTemplate({
           <div className="flex min-h-0 flex-1 flex-col gap-0">
             {leftSlots.map((movie, index) => (
               <MovieCaptureRow
-                key={movie?.id ?? `preview-left-${index}`}
+                key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-left-${index}` : `preview-left-${index}`}
                 movie={movie}
                 index={index}
                 rounded={false}
@@ -488,7 +488,7 @@ export function MovieListTemplate({
             <div className="flex min-h-0 flex-1 flex-col gap-0">
               {rightSlots.map((movie, index) => (
                 <MovieCaptureRow
-                  key={movie?.id ?? `preview-right-${index * 2 + 1}`}
+                  key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-right-${index}` : `preview-right-${index * 2 + 1}`}
                   movie={movie}
                   index={index * 2 + 1}
                   rounded={false}
@@ -639,4 +639,3 @@ export function SingleMovieTemplate({
     </div>
   );
 }
-

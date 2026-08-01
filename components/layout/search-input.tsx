@@ -12,6 +12,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const searchParams = useSearchParams();
   const queryKeyword = (searchParams.get("keyword") || "").trim();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const pendingCaptureSelectionRef = useRef<Set<string>>(new Set());
   const [inputValue, setInputValue] = useState(queryKeyword);
   const [captureResults, setCaptureResults] = useState<any[]>([]);
   const [isLoadingCaptureResults, setIsLoadingCaptureResults] = useState(false);
@@ -50,44 +51,56 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
     let posterOptions: string[] = [];
     let detail: any = null;
     const mediaType = movie?.media_type === "tv" ? "tv" : "movie";
-    try {
-      setIsLoadingCaptureResults(true);
-      const [images, detailResult] = await Promise.all([
-        getImages(mediaType, movie.id),
-        getDetail(mediaType, movie.id),
-      ]);
-      detail = detailResult;
-      posterOptions = Array.isArray(images?.posters)
-        ? [...images.posters]
-            .sort((a: any, b: any) => {
-              const aScore = a?.iso_639_1 === "ko" ? 0 : a?.iso_639_1 === "en" ? 1 : 2;
-              const bScore = b?.iso_639_1 === "ko" ? 0 : b?.iso_639_1 === "en" ? 1 : 2;
-              return aScore - bScore;
-            })
-            .map((poster: any) => poster.file_path)
-            .filter(Boolean)
-            .slice(0, 20)
-        : [];
-    } finally {
-      setIsLoadingCaptureResults(false);
+    const selectionKey = `${mediaType}-${movie?.id}`;
+    if (pendingCaptureSelectionRef.current.has(selectionKey) || hasMovie(Number(movie?.id), mediaType)) {
+      return;
     }
+    pendingCaptureSelectionRef.current.add(selectionKey);
+    try {
+      try {
+        setIsLoadingCaptureResults(true);
+        const [images, detailResult] = await Promise.all([
+          getImages(mediaType, movie.id),
+          getDetail(mediaType, movie.id),
+        ]);
+        detail = detailResult;
+        posterOptions = Array.isArray(images?.posters)
+          ? [...images.posters]
+              .sort((a: any, b: any) => {
+                const aScore = a?.iso_639_1 === "ko" ? 0 : a?.iso_639_1 === "en" ? 1 : 2;
+                const bScore = b?.iso_639_1 === "ko" ? 0 : b?.iso_639_1 === "en" ? 1 : 2;
+                return aScore - bScore;
+              })
+              .map((poster: any) => poster.file_path)
+              .filter(Boolean)
+              .slice(0, 20)
+          : [];
+      } catch {
+        setCaptureSearchError("영화 정보를 불러오지 못했습니다");
+        return;
+      } finally {
+        setIsLoadingCaptureResults(false);
+      }
 
-    const didAdd = addMovie({
-      ...movie,
-      ...detail,
-      media_type: mediaType,
-      title: detail?.title || detail?.name || movie.title || movie.name,
-      original_title: detail?.original_title || detail?.original_name || movie.original_title || movie.original_name,
-      overview: movie.overview || detail?.overview || "한국어 overview가 없습니다.",
-      release_date: detail?.release_date || detail?.first_air_date || movie.release_date || movie.first_air_date,
-      poster_path: posterOptions[0] || detail?.poster_path || movie.poster_path,
-      backdrop_path: detail?.backdrop_path || movie.backdrop_path || posterOptions[0],
-      posterOptions,
-    });
-    if (didAdd) {
-      setInputValue("");
-      setCaptureResults([]);
-      setHighlightedCaptureIndex(-1);
+      const didAdd = addMovie({
+        ...movie,
+        ...detail,
+        media_type: mediaType,
+        title: detail?.title || detail?.name || movie.title || movie.name,
+        original_title: detail?.original_title || detail?.original_name || movie.original_title || movie.original_name,
+        overview: movie.overview || detail?.overview || "한국어 overview가 없습니다.",
+        release_date: detail?.release_date || detail?.first_air_date || movie.release_date || movie.first_air_date,
+        poster_path: posterOptions[0] || detail?.poster_path || movie.poster_path,
+        backdrop_path: detail?.backdrop_path || movie.backdrop_path || posterOptions[0],
+        posterOptions,
+      });
+      if (didAdd) {
+        setInputValue("");
+        setCaptureResults([]);
+        setHighlightedCaptureIndex(-1);
+      }
+    } finally {
+      pendingCaptureSelectionRef.current.delete(selectionKey);
     }
   };
 

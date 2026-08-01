@@ -27,6 +27,9 @@ import { NewsCoverTemplate } from "@/components/contents/capture/content-capture
 import { getBackdropUrl, getPosterUrl } from "@/components/contents/capture/content-capture-utils";
 import { FastAverageColor } from "fast-average-color";
 
+const NEWS_HEADLINE_DEFAULT_SIZE = 22;
+const NEWS_HEADLINE_MAX_SIZE = 34;
+
 function getYesterdayBoxOfficeDateLabel() {
   const today = new Date();
   const yesterday = new Date(today);
@@ -51,6 +54,52 @@ const rankingV2BackgroundPresets = [
   { key: "purple", label: "Purple", start: "#533878", end: "#27395f" },
 ];
 
+function blobToDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function inlineCaptureImages(element: HTMLElement) {
+  const restoreCallbacks: Array<() => void> = [];
+  const images = Array.from(element.querySelectorAll("img"));
+
+  await Promise.all(
+    images.map(async (image) => {
+      const sourceUrl = image.currentSrc || image.src;
+      if (!sourceUrl || sourceUrl.startsWith("data:") || image.naturalWidth <= 0) return;
+
+      try {
+        const response = await fetch(sourceUrl, { cache: "reload" });
+        if (!response.ok) return;
+
+        const originalSrc = image.getAttribute("src");
+        const dataUrl = await blobToDataUrl(await response.blob());
+        restoreCallbacks.push(() => {
+          if (originalSrc === null) {
+            image.removeAttribute("src");
+          } else {
+            image.setAttribute("src", originalSrc);
+          }
+        });
+        image.setAttribute("src", dataUrl);
+        if (typeof image.decode === "function") {
+          await image.decode().catch(() => undefined);
+        }
+      } catch {
+        return;
+      }
+    }),
+  );
+
+  return () => {
+    restoreCallbacks.forEach((restore) => restore());
+  };
+}
+
 export default function ContentCapturePage() {
   const {
     captureMode,
@@ -64,6 +113,7 @@ export default function ContentCapturePage() {
     updateMovieRankingTotalAudience,
     updateMovieYear,
     updateMovieImagePosition,
+    updateMovieImagePositionX,
     updateMoviePoster,
     updateMovieSinglePreview,
     clearMovies,
@@ -79,11 +129,12 @@ export default function ContentCapturePage() {
   const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
   const [singlePreviewVariant, setSinglePreviewVariant] = useState<"default" | "spotlight">("default");
   const [newsHeadline, setNewsHeadline] = useState("라라랜드 10주년 재개봉");
-  const [newsAccentText, setNewsAccentText] = useState("");
   const [newsDisplayMode, setNewsDisplayMode] = useState<"default" | "review" | "body">("default");
+  const [newsBottomTitle, setNewsBottomTitle] = useState("");
+  const [newsBodyText, setNewsBodyText] = useState("");
   const [newsReviewRating, setNewsReviewRating] = useState("3.5");
   const [newsReviewText, setNewsReviewText] = useState("");
-  const [newsTitleSize, setNewsTitleSize] = useState(22);
+  const [newsTitleSize, setNewsTitleSize] = useState(NEWS_HEADLINE_DEFAULT_SIZE);
   const [rankingHeadline, setRankingHeadline] = useState("오늘의 영화 순위");
   const [rankingDateLabel, setRankingDateLabel] = useState(getYesterdayBoxOfficeDateLabel);
   const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(true);
@@ -94,7 +145,7 @@ export default function ContentCapturePage() {
   const [rankingV2BackgroundEnd, setRankingV2BackgroundEnd] = useState("#34384c");
   const [rankingV2RowBackgroundColors, setRankingV2RowBackgroundColors] = useState<string[]>([]);
   const [releaseBoardTitle, setReleaseBoardTitle] = useState("7월 개봉예정 영화 라인업");
-  const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(25);
+  const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(NEWS_HEADLINE_DEFAULT_SIZE);
   const [releaseBoardLabelColors, setReleaseBoardLabelColors] = useState(() => getReleaseBoardDefaultColors());
   const [isExtractingReleaseColors, setIsExtractingReleaseColors] = useState(false);
   const [isExtractingRankingRowColors, setIsExtractingRankingRowColors] = useState(false);
@@ -172,24 +223,30 @@ export default function ContentCapturePage() {
     setExternalImageError("");
   };
   const handleCapture = async () => {
-    const targetRef = captureRef;
-    if (!targetRef.current || isCapturing) return;
+    const targetElement = captureRef.current;
+    if (!targetElement || isCapturing) return;
     try {
       setIsCapturing(true);
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-      const rect = targetRef.current.getBoundingClientRect();
+      const rect = targetElement.getBoundingClientRect();
       const captureWidth = Math.max(1, Math.round(rect.width));
       const captureHeight = Math.max(1, Math.round(rect.height));
-      const dataUrl = await toPng(targetRef.current, {
-        cacheBust: true,
-        pixelRatio: 2,
-        backgroundColor: "#111827",
-        width: captureWidth,
-        height: captureHeight,
-        canvasWidth: captureWidth * 2,
-        canvasHeight: captureHeight * 2,
-      });
+      const restoreImages = await inlineCaptureImages(targetElement);
+      let dataUrl = "";
+      try {
+        dataUrl = await toPng(targetElement, {
+          cacheBust: true,
+          pixelRatio: 2,
+          backgroundColor: "#111827",
+          width: captureWidth,
+          height: captureHeight,
+          canvasWidth: captureWidth * 2,
+          canvasHeight: captureHeight * 2,
+        });
+      } finally {
+        restoreImages();
+      }
       const link = document.createElement("a");
       link.href = dataUrl;
       link.download = `tovie-${captureMode}-${new Date().toISOString().slice(0, 10)}.png`;
@@ -207,11 +264,17 @@ export default function ContentCapturePage() {
         await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
         await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
         if (!singleMovieCaptureRef.current) continue;
-        const dataUrl = await toPng(singleMovieCaptureRef.current, {
-          cacheBust: true,
-          pixelRatio: 2,
-          backgroundColor: "#111827",
-        });
+        const restoreImages = await inlineCaptureImages(singleMovieCaptureRef.current);
+        let dataUrl = "";
+        try {
+          dataUrl = await toPng(singleMovieCaptureRef.current, {
+            cacheBust: true,
+            pixelRatio: 2,
+            backgroundColor: "#111827",
+          });
+        } finally {
+          restoreImages();
+        }
         const link = document.createElement("a");
         link.href = dataUrl;
         link.download = `tovie-${toSafeFilename(selectedMovies[index]?.title || `movie-${index + 1}`)}-${new Date().toISOString().slice(0, 10)}.png`;
@@ -339,7 +402,7 @@ export default function ContentCapturePage() {
           <div className="flex gap-1.5 overflow-x-auto pb-1">
             {selectedMovies.map((movie, index) => (
               <button
-                key={movie.id}
+                key={`${movie.media_type ?? "movie"}-${movie.id}-${index}`}
                 type="button"
                 onClick={() => setPreviewMovieIndex(index)}
                 className={[
@@ -571,7 +634,14 @@ export default function ContentCapturePage() {
                   rows={2}
                   placeholder="7월 개봉예정 영화 라인업"
                 />
-                <CaptureSizeControls value={releaseBoardTitleSize} defaultValue={25} onChange={setReleaseBoardTitleSize} step={2} min={18} max={36} />
+                <CaptureSizeControls
+                  value={releaseBoardTitleSize}
+                  defaultValue={NEWS_HEADLINE_DEFAULT_SIZE}
+                  onChange={setReleaseBoardTitleSize}
+                  step={2}
+                  min={18}
+                  max={NEWS_HEADLINE_MAX_SIZE}
+                />
               </label>
               <div className="mb-3">
                 <div className="mb-2 flex items-center justify-between gap-2">
@@ -652,27 +722,43 @@ export default function ContentCapturePage() {
                   </div>
                 </div>
                 <label className="mb-3 block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {newsDisplayMode === "body" ? "Body Text" : "Headline"}
-                  </span>
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Headline</span>
                   <CaptureTextArea
                     value={newsHeadline}
                     onChange={(event) => setNewsHeadline(event.target.value)}
-                    rows={newsDisplayMode === "body" ? 4 : 2}
-                    placeholder={newsDisplayMode === "body" ? "본문에 들어갈 짧은 문구" : "라라랜드 10주년 재개봉"}
+                    rows={2}
+                    placeholder="라라랜드 10주년 재개봉"
                   />
-                  <CaptureSizeControls value={newsTitleSize} defaultValue={24} onChange={setNewsTitleSize} step={2} min={18} max={34} />
-                </label>
-                {newsDisplayMode !== "body" ? (
-                <label className="block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Accent Text</span>
-                  <input
-                    value={newsAccentText}
-                    onChange={(event) => setNewsAccentText(event.target.value)}
-                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                    placeholder="예: 9월 재개봉"
+                  <CaptureSizeControls
+                    value={newsTitleSize}
+                    defaultValue={NEWS_HEADLINE_DEFAULT_SIZE}
+                    onChange={setNewsTitleSize}
+                    step={2}
+                    min={18}
+                    max={NEWS_HEADLINE_MAX_SIZE}
                   />
                 </label>
+                {newsDisplayMode === "default" ? (
+                  <label className="mt-3 block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Bottom Title</span>
+                    <CaptureTextArea
+                      value={newsBottomTitle}
+                      onChange={(event) => setNewsBottomTitle(event.target.value)}
+                      rows={2}
+                      placeholder="하단에 들어갈 제목"
+                    />
+                  </label>
+                ) : null}
+                {newsDisplayMode === "body" ? (
+                  <label className="mt-3 block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body Text</span>
+                    <CaptureTextArea
+                      value={newsBodyText}
+                      onChange={(event) => setNewsBodyText(event.target.value)}
+                      rows={4}
+                      placeholder="본문에 들어갈 짧은 문구"
+                    />
+                  </label>
                 ) : null}
                 {newsDisplayMode === "review" ? (
                   <div className="mt-3 grid gap-3">
@@ -707,7 +793,7 @@ export default function ContentCapturePage() {
                 <div className="flex gap-1.5 overflow-x-auto pb-1">
                   {selectedMovies.map((movie, index) => (
                     <button
-                      key={movie.id}
+                      key={`${movie.media_type ?? "movie"}-${movie.id}-${index}`}
                       type="button"
                       onClick={() => setPreviewMovieIndex(index)}
                       className={[
@@ -721,6 +807,42 @@ export default function ContentCapturePage() {
                     </button>
                   ))}
                 </div>
+                {currentSingleMovie ? (
+                  <div className="mt-3 grid gap-2">
+                    <p className="truncate text-xs font-semibold text-slate-500 dark:text-slate-400">{currentSingleMovie.title}</p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => updateMovieImagePositionX(currentSingleMovie.id, (currentSingleMovie.imagePositionX ?? 50) - 5)}
+                        className="inline-flex h-8 min-w-9 items-center justify-center border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+                      >
+                        -
+                      </button>
+                      <div className="flex h-8 min-w-0 flex-1 items-center justify-center border border-slate-200 bg-slate-50 px-2 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                        X {(currentSingleMovie.imagePositionX ?? 50)}%
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => updateMovieImagePositionX(currentSingleMovie.id, (currentSingleMovie.imagePositionX ?? 50) + 5)}
+                        className="inline-flex h-8 min-w-9 items-center justify-center border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateMovieImagePositionX(currentSingleMovie.id, 50)}
+                        className={[
+                          "h-8 border px-2 text-xs font-bold transition",
+                          (currentSingleMovie.imagePositionX ?? 50) === 50
+                            ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                        ].join(" ")}
+                      >
+                        기본
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </>
           ) : null}
@@ -1062,10 +1184,12 @@ export default function ContentCapturePage() {
               {isNewsMode ? (
                 <NewsCoverTemplate
                   movie={selectedMovies[previewMovieIndex]}
+                  movies={selectedMovies}
                   headline={newsHeadline}
-                  accentText={newsAccentText}
                   titleSize={newsTitleSize}
-                  bodyCard={newsDisplayMode === "body"}
+                  displayMode={newsDisplayMode}
+                  bottomTitle={newsBottomTitle}
+                  bodyText={newsBodyText}
                   reviewRating={newsDisplayMode === "review" ? Number(newsReviewRating) : undefined}
                   reviewText={newsDisplayMode === "review" ? newsReviewText : undefined}
                   footerRight={footerRight}
@@ -1120,7 +1244,7 @@ export default function ContentCapturePage() {
                     <div className="flex gap-1.5 overflow-x-auto pb-1">
                         {selectedMovies.map((movie, index) => (
                           <button
-                            key={movie.id}
+                            key={`${movie.media_type ?? "movie"}-${movie.id}-${index}`}
                             type="button"
                             onClick={() => setPreviewMovieIndex(index)}
                             className={[

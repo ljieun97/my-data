@@ -19,6 +19,57 @@ function EmptyBackdrop() {
   );
 }
 
+function NewsBackdrop({ movies }: { movies: CaptureMovie[] }) {
+  if (!movies.length) return <EmptyBackdrop />;
+
+  if (movies.length === 1) {
+    const movie = movies[0];
+    const imageCandidates = getMovieImageCandidates(movie);
+
+    return imageCandidates[0] ? (
+      <img
+        key={imageCandidates[0]}
+        alt=""
+        src={imageCandidates[0]}
+        data-fallback-index="0"
+        onError={(event) => handleImageFallback(event, imageCandidates)}
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ objectPosition: `${movie.imagePositionX ?? 50}% ${movie.imagePosition ?? 42}%` }}
+        crossOrigin="anonymous"
+      />
+    ) : (
+      <EmptyBackdrop />
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 flex">
+      {movies.map((movie, index) => {
+        const imageCandidates = getMovieImageCandidates(movie);
+
+        return (
+          <div key={`${movie.id}-${index}`} className="relative h-full min-w-0 flex-1 overflow-hidden">
+            {imageCandidates[0] ? (
+              <img
+                key={imageCandidates[0]}
+                alt=""
+                src={imageCandidates[0]}
+                data-fallback-index="0"
+                onError={(event) => handleImageFallback(event, imageCandidates)}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: `${movie.imagePositionX ?? 50}% ${movie.imagePosition ?? 42}%` }}
+                crossOrigin="anonymous"
+              />
+            ) : (
+              <EmptyBackdrop />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function ReviewBlock({ rating, text }: { rating?: number; text?: string }) {
   const normalizedRating = Math.min(5, Math.max(0, Number(rating) || 0));
   const reviewText = text?.trim() ?? "";
@@ -59,75 +110,86 @@ function ReviewBlock({ rating, text }: { rating?: number; text?: string }) {
 
 export function NewsCoverTemplate({
   movie,
+  movies,
   headline,
-  accentText,
   titleSize,
-  bodyCard = false,
+  displayMode = "default",
+  bottomTitle,
+  bodyText,
   reviewRating,
   reviewText,
   footerRight,
 }: {
   movie?: CaptureMovie;
+  movies?: CaptureMovie[];
   headline: string;
-  accentText: string;
   titleSize: number;
-  bodyCard?: boolean;
+  displayMode?: "default" | "review" | "body";
+  bottomTitle?: string;
+  bodyText?: string;
   reviewRating?: number;
   reviewText?: string;
   footerRight: string;
 }) {
-  const imageCandidates = getMovieImageCandidates(movie);
-  const headlineValue = headline.trim() || movie?.singlePreviewTitle || movie?.title || "?곹솕 ?뚯떇";
-  const displayHeadline = bodyCard ? headline.trim() || headlineValue : headlineValue;
-  const accentColor = "#fff3d0";
+  const backdropMovies = movies?.length ? movies : movie ? [movie] : [];
+  const primaryMovie = backdropMovies[0];
+  const headlineValue = headline.trim() || primaryMovie?.singlePreviewTitle || primaryMovie?.title || "?곹솕 ?뚯떇";
+  const bottomTitleValue = bottomTitle?.trim() || primaryMovie?.singlePreviewTitle || primaryMovie?.title || headlineValue;
+  const bodyValue = bodyText?.trim() ?? "";
+  const isDefaultMode = displayMode === "default";
+  const isReviewMode = displayMode === "review";
+  const isBodyMode = displayMode === "body";
 
   return (
     <div className="relative h-full overflow-hidden bg-neutral-950 text-white">
-      {imageCandidates[0] ? (
-        <img
-          alt=""
-          src={imageCandidates[0]}
-          data-fallback-index="0"
-          onError={(event) => handleImageFallback(event, imageCandidates)}
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{ objectPosition: `center ${movie?.imagePosition ?? 42}%` }}
-          crossOrigin="anonymous"
-        />
-      ) : (
-        <EmptyBackdrop />
-      )}
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.34)_0%,rgba(0,0,0,0.04)_32%,rgba(0,0,0,0.32)_78%,rgba(0,0,0,0.72)_100%)]" />
-      {!bodyCard ? <ReviewBlock rating={reviewRating} text={reviewText} /> : null}
+      <NewsBackdrop movies={backdropMovies} />
+      <div
+        className={
+          isBodyMode
+            ? "absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.34)_0%,rgba(0,0,0,0.06)_28%,rgba(0,0,0,0.56)_70%,rgba(0,0,0,0.9)_100%)]"
+            : "absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.34)_0%,rgba(0,0,0,0.04)_32%,rgba(0,0,0,0.32)_78%,rgba(0,0,0,0.72)_100%)]"
+        }
+      />
+      {isReviewMode ? <ReviewBlock rating={reviewRating} text={reviewText} /> : null}
       <div className="relative z-[2] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
-        {bodyCard ? <BodyTextBlock text={displayHeadline} titleSize={titleSize} /> : <CaptureV2Header title={displayHeadline} titleSize={titleSize} />}
-        {!bodyCard && accentText ? (
-          <p
-            style={{ ...titleFontStyle, borderColor: `${accentColor}8c`, color: accentColor }}
-            className="mt-2 inline-flex w-fit border px-3 py-1.5 text-[12px] font-bold leading-none tracking-[-0.02em] opacity-90"
-          >
-            {accentText}
-          </p>
-        ) : null}
+        <CaptureV2Header title={headlineValue} titleSize={titleSize} />
         <div className="min-h-0 flex-1" />
+        {isDefaultMode ? <BottomHeadlineBlock title={bottomTitleValue} titleSize={titleSize} /> : null}
+        {isBodyMode && bodyValue ? <BodyTextBlock text={bodyValue} /> : null}
         <CaptureFooter footerLeft="" footerRight={footerRight} />
       </div>
     </div>
   );
 }
 
-function BodyTextBlock({ text, titleSize }: { text: string; titleSize: number }) {
+function BottomHeadlineBlock({
+  title,
+  titleSize,
+}: {
+  title: string;
+  titleSize: number;
+}) {
   return (
-    <div className="mt-2 flex flex-col items-start gap-[3px]">
-      {text.split("\n").map((line, index) => (
-        <span
-          key={`${line}-${index}`}
-          style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
-          className="inline bg-white px-1.5 pb-0.5 pt-1 font-black leading-[1.52] tracking-[-0.06em] text-neutral-950"
-        >
-          {line || " "}
-        </span>
-      ))}
+    <div className="mb-7 flex flex-col items-center text-center">
+      <h1
+        style={{ ...titleFontStyle, fontSize: `${titleSize}px`, textShadow: "0 2px 12px rgba(0,0,0,0.72)" }}
+        className="max-w-full whitespace-pre-line break-keep text-center font-black leading-[1.14] text-white"
+      >
+        {title}
+      </h1>
     </div>
   );
 }
 
+function BodyTextBlock({ text }: { text: string }) {
+  return (
+    <div className="mb-7 px-3">
+      <p
+        style={{ ...titleFontStyle, textShadow: "0 2px 10px rgba(0,0,0,0.72)" }}
+        className="whitespace-pre-line break-keep text-[16px] font-medium leading-[1.55] text-white/94"
+      >
+        {text}
+      </p>
+    </div>
+  );
+}

@@ -16,7 +16,6 @@ export const CAPTURE_TEXT = {
   newsBodyText: "데이비드 존슨 주연의\n새로운 블랙 팬서\n2028.12.15 개봉",
   newsFallbackHeadline: "영화 소식",
   newsHeadline: "소식",
-  notePlaceholder: "오른쪽 문구",
   overviewMissing: "한국어 overview가 없습니다.",
   releaseBoardTitle: "총정리",
   rowLabelSuffix: "번",

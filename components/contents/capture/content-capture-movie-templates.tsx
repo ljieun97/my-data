@@ -304,8 +304,7 @@ function MovieCaptureRow({
   showImageOverlay?: boolean;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
-  const noteValue = movie?.note ?? "";
-  const textSizeClass = stackCount >= 8 ? "text-[13px]" : stackCount >= 6 ? "text-[14px]" : "text-[16px]";
+  const subbodyValue = movie?.singlePreviewSubbody?.trim() ?? "";
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
 
@@ -346,6 +345,7 @@ function MovieCaptureRow({
             isCenterTitle ? "h-full items-center justify-center text-center" : "items-stretch gap-1",
             !isCenterTitle && bottomAligned ? "items-end" : "",
             !isCenterTitle && !bottomAligned ? "items-start" : "",
+            subbodyValue && !isCenterTitle && bottomAligned ? "pb-10" : "",
           ].join(" ")}
         >
           {!isCenterTitle ? <span className="w-0.5 shrink-0 bg-amber-400/90" /> : null}
@@ -368,17 +368,14 @@ function MovieCaptureRow({
         </div>
       ) : null}
 
-      {movie?.note && !isCenterTitle ? (
-         <div
+      {subbodyValue ? (
+        <div className="absolute inset-x-0 bottom-0 z-[2] bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.62)_48%,rgba(0,0,0,0.78)_100%)] px-4 pb-3 pt-8">
+          <p
             style={titleFontStyle}
-            className={[
-              "absolute right-[16px] top-1/2 -translate-y-1/2 z-[1]",
-              "shrink-0 text-right font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
-              bottomAligned ? "line-clamp-2 whitespace-normal" : "truncate",
-              textSizeClass,
-            ].join(" ")}
+            className="line-clamp-2 whitespace-pre-line text-left text-[10px] font-medium leading-[1.28] text-white/86 drop-shadow-[0_1px_2px_rgba(0,0,0,0.58)]"
           >
-          {noteValue}
+            {subbodyValue}
+          </p>
         </div>
       ) : null}
     </div>
@@ -532,7 +529,7 @@ export function SingleMovieTemplate({
   const showSubtitle = movie?.singlePreviewShowSubtitle ?? false;
   const showSubbody = movie?.singlePreviewShowSubbody ?? true;
   const showBody = movie?.singlePreviewShowBody ?? true;
-  const subtitleValue = movie?.note || subtitle;
+  const subtitleValue = subtitle;
   const subbodyClass = "mt-1 whitespace-pre-line text-[11px] font-normal leading-[1.4] text-white/72";
   const bodyClass = "mt-1 whitespace-pre-line text-[13px] font-normal leading-[1.42] text-white";
   const hasDetailText = (showSubbody && Boolean(subbody)) || showBody;

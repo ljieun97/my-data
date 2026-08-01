@@ -65,7 +65,6 @@ export default function ContentCapturePage() {
     removeMovie,
     reorderMovie,
     updateMovieTitle,
-    updateMovieNote,
     updateMovieRankingText,
     updateMovieRankingTotalAudience,
     updateMovieYear,
@@ -554,7 +553,6 @@ export default function ContentCapturePage() {
               }}
               removeMovie={removeMovie}
               updateMovieTitle={updateMovieTitle}
-              updateMovieNote={updateMovieNote}
               updateMovieRankingText={updateMovieRankingText}
               updateMovieRankingTotalAudience={updateMovieRankingTotalAudience}
               updateMovieYear={updateMovieYear}

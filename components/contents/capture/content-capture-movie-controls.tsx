@@ -24,7 +24,6 @@ type MovieSlotsPanelProps = {
   onDragEnd: () => void;
   removeMovie: (id: number) => void;
   updateMovieTitle: (id: number, title: string) => void;
-  updateMovieNote: (id: number, note: string) => void;
   updateMovieRankingText: (id: number, value: string) => void;
   updateMovieRankingTotalAudience: (id: number, value: string) => void;
   updateMovieYear: (id: number, year: string) => void;
@@ -49,7 +48,6 @@ export function MovieSlotsPanel({
   onDragEnd,
   removeMovie,
   updateMovieTitle,
-  updateMovieNote,
   updateMovieRankingText,
   updateMovieRankingTotalAudience,
   updateMovieYear,
@@ -126,17 +124,6 @@ export function MovieSlotsPanel({
                     placeholder={CAPTURE_TEXT.titlePlaceholder}
                     className="h-7 w-full border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
-                  {!isRankingMode ? (
-                    <input
-                      value={movie.note ?? ""}
-                      onChange={(event) => updateMovieNote(movie.id, event.target.value)}
-                      onMouseDown={(event) => event.stopPropagation()}
-                      onDragStart={(event) => event.preventDefault()}
-                      maxLength={16}
-                      placeholder={CAPTURE_TEXT.notePlaceholder}
-                      className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
-                    />
-                  ) : null}
                   <input
                     value={movie.release_date ? formatYear(movie) : ""}
                     onChange={(event) => updateMovieYear(movie.id, event.target.value)}

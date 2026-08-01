@@ -36,7 +36,7 @@ export type CaptureMode = "news-cover" | "ranking-cover" | "ranking-cover-v2" | 
 export function getCaptureMovieMaxCount(captureMode: CaptureMode) {
   if (captureMode === "release-board") return Infinity;
   if (captureMode === "ranking-cover") return 10;
-  if (captureMode === "ranking-cover-v2") return 10;
+  if (captureMode === "ranking-cover-v2") return 11;
   if (captureMode === "movie-list") return 24;
   return 5;
 }

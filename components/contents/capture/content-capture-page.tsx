@@ -119,7 +119,7 @@ export default function ContentCapturePage() {
   const isMovieMode = isNewsMode || isRankingTextMode || isReleaseMode || isMovieListMode;
   const movieMinCount = isNewsMode ? 1 : isReleaseMode ? 8 : 2;
   const movieMaxCount = getCaptureMovieMaxCount(captureMode);
-  const rankingSlotCount = 10;
+  const rankingSlotCount = isRankingV2Mode && selectedMovies.length > 10 ? 11 : 10;
   const releaseSlotCount = Math.max(selectedMovies.length, 8);
   const movieSlotCount = isRankingTextMode
     ? rankingSlotCount
@@ -254,8 +254,8 @@ export default function ContentCapturePage() {
     [selectedMovies],
   );
   const rankingTextForCopy = useMemo(
-    () => Array.from({ length: 10 }, (_, index) => `${index + 1}위 ${selectedMovies[index]?.title ?? ""}`).join("\n"),
-    [selectedMovies],
+    () => Array.from({ length: rankingSlotCount }, (_, index) => `${index + 1}위 ${selectedMovies[index]?.title ?? ""}`).join("\n"),
+    [rankingSlotCount, selectedMovies],
   );
   const updateCurrentSinglePreview = (
     patch: Partial<
@@ -291,7 +291,7 @@ export default function ContentCapturePage() {
 
     try {
       const nextColors = await Promise.all(
-        slots.slice(0, 10).map(async (movie, index) => {
+        slots.slice(0, rankingSlotCount).map(async (movie, index) => {
           const imageUrl = getPosterUrl(movie) || getBackdropUrl(movie);
           if (!imageUrl) return rankingV2RowBackgroundColors[index] || "#221f2e";
 

@@ -2,6 +2,7 @@
 import {
   buildImageCandidates,
   CaptureFooter,
+  CaptureHeadlineBlock,
   CaptureV2Header,
   getBackdropUrl,
   getPosterUrl,
@@ -210,8 +211,10 @@ export function RankingV2Template({
   showImages?: boolean;
   showRowBackgrounds?: boolean;
 }) {
-  const rankingRows = Array.from({ length: 10 }, (_, index) => movies[index]);
+  const rankingRows = movies;
+  const isDenseRanking = rankingRows.length > 10;
   const titleValue = title.trim() || `${movies[0]?.title ?? "1위 작품"} 박스오피스 1위`;
+  const subtextValue = dateLabel?.trim().replace(/\s*\n\s*/g, " ");
   const getRankText = (movie: CaptureMovie | undefined, index: number) =>
     movie?.rankingText?.trim() || String(index + 1);
   const getDailyAudience = (movie?: CaptureMovie) => movie?.release_date?.trim() ?? "";
@@ -243,18 +246,16 @@ export function RankingV2Template({
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
 
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
-        <CaptureV2Header title={titleValue} titleSize={titleSize} />
-        {dateLabel?.trim() ? (
-          <p
-            style={titleFontStyle}
-            className="ml-2 mt-1 max-w-[calc(100%-0.5rem)] truncate pl-[2px] text-left text-[10px] font-black leading-none tracking-[-0.03em] text-white/72 drop-shadow-[0_1px_4px_rgba(0,0,0,0.48)]"
-          >
-            {dateLabel.trim()}
-          </p>
-        ) : null}
+        <CaptureHeadlineBlock
+          title={titleValue}
+          titleSize={titleSize}
+          subtitle={subtextValue}
+          subtitlePlacement="below"
+          subtitleTone="light"
+        />
 
         <div className="relative mt-2 min-h-0 flex-1 overflow-hidden px-0.5 pb-0 pt-1.5">
-          <div className="flex h-full flex-col gap-1">
+          <div className={["flex h-full flex-col", isDenseRanking ? "gap-0.5" : "gap-1"].join(" ")}>
               {rankingRows.map((movie, index) => {
               const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
               const rowBackgroundColor = rowBackgroundColors[index] || "#221f2e";
@@ -317,7 +318,10 @@ export function RankingV2Template({
                         {showRanks ? (
                           <span
                             style={titleFontStyle}
-                            className="flex w-6 shrink-0 justify-center text-center text-[13px] font-black leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+                            className={[
+                              "flex w-6 shrink-0 justify-center text-center font-black leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
+                              isDenseRanking ? "text-[12px]" : "text-[13px]",
+                            ].join(" ")}
                           >
                             {getRankText(movie, index)}
                           </span>
@@ -325,7 +329,10 @@ export function RankingV2Template({
                         <div className="min-w-0 translate-y-[0.75px]">
                           <p
                             style={titleFontStyle}
-                            className="truncate text-[13px] font-black uppercase leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
+                            className={[
+                              "truncate font-black uppercase leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
+                              isDenseRanking ? "text-[12px]" : "text-[13px]",
+                            ].join(" ")}
                           >
                             {movie?.title ?? CAPTURE_TEXT.addMovie}
                           </p>
@@ -338,7 +345,9 @@ export function RankingV2Template({
                       style={rankingNumberStyle}
                       className="flex h-full min-w-0 flex-col items-end justify-center py-[1px] text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.28)]"
                     >
-                      <span className="w-full whitespace-nowrap text-[12px] leading-[1.05]">{getDailyAudience(movie)}</span>
+                      <span className={["w-full whitespace-nowrap leading-[1.05]", isDenseRanking ? "text-[11px]" : "text-[12px]"].join(" ")}>
+                        {getDailyAudience(movie)}
+                      </span>
                       {showTotalAudience ? (
                         <span className="mt-[1px] w-full whitespace-nowrap text-[8px] leading-[1.05] text-white/68">
                           {getTotalAudience(movie)}

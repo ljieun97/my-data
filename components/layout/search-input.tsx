@@ -4,6 +4,7 @@ import { Input } from "@heroui/react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
+import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 import { getDetail, getImages, getSearchMulti } from "@/lib/open-api/tmdb-client";
 
 export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean }) {
@@ -80,7 +81,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       media_type: mediaType,
       title: detail?.title || detail?.name || movie.title || movie.name,
       original_title: detail?.original_title || detail?.original_name || movie.original_title || movie.original_name,
-      overview: movie.overview || detail?.overview || "한국어 overview가 없습니다.",
+      overview: movie.overview || detail?.overview || CAPTURE_TEXT.overviewMissing,
       release_date: detail?.release_date || detail?.first_air_date || movie.release_date || movie.first_air_date,
       poster_path: posterOptions[0] || detail?.poster_path || movie.poster_path,
       backdrop_path: detail?.backdrop_path || movie.backdrop_path || posterOptions[0],

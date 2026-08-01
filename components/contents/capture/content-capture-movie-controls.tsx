@@ -5,6 +5,7 @@ import { faGripVertical, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CaptureHelperText, CapturePanel } from "@/components/contents/capture/content-capture-controls";
 import { formatYear } from "@/components/contents/capture/content-capture-utils";
+import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 
 type MovieSlotsPanelProps = {
   isRankingMode: boolean;
@@ -64,7 +65,7 @@ export function MovieSlotsPanel({
         <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{selectedMoviesCount}/{movieSlotCount}</p>
       </div>
       <CaptureHelperText className="mb-3 font-semibold">
-        ?곹솕??異붽???留뚰겮 ?먮룞?쇰줈 ?덉씠?꾩썐???뺤옣?⑸땲??
+        {CAPTURE_TEXT.slotsAutoFill}
       </CaptureHelperText>
 
       <div className="flex flex-col gap-2">
@@ -122,7 +123,7 @@ export function MovieSlotsPanel({
                     onChange={(event) => updateMovieTitle(movie.id, event.target.value)}
                     onMouseDown={(event) => event.stopPropagation()}
                     onDragStart={(event) => event.preventDefault()}
-                    placeholder="?쒕ぉ"
+                    placeholder={CAPTURE_TEXT.titlePlaceholder}
                     className="h-7 w-full border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
                   {!isRankingMode ? (
@@ -132,7 +133,7 @@ export function MovieSlotsPanel({
                       onMouseDown={(event) => event.stopPropagation()}
                       onDragStart={(event) => event.preventDefault()}
                       maxLength={16}
-                      placeholder="?ㅻⅨ履?臾멸뎄"
+                      placeholder={CAPTURE_TEXT.notePlaceholder}
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
                   ) : null}
@@ -197,9 +198,9 @@ export function MovieSlotsPanel({
                 </div>
               ) : (
                 <>
-                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{movie?.title ?? "鍮??щ’"}</p>
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{movie?.title ?? CAPTURE_TEXT.emptySlot}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {movie ? "紐⑸줉??而ㅻ쾭?먯꽌???좏깮???대?吏媛 ?ъ슜?⑸땲??" : "?곷떒 寃?됱쑝濡??곹솕瑜?異붽??섏꽭??"}
+                    {movie ? CAPTURE_TEXT.slotHelpSelected : CAPTURE_TEXT.slotHelpEmpty}
                   </p>
                 </>
               )}

@@ -10,6 +10,7 @@ import {
   handleImageFallback,
   titleFontStyle,
 } from "@/components/contents/capture/content-capture-utils";
+import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 import type { CSSProperties } from "react";
 
 const rankingNumberStyle: CSSProperties = {
@@ -96,7 +97,7 @@ export function ReleaseBoardTemplate({
           })}
         </div>
         <div className="pt-0 text-center">
-          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || "35Film"}</span>
+          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || CAPTURE_TEXT.footerRight}</span>
         </div>
       </div>
     </div>
@@ -251,7 +252,7 @@ export function RankingV2Template({
                             style={titleFontStyle}
                             className="truncate text-[13px] font-black uppercase leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]"
                           >
-                            {movie?.title ?? "영화를 추가하세요"}
+                            {movie?.title ?? CAPTURE_TEXT.addMovie}
                           </p>
                         </div>
                       </div>
@@ -276,7 +277,7 @@ export function RankingV2Template({
           </div>
         </div>
         <div className="pt-0 text-center">
-          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || "35Film"}</span>
+          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || CAPTURE_TEXT.footerRight}</span>
         </div>
       </div>
     </div>
@@ -358,7 +359,7 @@ function MovieCaptureRow({
               !isCenterTitle && !bottomAligned ? "truncate" : "",
             ].join(" ")}
           >
-            {movie?.title ?? "영화를 추가하세요"}
+            {movie?.title ?? CAPTURE_TEXT.addMovie}
             {!isCenterTitle ? <br /> : null}
             {!isCenterTitle && movie?.release_date ? (
               <span className={"text-[8px] text-white/72"}>{movie?.release_date.split("-")[0]}</span>
@@ -418,7 +419,7 @@ export function MovieListTemplate({
       {shouldUseSharedRowTitle ? (
         <div className="flex min-h-0 flex-1 flex-col gap-0 bg-slate-950 px-0 pt-0">
           {pairedSlots.map(({ left, right, rowIndex }) => {
-            const defaultTitle = [left?.title, right?.title].filter(Boolean).join(" · ") || "영화를 추가하세요";
+            const defaultTitle = [left?.title, right?.title].filter(Boolean).join(CAPTURE_TEXT.movieListPairSeparator) || CAPTURE_TEXT.addMovie;
             const title = centerTitles[rowIndex]?.trim() || defaultTitle;
 
             return (
@@ -523,10 +524,10 @@ export function SingleMovieTemplate({
 }) {
   const imageCandidates = buildImageCandidates(getPosterUrl(movie), getBackdropUrl(movie));
   const backgroundCandidates = buildImageCandidates(getPosterUrl(movie));
-  const title = movie?.singlePreviewTitle ?? movie?.title ?? "영화를 추가하세요";
+  const title = movie?.singlePreviewTitle ?? movie?.title ?? CAPTURE_TEXT.addMovie;
   const subtitle = movie?.singlePreviewSubtitle ?? movie?.original_title ?? movie?.title ?? "설명 텍스트";
   const subbody = movie?.singlePreviewSubbody ?? "";
-  const body = movie?.singlePreviewBody ?? movie?.overview ?? "?ш린???ㅻ챸???곸뼱二쇱꽭??\n??以꾧퉴吏 ?쒖떆?⑸땲??";
+  const body = movie?.singlePreviewBody ?? movie?.overview ?? CAPTURE_TEXT.singlePreviewBody;
   const showTitle = movie?.singlePreviewShowTitle ?? true;
   const showSubtitle = movie?.singlePreviewShowSubtitle ?? false;
   const showSubbody = movie?.singlePreviewShowSubbody ?? true;
@@ -583,7 +584,7 @@ export function SingleMovieTemplate({
                   style={{ ...titleFontStyle, fontSize: `${titleSize}px` }}
                   className="line-clamp-2 whitespace-pre-line pl-[2px] text-left font-black leading-[1.14] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] [word-break:keep-all]"
                 >
-                  {title || "영화를 추가하세요"}
+                  {title || CAPTURE_TEXT.addMovie}
                 </p>
               ) : null}
               {subtitleValue ? (
@@ -621,13 +622,13 @@ export function SingleMovieTemplate({
             {showTitle ? (
               <div className="mt-2">
                 <h1 style={{ ...titleFontStyle, fontSize: `${titleSize}px` }} className="min-w-0 flex-1 break-keep whitespace-pre-line pl-[2px] font-black leading-[1.06] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.38)]">
-                  {title || movie?.title || "영화를 추가하세요"}
+                  {title || movie?.title || CAPTURE_TEXT.addMovie}
                 </h1>
               </div>
             ) : null}
           </div>
           {showSubbody && subbody ? <p style={titleFontStyle} className={subbodyClass}>{subbody}</p> : null}
-          {showBody ? <p style={titleFontStyle} className={bodyClass}>{body || "?ш린???ㅻ챸???곸뼱二쇱꽭??\n??以꾧퉴吏 ?쒖떆?⑸땲??"}</p> : null}
+          {showBody ? <p style={titleFontStyle} className={bodyClass}>{body || CAPTURE_TEXT.singlePreviewBody}</p> : null}
         </div>
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>

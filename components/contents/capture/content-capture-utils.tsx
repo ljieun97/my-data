@@ -1,4 +1,5 @@
 import { CaptureMovie } from "@/context/CaptureContentContext";
+import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 import type { CSSProperties, SyntheticEvent } from "react";
 
 export function formatYear(movie: CaptureMovie) {
@@ -94,7 +95,7 @@ export function CaptureFooter({
 }) {
   return (
     <footer className="pt-0 text-center">
-      <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || "35Film"}</span>
+      <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || CAPTURE_TEXT.footerRight}</span>
     </footer>
   );
 }

@@ -9,6 +9,7 @@ import {
   handleImageFallback,
   titleFontStyle,
 } from "@/components/contents/capture/content-capture-utils";
+import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 import type { CSSProperties } from "react";
 
 const rankingNumberStyle: CSSProperties = {
@@ -115,7 +116,7 @@ export function RankingCoverTemplate({
                       isCoverRow ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.38)]" : "text-white/68",
                     ].join(" ")}
                   >
-                    {movie?.title ?? "영화를 추가하세요"}
+                    {movie?.title ?? CAPTURE_TEXT.addMovie}
                   </p>
                 </div>
                 {showDailyAudience ? (
@@ -223,7 +224,7 @@ export function NewsCoverTemplate({
 }) {
   const imageCandidates = getMovieImageCandidates(movie);
   const secondaryImageCandidates = getMovieImageCandidates(secondaryMovie);
-  const headlineValue = headline.trim() || movie?.singlePreviewTitle || movie?.title || "?곹솕 ?뚯떇";
+  const headlineValue = headline.trim() || movie?.singlePreviewTitle || movie?.title || CAPTURE_TEXT.newsFallbackHeadline;
   const displayHeadline = headlineValue;
   const bottomText = bodyText?.trim() || "";
   const accentColor = "#fff3d0";

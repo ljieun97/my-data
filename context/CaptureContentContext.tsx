@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState } from "react";
+import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 
 export type CaptureMovie = {
   id: number;
@@ -105,7 +106,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     posterOptions: movie.posterOptions,
     singlePreviewTitle: movie.singlePreviewTitle ?? title,
     singlePreviewSubtitle: movie.singlePreviewSubtitle ?? (movie.original_title || movie.original_name || title),
-    singlePreviewBody: movie.singlePreviewBody ?? movie.overview ?? "여기에 설명을 적어주세요.\n두 줄까지 표시됩니다.",
+    singlePreviewBody: movie.singlePreviewBody ?? movie.overview ?? CAPTURE_TEXT.singlePreviewBody,
     singlePreviewTextPosition: movie.singlePreviewTextPosition ?? "center",
     singlePreviewShowTitle: movie.singlePreviewShowTitle ?? true,
     singlePreviewShowSubtitle: movie.singlePreviewShowSubtitle ?? false,

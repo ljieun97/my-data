@@ -82,10 +82,6 @@ export function getTextOverlayClass(textPosition: "top" | "center" | "bottom") {
   return "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_38%,rgba(0,0,0,0.35)_68%,rgba(0,0,0,0.78)_100%)]";
 }
 
-export function toSafeFilename(value: string) {
-  return value.replace(/[\\/:*?"<>|]+/g, "-").trim().replace(/\s+/g, " ");
-}
-
 export function CaptureFooter({
   footerRight,
 }: {
@@ -160,37 +156,4 @@ export function CaptureV2Header({
   dateLabel?: string;
 }) {
   return <CaptureHeadlineBlock title={title} titleSize={titleSize} subtitle={dateLabel} />;
-}
-
-export type SubtitleChipTone = "burgundy" | "navy" | "slate" | "olive" | "amber";
-
-export const subtitleChipToneOptions: Array<{ key: SubtitleChipTone; label: string; swatchClass: string }> = [
-  { key: "burgundy", label: "Burgundy", swatchClass: "bg-rose-900" },
-  { key: "navy", label: "Navy", swatchClass: "bg-sky-950" },
-  { key: "slate", label: "Slate", swatchClass: "bg-slate-900" },
-  { key: "olive", label: "Olive", swatchClass: "bg-lime-900" },
-  { key: "amber", label: "Amber", swatchClass: "bg-amber-500" },
-];
-
-export function getCoverSubtitleClass(tone: SubtitleChipTone) {
-  const base =
-    "inline-flex w-fit max-w-full self-start rounded-full px-3 pb-[4px] pt-[5px] text-[12px] font-medium leading-none tracking-[-0.01em]";
-
-  if (tone === "navy") {
-    return `${base} border border-sky-300/18 bg-sky-950/38 text-white shadow-[0_4px_14px_rgba(8,47,73,0.18)]`;
-  }
-
-  if (tone === "slate") {
-    return `${base} border border-slate-200/14 bg-slate-950/44 text-white shadow-[0_4px_14px_rgba(2,6,23,0.2)]`;
-  }
-
-  if (tone === "olive") {
-    return `${base} border border-lime-200/16 bg-lime-950/40 text-white shadow-[0_4px_14px_rgba(26,46,5,0.18)]`;
-  }
-
-  if (tone === "amber") {
-    return `${base} border border-amber-200/16 bg-amber-950/34 text-white shadow-[0_4px_14px_rgba(120,53,15,0.16)]`;
-  }
-
-  return `${base} border border-rose-200/16 bg-rose-950/42 text-white shadow-[0_4px_14px_rgba(76,5,25,0.18)]`;
 }

@@ -9,17 +9,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toPng } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  getCoverSubtitleClass,
   getPosterThumbUrl,
   isExternalImageUrl,
   MovieListTemplate,
   ReleaseBoardTemplate,
   RankingV2Template,
-  SingleMovieTemplate,
-  subtitleChipToneOptions,
-  toSafeFilename,
   type MovieListMetaMode,
-  type SubtitleChipTone,
   formatYear,
 } from "@/components/contents/capture/content-capture-templates";
 import { NewsCoverTemplate, RankingCoverTemplate } from "@/components/contents/capture/content-capture-social-templates";
@@ -75,16 +70,12 @@ export default function ContentCapturePage() {
     clearMovies,
   } = useCaptureContent();
   const captureRef = useRef<HTMLDivElement | null>(null);
-  const singleMovieCaptureRef = useRef<HTMLDivElement | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
   const previousMovieCountRef = useRef(0);
   const [movieListColumns, setMovieListColumns] = useState<1 | 2>(1);
   const [movieListTwoColumnTextMode, setMovieListTwoColumnTextMode] = useState<"corner" | "center">("corner");
   const [movieListMetaMode, setMovieListMetaMode] = useState<MovieListMetaMode>("year");
   const [movieListCenterTitles, setMovieListCenterTitles] = useState<string[]>([]);
-  const [subtitleChipTone, setSubtitleChipTone] = useState<SubtitleChipTone>("burgundy");
-  const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
-  const [singlePreviewVariant, setSinglePreviewVariant] = useState<"default" | "spotlight">("default");
   const [newsHeadline, setNewsHeadline] = useState<string>(CAPTURE_TEXT.newsHeadline);
   const [newsBodyText, setNewsBodyText] = useState<string>(CAPTURE_TEXT.newsBodyText);
   const [newsAccentText, setNewsAccentText] = useState("");
@@ -117,7 +108,6 @@ export default function ContentCapturePage() {
   const [didCopyRankingText, setDidCopyRankingText] = useState(false);
   const [externalImageUrl, setExternalImageUrl] = useState("");
   const [externalImageError, setExternalImageError] = useState("");
-  const subtitleChipClass = getCoverSubtitleClass(subtitleChipTone);
   const isNewsMode = captureMode === "news-cover";
   const isRankingMode = captureMode === "ranking-cover";
   const isRankingV2Mode = captureMode === "ranking-cover-v2";
@@ -234,30 +224,6 @@ export default function ContentCapturePage() {
       link.href = dataUrl;
       link.download = `tovie-${captureMode}-${new Date().toISOString().slice(0, 10)}.png`;
       link.click();
-    } finally {
-      setIsCapturing(false);
-    }
-  };
-  const handleDownloadEachMovie = async () => {
-    if (!isMovieListMode || !selectedMovies.length || isCapturing) return;
-    try {
-      setIsCapturing(true);
-      for (let index = 0; index < selectedMovies.length; index += 1) {
-        setPreviewMovieIndex(index);
-        await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-        await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-        if (!singleMovieCaptureRef.current) continue;
-        const dataUrl = await toPng(singleMovieCaptureRef.current, {
-          cacheBust: true,
-          pixelRatio: 2,
-          backgroundColor: "#111827",
-        });
-        const link = document.createElement("a");
-        link.href = dataUrl;
-        link.download = `tovie-${toSafeFilename(selectedMovies[index]?.title || `movie-${index + 1}`)}-${new Date().toISOString().slice(0, 10)}.png`;
-        link.click();
-        await new Promise((resolve) => window.setTimeout(resolve, 120));
-      }
     } finally {
       setIsCapturing(false);
     }
@@ -495,17 +461,6 @@ export default function ContentCapturePage() {
             <FontAwesomeIcon icon={faDownload} />
             {isCapturing ? "capturing" : "download"}
           </button>
-          {isMovieListMode ? (
-            <button
-              type="button"
-              onClick={handleDownloadEachMovie}
-              disabled={isCapturing || !selectedMovies.length}
-              className="inline-flex h-10 flex-1 items-center justify-center gap-2 border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900 sm:flex-none"
-            >
-              <FontAwesomeIcon icon={faDownload} />
-              {CAPTURE_TEXT.downloadEach}
-            </button>
-          ) : null}
         </div>
       </div>
       <div className="flex w-full flex-wrap border border-slate-200 bg-white/72 p-1 dark:border-slate-800 dark:bg-slate-950/70 sm:inline-flex sm:w-fit">
@@ -976,58 +931,31 @@ export default function ContentCapturePage() {
           ) : null}
           {isMovieListMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-              <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Single Preview Text</p>
-              <div className="mb-3">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Preview Version</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <CaptureToggleButton type="button" active={singlePreviewVariant === "default"} onClick={() => setSinglePreviewVariant("default")}>
-                    {CAPTURE_TEXT.defaultVariant}
-                  </CaptureToggleButton>
-                  <CaptureToggleButton type="button" active={singlePreviewVariant === "spotlight"} onClick={() => setSinglePreviewVariant("spotlight")}>
-                    {CAPTURE_TEXT.spotlightVariant}
-                  </CaptureToggleButton>
-                </div>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Movie Text</p>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {selectedMovies.length ? `${previewMovieIndex + 1}/${selectedMovies.length}` : "empty"}
+                </p>
               </div>
-              <label className="mb-3 block">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                <CaptureTextArea
-                  value={currentSingleMovie?.singlePreviewTitle ?? currentSingleMovie?.title ?? ""}
-                  onChange={(event) => updateCurrentSinglePreview({ singlePreviewTitle: event.target.value })}
-                  placeholder={currentSingleMovie?.title ?? CAPTURE_TEXT.titlePlaceholder}
-                  rows={2}
-                />
-                <CaptureSizeControls value={singlePreviewTitleSize} defaultValue={28} onChange={setSinglePreviewTitleSize} step={2} min={16} max={48} />
-              </label>
-              <label className="mb-3 block">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle</span>
-                <input
-                  value={currentSingleMovie?.singlePreviewSubtitle ?? currentSingleMovie?.original_title ?? currentSingleMovie?.title ?? ""}
-                  onChange={(event) => updateCurrentSinglePreview({ singlePreviewSubtitle: event.target.value })}
-                  placeholder={CAPTURE_TEXT.subtitlePlaceholder}
-                  className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                />
-              </label>
-              <div className="mb-3">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subtitle Chip</span>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {subtitleChipToneOptions.map((item) => (
+              {selectedMovies.length ? (
+                <div className="mb-3 flex gap-1.5 overflow-x-auto pb-1">
+                  {selectedMovies.map((movie, index) => (
                     <button
-                      key={item.key}
+                      key={movie.id}
                       type="button"
-                      onClick={() => setSubtitleChipTone(item.key)}
+                      onClick={() => setPreviewMovieIndex(index)}
                       className={[
-                        "flex h-9 items-center gap-2 border px-2 text-xs font-bold transition",
-                        subtitleChipTone === item.key
+                        "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
+                        previewMovieIndex === index
                           ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
                           : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
                       ].join(" ")}
                     >
-                      <span className={["h-3 w-3 rounded-full", item.swatchClass].join(" ")} />
-                      <span>{item.label}</span>
+                      {index + 1}
                     </button>
                   ))}
                 </div>
-              </div>
+              ) : null}
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subbody</span>
                 <textarea
@@ -1046,60 +974,6 @@ export default function ContentCapturePage() {
                   className="w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
                 />
               </label>
-              <div className="grid grid-cols-4 gap-2">
-                {[
-                  {
-                    key: "title",
-                    label: "Title",
-                    checked: currentSingleMovie?.singlePreviewShowTitle ?? true,
-                    setChecked: (next: boolean | ((current: boolean) => boolean)) => {
-                      const current = currentSingleMovie?.singlePreviewShowTitle ?? true;
-                      updateCurrentSinglePreview({ singlePreviewShowTitle: typeof next === "function" ? next(current) : next });
-                    },
-                  },
-                  {
-                    key: "subtitle",
-                    label: "Subtitle",
-                    checked: currentSingleMovie?.singlePreviewShowSubtitle ?? false,
-                    setChecked: (next: boolean | ((current: boolean) => boolean)) => {
-                      const current = currentSingleMovie?.singlePreviewShowSubtitle ?? false;
-                      updateCurrentSinglePreview({ singlePreviewShowSubtitle: typeof next === "function" ? next(current) : next });
-                    },
-                  },
-                  {
-                    key: "subbody",
-                    label: "Subbody",
-                    checked: currentSingleMovie?.singlePreviewShowSubbody ?? true,
-                    setChecked: (next: boolean | ((current: boolean) => boolean)) => {
-                      const current = currentSingleMovie?.singlePreviewShowSubbody ?? true;
-                      updateCurrentSinglePreview({ singlePreviewShowSubbody: typeof next === "function" ? next(current) : next });
-                    },
-                  },
-                  {
-                    key: "body",
-                    label: "Body",
-                    checked: currentSingleMovie?.singlePreviewShowBody ?? true,
-                    setChecked: (next: boolean | ((current: boolean) => boolean)) => {
-                      const current = currentSingleMovie?.singlePreviewShowBody ?? true;
-                      updateCurrentSinglePreview({ singlePreviewShowBody: typeof next === "function" ? next(current) : next });
-                    },
-                  },
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => item.setChecked((current) => !current)}
-                    className={[
-                      "h-8 border px-2 text-xs font-bold transition",
-                      item.checked
-                        ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                        : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                    ].join(" ")}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
             </div>
           ) : null}
           </>
@@ -1176,58 +1050,6 @@ export default function ContentCapturePage() {
               )}
             </div>
             {(isMovieListMode || isNewsMode || isRankingTextMode || isReleaseMode) && selectedMovies.length ? renderMovieListImagePicker() : null}
-            {isMovieListMode ? (
-              <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
-                <div className="p-4 pb-3">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Single Preview</p>
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                      {selectedMovies.length ? `${previewMovieIndex + 1}/${selectedMovies.length}` : "empty"}
-                    </p>
-                  </div>
-                  {selectedMovies.length ? (
-                    <div className="flex gap-1.5 overflow-x-auto pb-1">
-                        {selectedMovies.map((movie, index) => (
-                          <button
-                            key={movie.id}
-                            type="button"
-                            onClick={() => setPreviewMovieIndex(index)}
-                            className={[
-                              "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
-                              previewMovieIndex === index
-                                ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                                : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                            ].join(" ")}
-                          >
-                            {index + 1}
-                          </button>
-                        ))}
-                      </div>
-                    ) : null}
-                </div>
-                {selectedMovies.length ? (
-                  <>
-                    <div className="aspect-[4/5] overflow-hidden bg-slate-950 text-white">
-                      <div ref={singleMovieCaptureRef} className="h-full w-full">
-                        <SingleMovieTemplate
-                          movie={selectedMovies[previewMovieIndex]}
-                          titleSize={singlePreviewTitleSize}
-                          subtitleChipClass={subtitleChipClass}
-                          variant={singlePreviewVariant}
-                          rank={previewMovieIndex + 1}
-                          footerLeft={footerLeft}
-                          footerRight={footerRight}
-                        />
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex h-56 items-center justify-center border border-dashed border-slate-300 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                    {CAPTURE_TEXT.moviePreviewEmpty}
-                  </div>
-                )}
-              </div>
-            ) : null}
           </div>
         </section>
       </div>

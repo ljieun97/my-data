@@ -63,6 +63,7 @@ export default function ContentCapturePage() {
     updateMovieTitle,
     updateMovieRankingText,
     updateMovieRankingTotalAudience,
+    updateMovieReleaseBadge,
     updateMovieYear,
     updateMovieImagePosition,
     updateMoviePoster,
@@ -495,6 +496,7 @@ export default function ContentCapturePage() {
               isRankingMode={isRankingTextMode}
               isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode}
               isMovieListCaptureMode={isMovieListMode}
+              isReleaseMode={isReleaseMode}
               movieListMetaMode={movieListMetaMode}
               showRankingTotalAudience={showRankingTotalAudience}
               showImagePositionControls={isRankingV2Mode}
@@ -515,6 +517,7 @@ export default function ContentCapturePage() {
               updateMovieTitle={updateMovieTitle}
               updateMovieRankingText={updateMovieRankingText}
               updateMovieRankingTotalAudience={updateMovieRankingTotalAudience}
+              updateMovieReleaseBadge={updateMovieReleaseBadge}
               updateMovieYear={updateMovieYear}
               updateMovieImagePosition={updateMovieImagePosition}
               onSelectRankingCoverMovie={(id) => {
@@ -559,17 +562,26 @@ export default function ContentCapturePage() {
               </label>
               <div>
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Grid Columns</span>
-                <div className="grid grid-cols-5 gap-2">
-                  {[2, 3, 4, 5, 6].map((count) => (
-                    <CaptureToggleButton
-                      key={`release-columns-${count}`}
+                <div className="grid grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] gap-2">
+                  <CaptureToggleButton
+                    type="button"
+                    active={false}
+                    onClick={() => setReleaseBoardColumns((current) => Math.max(1, current - 1))}
+                    aria-label="Decrease release grid columns"
+                  >
+                    -
+                  </CaptureToggleButton>
+                  <div className="flex h-8 items-center justify-center border border-slate-200 bg-white text-xs font-bold text-slate-900 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-100">
+                    {releaseBoardColumns}
+                  </div>
+                  <CaptureToggleButton
                       type="button"
-                      active={releaseBoardColumns === count}
-                      onClick={() => setReleaseBoardColumns(count)}
-                    >
-                      {count}
-                    </CaptureToggleButton>
-                  ))}
+                    active={false}
+                    onClick={() => setReleaseBoardColumns((current) => Math.min(12, current + 1))}
+                    aria-label="Increase release grid columns"
+                  >
+                    +
+                  </CaptureToggleButton>
                 </div>
               </div>
             </div>

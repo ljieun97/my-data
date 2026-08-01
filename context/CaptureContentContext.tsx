@@ -16,6 +16,7 @@ export type CaptureMovie = {
   note?: string;
   rankingText?: string;
   rankingTotalAudience?: string;
+  releaseBadge?: boolean;
   imagePositionX?: number;
   imagePosition?: number;
   posterOptions?: string[];
@@ -51,6 +52,7 @@ type CaptureContentContextValue = {
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieRankingText: (id: number, value: string) => void;
   updateMovieRankingTotalAudience: (id: number, value: string) => void;
+  updateMovieReleaseBadge: (id: number, value: boolean) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   updateMovieImagePositionX: (id: number, imagePositionX: number) => void;
@@ -77,7 +79,6 @@ type CaptureContentContextValue = {
 };
 
 const CaptureContentContext = createContext<CaptureContentContextValue | undefined>(undefined);
-
 export function sanitizeSinglePreviewSubbody(value: string | undefined) {
   let hasMetaLine = false;
 
@@ -119,6 +120,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     note: movie.note,
     rankingText: movie.rankingText,
     rankingTotalAudience: movie.rankingTotalAudience,
+    releaseBadge: Boolean(movie.releaseBadge),
     imagePositionX: typeof movie.imagePositionX === "number" ? movie.imagePositionX : 50,
     imagePosition: typeof movie.imagePosition === "number" ? movie.imagePosition : 20,
     posterOptions: movie.posterOptions,
@@ -211,6 +213,12 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
   const updateMovieRankingTotalAudience = (id: number, value: string) => {
     setSelectedMovies((current) =>
       current.map((movie) => (movie.id === id ? { ...movie, rankingTotalAudience: value.trim() } : movie)),
+    );
+  };
+
+  const updateMovieReleaseBadge = (id: number, value: boolean) => {
+    setSelectedMovies((current) =>
+      current.map((movie) => (movie.id === id ? { ...movie, releaseBadge: value } : movie)),
     );
   };
 
@@ -326,6 +334,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       updateMovieTitle,
       updateMovieRankingText,
       updateMovieRankingTotalAudience,
+      updateMovieReleaseBadge,
       updateMovieYear,
       updateMovieImagePosition,
       updateMovieImagePositionX,

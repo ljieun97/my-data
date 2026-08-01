@@ -19,6 +19,7 @@ type MovieSlotsPanelProps = {
   isRankingMode: boolean;
   isMovieListMode: boolean;
   isMovieListCaptureMode?: boolean;
+  isReleaseMode?: boolean;
   movieListMetaMode?: MovieListMetaMode;
   showRankingTotalAudience?: boolean;
   showImagePositionControls?: boolean;
@@ -36,6 +37,7 @@ type MovieSlotsPanelProps = {
   updateMovieTitle: (id: number, title: string) => void;
   updateMovieRankingText: (id: number, value: string) => void;
   updateMovieRankingTotalAudience: (id: number, value: string) => void;
+  updateMovieReleaseBadge: (id: number, value: boolean) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   onSelectRankingCoverMovie?: (id: number) => void;
@@ -45,6 +47,7 @@ export function MovieSlotsPanel({
   isRankingMode,
   isMovieListMode,
   isMovieListCaptureMode = false,
+  isReleaseMode = false,
   movieListMetaMode = "year",
   showRankingTotalAudience = false,
   showImagePositionControls = false,
@@ -62,6 +65,7 @@ export function MovieSlotsPanel({
   updateMovieTitle,
   updateMovieRankingText,
   updateMovieRankingTotalAudience,
+  updateMovieReleaseBadge,
   updateMovieYear,
   updateMovieImagePosition,
   onSelectRankingCoverMovie,
@@ -161,6 +165,36 @@ export function MovieSlotsPanel({
                       placeholder="누적 관객"
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
+                  ) : null}
+                  {isReleaseMode ? (
+                    <div className="grid grid-cols-2 gap-1">
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={() => updateMovieReleaseBadge(movie.id, true)}
+                        className={[
+                          "h-7 border px-2 text-[11px] font-bold transition",
+                          movie.releaseBadge
+                            ? "border-[#b58a45] bg-[#b58a45] text-white"
+                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                        ].join(" ")}
+                      >
+                        재개봉
+                      </button>
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={() => updateMovieReleaseBadge(movie.id, false)}
+                        className={[
+                          "h-7 border px-2 text-[11px] font-bold transition",
+                          !movie.releaseBadge
+                            ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                        ].join(" ")}
+                      >
+                        일반
+                      </button>
+                    </div>
                   ) : null}
                   {(!isRankingMode || showImagePositionControls) ? (
                     <div className="grid gap-1">

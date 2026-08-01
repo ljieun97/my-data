@@ -83,10 +83,14 @@ export function ReleaseBoardTemplate({
   footerRight: string;
 }) {
   const visibleMovies = movies.filter(Boolean) as CaptureMovie[];
-  const columnCount = Math.max(1, Math.min(8, columns));
+  const columnCount = Math.max(1, Math.min(12, Math.round(columns)));
   const rowCount = Math.max(1, Math.ceil(visibleMovies.length / columnCount));
   const isDense = rowCount >= 4 || columnCount >= 5;
   const isVeryDense = rowCount >= 6 || columnCount >= 6;
+  const gapPx = isDense ? 4 : 8;
+  const rows = Array.from({ length: rowCount }, (_, rowIndex) =>
+    visibleMovies.slice(rowIndex * columnCount, rowIndex * columnCount + columnCount),
+  );
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#221f2e] text-white">
@@ -98,59 +102,74 @@ export function ReleaseBoardTemplate({
 
         <div
           className={[
-            "relative mt-2 grid min-h-0 flex-1 auto-rows-fr overflow-hidden px-0.5 pb-0 pt-1.5",
-            isDense ? "gap-1" : "gap-2",
+            "relative mt-2 flex min-h-0 flex-1 flex-col overflow-hidden px-0.5 pb-0 pt-1.5",
           ].join(" ")}
-          style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
+          style={{ gap: `${gapPx}px` }}
         >
-          {visibleMovies.map((movie, index) => {
-            const posterUrl = getPosterUrl(movie) || getBackdropUrl(movie);
-            const releaseDateLabel = getReleaseBoardDateLabel(movie);
+          {rows.map((rowMovies, rowIndex) => (
+            <div key={`release-row-${rowIndex}`} className="flex min-h-0 flex-1 justify-center" style={{ gap: `${gapPx}px` }}>
+              {rowMovies.map((movie, index) => {
+                const posterUrl = getPosterUrl(movie) || getBackdropUrl(movie);
+                const releaseDateLabel = getReleaseBoardDateLabel(movie);
 
-            return (
-              <div
-                key={`${movie.id}-${index}`}
-                className={[
-                  "flex min-h-0 flex-col overflow-hidden bg-white/6 shadow-[0_10px_20px_rgba(0,0,0,0.22)]",
-                  isDense ? "rounded-[0.25rem]" : "rounded-[0.45rem]",
-                ].join(" ")}
-              >
-                <div className="relative min-h-0 flex-1 bg-white">
-                  {posterUrl ? (
-                    <>
-                      <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
-                      <div className={["absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.66)_64%,rgba(0,0,0,0.86)_100%)]", isDense ? "px-1 pb-1 pt-4" : "px-1.5 pb-1.5 pt-5"].join(" ")}>
-                        <p
-                          style={titleFontStyle}
-                          className={[
-                            "truncate break-keep text-center font-medium leading-[1.15] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
-                            isVeryDense ? "text-[7px]" : isDense ? "text-[8px]" : "text-[9px]",
-                          ].join(" ")}
-                        >
-                          {movie.title}
-                        </p>
-                        {releaseDateLabel ? (
-                          <p
-                            style={titleFontStyle}
-                            className={[
-                              "mt-0.5 truncate text-center font-normal leading-none text-white/72 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
-                              isVeryDense ? "text-[6px]" : isDense ? "text-[7px]" : "text-[8px]",
-                            ].join(" ")}
-                          >
-                            {releaseDateLabel}
-                          </p>
-                        ) : null}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex h-full items-center justify-center bg-white/90 text-center text-[12px] font-bold tracking-[0.08em] text-slate-400">
-                      ADD MOVIE
+                return (
+                  <div
+                    key={`${movie.id}-${rowIndex}-${index}`}
+                    className={[
+                      "flex min-h-0 flex-col overflow-hidden bg-white/6 shadow-[0_10px_20px_rgba(0,0,0,0.22)]",
+                      isDense ? "rounded-[0.25rem]" : "rounded-[0.45rem]",
+                    ].join(" ")}
+                    style={{ flex: `0 0 calc((100% - ${gapPx * (columnCount - 1)}px) / ${columnCount})` }}
+                  >
+                    <div className="relative min-h-0 flex-1 bg-white">
+                      {posterUrl ? (
+                        <>
+                          <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
+                          {movie.releaseBadge ? (
+                            <div
+                              style={titleFontStyle}
+                              className={[
+                                "absolute right-1 top-1 z-[2] flex items-center justify-center rounded-full bg-[#b58a45]/95 font-semibold leading-none text-white shadow-[0_1px_4px_rgba(0,0,0,0.42)]",
+                                isVeryDense ? "h-3.5 w-3.5 text-[7px]" : isDense ? "h-4 w-4 text-[8px]" : "h-5 w-5 text-[9px]",
+                              ].join(" ")}
+                            >
+                              재
+                            </div>
+                          ) : null}
+                          <div className={["absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.66)_64%,rgba(0,0,0,0.86)_100%)]", isDense ? "px-1 pb-1 pt-4" : "px-1.5 pb-1.5 pt-5"].join(" ")}>
+                            <p
+                              style={titleFontStyle}
+                              className={[
+                                "truncate break-keep text-center font-medium leading-[1.15] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                                isVeryDense ? "text-[7px]" : isDense ? "text-[8px]" : "text-[9px]",
+                              ].join(" ")}
+                            >
+                              {movie.title}
+                            </p>
+                            {releaseDateLabel ? (
+                              <p
+                                style={titleFontStyle}
+                                className={[
+                                  "mt-0.5 truncate text-center font-normal leading-none text-white/72 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                                  isVeryDense ? "text-[6px]" : isDense ? "text-[7px]" : "text-[8px]",
+                                ].join(" ")}
+                              >
+                                {releaseDateLabel}
+                              </p>
+                            ) : null}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex h-full items-center justify-center bg-white/90 text-center text-[12px] font-bold tracking-[0.08em] text-slate-400">
+                          ADD MOVIE
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
         <div className="pt-0 text-center">
           <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || CAPTURE_TEXT.footerRight}</span>

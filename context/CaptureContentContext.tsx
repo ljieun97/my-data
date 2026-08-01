@@ -78,6 +78,25 @@ type CaptureContentContextValue = {
 
 const CaptureContentContext = createContext<CaptureContentContextValue | undefined>(undefined);
 
+export function sanitizeSinglePreviewSubbody(value: string | undefined) {
+  let hasMetaLine = false;
+
+  return (value ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => {
+      if (!line) return false;
+      if (/^감독\s*[:|]/.test(line)) return false;
+      if (/^출연\s*[:|]/.test(line)) return false;
+      if (!hasMetaLine) {
+        hasMetaLine = true;
+        return true;
+      }
+      return false;
+    })
+    .join("\n");
+}
+
 function normalizeMovie(movie: any): CaptureMovie | null {
   const id = Number(movie?.id);
   const title = movie?.title || movie?.name;
@@ -105,7 +124,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     posterOptions: movie.posterOptions,
     singlePreviewTitle: movie.singlePreviewTitle ?? title,
     singlePreviewSubtitle: movie.singlePreviewSubtitle ?? (movie.original_title || movie.original_name || title),
-    singlePreviewSubbody: movie.singlePreviewSubbody,
+    singlePreviewSubbody: sanitizeSinglePreviewSubbody(movie.singlePreviewSubbody),
     singlePreviewBody: movie.singlePreviewBody ?? movie.overview ?? CAPTURE_TEXT.singlePreviewBody,
     singlePreviewTextPosition: movie.singlePreviewTextPosition ?? "center",
     singlePreviewShowTitle: movie.singlePreviewShowTitle ?? true,
@@ -268,12 +287,20 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       >
     >,
   ) => {
+    const nextPatch =
+      "singlePreviewSubbody" in patch
+        ? {
+            ...patch,
+            singlePreviewSubbody: sanitizeSinglePreviewSubbody(patch.singlePreviewSubbody),
+          }
+        : patch;
+
     setSelectedMovies((current) =>
       current.map((movie) =>
         movie.id === id
           ? {
               ...movie,
-              ...patch,
+              ...nextPatch,
             }
           : movie,
       ),

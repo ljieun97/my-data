@@ -1,4 +1,4 @@
-﻿import { CaptureMovie } from "@/context/CaptureContentContext";
+﻿import { CaptureMovie, sanitizeSinglePreviewSubbody } from "@/context/CaptureContentContext";
 import {
   buildImageCandidates,
   CaptureFooter,
@@ -44,10 +44,6 @@ function getMovieListMetaLabel(movie: CaptureMovie | undefined, mode: MovieListM
   return yearMatch?.[1] ?? releaseDate;
 }
 
-function hasKoreanText(value: string) {
-  return /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(value);
-}
-
 function getMovieListSubbodyLines(value: string) {
   return value
     .split("\n")
@@ -55,20 +51,14 @@ function getMovieListSubbodyLines(value: string) {
     .filter(Boolean)
     .flatMap((line) => {
       if (/^감독\s*[:|]/.test(line)) {
-        const director = line.replace(/^감독\s*[:|]\s*/, "").trim();
-        return hasKoreanText(director) ? [`감독 | ${director}`] : [];
+        return [];
       }
 
       if (/^출연\s*[:|]/.test(line)) {
-        const cast = line
-          .replace(/^출연\s*[:|]\s*/, "")
-          .split(/[\/,]/)
-          .map((name) => name.trim())
-          .filter((name) => name && hasKoreanText(name));
-        return cast.length ? [`출연 | ${cast.join(", ")}`] : [];
+        return [];
       }
 
-      return [line];
+      return [line.replace(/\s*\/\s*/g, "/")];
     });
 }
 
@@ -350,16 +340,17 @@ function MovieCaptureRow({
   metaMode?: MovieListMetaMode;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
-  const subbodyLines = getMovieListSubbodyLines(movie?.singlePreviewSubbody?.trim() ?? "");
-  const subbodyValue = subbodyLines.join("\n");
+  const subbodyLines = getMovieListSubbodyLines(sanitizeSinglePreviewSubbody(movie?.singlePreviewSubbody));
   const [subbodyMetaLine, ...subbodyRestLines] = subbodyLines;
-  const subbodyCreditLines = subbodyRestLines.filter((line) => /^감독\s*\||^출연\s*\|/.test(line));
-  const subbodyOverviewLines = subbodyRestLines.filter((line) => !/^감독\s*\||^출연\s*\|/.test(line));
+  const legacySubbodyOverview = subbodyRestLines.join(" ");
+  const bodyValue = (movie?.singlePreviewBody ?? movie?.overview ?? legacySubbodyOverview).trim();
+  const subbodyValue = [subbodyMetaLine, bodyValue].filter(Boolean).join("\n");
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
   const metaValue = getMovieListMetaLabel(movie, metaMode);
   const titleSizeClass = stackCount >= 3 ? "text-[14px]" : "text-[16px]";
   const metaSizeClass = stackCount >= 3 ? "text-[9px]" : "text-[10px]";
+  const overviewClampClass = stackCount >= 3 ? "line-clamp-3" : "line-clamp-4";
 
   if (!isCenterTitle) {
     return (
@@ -400,29 +391,24 @@ function MovieCaptureRow({
           </div>
         ) : null}
         {subbodyValue ? (
-          <div className="absolute inset-x-0 bottom-0 z-[2] px-4 pb-3">
+          <div className="absolute inset-x-0 bottom-0 z-[2] px-4 pb-4">
             {subbodyMetaLine ? (
               <p
                 style={titleFontStyle}
-                className="truncate text-left text-[8px] font-normal leading-[1.22] text-white/62 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
+                className="max-w-[58%] truncate text-left text-[8px] font-normal leading-[1.2] text-white/56 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
               >
                 {subbodyMetaLine}
               </p>
             ) : null}
-            {subbodyCreditLines.length ? (
+            {bodyValue ? (
               <p
                 style={titleFontStyle}
-                className="mt-1 line-clamp-2 whitespace-pre-line text-left text-[10px] font-medium leading-[1.24] text-white/92 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
+                className={[
+                  "mt-1.5 whitespace-pre-line text-left text-[9px] font-normal leading-[1.22] text-white/88 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                  overviewClampClass,
+                ].join(" ")}
               >
-                {subbodyCreditLines.join("\n")}
-              </p>
-            ) : null}
-            {subbodyOverviewLines.length ? (
-              <p
-                style={titleFontStyle}
-                className="mt-1.5 line-clamp-2 text-left text-[9px] font-normal leading-[1.22] text-white/76 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
-              >
-                {subbodyOverviewLines.join(" ")}
+                {bodyValue}
               </p>
             ) : null}
           </div>
@@ -549,8 +535,8 @@ export function MovieListTemplate({
             const title = centerTitles[rowIndex]?.trim() || defaultTitle;
 
             return (
-              <div key={`preview-row-${rowIndex}`} className="relative grid min-h-0 flex-1 grid-cols-2 overflow-hidden border-b border-white/18 last:border-b-0">
-                <div className="min-h-0 border-r border-white/18">
+              <div key={`preview-row-${rowIndex}`} className="relative grid min-h-0 flex-1 grid-cols-2 overflow-hidden">
+                <div className="relative min-h-0">
                   <MovieCaptureRow
                     movie={left}
                     index={rowIndex * 2}
@@ -603,7 +589,7 @@ export function MovieListTemplate({
             {leftSlots.map((movie, index) => (
               <div
                 key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-left-${index}` : `preview-left-${index}`}
-                className="min-h-0 flex-1 border-b border-white/18 last:border-b-0"
+                className="relative min-h-0 flex-1"
               >
                 <MovieCaptureRow
                   movie={movie}
@@ -618,11 +604,11 @@ export function MovieListTemplate({
             ))}
           </div>
           {isTwoColumn ? (
-            <div className="flex min-h-0 flex-1 flex-col gap-0 border-l border-white/18">
+            <div className="relative flex min-h-0 flex-1 flex-col gap-0">
               {rightSlots.map((movie, index) => (
                 <div
                   key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-right-${index}` : `preview-right-${index * 2 + 1}`}
-                  className="min-h-0 flex-1 border-b border-white/18 last:border-b-0"
+                  className="relative min-h-0 flex-1"
                 >
                   <MovieCaptureRow
                     movie={movie}
@@ -668,7 +654,7 @@ export function SingleMovieTemplate({
   const backgroundCandidates = buildImageCandidates(getPosterUrl(movie));
   const title = movie?.singlePreviewTitle ?? movie?.title ?? CAPTURE_TEXT.addMovie;
   const subtitle = movie?.singlePreviewSubtitle ?? movie?.original_title ?? movie?.title ?? "설명 텍스트";
-  const subbody = movie?.singlePreviewSubbody ?? "";
+  const subbody = sanitizeSinglePreviewSubbody(movie?.singlePreviewSubbody);
   const body = movie?.singlePreviewBody ?? movie?.overview ?? CAPTURE_TEXT.singlePreviewBody;
   const showTitle = movie?.singlePreviewShowTitle ?? true;
   const showSubtitle = movie?.singlePreviewShowSubtitle ?? false;

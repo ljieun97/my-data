@@ -40,19 +40,8 @@ function buildCaptureSubbody(detail: any) {
     ? `${detail.episode_run_time[0]}분`
     : "";
   const certification = formatCertification(getKoreanCertification(detail));
-  const director = Array.isArray(detail?.credits?.crew)
-    ? detail.credits.crew.find((person: any) => person?.job === "Director")
-    : "";
-  const cast = Array.isArray(detail?.credits?.cast)
-    ? detail.credits.cast.map((person: any) => person?.name || person?.original_name).filter(Boolean).slice(0, 3)
-    : [];
-  const overview = typeof detail?.overview === "string" ? detail.overview.replace(/\s+/g, " ").trim() : "";
-
   return [
-    [genres.join(" / "), runtime, certification].filter(Boolean).join(" · "),
-    director ? `감독 | ${director.name || director.original_name}` : "",
-    cast.length ? `출연 | ${cast.join(", ")}` : "",
-    overview,
+    [genres.join("/"), runtime, certification].filter(Boolean).join(" · "),
   ].filter(Boolean).join("\n");
 }
 

@@ -3,7 +3,7 @@
 import Title from "@/components/common/title";
 import { CaptureSizeControls, CaptureTextArea, CaptureToggleButton } from "@/components/contents/capture/content-capture-controls";
 import { MovieSlotsPanel } from "@/components/contents/capture/content-capture-movie-controls";
-import { CaptureMovie, CaptureMode, getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
+import { CaptureMovie, CaptureMode, getCaptureMovieMaxCount, sanitizeSinglePreviewSubbody, useCaptureContent } from "@/context/CaptureContentContext";
 import { faDownload, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toPng } from "html-to-image";
@@ -1031,7 +1031,7 @@ export default function ContentCapturePage() {
               <label className="mb-3 block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subbody</span>
                 <textarea
-                  value={currentSingleMovie?.singlePreviewSubbody ?? ""}
+                  value={sanitizeSinglePreviewSubbody(currentSingleMovie?.singlePreviewSubbody)}
                   onChange={(event) => updateCurrentSinglePreview({ singlePreviewSubbody: event.target.value })}
                   rows={2}
                   className="w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"

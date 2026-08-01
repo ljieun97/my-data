@@ -53,6 +53,10 @@ const rankingV2BackgroundPresets = [
 const NEWS_HEADER_DEFAULT_SIZE = 22;
 const NEWS_HEADER_MAX_SIZE = 34;
 
+function getMovieListCaptureStart(index: number, chunkSize: number) {
+  return Math.max(0, Math.floor(index / chunkSize) * chunkSize);
+}
+
 export default function ContentCapturePage() {
   const {
     captureMode,
@@ -104,6 +108,8 @@ export default function ContentCapturePage() {
   const [footerRight, setFooterRight] = useState<string>(CAPTURE_TEXT.footerRight);
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
+  const [movieListCaptureChunkSize, setMovieListCaptureChunkSize] = useState<2 | 3>(2);
+  const [movieListCaptureStartIndex, setMovieListCaptureStartIndex] = useState(0);
   const [rankingV2BackgroundMovieId, setRankingV2BackgroundMovieId] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
@@ -136,18 +142,22 @@ export default function ContentCapturePage() {
   useEffect(() => {
     if (!selectedMovies.length) {
       setPreviewMovieIndex(0);
+      setMovieListCaptureStartIndex(0);
       setRankingV2BackgroundMovieId(null);
       previousMovieCountRef.current = 0;
       return;
     }
     if (isMovieListMode && selectedMovies.length > previousMovieCountRef.current) {
-      setPreviewMovieIndex(selectedMovies.length - 1);
+      const nextIndex = selectedMovies.length - 1;
+      setPreviewMovieIndex(nextIndex);
+      setMovieListCaptureStartIndex(getMovieListCaptureStart(nextIndex, movieListCaptureChunkSize));
       previousMovieCountRef.current = selectedMovies.length;
       return;
     }
     setPreviewMovieIndex((current) => Math.min(current, selectedMovies.length - 1));
+    setMovieListCaptureStartIndex((current) => Math.min(current, getMovieListCaptureStart(selectedMovies.length - 1, movieListCaptureChunkSize)));
     previousMovieCountRef.current = selectedMovies.length;
-  }, [isMovieListMode, selectedMovies.length]);
+  }, [isMovieListMode, movieListCaptureChunkSize, selectedMovies.length]);
   useEffect(() => {
     if (!rankingV2BackgroundMovieId) return;
     if (selectedMovies.some((movie) => movie.id === rankingV2BackgroundMovieId)) return;
@@ -176,14 +186,14 @@ export default function ContentCapturePage() {
   const handleCapture = async () => {
     const targetRef = captureRef;
     if (!targetRef.current || isCapturing) return;
-    try {
-      setIsCapturing(true);
+    const captureElement = async () => {
+      if (!targetRef.current) return "";
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
       const rect = targetRef.current.getBoundingClientRect();
       const captureWidth = Math.max(1, Math.round(rect.width));
       const captureHeight = Math.max(1, Math.round(rect.height));
-      const dataUrl = await toPng(targetRef.current, {
+      return toPng(targetRef.current, {
         cacheBust: true,
         pixelRatio: 2,
         backgroundColor: "#111827",
@@ -192,6 +202,33 @@ export default function ContentCapturePage() {
         canvasWidth: captureWidth * 2,
         canvasHeight: captureHeight * 2,
       });
+    };
+
+    try {
+      setIsCapturing(true);
+
+      if (isMovieListMode) {
+        const originalStartIndex = movieListCaptureStartIndex;
+        try {
+          for (let startIndex = 0; startIndex < selectedMovies.length; startIndex += movieListCaptureChunkSize) {
+            setMovieListCaptureStartIndex(startIndex);
+            const dataUrl = await captureElement();
+            if (!dataUrl) continue;
+            const chunkNumber = Math.floor(startIndex / movieListCaptureChunkSize) + 1;
+            const link = document.createElement("a");
+            link.href = dataUrl;
+            link.download = `tovie-movie-list-${String(chunkNumber).padStart(2, "0")}-${new Date().toISOString().slice(0, 10)}.png`;
+            link.click();
+            await new Promise((resolve) => window.setTimeout(resolve, 120));
+          }
+        } finally {
+          setMovieListCaptureStartIndex(originalStartIndex);
+        }
+        return;
+      }
+
+      const dataUrl = await captureElement();
+      if (!dataUrl) return;
       const link = document.createElement("a");
       link.href = dataUrl;
       link.download = `tovie-${captureMode}-${new Date().toISOString().slice(0, 10)}.png`;
@@ -225,6 +262,13 @@ export default function ContentCapturePage() {
     }
   };
   const slots = Array.from({ length: movieSlotCount }, (_, index) => selectedMovies[index]);
+  const movieListCaptureSlots = Array.from(
+    { length: movieListCaptureChunkSize },
+    (_, index) => selectedMovies[movieListCaptureStartIndex + index],
+  );
+  const movieListChunkCount = Math.max(1, Math.ceil(selectedMovies.length / movieListCaptureChunkSize));
+  const movieListCurrentChunk = Math.floor(movieListCaptureStartIndex / movieListCaptureChunkSize);
+  const movieListCaptureCenterTitles = [movieListCenterTitles[movieListCurrentChunk] ?? ""];
   const movieListCenterTitleDefaults = Array.from({ length: Math.ceil(slots.length / 2) }, (_, index) => {
     const left = slots[index * 2];
     const right = slots[index * 2 + 1];
@@ -804,6 +848,50 @@ export default function ContentCapturePage() {
             <>
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                 <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Layout</p>
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Split</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[2, 3].map((count) => (
+                      <CaptureToggleButton
+                        key={`movie-list-split-${count}`}
+                        type="button"
+                        active={movieListCaptureChunkSize === count}
+                        onClick={() => {
+                          const nextChunkSize = count as 2 | 3;
+                          setMovieListCaptureChunkSize(nextChunkSize);
+                          setMovieListCaptureStartIndex((current) => getMovieListCaptureStart(current, nextChunkSize));
+                        }}
+                      >
+                        {count}개씩
+                      </CaptureToggleButton>
+                    ))}
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Capture Page</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Array.from({ length: movieListChunkCount }, (_, index) => {
+                      const start = index * movieListCaptureChunkSize;
+                      const end = Math.min(start + movieListCaptureChunkSize, selectedMovies.length || movieListCaptureChunkSize);
+
+                      return (
+                        <button
+                          key={`movie-list-page-${index}`}
+                          type="button"
+                          onClick={() => setMovieListCaptureStartIndex(start)}
+                          className={[
+                            "h-8 border px-2 text-[11px] font-bold transition",
+                            movieListCurrentChunk === index
+                              ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                              : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                          ].join(" ")}
+                        >
+                          {start + 1}-{end}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
                 <div>
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Columns</span>
                   <div className="grid grid-cols-2 gap-2">
@@ -1064,10 +1152,10 @@ export default function ContentCapturePage() {
                 />
               ) : (
               <MovieListTemplate
-                slots={slots}
+                slots={movieListCaptureSlots}
                 columns={movieListColumns}
                 twoColumnTextMode={movieListTwoColumnTextMode}
-                centerTitles={movieListCenterTitles}
+                centerTitles={movieListCaptureCenterTitles}
                 footerLeft={footerLeft}
                 footerRight={footerRight}
               />

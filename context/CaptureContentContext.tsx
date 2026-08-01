@@ -36,7 +36,7 @@ export function getCaptureMovieMaxCount(captureMode: CaptureMode) {
   if (captureMode === "release-board") return 24;
   if (captureMode === "ranking-cover") return 10;
   if (captureMode === "ranking-cover-v2") return 10;
-  if (captureMode === "movie-list") return 10;
+  if (captureMode === "movie-list") return 24;
   return 5;
 }
 

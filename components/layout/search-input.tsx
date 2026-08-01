@@ -57,6 +57,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const [captureSearchError, setCaptureSearchError] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [highlightedCaptureIndex, setHighlightedCaptureIndex] = useState(-1);
+  const lastCaptureNavigationRef = useRef<{ key: string; time: number }>({ key: "", time: 0 });
   const { captureMode, addMovie, hasMovie, selectedMovies } = useCaptureContent();
   const isCapturePage = pathname?.startsWith("/capture");
   const maxCaptureMovies = getCaptureMovieMaxCount(captureMode);
@@ -227,7 +228,16 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       const selectableIndexes = getSelectableCaptureIndexes();
       if (!selectableIndexes.length) return;
 
+      const eventTime = event.timeStamp;
+      const lastNavigation = lastCaptureNavigationRef.current;
+      if (lastNavigation.key === event.key && eventTime - lastNavigation.time < 80) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      lastCaptureNavigationRef.current = { key: event.key, time: eventTime };
       event.preventDefault();
+      event.stopPropagation();
       setHighlightedCaptureIndex((current) => {
         const currentPosition = selectableIndexes.indexOf(current);
         if (currentPosition < 0) {
@@ -252,6 +262,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       if (!selectedResult) return;
 
       event.preventDefault();
+      event.stopPropagation();
       void handleSelectCaptureMovie(selectedResult);
     }
   };

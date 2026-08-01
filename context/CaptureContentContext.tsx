@@ -223,29 +223,8 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
   };
 
   const updateMovieYear = (id: number, year: string) => {
-    const rawLabel = year.trim();
     setSelectedMovies((current) =>
-      current.map((movie) => {
-        if (movie.id !== id) return movie;
-
-        const monthDayMatch =
-          rawLabel.match(/^(\d{1,2})\s*[/.-]\s*(\d{1,2})$/) ??
-          rawLabel.match(/^(\d{2})(\d{2})$/);
-        if (monthDayMatch) {
-          const [, rawMonth, rawDay] = monthDayMatch;
-          const month = Number(rawMonth);
-          const day = Number(rawDay);
-          if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-            const existingYear = movie.release_date?.match(/^(\d{4})/)?.[1] ?? String(new Date().getFullYear());
-            return {
-              ...movie,
-              release_date: `${existingYear}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-            };
-          }
-        }
-
-        return { ...movie, release_date: rawLabel };
-      }),
+      current.map((movie) => (movie.id === id ? { ...movie, release_date: year } : movie)),
     );
   };
 

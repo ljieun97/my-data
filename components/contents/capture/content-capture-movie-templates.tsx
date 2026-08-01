@@ -129,7 +129,7 @@ export function ReleaseBoardTemplate({
                             <div
                               style={titleFontStyle}
                               className={[
-                                "absolute right-1 top-1 z-[2] flex items-center justify-center rounded-full bg-[#b58a45]/95 font-semibold leading-none text-white shadow-[0_1px_4px_rgba(0,0,0,0.42)]",
+                                "absolute right-1 top-1 z-[2] flex items-center justify-center rounded-full bg-[#b58a45]/95 font-medium leading-none text-white shadow-[0_1px_4px_rgba(0,0,0,0.42)]",
                                 isVeryDense ? "h-3.5 w-3.5 text-[7px]" : isDense ? "h-4 w-4 text-[8px]" : "h-5 w-5 text-[9px]",
                               ].join(" ")}
                             >

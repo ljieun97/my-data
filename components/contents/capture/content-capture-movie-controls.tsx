@@ -15,6 +15,13 @@ function formatMovieListReleaseText(movie?: CaptureMovie) {
   return `${Number(month)}/${Number(day)} 개봉`;
 }
 
+function formatReleaseBoardDateText(movie?: CaptureMovie) {
+  const releaseDate = movie?.release_date?.trim() ?? "";
+  const [, month, day] = releaseDate.match(/^\d{4}-(\d{2})-(\d{2})$/) ?? [];
+  if (!month || !day) return movie?.release_date ?? "";
+  return `${Number(month)}/${Number(day)}`;
+}
+
 type MovieSlotsPanelProps = {
   isRankingMode: boolean;
   isMovieListMode: boolean;
@@ -142,7 +149,9 @@ export function MovieSlotsPanel({
                   />
                   <input
                     value={
-                      isMovieListCaptureMode && !isRankingMode && movieListMetaMode === "release-date"
+                      isReleaseMode
+                        ? formatReleaseBoardDateText(movie)
+                        : isMovieListCaptureMode && !isRankingMode && movieListMetaMode === "release-date"
                         ? formatMovieListReleaseText(movie)
                         : movie.release_date
                         ? formatYear(movie)
@@ -152,7 +161,7 @@ export function MovieSlotsPanel({
                     onMouseDown={(event) => event.stopPropagation()}
                     onDragStart={(event) => event.preventDefault()}
                     maxLength={16}
-                    placeholder={isRankingMode ? "일일 관객" : movieListMetaMode === "release-date" ? "7/15 개봉" : "연도"}
+                    placeholder={isRankingMode ? "일일 관객" : isReleaseMode ? "7/15" : movieListMetaMode === "release-date" ? "7/15 개봉" : "연도"}
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
                   {isRankingMode && showRankingTotalAudience ? (

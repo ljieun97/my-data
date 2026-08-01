@@ -13,6 +13,8 @@ import {
 import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 import type { CSSProperties } from "react";
 
+export type MovieListMetaMode = "year" | "release-date";
+
 const rankingNumberStyle: CSSProperties = {
   fontFamily: '"Helvetica Neue", Arial, sans-serif',
   fontVariantNumeric: "tabular-nums",
@@ -26,6 +28,48 @@ function hexToRgba(hexColor: string, alpha: number, fallback: string) {
 
   const [r, g, b] = [0, 2, 4].map((index) => parseInt(hex.slice(index, index + 2), 16));
   return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function getMovieListMetaLabel(movie: CaptureMovie | undefined, mode: MovieListMetaMode) {
+  const releaseDate = movie?.release_date?.trim();
+  if (!releaseDate) return "";
+
+  if (mode === "release-date") {
+    const [, , month, day] = releaseDate.match(/^(\d{4})-(\d{2})-(\d{2})$/) ?? [];
+    if (!month || !day) return releaseDate;
+    return `${Number(month)}/${Number(day)} 개봉`;
+  }
+
+  const yearMatch = releaseDate.match(/^(\d{4})/);
+  return yearMatch?.[1] ?? releaseDate;
+}
+
+function hasKoreanText(value: string) {
+  return /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(value);
+}
+
+function getMovieListSubbodyLines(value: string) {
+  return value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .flatMap((line) => {
+      if (/^감독\s*[:|]/.test(line)) {
+        const director = line.replace(/^감독\s*[:|]\s*/, "").trim();
+        return hasKoreanText(director) ? [`감독 | ${director}`] : [];
+      }
+
+      if (/^출연\s*[:|]/.test(line)) {
+        const cast = line
+          .replace(/^출연\s*[:|]\s*/, "")
+          .split(/[\/,]/)
+          .map((name) => name.trim())
+          .filter((name) => name && hasKoreanText(name));
+        return cast.length ? [`출연 | ${cast.join(", ")}`] : [];
+      }
+
+      return [line];
+    });
 }
 
 export function ReleaseBoardTemplate({
@@ -293,6 +337,7 @@ function MovieCaptureRow({
   titleLayout = "corner",
   showTitle = true,
   showImageOverlay = true,
+  metaMode = "year",
 }: {
   movie?: CaptureMovie;
   index: number;
@@ -302,14 +347,92 @@ function MovieCaptureRow({
   titleLayout?: "corner" | "center";
   showTitle?: boolean;
   showImageOverlay?: boolean;
+  metaMode?: MovieListMetaMode;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
-  const subbodyValue = movie?.singlePreviewSubbody?.trim() ?? "";
+  const subbodyLines = getMovieListSubbodyLines(movie?.singlePreviewSubbody?.trim() ?? "");
+  const subbodyValue = subbodyLines.join("\n");
+  const [subbodyMetaLine, ...subbodyRestLines] = subbodyLines;
+  const subbodyCreditLines = subbodyRestLines.filter((line) => /^감독\s*\||^출연\s*\|/.test(line));
+  const subbodyOverviewLines = subbodyRestLines.filter((line) => !/^감독\s*\||^출연\s*\|/.test(line));
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
+  const metaValue = getMovieListMetaLabel(movie, metaMode);
+  const titleSizeClass = stackCount >= 3 ? "text-[14px]" : "text-[16px]";
+  const metaSizeClass = stackCount >= 3 ? "text-[9px]" : "text-[10px]";
+
+  if (!isCenterTitle) {
+    return (
+      <div className={["relative h-full min-h-0 w-full flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "" : "rounded-none"].join(" ")}>
+        {imageCandidates[0] ? (
+          <img
+            alt=""
+            src={imageCandidates[0]}
+            data-fallback-index="0"
+            onError={(event) => handleImageFallback(event, imageCandidates)}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition }}
+            crossOrigin="anonymous"
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.76)_0%,rgba(0,0,0,0.34)_24%,rgba(0,0,0,0.06)_52%,rgba(0,0,0,0.82)_100%)]" />
+        {showTitle ? (
+          <div className="absolute inset-x-0 top-0 z-[2] px-4 pt-3">
+            <div className="flex min-w-0 items-start gap-2">
+              <span className="h-[2.15rem] w-0.5 shrink-0 bg-amber-400/90" />
+              <div className="min-w-0 flex-1">
+                <p
+                  style={titleFontStyle}
+                  className={[
+                    "line-clamp-2 break-normal font-black leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
+                    titleSizeClass,
+                  ].join(" ")}
+                >
+                  {movie?.title ?? CAPTURE_TEXT.addMovie}
+                </p>
+                {metaValue ? (
+                  <p style={titleFontStyle} className={[metaSizeClass, "mt-0.5 leading-tight text-white/78"].join(" ")}>
+                    {metaValue}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : null}
+        {subbodyValue ? (
+          <div className="absolute inset-x-0 bottom-0 z-[2] px-4 pb-3">
+            {subbodyMetaLine ? (
+              <p
+                style={titleFontStyle}
+                className="truncate text-left text-[8px] font-normal leading-[1.22] text-white/62 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
+              >
+                {subbodyMetaLine}
+              </p>
+            ) : null}
+            {subbodyCreditLines.length ? (
+              <p
+                style={titleFontStyle}
+                className="mt-1 line-clamp-2 whitespace-pre-line text-left text-[10px] font-medium leading-[1.24] text-white/92 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
+              >
+                {subbodyCreditLines.join("\n")}
+              </p>
+            ) : null}
+            {subbodyOverviewLines.length ? (
+              <p
+                style={titleFontStyle}
+                className="mt-1.5 line-clamp-2 text-left text-[9px] font-normal leading-[1.22] text-white/76 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
+              >
+                {subbodyOverviewLines.join(" ")}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
-    <div className={["relative min-h-0 flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "" : "rounded-none"].join(" ")}>
+    <div className={["relative h-full min-h-0 w-full flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "" : "rounded-none"].join(" ")}>
       {imageCandidates[0] ? (
         <img
           alt=""
@@ -338,44 +461,48 @@ function MovieCaptureRow({
         </>
       ) : null}
 
-      {showTitle ? (
+      {showTitle || subbodyValue ? (
         <div
           className={[
-            "relative z-[1] flex px-[16px] py-[14px]",
-            isCenterTitle ? "h-full items-center justify-center text-center" : "items-stretch gap-1",
-            !isCenterTitle && bottomAligned ? "items-end" : "",
-            !isCenterTitle && !bottomAligned ? "items-start" : "",
-            subbodyValue && !isCenterTitle && bottomAligned ? "pb-10" : "",
+            isCenterTitle
+              ? "relative z-[1] flex h-full items-center justify-center px-[16px] py-[14px] text-center"
+              : bottomAligned
+              ? "absolute inset-x-0 bottom-0 z-[2] px-4 pb-3 pt-10"
+              : "relative z-[1] flex items-stretch gap-1 px-[16px] py-[14px]",
+            !isCenterTitle && bottomAligned
+              ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.62)_38%,rgba(0,0,0,0.78)_100%)]"
+              : "",
           ].join(" ")}
         >
-          {!isCenterTitle ? <span className="w-0.5 shrink-0 bg-amber-400/90" /> : null}
-          <p
-            style={titleFontStyle}
-            className={[
-              "leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
-              isCenterTitle ? "line-clamp-2 text-center text-[12px] font-black whitespace-normal" : "text-[10px]",
-              !isCenterTitle ? "pl-[2px]" : "",
-              !isCenterTitle && bottomAligned ? "line-clamp-2 whitespace-normal" : "",
-              !isCenterTitle && !bottomAligned ? "truncate" : "",
-            ].join(" ")}
-          >
-            {movie?.title ?? CAPTURE_TEXT.addMovie}
-            {!isCenterTitle ? <br /> : null}
-            {!isCenterTitle && movie?.release_date ? (
-              <span className={"text-[8px] text-white/72"}>{movie?.release_date.split("-")[0]}</span>
+          {showTitle && !isCenterTitle ? <span className="w-0.5 shrink-0 bg-amber-400/90" /> : null}
+          <div className={["min-w-0", isCenterTitle ? "w-full" : "pl-[2px]"].join(" ")}>
+            {showTitle ? (
+              <p
+                style={titleFontStyle}
+                className={[
+                  "leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
+                  isCenterTitle ? "line-clamp-2 text-center text-[14px] font-black whitespace-normal" : titleSizeClass,
+                  !isCenterTitle && bottomAligned ? "line-clamp-2 whitespace-normal" : "",
+                  !isCenterTitle && !bottomAligned ? "truncate" : "",
+                ].join(" ")}
+              >
+                {movie?.title ?? CAPTURE_TEXT.addMovie}
+              </p>
             ) : null}
-          </p>
-        </div>
-      ) : null}
-
-      {subbodyValue ? (
-        <div className="absolute inset-x-0 bottom-0 z-[2] bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.62)_48%,rgba(0,0,0,0.78)_100%)] px-4 pb-3 pt-8">
-          <p
-            style={titleFontStyle}
-            className="line-clamp-2 whitespace-pre-line text-left text-[10px] font-medium leading-[1.28] text-white/86 drop-shadow-[0_1px_2px_rgba(0,0,0,0.58)]"
-          >
-            {subbodyValue}
-          </p>
+            {showTitle && !isCenterTitle && metaValue ? (
+              <p style={titleFontStyle} className={[metaSizeClass, "leading-tight text-white/72"].join(" ")}>
+                {metaValue}
+              </p>
+            ) : null}
+            {subbodyValue ? (
+              <p
+                style={titleFontStyle}
+                className="mt-1 line-clamp-3 whitespace-pre-line text-left text-[10px] font-medium leading-[1.24] text-white/86 drop-shadow-[0_1px_2px_rgba(0,0,0,0.58)]"
+              >
+                {subbodyValue}
+              </p>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </div>
@@ -387,6 +514,7 @@ export function MovieListTemplate({
   columns,
   twoColumnTextMode,
   centerTitles,
+  metaMode,
   footerLeft,
   footerRight,
 }: {
@@ -394,6 +522,7 @@ export function MovieListTemplate({
   columns: 1 | 2;
   twoColumnTextMode: "corner" | "center";
   centerTitles: string[];
+  metaMode: MovieListMetaMode;
   footerLeft: string;
   footerRight: string;
 }) {
@@ -420,27 +549,33 @@ export function MovieListTemplate({
             const title = centerTitles[rowIndex]?.trim() || defaultTitle;
 
             return (
-              <div key={`preview-row-${rowIndex}`} className="relative grid min-h-0 flex-1 grid-cols-2 overflow-hidden">
-                <MovieCaptureRow
-                  movie={left}
-                  index={rowIndex * 2}
-                  rounded={false}
-                  stackCount={pairedSlots.length}
-                  bottomAligned
-                  titleLayout="center"
-                  showTitle={false}
-                  showImageOverlay={false}
-                />
-                <MovieCaptureRow
-                  movie={right}
-                  index={rowIndex * 2 + 1}
-                  rounded={false}
-                  stackCount={pairedSlots.length}
-                  bottomAligned
-                  titleLayout="center"
-                  showTitle={false}
-                  showImageOverlay={false}
-                />
+              <div key={`preview-row-${rowIndex}`} className="relative grid min-h-0 flex-1 grid-cols-2 overflow-hidden border-b border-white/18 last:border-b-0">
+                <div className="min-h-0 border-r border-white/18">
+                  <MovieCaptureRow
+                    movie={left}
+                    index={rowIndex * 2}
+                    rounded={false}
+                    stackCount={pairedSlots.length}
+                    bottomAligned
+                    titleLayout="center"
+                    showTitle={false}
+                    showImageOverlay={false}
+                    metaMode={metaMode}
+                  />
+                </div>
+                <div className="min-h-0">
+                  <MovieCaptureRow
+                    movie={right}
+                    index={rowIndex * 2 + 1}
+                    rounded={false}
+                    stackCount={pairedSlots.length}
+                    bottomAligned
+                    titleLayout="center"
+                    showTitle={false}
+                    showImageOverlay={false}
+                    metaMode={metaMode}
+                  />
+                </div>
                 <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center px-5 text-center">
                   <p
                     style={titleFontStyle}
@@ -466,29 +601,39 @@ export function MovieListTemplate({
         >
           <div className="flex min-h-0 flex-1 flex-col gap-0">
             {leftSlots.map((movie, index) => (
-              <MovieCaptureRow
+              <div
                 key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-left-${index}` : `preview-left-${index}`}
-                movie={movie}
-                index={index}
-                rounded={false}
-                stackCount={leftSlots.length}
-                bottomAligned={isTwoColumn}
-                titleLayout={titleLayout}
-              />
+                className="min-h-0 flex-1 border-b border-white/18 last:border-b-0"
+              >
+                <MovieCaptureRow
+                  movie={movie}
+                  index={index}
+                  rounded={false}
+                  stackCount={leftSlots.length}
+                  bottomAligned={isTwoColumn}
+                  titleLayout={titleLayout}
+                  metaMode={metaMode}
+                />
+              </div>
             ))}
           </div>
           {isTwoColumn ? (
-            <div className="flex min-h-0 flex-1 flex-col gap-0">
+            <div className="flex min-h-0 flex-1 flex-col gap-0 border-l border-white/18">
               {rightSlots.map((movie, index) => (
-                <MovieCaptureRow
+                <div
                   key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-right-${index}` : `preview-right-${index * 2 + 1}`}
-                  movie={movie}
-                  index={index * 2 + 1}
-                  rounded={false}
-                  stackCount={rightSlots.length}
-                  bottomAligned={isTwoColumn}
-                  titleLayout={titleLayout}
-                />
+                  className="min-h-0 flex-1 border-b border-white/18 last:border-b-0"
+                >
+                  <MovieCaptureRow
+                    movie={movie}
+                    index={index * 2 + 1}
+                    rounded={false}
+                    stackCount={rightSlots.length}
+                    bottomAligned={isTwoColumn}
+                    titleLayout={titleLayout}
+                    metaMode={metaMode}
+                  />
+                </div>
               ))}
             </div>
           ) : null}

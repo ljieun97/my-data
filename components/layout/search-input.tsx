@@ -7,6 +7,55 @@ import { getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureCon
 import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 import { getDetail, getImages, getSearchMulti } from "@/lib/open-api/tmdb-client";
 
+function getKoreanCertification(detail: any) {
+  const movieCertification = Array.isArray(detail?.release_dates?.results)
+    ? detail.release_dates.results
+        .find((item: any) => item?.iso_3166_1 === "KR")
+        ?.release_dates?.find((item: any) => item?.certification?.trim())
+        ?.certification
+    : "";
+  if (movieCertification) return movieCertification;
+
+  return Array.isArray(detail?.content_ratings?.results)
+    ? detail.content_ratings.results.find((item: any) => item?.iso_3166_1 === "KR")?.rating ?? ""
+    : "";
+}
+
+function formatCertification(value: string) {
+  const certification = value.trim();
+  if (!certification) return "";
+  if (/^(all|전체|전체관람가)$/i.test(certification)) return "전체";
+  if (certification === "18") return "청불";
+  if (/^\d+$/.test(certification)) return `${certification}세`;
+  return certification;
+}
+
+function buildCaptureSubbody(detail: any) {
+  const genres = Array.isArray(detail?.genres)
+    ? detail.genres.map((genre: any) => genre?.name).filter(Boolean).slice(0, 2)
+    : [];
+  const runtime = typeof detail?.runtime === "number" && detail.runtime > 0
+    ? `${detail.runtime}분`
+    : Array.isArray(detail?.episode_run_time) && detail.episode_run_time[0]
+    ? `${detail.episode_run_time[0]}분`
+    : "";
+  const certification = formatCertification(getKoreanCertification(detail));
+  const director = Array.isArray(detail?.credits?.crew)
+    ? detail.credits.crew.find((person: any) => person?.job === "Director")
+    : "";
+  const cast = Array.isArray(detail?.credits?.cast)
+    ? detail.credits.cast.map((person: any) => person?.name || person?.original_name).filter(Boolean).slice(0, 3)
+    : [];
+  const overview = typeof detail?.overview === "string" ? detail.overview.replace(/\s+/g, " ").trim() : "";
+
+  return [
+    [genres.join(" / "), runtime, certification].filter(Boolean).join(" · "),
+    director ? `감독 | ${director.name || director.original_name}` : "",
+    cast.length ? `출연 | ${cast.join(", ")}` : "",
+    overview,
+  ].filter(Boolean).join("\n");
+}
+
 export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -86,6 +135,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       poster_path: posterOptions[0] || detail?.poster_path || movie.poster_path,
       backdrop_path: detail?.backdrop_path || movie.backdrop_path || posterOptions[0],
       posterOptions,
+      singlePreviewSubbody: buildCaptureSubbody(detail),
     });
     if (didAdd) {
       setInputValue("");

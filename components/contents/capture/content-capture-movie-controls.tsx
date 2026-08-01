@@ -4,12 +4,22 @@ import { CaptureMovie } from "@/context/CaptureContentContext";
 import { faGripVertical, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CaptureHelperText, CapturePanel } from "@/components/contents/capture/content-capture-controls";
+import type { MovieListMetaMode } from "@/components/contents/capture/content-capture-templates";
 import { formatYear } from "@/components/contents/capture/content-capture-utils";
 import { CAPTURE_TEXT } from "@/lib/capture-defaults";
+
+function formatMovieListReleaseText(movie?: CaptureMovie) {
+  const releaseDate = movie?.release_date?.trim() ?? "";
+  const [, month, day] = releaseDate.match(/^\d{4}-(\d{2})-(\d{2})$/) ?? [];
+  if (!month || !day) return releaseDate;
+  return `${Number(month)}/${Number(day)} 개봉`;
+}
 
 type MovieSlotsPanelProps = {
   isRankingMode: boolean;
   isMovieListMode: boolean;
+  isMovieListCaptureMode?: boolean;
+  movieListMetaMode?: MovieListMetaMode;
   showRankingTotalAudience?: boolean;
   showImagePositionControls?: boolean;
   rankingCoverMovieId?: number | null;
@@ -34,6 +44,8 @@ type MovieSlotsPanelProps = {
 export function MovieSlotsPanel({
   isRankingMode,
   isMovieListMode,
+  isMovieListCaptureMode = false,
+  movieListMetaMode = "year",
   showRankingTotalAudience = false,
   showImagePositionControls = false,
   rankingCoverMovieId,
@@ -125,12 +137,18 @@ export function MovieSlotsPanel({
                     className="h-7 w-full border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
                   <input
-                    value={movie.release_date ? formatYear(movie) : ""}
+                    value={
+                      isMovieListCaptureMode && !isRankingMode && movieListMetaMode === "release-date"
+                        ? formatMovieListReleaseText(movie)
+                        : movie.release_date
+                        ? formatYear(movie)
+                        : ""
+                    }
                     onChange={(event) => updateMovieYear(movie.id, event.target.value)}
                     onMouseDown={(event) => event.stopPropagation()}
                     onDragStart={(event) => event.preventDefault()}
                     maxLength={16}
-                    placeholder={isRankingMode ? "일일 관객" : "연도"}
+                    placeholder={isRankingMode ? "일일 관객" : movieListMetaMode === "release-date" ? "7/15 개봉" : "연도"}
                     className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                   />
                   {isRankingMode && showRankingTotalAudience ? (

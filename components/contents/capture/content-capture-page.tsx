@@ -18,6 +18,7 @@ import {
   SingleMovieTemplate,
   subtitleChipToneOptions,
   toSafeFilename,
+  type MovieListMetaMode,
   type SubtitleChipTone,
   formatYear,
 } from "@/components/contents/capture/content-capture-templates";
@@ -79,6 +80,7 @@ export default function ContentCapturePage() {
   const previousMovieCountRef = useRef(0);
   const [movieListColumns, setMovieListColumns] = useState<1 | 2>(1);
   const [movieListTwoColumnTextMode, setMovieListTwoColumnTextMode] = useState<"corner" | "center">("corner");
+  const [movieListMetaMode, setMovieListMetaMode] = useState<MovieListMetaMode>("year");
   const [movieListCenterTitles, setMovieListCenterTitles] = useState<string[]>([]);
   const [subtitleChipTone, setSubtitleChipTone] = useState<SubtitleChipTone>("burgundy");
   const [singlePreviewTitleSize, setSinglePreviewTitleSize] = useState(28);
@@ -536,6 +538,8 @@ export default function ContentCapturePage() {
             <MovieSlotsPanel
               isRankingMode={isRankingTextMode}
               isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode}
+              isMovieListCaptureMode={isMovieListMode}
+              movieListMetaMode={movieListMetaMode}
               showRankingTotalAudience={showRankingTotalAudience}
               showImagePositionControls={isRankingV2Mode}
               rankingCoverMovieId={rankingV2BackgroundMovieId}
@@ -901,6 +905,17 @@ export default function ContentCapturePage() {
                     </CaptureToggleButton>
                   </div>
                 </div>
+                <div className="mt-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Meta Text</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <CaptureToggleButton type="button" active={movieListMetaMode === "year"} onClick={() => setMovieListMetaMode("year")}>
+                      연도
+                    </CaptureToggleButton>
+                    <CaptureToggleButton type="button" active={movieListMetaMode === "release-date"} onClick={() => setMovieListMetaMode("release-date")}>
+                      개봉날짜
+                    </CaptureToggleButton>
+                  </div>
+                </div>
                 {movieListColumns === 2 ? (
                   <div className="mt-3">
                     <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Text Mode</span>
@@ -1154,6 +1169,7 @@ export default function ContentCapturePage() {
                 columns={movieListColumns}
                 twoColumnTextMode={movieListTwoColumnTextMode}
                 centerTitles={movieListCaptureCenterTitles}
+                metaMode={movieListMetaMode}
                 footerLeft={footerLeft}
                 footerRight={footerRight}
               />

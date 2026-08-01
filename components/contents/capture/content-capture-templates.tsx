@@ -9,6 +9,7 @@ export {
 } from "@/components/contents/capture/content-capture-utils";
 export {
   MovieListTemplate,
+  type MovieListMetaMode,
   RankingV2Template,
   ReleaseBoardTemplate,
   SingleMovieTemplate,

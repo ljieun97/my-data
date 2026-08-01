@@ -13,8 +13,6 @@ import {
   getPosterThumbUrl,
   isExternalImageUrl,
   MovieListTemplate,
-  getReleaseBoardAutoDate,
-  getReleaseBoardDefaultColors,
   ReleaseBoardTemplate,
   RankingV2Template,
   SingleMovieTemplate,
@@ -100,10 +98,7 @@ export default function ContentCapturePage() {
   const [rankingV2RowBackgroundColors, setRankingV2RowBackgroundColors] = useState<string[]>([]);
   const [releaseBoardTitle, setReleaseBoardTitle] = useState("7월 개봉예정 영화 라인업");
   const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(NEWS_HEADER_DEFAULT_SIZE);
-  const [releaseBoardLabelColors, setReleaseBoardLabelColors] = useState(() => getReleaseBoardDefaultColors());
-  const [isExtractingReleaseColors, setIsExtractingReleaseColors] = useState(false);
   const [isExtractingRankingRowColors, setIsExtractingRankingRowColors] = useState(false);
-  const [releaseBoardDates, setReleaseBoardDates] = useState(() => Array.from({ length: 8 }, () => ""));
   const [footerLeft, setFooterLeft] = useState("占싸놂옙占쌘몌옙占쏙옙");
   const [footerRight, setFooterRight] = useState("35Film");
   const [isCapturing, setIsCapturing] = useState(false);
@@ -125,7 +120,7 @@ export default function ContentCapturePage() {
   const movieMinCount = isNewsMode ? 1 : isReleaseMode ? 8 : 2;
   const movieMaxCount = getCaptureMovieMaxCount(captureMode);
   const rankingSlotCount = 10;
-  const releaseSlotCount = 8;
+  const releaseSlotCount = getCaptureMovieMaxCount("release-board");
   const movieSlotCount = isRankingTextMode
     ? rankingSlotCount
     : isReleaseMode
@@ -229,7 +224,6 @@ export default function ContentCapturePage() {
     }
   };
   const slots = Array.from({ length: movieSlotCount }, (_, index) => selectedMovies[index]);
-  const releaseBoardDateLabels = slots.map((movie, index) => releaseBoardDates[index]?.trim() || getReleaseBoardAutoDate(movie));
   const movieListCenterTitleDefaults = Array.from({ length: Math.ceil(slots.length / 2) }, (_, index) => {
     const left = slots[index * 2];
     const right = slots[index * 2 + 1];
@@ -274,33 +268,6 @@ export default function ContentCapturePage() {
       nextTitles[index] = title;
       return nextTitles;
     });
-  };
-  const handleExtractReleaseLabelColors = async () => {
-    if (isExtractingReleaseColors) return;
-
-    const averageColor = new FastAverageColor();
-    setIsExtractingReleaseColors(true);
-
-    try {
-      const nextColors = await Promise.all(
-        slots.slice(0, releaseSlotCount).map(async (movie, index) => {
-          const imageUrl = getPosterUrl(movie) || getBackdropUrl(movie);
-          if (!imageUrl) return releaseBoardLabelColors[index] || getReleaseBoardDefaultColors()[index] || "#374151";
-
-          try {
-            const color = await averageColor.getColorAsync(imageUrl, { crossOrigin: "anonymous" });
-            return toReleaseLabelColor([color.value[0], color.value[1], color.value[2]]);
-          } catch {
-            return releaseBoardLabelColors[index] || getReleaseBoardDefaultColors()[index] || "#374151";
-          }
-        }),
-      );
-
-      setReleaseBoardLabelColors(nextColors);
-    } finally {
-      averageColor.destroy();
-      setIsExtractingReleaseColors(false);
-    }
   };
   const handleExtractRankingRowBackgroundColors = async () => {
     if (isExtractingRankingRowColors) return;
@@ -587,59 +554,6 @@ export default function ContentCapturePage() {
                   max={NEWS_HEADER_MAX_SIZE}
                 />
               </label>
-              <div className="mb-3">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="block text-xs font-semibold text-slate-500 dark:text-slate-400">Date Label Colors</span>
-                  <button
-                    type="button"
-                    onClick={handleExtractReleaseLabelColors}
-                    disabled={isExtractingReleaseColors || !slots.some((movie) => getPosterUrl(movie) || getBackdropUrl(movie))}
-                    className="h-7 border border-slate-300 bg-white px-2 text-[11px] font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-                  >
-                    {isExtractingReleaseColors ? "extracting" : "from poster"}
-                  </button>
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {releaseBoardLabelColors.map((color, index) => (
-                    <label key={`release-color-${index}`} className="flex items-center gap-2 border border-slate-200 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900/60">
-                      <input
-                        type="color"
-                        value={color}
-                        onChange={(event) =>
-                          setReleaseBoardLabelColors((current) =>
-                            current.map((entry, entryIndex) => (entryIndex === index ? event.target.value : entry)),
-                          )
-                        }
-                        className="h-7 w-7 cursor-pointer border-0 bg-transparent p-0"
-                      />
-                      <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">{index + 1}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Date Labels</span>
-                <div className="grid grid-cols-2 gap-2">
-                  {releaseBoardDates.map((dateLabel, index) => (
-                    <label key={`release-date-${index}`} className="block">
-                      <span className="mb-1 block text-[11px] font-bold text-slate-500 dark:text-slate-400">{index + 1}</span>
-                      <input
-                        value={dateLabel}
-                        onChange={(event) =>
-                          setReleaseBoardDates((current) =>
-                            current.map((entry, entryIndex) => (entryIndex === index ? event.target.value : entry)),
-                          )
-                        }
-                        placeholder={getReleaseBoardAutoDate(slots[index]) || "7/1"}
-                        className="h-9 w-full border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                      />
-                    </label>
-                  ))}
-                </div>
-              </div>
-              <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                날짜는 추가한 영화의 개봉일에서 자동으로 채우고, 직접 입력하면 그 값이 우선 표시됩니다.
-              </p>
             </div>
           ) : null}
           {isNewsMode ? (
@@ -1145,8 +1059,6 @@ export default function ContentCapturePage() {
                   movies={slots}
                   title={releaseBoardTitle}
                   titleSize={releaseBoardTitleSize}
-                  labelColors={releaseBoardLabelColors}
-                  dateLabels={releaseBoardDateLabels}
                   footerRight={footerRight}
                 />
               ) : (

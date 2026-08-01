@@ -27,53 +27,21 @@ function hexToRgba(hexColor: string, alpha: number, fallback: string) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-const releaseBoardDefaultColors = [
-  "#b91c1c",
-  "#315f90",
-  "#374151",
-  "#111827",
-  "#d14d72",
-  "#7c1d5a",
-  "#caa13f",
-  "#ea6b00",
-];
-
-export function getReleaseBoardDefaultColors() {
-  return [...releaseBoardDefaultColors];
-}
-
-export function formatReleaseBoardDate(value: string) {
-  return value.trim();
-}
-
-export function getReleaseBoardAutoDate(movie?: CaptureMovie) {
-  const rawDate = String(movie?.release_date ?? "").slice(0, 10);
-  if (!rawDate) return "";
-
-  const [year, month, day] = rawDate.split("-").map(Number);
-  if (!year || !month || !day) return rawDate;
-
-  return `${month}/${day}`;
-}
-
 export function ReleaseBoardTemplate({
   movies,
   title,
   titleSize,
-  labelColors,
-  dateLabels,
   footerRight,
 }: {
   movies: Array<CaptureMovie | undefined>;
   title: string;
   titleSize: number;
-  labelColors: string[];
-  dateLabels: string[];
   footerRight: string;
 }) {
-  const visibleMovies = movies.slice(0, 8).filter(Boolean) as CaptureMovie[];
-  const gridColsClass =
-    visibleMovies.length <= 4 ? "grid-cols-2" : visibleMovies.length <= 6 ? "grid-cols-3" : "grid-cols-4";
+  const visibleMovies = movies.slice(0, 24).filter(Boolean) as CaptureMovie[];
+  const columnCount = visibleMovies.length <= 4 ? 2 : visibleMovies.length <= 12 ? 3 : 4;
+  const isDense = visibleMovies.length > 12;
+  const isVeryDense = visibleMovies.length > 18;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#221f2e] text-white">
@@ -83,31 +51,35 @@ export function ReleaseBoardTemplate({
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
         <CaptureV2Header title={title} titleSize={titleSize} />
 
-        <div className={["relative mt-2 grid min-h-0 flex-1 auto-rows-fr overflow-hidden px-0.5 pb-0 pt-1.5 gap-2", gridColsClass].join(" ")}>
+        <div
+          className={[
+            "relative mt-2 grid min-h-0 flex-1 auto-rows-fr overflow-hidden px-0.5 pb-0 pt-1.5",
+            isDense ? "gap-1" : "gap-2",
+          ].join(" ")}
+          style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
+        >
           {visibleMovies.map((movie, index) => {
             const posterUrl = getPosterUrl(movie) || getBackdropUrl(movie);
 
             return (
               <div
                 key={`${movie.id}-${index}`}
-                className="flex min-h-0 flex-col overflow-hidden rounded-[0.95rem] bg-white/6 shadow-[0_10px_20px_rgba(0,0,0,0.22)]"
+                className={[
+                  "flex min-h-0 flex-col overflow-hidden bg-white/6 shadow-[0_10px_20px_rgba(0,0,0,0.22)]",
+                  isDense ? "rounded-[0.55rem]" : "rounded-[0.95rem]",
+                ].join(" ")}
               >
-                <div
-                  className="px-2 py-0.5 text-center"
-                  style={{ backgroundColor: labelColors[index] || releaseBoardDefaultColors[index] || "#1f2937" }}
-                >
-                  <p style={titleFontStyle} className="translate-y-[1.5px] text-[12px] font-black tracking-[0.06em] text-white">
-                    {formatReleaseBoardDate(dateLabels[index] || "") || `SLOT ${index + 1}`}
-                  </p>
-                </div>
                 <div className="relative min-h-0 flex-1 bg-white">
                   {posterUrl ? (
                     <>
                       <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
-                      <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.66)_64%,rgba(0,0,0,0.86)_100%)] px-1.5 pb-1.5 pt-5">
+                      <div className={["absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.66)_64%,rgba(0,0,0,0.86)_100%)]", isDense ? "px-1 pb-1 pt-4" : "px-1.5 pb-1.5 pt-5"].join(" ")}>
                         <p
                           style={titleFontStyle}
-                          className="line-clamp-2 break-keep text-center text-[9px] font-medium leading-[1.18] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
+                          className={[
+                            "line-clamp-2 break-keep text-center font-medium leading-[1.18] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                            isVeryDense ? "text-[7px]" : isDense ? "text-[8px]" : "text-[9px]",
+                          ].join(" ")}
                         >
                           {movie.title}
                         </p>

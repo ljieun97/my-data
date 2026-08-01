@@ -8,8 +8,6 @@ export {
   type SubtitleChipTone,
 } from "@/components/contents/capture/content-capture-utils";
 export {
-  getReleaseBoardAutoDate,
-  getReleaseBoardDefaultColors,
   MovieListTemplate,
   RankingV2Template,
   ReleaseBoardTemplate,

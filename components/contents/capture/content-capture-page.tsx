@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Title from "@/components/common/title";
-import { CaptureSizeControls, CaptureTextArea, CaptureTextInput, CaptureToggleButton } from "@/components/contents/capture/content-capture-controls";
+import { CaptureTextArea, CaptureTextInput, CaptureToggleButton } from "@/components/contents/capture/content-capture-controls";
 import { MovieSlotsPanel } from "@/components/contents/capture/content-capture-movie-controls";
 import { CaptureMovie, CaptureMode, getCaptureMovieMaxCount, sanitizeSinglePreviewSubbody, useCaptureContent } from "@/context/CaptureContentContext";
 import { faDownload, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
@@ -54,7 +54,6 @@ const rankingV2BackgroundPresets = [
 ];
 
 const NEWS_HEADER_DEFAULT_SIZE = 22;
-const NEWS_HEADER_MAX_SIZE = 34;
 
 function getMovieListCaptureStart(index: number, chunkSize: number) {
   return Math.max(0, Math.floor(index / chunkSize) * chunkSize);
@@ -86,15 +85,12 @@ export default function ContentCapturePage() {
   const [movieListTwoColumnTextMode, setMovieListTwoColumnTextMode] = useState<"corner" | "center">("corner");
   const [movieListMetaMode, setMovieListMetaMode] = useState<MovieListMetaMode>("year");
   const [movieListCenterTitles, setMovieListCenterTitles] = useState<string[]>([]);
-  const [newsHeadline, setNewsHeadline] = useState<string>(CAPTURE_TEXT.newsHeadline);
+  const [captureHeadline, setCaptureHeadline] = useState<string>(CAPTURE_TEXT.newsHeadline);
+  const [captureSubText, setCaptureSubText] = useState("");
   const [newsBodyText, setNewsBodyText] = useState<string>(CAPTURE_TEXT.newsBodyText);
-  const [newsAccentText, setNewsAccentText] = useState("");
   const [newsDisplayMode, setNewsDisplayMode] = useState<"default" | "review" | "body">("default");
   const [newsReviewRating, setNewsReviewRating] = useState("3.5");
   const [newsReviewText, setNewsReviewText] = useState("");
-  const [newsTitleSize, setNewsTitleSize] = useState(NEWS_HEADER_DEFAULT_SIZE);
-  const [rankingHeadline, setRankingHeadline] = useState<string>(CAPTURE_TEXT.rankingHeadline);
-  const [rankingDateLabel, setRankingDateLabel] = useState(getYesterdayBoxOfficeDateLabel);
   const [rankingDailyAudienceLabel, setRankingDailyAudienceLabel] = useState("일일 관객");
   const [rankingTotalAudienceLabel, setRankingTotalAudienceLabel] = useState("누적 관객");
   const [rankingCoverLayout, setRankingCoverLayout] = useState<RankingCoverLayout>("default");
@@ -108,8 +104,6 @@ export default function ContentCapturePage() {
   const [rankingV2BackgroundStart, setRankingV2BackgroundStart] = useState("#7a3f52");
   const [rankingV2BackgroundEnd, setRankingV2BackgroundEnd] = useState("#34384c");
   const [rankingV2RowBackgroundColors, setRankingV2RowBackgroundColors] = useState<string[]>([]);
-  const [releaseBoardTitle, setReleaseBoardTitle] = useState<string>(CAPTURE_TEXT.releaseBoardTitle);
-  const [releaseBoardTitleSize, setReleaseBoardTitleSize] = useState(NEWS_HEADER_DEFAULT_SIZE);
   const [releaseBoardColumns, setReleaseBoardColumns] = useState(4);
   const [isExtractingRankingRowColors, setIsExtractingRankingRowColors] = useState(false);
   const [footerLeft, setFooterLeft] = useState(CAPTURE_TEXT.footerLeft);
@@ -148,6 +142,17 @@ export default function ContentCapturePage() {
     ? selectedMovies.find((movie) => movie.id === rankingV2BackgroundMovieId)
     : undefined;
   const currentCoverMovie = isRankingV2Mode ? rankingV2BackgroundMovie : currentSingleMovie;
+  const captureHeadlinePlaceholder = isReleaseMode
+    ? CAPTURE_TEXT.releaseBoardTitle
+    : isRankingTextMode
+      ? CAPTURE_TEXT.rankingHeadline
+      : CAPTURE_TEXT.newsHeadline;
+  const captureSubTextPlaceholder = isNewsMode
+    ? currentSingleMovie?.singlePreviewSubtitle ?? ""
+    : isRankingTextMode
+      ? getYesterdayBoxOfficeDateLabel()
+      : "예: 2026.08";
+  const captureSubTextValue = captureSubText || (isNewsMode ? currentSingleMovie?.singlePreviewSubtitle ?? "" : "");
   useEffect(() => {
     if (!selectedMovies.length) {
       setPreviewMovieIndex(0);
@@ -558,6 +563,29 @@ export default function ContentCapturePage() {
             />
           {(isNewsMode || isRankingTextMode || isReleaseMode) ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+              <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Cover Text</p>
+              <label className="mb-3 block">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Headline</span>
+                <CaptureTextArea
+                  value={captureHeadline}
+                  onChange={(event) => setCaptureHeadline(event.target.value)}
+                  rows={2}
+                  placeholder={captureHeadlinePlaceholder}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Sub Text</span>
+                <CaptureTextArea
+                  value={captureSubText}
+                  onChange={(event) => setCaptureSubText(event.target.value)}
+                  rows={2}
+                  placeholder={captureSubTextPlaceholder}
+                />
+              </label>
+            </div>
+          ) : null}
+          {(isNewsMode || isRankingTextMode || isReleaseMode) ? (
+            <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Footer</p>
               <label className="block">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Text</span>
@@ -573,23 +601,6 @@ export default function ContentCapturePage() {
           {isReleaseMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Release Board</p>
-              <label className="mb-3 block">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Title</span>
-                <CaptureTextArea
-                  value={releaseBoardTitle}
-                  onChange={(event) => setReleaseBoardTitle(event.target.value)}
-                  rows={2}
-                  placeholder={CAPTURE_TEXT.releaseBoardTitle}
-                />
-                <CaptureSizeControls
-                  value={releaseBoardTitleSize}
-                  defaultValue={NEWS_HEADER_DEFAULT_SIZE}
-                  onChange={setReleaseBoardTitleSize}
-                  step={2}
-                  min={18}
-                  max={NEWS_HEADER_MAX_SIZE}
-                />
-              </label>
               <div>
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Grid Columns</span>
                 <div className="grid grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] gap-2">
@@ -639,23 +650,6 @@ export default function ContentCapturePage() {
                     ))}
                   </div>
                 </div>
-                <label className="mb-3 block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Headline</span>
-                  <CaptureTextArea
-                    value={newsHeadline}
-                    onChange={(event) => setNewsHeadline(event.target.value)}
-                    rows={2}
-                    placeholder={CAPTURE_TEXT.newsHeadline}
-                  />
-                  <CaptureSizeControls
-                    value={newsTitleSize}
-                    defaultValue={NEWS_HEADER_DEFAULT_SIZE}
-                    onChange={setNewsTitleSize}
-                    step={2}
-                    min={18}
-                    max={NEWS_HEADER_MAX_SIZE}
-                  />
-                </label>
                 {newsDisplayMode === "body" ? (
                   <label className="mb-3 block">
                     <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Bottom Text</span>
@@ -666,17 +660,6 @@ export default function ContentCapturePage() {
                       placeholder="하단에 들어갈 짧은 문구"
                     />
                   </label>
-                ) : null}
-                {newsDisplayMode !== "body" ? (
-                <label className="block">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Accent Text</span>
-                  <input
-                    value={newsAccentText}
-                    onChange={(event) => setNewsAccentText(event.target.value)}
-                    className="h-10 w-full border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-100"
-                    placeholder="예: 9월 재개봉"
-                  />
-                </label>
                 ) : null}
                 {newsDisplayMode === "review" ? (
                   <div className="mt-3 grid gap-3">
@@ -901,24 +884,6 @@ export default function ContentCapturePage() {
                   </div>
                 </>
               ) : null}
-              <label className="block">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">{isRankingV2Mode ? "Title" : "Photo Headline"}</span>
-                <CaptureTextArea
-                  value={rankingHeadline}
-                  onChange={(event) => setRankingHeadline(event.target.value)}
-                  rows={2}
-                  placeholder="군체 500만 관객 돌파, 박스오피스 1위"
-                />
-              </label>
-              <label className="mt-3 block">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Date / Sub Text</span>
-                <CaptureTextArea
-                  value={rankingDateLabel}
-                  onChange={(event) => setRankingDateLabel(event.target.value)}
-                  rows={2}
-                  placeholder={"2026년\n7/24(금)"}
-                />
-              </label>
               <div className="mt-4">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Ranking Copy</span>
@@ -1127,9 +1092,9 @@ export default function ContentCapturePage() {
                 <NewsCoverTemplate
                   movie={selectedMovies[previewMovieIndex]}
                   secondaryMovie={newsDisplayMode === "body" ? selectedMovies.find((_, index) => index !== previewMovieIndex) : undefined}
-                  headline={newsHeadline}
-                  accentText={newsAccentText}
-                  titleSize={newsTitleSize}
+                  headline={captureHeadline}
+                  subText={captureSubTextValue}
+                  titleSize={NEWS_HEADER_DEFAULT_SIZE}
                   bodyCard={newsDisplayMode === "body"}
                   bodyText={newsDisplayMode === "body" ? newsBodyText : undefined}
                   reviewRating={newsDisplayMode === "review" ? Number(newsReviewRating) : undefined}
@@ -1139,12 +1104,12 @@ export default function ContentCapturePage() {
               ) : isRankingMode ? (
                 <RankingCoverTemplate
                   movies={slots}
-                  headline={rankingHeadline}
-                  titleSize={newsTitleSize}
+                  headline={captureHeadline}
+                  titleSize={NEWS_HEADER_DEFAULT_SIZE}
                   footerRight={footerRight}
                   coverMovieId={currentCoverMovie?.id}
                   coverMovieIds={rankingCoverMovieIds}
-                  dateLabel={rankingDateLabel}
+                  dateLabel={captureSubTextValue}
                   dailyAudienceLabel={rankingDailyAudienceLabel}
                   totalAudienceLabel={rankingTotalAudienceLabel}
                   showDailyAudience={showRankingDailyAudience}
@@ -1158,10 +1123,10 @@ export default function ContentCapturePage() {
               ) : isRankingV2Mode ? (
                 <RankingV2Template
                   movies={slots}
-                  title={rankingHeadline}
-                  titleSize={newsTitleSize}
+                  title={captureHeadline}
+                  titleSize={NEWS_HEADER_DEFAULT_SIZE}
                   footerRight={footerRight}
-                  dateLabel={rankingDateLabel}
+                  dateLabel={captureSubTextValue}
                   backgroundStart={rankingV2BackgroundStart}
                   backgroundEnd={rankingV2BackgroundEnd}
                   rowBackgroundColors={rankingV2RowBackgroundColors}
@@ -1175,8 +1140,9 @@ export default function ContentCapturePage() {
               ) : isReleaseMode ? (
                 <ReleaseBoardTemplate
                   movies={slots}
-                  title={releaseBoardTitle}
-                  titleSize={releaseBoardTitleSize}
+                  title={captureHeadline}
+                  subtitle={captureSubTextValue}
+                  titleSize={NEWS_HEADER_DEFAULT_SIZE}
                   columns={releaseBoardColumns}
                   footerRight={footerRight}
                 />

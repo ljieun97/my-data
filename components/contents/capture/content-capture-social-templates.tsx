@@ -3,7 +3,6 @@ import {
   buildImageCandidates,
   CaptureFooter,
   CaptureHeadlineBlock,
-  CaptureV2Header,
   formatYear,
   getBackdropUrl,
   getPosterUrl,
@@ -478,7 +477,7 @@ export function NewsCoverTemplate({
   movie,
   secondaryMovie,
   headline,
-  accentText,
+  subText,
   titleSize,
   bodyCard = false,
   bodyText,
@@ -489,7 +488,7 @@ export function NewsCoverTemplate({
   movie?: CaptureMovie;
   secondaryMovie?: CaptureMovie;
   headline: string;
-  accentText: string;
+  subText?: string;
   titleSize: number;
   bodyCard?: boolean;
   bodyText?: string;
@@ -501,8 +500,8 @@ export function NewsCoverTemplate({
   const secondaryImageCandidates = getMovieImageCandidates(secondaryMovie);
   const headlineValue = headline.trim() || movie?.singlePreviewTitle || movie?.title || CAPTURE_TEXT.newsFallbackHeadline;
   const displayHeadline = headlineValue;
+  const subtextValue = !bodyCard ? subText?.trim() : "";
   const bottomText = bodyText?.trim() || "";
-  const accentColor = "#fff3d0";
 
   return (
     <div className="relative h-full overflow-hidden bg-neutral-950 text-white">
@@ -565,15 +564,13 @@ export function NewsCoverTemplate({
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.34)_0%,rgba(0,0,0,0.04)_32%,rgba(0,0,0,0.32)_78%,rgba(0,0,0,0.72)_100%)]" />
       {!bodyCard ? <ReviewBlock rating={reviewRating} text={reviewText} /> : null}
       <div className="relative z-[2] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
-        <CaptureV2Header title={displayHeadline} titleSize={titleSize} />
-        {!bodyCard && accentText ? (
-          <p
-            style={{ ...titleFontStyle, borderColor: `${accentColor}8c`, color: accentColor }}
-            className="mt-2 inline-flex w-fit border px-3 py-1.5 text-[12px] font-bold leading-none tracking-[-0.02em] opacity-90"
-          >
-            {accentText}
-          </p>
-        ) : null}
+        <CaptureHeadlineBlock
+          title={displayHeadline}
+          titleSize={titleSize}
+          subtitle={subtextValue}
+          subtitlePlacement="below"
+          subtitleTone="light"
+        />
         <div className="min-h-0 flex-1" />
         {bodyCard && bottomText ? (
           <div className="w-1/2 pb-16 pl-5 pr-3">

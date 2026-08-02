@@ -3,7 +3,6 @@ import {
   buildImageCandidates,
   CaptureFooter,
   CaptureHeadlineBlock,
-  CaptureV2Header,
   getBackdropUrl,
   getPosterUrl,
   getTextOverlayClass,
@@ -90,12 +89,14 @@ function getMovieListSubbodyLines(value: string) {
 export function ReleaseBoardTemplate({
   movies,
   title,
+  subtitle,
   titleSize,
   columns,
   footerRight,
 }: {
   movies: Array<CaptureMovie | undefined>;
   title: string;
+  subtitle?: string;
   titleSize: number;
   columns: number;
   footerRight: string;
@@ -109,6 +110,7 @@ export function ReleaseBoardTemplate({
   const rows = Array.from({ length: rowCount }, (_, rowIndex) =>
     visibleMovies.slice(rowIndex * columnCount, rowIndex * columnCount + columnCount),
   );
+  const subtextValue = subtitle?.trim().replace(/\s*\n\s*/g, " ");
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#221f2e] text-white">
@@ -116,7 +118,13 @@ export function ReleaseBoardTemplate({
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
 
       <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
-        <CaptureV2Header title={title} titleSize={titleSize} />
+        <CaptureHeadlineBlock
+          title={title}
+          titleSize={titleSize}
+          subtitle={subtextValue}
+          subtitlePlacement="below"
+          subtitleTone="light"
+        />
 
         <div
           className={[

@@ -95,13 +95,13 @@ export function RankingCoverTemplate({
     rankLabelMode === "year"
       ? showDailyAudience
         ? showTotalAudience
-          ? "grid-cols-[2.15rem_minmax(0,0.82fr)_4.15rem_4.15rem]"
-          : "grid-cols-[2.15rem_minmax(0,0.82fr)_4.45rem]"
+          ? "grid-cols-[2.15rem_minmax(0,1fr)_max-content_max-content]"
+          : "grid-cols-[2.15rem_minmax(0,1fr)_max-content]"
         : "grid-cols-[2.15rem_minmax(0,1fr)]"
       : showDailyAudience
         ? showTotalAudience
-          ? "grid-cols-[1.45rem_minmax(0,0.82fr)_4.15rem_4.15rem]"
-          : "grid-cols-[1.45rem_minmax(0,0.82fr)_4.45rem]"
+          ? "grid-cols-[1.45rem_minmax(0,1fr)_max-content_max-content]"
+          : "grid-cols-[1.45rem_minmax(0,1fr)_max-content]"
         : "grid-cols-[1.45rem_minmax(0,1fr)]";
   const defaultRankingGridColumns =
     rankLabelMode === "year"
@@ -131,12 +131,7 @@ export function RankingCoverTemplate({
             subtitleTone="light"
           />
         </div>
-        <div
-          className={[
-            "relative grid min-h-0 flex-1 overflow-visible",
-            isVerticalTitleOnly ? "grid-cols-[62%_38%]" : "grid-cols-[40%_60%]",
-          ].join(" ")}
-        >
+        <div className="relative min-h-0 flex-1 overflow-visible">
           <div
             className={[
               "absolute -bottom-5 -top-2 left-0 z-0 overflow-hidden bg-neutral-900",
@@ -196,28 +191,33 @@ export function RankingCoverTemplate({
               <EmptyBackdrop />
             )}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03)_0%,rgba(0,0,0,0.18)_48%,rgba(0,0,0,0.34)_100%)]" />
-            <div className="absolute inset-y-0 right-0 w-[34%] bg-[linear-gradient(90deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.58)_72%,rgba(0,0,0,0.76)_100%)]" />
+            <div className="absolute inset-y-0 right-0 w-[34%] bg-[linear-gradient(90deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.36)_72%,rgba(0,0,0,0.52)_100%)]" />
           </div>
           <div
             className={[
-              "relative z-[1] col-start-2 -mt-3 flex min-w-0 flex-col pb-1 pr-2 pt-1",
+              "absolute bottom-1 right-6 top-[-12px] z-[1] flex min-w-0 flex-col pt-1",
+              isVerticalTitleOnly ? "left-[66%]" : "left-[46%]",
               isVerticalTitleOnly ? "pl-3" : "pl-5",
             ].join(" ")}
           >
             <div
               style={rankingNumberStyle}
               className={[
-                "grid shrink-0 items-center gap-1 px-1 text-[8px] font-bold leading-none text-white/38",
+                "grid shrink-0 items-center gap-1 text-[8px] font-bold leading-none text-white/38",
                 isDenseVerticalRanking ? "h-4" : "h-5",
                 rankingGridColumns,
               ].join(" ")}
             >
               <span />
               <span className="truncate pr-px" />
-              {showDailyAudience ? <span className="truncate whitespace-nowrap pl-1 pr-px text-right">{dailyAudienceHeader}</span> : null}
-              {showDailyAudience && showTotalAudience ? <span className="truncate whitespace-nowrap pl-1 pr-px text-right">{totalAudienceHeader}</span> : null}
+              {showDailyAudience ? (
+                <span className="w-full truncate whitespace-nowrap pl-1 text-right">
+                  {dailyAudienceHeader}
+                </span>
+              ) : null}
+              {showDailyAudience && showTotalAudience ? <span className="w-full truncate whitespace-nowrap pl-1 text-right">{totalAudienceHeader}</span> : null}
             </div>
-            <div className="flex min-h-0 flex-1 flex-col">
+            <div className={["flex min-h-0 flex-1 flex-col", isDenseVerticalRanking ? "gap-0.5" : "gap-1.5"].join(" ")}>
               {rankingRows.map((movie, index) => {
                 const isCoverRow = Boolean(movie?.id && coverMovies.some((coverMovie) => coverMovie.id === movie.id));
 
@@ -225,8 +225,8 @@ export function RankingCoverTemplate({
                   <div
                     key={movie?.id ?? `ranking-vertical-placeholder-${index}`}
                     className={[
-                      "grid min-h-0 flex-1 items-center gap-1 px-1",
-                      isDenseVerticalRanking ? "py-0" : "py-1",
+                      "grid min-h-0 items-center gap-1",
+                      isDenseVerticalRanking ? "py-0.5" : "py-1",
                       rankingGridColumns,
                     ].join(" ")}
                   >
@@ -245,11 +245,12 @@ export function RankingCoverTemplate({
                     >
                       {getRankLabelText(movie, index)}
                     </span>
-                    <div className="flex min-w-0 items-center">
+                    <div className={["flex min-w-0 items-center", showDailyAudience ? "" : "w-full justify-end text-right"].join(" ")}>
                       <p
                         style={{ ...titleFontStyle, fontWeight: 400 }}
                         className={[
                           "line-clamp-2 min-w-0 translate-y-px",
+                          showDailyAudience ? "" : "text-right",
                           isDenseVerticalRanking ? "text-[9px] leading-[1.05]" : "text-[12px] leading-[1.12]",
                           isCoverRow || allRowsWhite ? "text-white" : "text-white/68",
                         ].join(" ")}
@@ -261,7 +262,7 @@ export function RankingCoverTemplate({
                       <span
                         style={rankingNumberStyle}
                         className={[
-                          "flex min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-1 text-right font-black leading-none",
+                          "flex w-full min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-1 text-right font-black leading-none",
                           isDenseVerticalRanking ? "text-[8px]" : "text-[10px]",
                           isCoverRow || allRowsWhite ? "text-white" : "text-white/68",
                         ].join(" ")}
@@ -273,7 +274,7 @@ export function RankingCoverTemplate({
                       <span
                         style={rankingNumberStyle}
                         className={[
-                          "flex min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-1 text-right font-black leading-none",
+                          "flex w-full min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-1 text-right font-black leading-none",
                           isDenseVerticalRanking ? "text-[8px]" : "text-[10px]",
                           isCoverRow || allRowsWhite ? "text-white" : "text-white/68",
                         ].join(" ")}

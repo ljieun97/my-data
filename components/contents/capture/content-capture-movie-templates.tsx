@@ -483,7 +483,7 @@ function MovieCaptureRow({
             {subbodyMetaLine ? (
               <p
                 style={titleFontStyle}
-                className="max-w-[58%] truncate text-left text-[8px] font-normal leading-[1.2] text-white/56 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
+                className="max-w-[58%] truncate text-left text-[9px] font-normal leading-[1.2] text-white/78 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
               >
                 {subbodyMetaLine}
               </p>
@@ -492,7 +492,7 @@ function MovieCaptureRow({
               <p
                 style={titleFontStyle}
                 className={[
-                  "mt-1.5 whitespace-pre-line text-left text-[9px] font-normal leading-[1.22] text-white/88 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                  "mt-1.5 whitespace-pre-line text-left text-[10px] font-normal leading-[1.22] text-white/88 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
                   overviewClampClass,
                 ].join(" ")}
               >
@@ -571,7 +571,7 @@ function MovieCaptureRow({
             {subbodyValue ? (
               <p
                 style={titleFontStyle}
-                className="mt-1 line-clamp-3 whitespace-pre-line text-left text-[10px] font-medium leading-[1.24] text-white/86 drop-shadow-[0_1px_2px_rgba(0,0,0,0.58)]"
+                className="mt-1 line-clamp-3 whitespace-pre-line text-left text-[11px] font-medium leading-[1.24] text-white/86 drop-shadow-[0_1px_2px_rgba(0,0,0,0.58)]"
               >
                 {subbodyValue}
               </p>
@@ -725,7 +725,7 @@ export function MovieListTemplate({
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] px-0 pb-2">
+      <div className="pointer-events-none absolute right-6 top-[8px] z-[10]">
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>

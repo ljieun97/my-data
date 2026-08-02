@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Title from "@/components/common/title";
-import { CaptureSizeControls, CaptureTextArea, CaptureToggleButton } from "@/components/contents/capture/content-capture-controls";
+import { CaptureSizeControls, CaptureTextArea, CaptureTextInput, CaptureToggleButton } from "@/components/contents/capture/content-capture-controls";
 import { MovieSlotsPanel } from "@/components/contents/capture/content-capture-movie-controls";
 import { CaptureMovie, CaptureMode, getCaptureMovieMaxCount, sanitizeSinglePreviewSubbody, useCaptureContent } from "@/context/CaptureContentContext";
 import { faDownload, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
@@ -90,6 +90,8 @@ export default function ContentCapturePage() {
   const [newsTitleSize, setNewsTitleSize] = useState(NEWS_HEADER_DEFAULT_SIZE);
   const [rankingHeadline, setRankingHeadline] = useState<string>(CAPTURE_TEXT.rankingHeadline);
   const [rankingDateLabel, setRankingDateLabel] = useState(getYesterdayBoxOfficeDateLabel);
+  const [rankingDailyAudienceLabel, setRankingDailyAudienceLabel] = useState("일일 관객");
+  const [rankingTotalAudienceLabel, setRankingTotalAudienceLabel] = useState("누적 관객");
   const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(true);
   const [showRankingTotalAudience, setShowRankingTotalAudience] = useState(true);
   const [showRankingV2Ranks, setShowRankingV2Ranks] = useState(true);
@@ -108,6 +110,7 @@ export default function ContentCapturePage() {
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
   const [movieListCaptureChunkSize, setMovieListCaptureChunkSize] = useState<2 | 3>(2);
   const [movieListCaptureStartIndex, setMovieListCaptureStartIndex] = useState(0);
+  const [rankingCoverMovieIds, setRankingCoverMovieIds] = useState<number[]>([]);
   const [rankingV2BackgroundMovieId, setRankingV2BackgroundMovieId] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [didCopyText, setDidCopyText] = useState(false);
@@ -160,6 +163,9 @@ export default function ContentCapturePage() {
     if (selectedMovies.some((movie) => movie.id === rankingV2BackgroundMovieId)) return;
     setRankingV2BackgroundMovieId(null);
   }, [rankingV2BackgroundMovieId, selectedMovies]);
+  useEffect(() => {
+    setRankingCoverMovieIds((current) => current.filter((id) => selectedMovies.some((movie) => movie.id === id)).slice(0, 2));
+  }, [selectedMovies]);
   useEffect(() => {
     setExternalImageUrl("");
     setExternalImageError("");
@@ -506,6 +512,7 @@ export default function ContentCapturePage() {
               showRankingTotalAudience={showRankingTotalAudience}
               showImagePositionControls={isRankingV2Mode}
               rankingCoverMovieId={rankingV2BackgroundMovieId}
+              rankingCoverMovieIds={isRankingV2Mode ? undefined : rankingCoverMovieIds}
               selectedMoviesCount={isRankingTextMode || isReleaseMode ? Math.min(selectedMovies.length, movieSlotCount) : selectedMovies.length}
               movieSlotCount={movieSlotCount}
               movies={slots}
@@ -528,7 +535,14 @@ export default function ContentCapturePage() {
               updateMovieYear={updateMovieYear}
               updateMovieImagePosition={updateMovieImagePosition}
               onSelectRankingCoverMovie={(id) => {
-                setRankingV2BackgroundMovieId((current) => (current === id ? null : id));
+                if (isRankingV2Mode) {
+                  setRankingV2BackgroundMovieId((current) => (current === id ? null : id));
+                } else {
+                  setRankingCoverMovieIds((current) => {
+                    if (current.includes(id)) return current.filter((coverId) => coverId !== id);
+                    return [...current, id].slice(-2);
+                  });
+                }
                 const nextIndex = selectedMovies.findIndex((movie) => movie.id === id);
                 if (nextIndex >= 0) setPreviewMovieIndex(nextIndex);
               }}
@@ -731,6 +745,28 @@ export default function ContentCapturePage() {
                   누적 관객 표시
                 </CaptureToggleButton>
               </div>
+              {!isRankingV2Mode ? (
+                <div className="mb-3 grid grid-cols-2 gap-2">
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Daily Label</span>
+                    <CaptureTextInput
+                      value={rankingDailyAudienceLabel}
+                      onChange={(event) => setRankingDailyAudienceLabel(event.target.value)}
+                      maxLength={8}
+                      placeholder="일일 관객"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Total Label</span>
+                    <CaptureTextInput
+                      value={rankingTotalAudienceLabel}
+                      onChange={(event) => setRankingTotalAudienceLabel(event.target.value)}
+                      maxLength={8}
+                      placeholder="누적 관객"
+                    />
+                  </label>
+                </div>
+              ) : null}
               {isRankingV2Mode ? (
                 <>
                   <div className="mb-3">
@@ -1043,7 +1079,10 @@ export default function ContentCapturePage() {
                   titleSize={newsTitleSize}
                   footerRight={footerRight}
                   coverMovieId={currentCoverMovie?.id}
+                  coverMovieIds={rankingCoverMovieIds}
                   dateLabel={rankingDateLabel}
+                  dailyAudienceLabel={rankingDailyAudienceLabel}
+                  totalAudienceLabel={rankingTotalAudienceLabel}
                   showDailyAudience={showRankingDailyAudience}
                   showTotalAudience={showRankingTotalAudience}
                   isCapturing={isCapturing}

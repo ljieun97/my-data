@@ -32,6 +32,7 @@ type MovieSlotsPanelProps = {
   showRankingTotalAudience?: boolean;
   showImagePositionControls?: boolean;
   rankingCoverMovieId?: number | null;
+  rankingCoverMovieIds?: number[];
   selectedMoviesCount: number;
   movieSlotCount: number;
   movies: Array<CaptureMovie | undefined>;
@@ -63,6 +64,7 @@ export function MovieSlotsPanel({
   showRankingTotalAudience = false,
   showImagePositionControls = false,
   rankingCoverMovieId,
+  rankingCoverMovieIds,
   selectedMoviesCount,
   movieSlotCount,
   movies,
@@ -83,7 +85,7 @@ export function MovieSlotsPanel({
   updateMovieImagePosition,
   onSelectRankingCoverMovie,
 }: MovieSlotsPanelProps) {
-  const activeRankingCoverMovieId = rankingCoverMovieId;
+  const activeRankingCoverMovieIds = rankingCoverMovieIds ?? (rankingCoverMovieId ? [rankingCoverMovieId] : []);
   const defaultRankingDailyAudienceUnit = isRankingV2Mode ? "만명" : "명";
 
   return (
@@ -291,7 +293,7 @@ export function MovieSlotsPanel({
                     onClick={() => onSelectRankingCoverMovie?.(movie.id)}
                     className={[
                       "inline-flex h-8 items-center justify-center border px-2 text-[11px] font-bold transition",
-                      activeRankingCoverMovieId === movie.id
+                      activeRankingCoverMovieIds.includes(movie.id)
                         ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
                         : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
                     ].join(" ")}

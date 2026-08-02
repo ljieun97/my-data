@@ -42,7 +42,10 @@ export function RankingCoverTemplate({
   titleSize,
   footerRight,
   coverMovieId,
+  coverMovieIds,
   dateLabel,
+  dailyAudienceLabel = "일일 관객",
+  totalAudienceLabel = "누적 관객",
   showDailyAudience = true,
   showTotalAudience = false,
   isCapturing = false,
@@ -52,18 +55,24 @@ export function RankingCoverTemplate({
   titleSize: number;
   footerRight: string;
   coverMovieId?: number;
+  coverMovieIds?: number[];
   dateLabel?: string;
+  dailyAudienceLabel?: string;
+  totalAudienceLabel?: string;
   showDailyAudience?: boolean;
   showTotalAudience?: boolean;
   isCapturing?: boolean;
 }) {
   const topMovie = movies[0];
-  const coverMovie = coverMovieId ? movies.find((movie) => movie?.id === coverMovieId) ?? topMovie : topMovie;
-  const imageCandidates = getMovieImageCandidates(coverMovie);
-  const rankingImagePosition = Math.min(100, (coverMovie?.imagePosition ?? 30) + 15);
+  const selectedCoverMovies = (coverMovieIds?.length ? coverMovieIds : coverMovieId ? [coverMovieId] : [])
+    .map((id) => movies.find((movie) => movie?.id === id))
+    .filter(Boolean) as CaptureMovie[];
+  const coverMovies = (selectedCoverMovies.length ? selectedCoverMovies : topMovie ? [topMovie] : []).slice(0, 2);
   const rankingRows = Array.from({ length: 10 }, (_, index) => movies[index]);
   const headlineValue = headline.trim() || `${topMovie?.title ?? "1위 작품"} 박스오피스 1위`;
   const subtextValue = dateLabel?.trim().replace(/\s*\n\s*/g, " ");
+  const dailyAudienceHeader = dailyAudienceLabel.trim() || "일일 관객";
+  const totalAudienceHeader = totalAudienceLabel.trim() || "누적 관객";
   const getRankText = (movie: CaptureMovie | undefined, index: number) =>
     movie?.rankingText?.trim() || String(index + 1);
   const getDailyAudience = getRankingDailyAudience;
@@ -72,28 +81,59 @@ export function RankingCoverTemplate({
   return (
     <div className="relative h-full overflow-hidden bg-neutral-950 text-white">
       <div className="absolute inset-x-0 top-0 h-[48%] overflow-hidden bg-neutral-900">
-        {imageCandidates[0] ? (
-          <img
-            alt=""
-            src={imageCandidates[0]}
-            data-fallback-index="0"
-            onError={(event) => handleImageFallback(event, imageCandidates)}
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition: `center ${rankingImagePosition}%` }}
-            crossOrigin="anonymous"
-          />
+        {coverMovies.length ? (
+          coverMovies.map((coverMovie, index) => {
+            const imageCandidates = getMovieImageCandidates(coverMovie);
+            const rankingImagePosition = Math.min(100, (coverMovie?.imagePosition ?? 30) + 15);
+            const isSplit = coverMovies.length > 1;
+
+            return (
+              <div
+                key={`${coverMovie.id}-${index}`}
+                className="absolute inset-y-0 overflow-hidden"
+                style={{
+                  left: isSplit ? (index === 0 ? 0 : "calc(50% - 18px)") : 0,
+                  width: isSplit ? "calc(50% + 18px)" : "100%",
+                  WebkitMaskImage: isSplit
+                    ? index === 0
+                      ? "linear-gradient(90deg,#000 0%,#000 calc(100% - 36px),transparent 100%)"
+                      : "linear-gradient(90deg,transparent 0%,#000 36px,#000 100%)"
+                    : undefined,
+                  maskImage: isSplit
+                    ? index === 0
+                      ? "linear-gradient(90deg,#000 0%,#000 calc(100% - 36px),transparent 100%)"
+                      : "linear-gradient(90deg,transparent 0%,#000 36px,#000 100%)"
+                    : undefined,
+                }}
+              >
+                {imageCandidates[0] ? (
+                  <img
+                    alt=""
+                    src={imageCandidates[0]}
+                    data-fallback-index="0"
+                    onError={(event) => handleImageFallback(event, imageCandidates)}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    style={{ objectPosition: `center ${rankingImagePosition}%` }}
+                    crossOrigin="anonymous"
+                  />
+                ) : (
+                  <EmptyBackdrop />
+                )}
+              </div>
+            );
+          })
         ) : (
           <EmptyBackdrop />
         )}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.22)_0%,rgba(0,0,0,0.02)_34%,rgba(0,0,0,0.72)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.16)_0%,rgba(0,0,0,0.01)_34%,rgba(0,0,0,0.48)_100%)]" />
       </div>
-      <div className="absolute inset-x-0 top-[36%] h-[18%] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,#050505_72%,#050505_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-[calc(64%+1rem)] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,#050505_14%,#050505_100%)] px-8 pb-9 pt-11">
+      <div className="absolute inset-x-0 top-[36%] h-[18%] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,rgba(5,5,5,0.82)_72%,rgba(5,5,5,0.82)_100%)]" />
+      <div className="absolute inset-x-0 bottom-0 h-[calc(64%+1rem)] bg-[linear-gradient(180deg,rgba(5,5,5,0)_0%,rgba(5,5,5,0.82)_14%,rgba(5,5,5,0.82)_100%)] px-8 pb-9 pt-11">
         <div className="flex h-full flex-col">
           <div
             style={rankingNumberStyle}
             className={[
-              "grid h-4 shrink-0 items-center gap-1 text-[8px] font-bold leading-none text-white/38",
+              "grid h-4 shrink-0 items-center gap-1 px-1 text-[8px] font-bold leading-none text-white/38",
               showDailyAudience
                 ? showTotalAudience
                   ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_4.6rem]"
@@ -103,18 +143,19 @@ export function RankingCoverTemplate({
           >
             <span />
             <span className="truncate pr-px" />
-            {showDailyAudience ? <span className="whitespace-nowrap pl-2 pr-px text-right">일일 관객</span> : null}
-            {showDailyAudience && showTotalAudience ? <span className="whitespace-nowrap pl-2 pr-px text-right">누적 관객</span> : null}
+            {showDailyAudience ? <span className="truncate whitespace-nowrap pl-2 pr-px text-right">{dailyAudienceHeader}</span> : null}
+            {showDailyAudience && showTotalAudience ? <span className="truncate whitespace-nowrap pl-2 pr-px text-right">{totalAudienceHeader}</span> : null}
           </div>
           <div className="flex min-h-0 flex-1 flex-col">
             {rankingRows.map((movie, index) => {
-              const isCoverRow = Boolean(movie?.id && coverMovie?.id && movie.id === coverMovie.id);
+              const isCoverRow = Boolean(movie?.id && coverMovies.some((coverMovie) => coverMovie.id === movie.id));
 
               return (
                 <div
                   key={movie?.id ?? `ranking-placeholder-${index}`}
                   className={[
-                    "grid min-h-0 flex-1 items-center gap-1",
+                    "grid min-h-0 flex-1 items-center gap-1 px-1",
+                    isCoverRow ? "rounded-[6px] bg-white/[0.055]" : "",
                     showDailyAudience
                       ? showTotalAudience
                         ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_4.6rem]"
@@ -126,7 +167,7 @@ export function RankingCoverTemplate({
                     style={rankingNumberStyle}
                     className={[
                       "inline-flex h-[16px] min-w-[22px] -translate-y-[1px] items-center justify-center rounded-[5px] text-[10px] font-black tabular-nums",
-                      isCoverRow ? "bg-white/28 text-white" : "bg-neutral-600 text-white",
+                      isCoverRow ? "bg-white/24 text-white" : "bg-neutral-600 text-white",
                     ].join(" ")}
                   >
                     {getRankText(movie, index)}
@@ -136,7 +177,7 @@ export function RankingCoverTemplate({
                       style={{ ...rankingNumberStyle, fontWeight: 500 }}
                       className={[
                         "min-w-0 truncate text-[13px] font-semibold leading-none",
-                        isCoverRow ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]" : "text-white/68",
+                        isCoverRow ? "text-white" : "text-white/68",
                       ].join(" ")}
                     >
                       {movie?.title ?? CAPTURE_TEXT.addMovie}
@@ -147,7 +188,7 @@ export function RankingCoverTemplate({
                       style={rankingNumberStyle}
                       className={[
                         "flex h-full min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-2 text-right text-[11px] font-black leading-none",
-                        isCoverRow ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]" : "text-white/68",
+                        isCoverRow ? "text-white" : "text-white/68",
                       ].join(" ")}
                     >
                       {getDailyAudience(movie)}
@@ -158,7 +199,7 @@ export function RankingCoverTemplate({
                       style={rankingNumberStyle}
                       className={[
                         "flex h-full min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-2 text-right text-[11px] font-black leading-none",
-                        isCoverRow ? "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.32)]" : "text-white/68",
+                        isCoverRow ? "text-white" : "text-white/68",
                       ].join(" ")}
                     >
                       {getTotalAudience(movie)}

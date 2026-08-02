@@ -55,6 +55,30 @@ const rankingV2BackgroundPresets = [
 
 const NEWS_HEADER_DEFAULT_SIZE = 22;
 
+async function waitForCaptureImages(element: HTMLElement) {
+  const images = Array.from(element.querySelectorAll("img"));
+
+  await Promise.all(
+    images.map(async (image) => {
+      if (!image.currentSrc && !image.src) return;
+      if (!image.complete) {
+        await new Promise<void>((resolve) => {
+          image.addEventListener("load", () => resolve(), { once: true });
+          image.addEventListener("error", () => resolve(), { once: true });
+        });
+      }
+
+      if (typeof image.decode === "function") {
+        try {
+          await image.decode();
+        } catch {
+          // Broken fallback images should not block capture.
+        }
+      }
+    }),
+  );
+}
+
 function getMovieListCaptureStart(index: number, chunkSize: number) {
   return Math.max(0, Math.floor(index / chunkSize) * chunkSize);
 }
@@ -89,6 +113,7 @@ export default function ContentCapturePage() {
   const [captureSubText, setCaptureSubText] = useState("");
   const [newsBodyText, setNewsBodyText] = useState<string>(CAPTURE_TEXT.newsBodyText);
   const [newsDisplayMode, setNewsDisplayMode] = useState<"default" | "review" | "body">("default");
+  const [newsBodySplitDirection, setNewsBodySplitDirection] = useState<"vertical" | "horizontal">("vertical");
   const [newsReviewRating, setNewsReviewRating] = useState("3.5");
   const [newsReviewText, setNewsReviewText] = useState("");
   const [rankingDailyAudienceLabel, setRankingDailyAudienceLabel] = useState("일일 관객");
@@ -207,6 +232,7 @@ export default function ContentCapturePage() {
       if (!targetRef.current) return "";
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+      await waitForCaptureImages(targetRef.current);
       const rect = targetRef.current.getBoundingClientRect();
       const captureWidth = Math.max(1, Math.round(rect.width));
       const captureHeight = Math.max(1, Math.round(rect.height));
@@ -651,15 +677,38 @@ export default function ContentCapturePage() {
                   </div>
                 </div>
                 {newsDisplayMode === "body" ? (
-                  <label className="mb-3 block">
-                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Bottom Text</span>
-                    <CaptureTextArea
-                      value={newsBodyText}
-                      onChange={(event) => setNewsBodyText(event.target.value)}
-                      rows={4}
-                      placeholder="하단에 들어갈 짧은 문구"
-                    />
-                  </label>
+                  <>
+                    {selectedMovies.length > 1 ? (
+                      <div className="mb-3">
+                        <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Photo Split</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <CaptureToggleButton
+                            type="button"
+                            active={newsBodySplitDirection === "vertical"}
+                            onClick={() => setNewsBodySplitDirection("vertical")}
+                          >
+                            세로분할
+                          </CaptureToggleButton>
+                          <CaptureToggleButton
+                            type="button"
+                            active={newsBodySplitDirection === "horizontal"}
+                            onClick={() => setNewsBodySplitDirection("horizontal")}
+                          >
+                            가로분할
+                          </CaptureToggleButton>
+                        </div>
+                      </div>
+                    ) : null}
+                    <label className="mb-3 block">
+                      <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Bottom Text</span>
+                      <CaptureTextArea
+                        value={newsBodyText}
+                        onChange={(event) => setNewsBodyText(event.target.value)}
+                        rows={4}
+                        placeholder="하단에 들어갈 짧은 문구"
+                      />
+                    </label>
+                  </>
                 ) : null}
                 {newsDisplayMode === "review" ? (
                   <div className="mt-3 grid gap-3">
@@ -1096,6 +1145,7 @@ export default function ContentCapturePage() {
                   subText={captureSubTextValue}
                   titleSize={NEWS_HEADER_DEFAULT_SIZE}
                   bodyCard={newsDisplayMode === "body"}
+                  bodySplitDirection={newsBodySplitDirection}
                   bodyText={newsDisplayMode === "body" ? newsBodyText : undefined}
                   reviewRating={newsDisplayMode === "review" ? Number(newsReviewRating) : undefined}
                   reviewText={newsDisplayMode === "review" ? newsReviewText : undefined}

@@ -480,6 +480,7 @@ export function NewsCoverTemplate({
   subText,
   titleSize,
   bodyCard = false,
+  bodySplitDirection = "vertical",
   bodyText,
   reviewRating,
   reviewText,
@@ -491,6 +492,7 @@ export function NewsCoverTemplate({
   subText?: string;
   titleSize: number;
   bodyCard?: boolean;
+  bodySplitDirection?: "vertical" | "horizontal";
   bodyText?: string;
   reviewRating?: number;
   reviewText?: string;
@@ -500,16 +502,20 @@ export function NewsCoverTemplate({
   const secondaryImageCandidates = getMovieImageCandidates(secondaryMovie);
   const headlineValue = headline.trim() || movie?.singlePreviewTitle || movie?.title || CAPTURE_TEXT.newsFallbackHeadline;
   const displayHeadline = headlineValue;
+  const hasSecondaryMovie = Boolean(secondaryMovie);
+  const splitBodyCard = bodyCard && hasSecondaryMovie;
+  const splitBodyDirection = splitBodyCard ? bodySplitDirection : "vertical";
   const subtextValue = !bodyCard ? subText?.trim() : "";
   const bottomText = bodyText?.trim() || "";
 
   return (
     <div className="relative h-full overflow-hidden bg-neutral-950 text-white">
-      {bodyCard ? (
-        <div className="absolute inset-0 grid grid-cols-2 bg-neutral-950">
+      {splitBodyCard ? (
+        <div className={["absolute inset-0 grid bg-neutral-950", splitBodyDirection === "horizontal" ? "grid-rows-2" : "grid-cols-2"].join(" ")}>
           <div className="relative min-w-0 overflow-hidden bg-neutral-900">
             {imageCandidates[0] ? (
               <img
+                key={`news-primary-split-${imageCandidates[0]}`}
                 alt=""
                 src={imageCandidates[0]}
                 data-fallback-index="0"
@@ -525,6 +531,7 @@ export function NewsCoverTemplate({
           <div className="relative min-w-0 overflow-hidden bg-neutral-900">
             {secondaryImageCandidates[0] ? (
               <img
+                key={`news-secondary-split-${secondaryImageCandidates[0]}`}
                 alt=""
                 src={secondaryImageCandidates[0]}
                 data-fallback-index="0"
@@ -535,6 +542,7 @@ export function NewsCoverTemplate({
               />
             ) : imageCandidates[0] ? (
               <img
+                key={`news-secondary-fallback-${imageCandidates[0]}`}
                 alt=""
                 src={imageCandidates[0]}
                 data-fallback-index="0"
@@ -550,6 +558,7 @@ export function NewsCoverTemplate({
         </div>
       ) : imageCandidates[0] ? (
         <img
+          key={`news-primary-${imageCandidates[0]}`}
           alt=""
           src={imageCandidates[0]}
           data-fallback-index="0"
@@ -573,7 +582,7 @@ export function NewsCoverTemplate({
         />
         <div className="min-h-0 flex-1" />
         {bodyCard && bottomText ? (
-          <div className="w-1/2 pb-16 pl-5 pr-3">
+          <div className={[splitBodyCard && splitBodyDirection === "vertical" ? "w-1/2 pl-5 pr-3" : "w-full px-5", "pb-16"].join(" ")}>
             <BodyTextBlock text={bottomText} titleSize={titleSize} />
           </div>
         ) : null}

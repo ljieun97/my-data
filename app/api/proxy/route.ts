@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     return new NextResponse(Buffer.from(buffer), {
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': 'no-store',
       },
     });
   } catch (error) {

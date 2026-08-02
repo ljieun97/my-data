@@ -4,6 +4,7 @@ import {
   CaptureFooter,
   CaptureHeadlineBlock,
   CaptureV2Header,
+  formatYear,
   getBackdropUrl,
   getPosterUrl,
   handleImageFallback,
@@ -20,6 +21,7 @@ const rankingNumberStyle: CSSProperties = {
 };
 
 export type RankingCoverLayout = "default" | "vertical";
+export type RankingCoverRankLabelMode = "rank" | "year";
 
 function getMovieImageCandidates(movie?: CaptureMovie) {
   return buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
@@ -51,6 +53,9 @@ export function RankingCoverTemplate({
   showDailyAudience = true,
   showTotalAudience = false,
   layout = "default",
+  rankLabelMode = "rank",
+  allRowsWhite = false,
+  rowCount = 10,
   isCapturing = false,
 }: {
   movies: Array<CaptureMovie | undefined>;
@@ -65,6 +70,9 @@ export function RankingCoverTemplate({
   showDailyAudience?: boolean;
   showTotalAudience?: boolean;
   layout?: RankingCoverLayout;
+  rankLabelMode?: RankingCoverRankLabelMode;
+  allRowsWhite?: boolean;
+  rowCount?: number;
   isCapturing?: boolean;
 }) {
   const topMovie = movies[0];
@@ -72,20 +80,44 @@ export function RankingCoverTemplate({
     .map((id) => movies.find((movie) => movie?.id === id))
     .filter(Boolean) as CaptureMovie[];
   const coverMovies = (selectedCoverMovies.length ? selectedCoverMovies : topMovie ? [topMovie] : []).slice(0, 2);
-  const rankingRows = Array.from({ length: 10 }, (_, index) => movies[index]);
+  const rankingRows = Array.from({ length: rowCount }, (_, index) => movies[index]);
   const headlineValue = headline.trim() || `${topMovie?.title ?? "1위 작품"} 박스오피스 1위`;
   const subtextValue = dateLabel?.trim().replace(/\s*\n\s*/g, " ");
   const dailyAudienceHeader = dailyAudienceLabel.trim() || "일일 관객";
   const totalAudienceHeader = totalAudienceLabel.trim() || "누적 관객";
   const getRankText = (movie: CaptureMovie | undefined, index: number) =>
     movie?.rankingText?.trim() || String(index + 1);
+  const getRankLabelText = (movie: CaptureMovie | undefined, index: number) =>
+    rankLabelMode === "year" && movie ? formatYear(movie) || getRankText(movie, index) : getRankText(movie, index);
   const getDailyAudience = getRankingDailyAudience;
   const getTotalAudience = (movie?: CaptureMovie) => movie?.rankingTotalAudience?.trim() ?? "";
-  const rankingGridColumns = showDailyAudience
-    ? showTotalAudience
-      ? "grid-cols-[1.45rem_minmax(0,0.82fr)_4.15rem_4.15rem]"
-      : "grid-cols-[1.45rem_minmax(0,0.82fr)_4.45rem]"
-    : "grid-cols-[1.45rem_minmax(0,1fr)]";
+  const rankingGridColumns =
+    rankLabelMode === "year"
+      ? showDailyAudience
+        ? showTotalAudience
+          ? "grid-cols-[2.15rem_minmax(0,0.82fr)_4.15rem_4.15rem]"
+          : "grid-cols-[2.15rem_minmax(0,0.82fr)_4.45rem]"
+        : "grid-cols-[2.15rem_minmax(0,1fr)]"
+      : showDailyAudience
+        ? showTotalAudience
+          ? "grid-cols-[1.45rem_minmax(0,0.82fr)_4.15rem_4.15rem]"
+          : "grid-cols-[1.45rem_minmax(0,0.82fr)_4.45rem]"
+        : "grid-cols-[1.45rem_minmax(0,1fr)]";
+  const defaultRankingGridColumns =
+    rankLabelMode === "year"
+      ? showDailyAudience
+        ? showTotalAudience
+          ? "grid-cols-[2.15rem_minmax(0,1fr)_4.6rem_4.6rem]"
+          : "grid-cols-[2.15rem_minmax(0,1fr)_4.6rem]"
+        : "grid-cols-[2.15rem_minmax(0,1fr)]"
+      : showDailyAudience
+        ? showTotalAudience
+          ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_4.6rem]"
+          : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
+        : "grid-cols-[1.45rem_minmax(0,1fr)]";
+  const rankLabelClass = rankLabelMode === "year" ? "min-w-[32px] text-[9px]" : "min-w-[22px] text-[10px]";
+  const isVerticalTitleOnly = !showDailyAudience;
+  const isDenseVerticalRanking = rowCount > 12;
 
   if (layout === "vertical") {
     return (
@@ -99,9 +131,17 @@ export function RankingCoverTemplate({
             subtitleTone="light"
           />
         </div>
-        <div className="relative grid min-h-0 flex-1 grid-cols-[40%_60%] overflow-visible">
+        <div
+          className={[
+            "relative grid min-h-0 flex-1 overflow-visible",
+            isVerticalTitleOnly ? "grid-cols-[62%_38%]" : "grid-cols-[40%_60%]",
+          ].join(" ")}
+        >
           <div
-            className="absolute -bottom-5 -top-2 left-0 z-0 w-[47%] overflow-hidden bg-neutral-900"
+            className={[
+              "absolute -bottom-5 -top-2 left-0 z-0 overflow-hidden bg-neutral-900",
+              isVerticalTitleOnly ? "w-[68%]" : "w-[47%]",
+            ].join(" ")}
             style={{
               WebkitMaskImage:
                 "linear-gradient(180deg,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(90deg,#000 0%,#000 88%,transparent 100%)",
@@ -158,11 +198,17 @@ export function RankingCoverTemplate({
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03)_0%,rgba(0,0,0,0.18)_48%,rgba(0,0,0,0.34)_100%)]" />
             <div className="absolute inset-y-0 right-0 w-[34%] bg-[linear-gradient(90deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.58)_72%,rgba(0,0,0,0.76)_100%)]" />
           </div>
-          <div className="relative z-[1] col-start-2 -mt-3 flex min-w-0 flex-col pb-1 pl-5 pr-2 pt-1">
+          <div
+            className={[
+              "relative z-[1] col-start-2 -mt-3 flex min-w-0 flex-col pb-1 pr-2 pt-1",
+              isVerticalTitleOnly ? "pl-3" : "pl-5",
+            ].join(" ")}
+          >
             <div
               style={rankingNumberStyle}
               className={[
-                "grid h-5 shrink-0 items-center gap-1 px-1 text-[8px] font-bold leading-none text-white/38",
+                "grid shrink-0 items-center gap-1 px-1 text-[8px] font-bold leading-none text-white/38",
+                isDenseVerticalRanking ? "h-4" : "h-5",
                 rankingGridColumns,
               ].join(" ")}
             >
@@ -179,25 +225,33 @@ export function RankingCoverTemplate({
                   <div
                     key={movie?.id ?? `ranking-vertical-placeholder-${index}`}
                     className={[
-                      "grid min-h-0 flex-1 items-start gap-1 px-1 py-1",
+                      "grid min-h-0 flex-1 items-center gap-1 px-1",
+                      isDenseVerticalRanking ? "py-0" : "py-1",
                       rankingGridColumns,
                     ].join(" ")}
                   >
                     <span
                       style={rankingNumberStyle}
                       className={[
-                        "inline-flex h-[16px] min-w-[22px] items-center justify-center rounded-[5px] text-[10px] font-black tabular-nums",
-                        isCoverRow ? "bg-white/24 text-white" : "bg-neutral-600 text-white",
+                        "inline-flex items-center justify-center rounded-[5px] font-black tabular-nums",
+                        isDenseVerticalRanking ? "h-[12px]" : "h-[16px]",
+                        isDenseVerticalRanking
+                          ? rankLabelMode === "year"
+                            ? "min-w-[28px] text-[8px]"
+                            : "min-w-[18px] text-[8px]"
+                          : rankLabelClass,
+                        isCoverRow || allRowsWhite ? "bg-white/24 text-white" : "bg-neutral-600 text-white",
                       ].join(" ")}
                     >
-                      {getRankText(movie, index)}
+                      {getRankLabelText(movie, index)}
                     </span>
-                    <div className="flex min-w-0 items-start">
+                    <div className="flex min-w-0 items-center">
                       <p
-                        style={{ ...rankingNumberStyle, fontWeight: 500 }}
+                        style={{ ...titleFontStyle, fontWeight: 400 }}
                         className={[
-                          "line-clamp-2 min-w-0 pt-[1px] text-[12px] font-semibold leading-[1.12]",
-                          isCoverRow ? "text-white" : "text-white/68",
+                          "line-clamp-2 min-w-0 translate-y-px",
+                          isDenseVerticalRanking ? "text-[9px] leading-[1.05]" : "text-[12px] leading-[1.12]",
+                          isCoverRow || allRowsWhite ? "text-white" : "text-white/68",
                         ].join(" ")}
                       >
                         {movie?.title ?? CAPTURE_TEXT.addMovie}
@@ -207,8 +261,9 @@ export function RankingCoverTemplate({
                       <span
                         style={rankingNumberStyle}
                         className={[
-                          "flex min-w-0 items-start justify-end overflow-hidden whitespace-nowrap pl-1 pt-[3px] text-right text-[10px] font-black leading-none",
-                          isCoverRow ? "text-white" : "text-white/68",
+                          "flex min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-1 text-right font-black leading-none",
+                          isDenseVerticalRanking ? "text-[8px]" : "text-[10px]",
+                          isCoverRow || allRowsWhite ? "text-white" : "text-white/68",
                         ].join(" ")}
                       >
                         {getDailyAudience(movie)}
@@ -218,8 +273,9 @@ export function RankingCoverTemplate({
                       <span
                         style={rankingNumberStyle}
                         className={[
-                          "flex min-w-0 items-start justify-end overflow-hidden whitespace-nowrap pl-1 pt-[3px] text-right text-[10px] font-black leading-none",
-                          isCoverRow ? "text-white" : "text-white/68",
+                          "flex min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-1 text-right font-black leading-none",
+                          isDenseVerticalRanking ? "text-[8px]" : "text-[10px]",
+                          isCoverRow || allRowsWhite ? "text-white" : "text-white/68",
                         ].join(" ")}
                       >
                         {getTotalAudience(movie)}
@@ -294,11 +350,7 @@ export function RankingCoverTemplate({
             style={rankingNumberStyle}
             className={[
               "grid h-4 shrink-0 items-center gap-1 px-1 text-[8px] font-bold leading-none text-white/38",
-              showDailyAudience
-                ? showTotalAudience
-                  ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_4.6rem]"
-                  : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
-                : "grid-cols-[1.45rem_minmax(0,1fr)]",
+              defaultRankingGridColumns,
             ].join(" ")}
           >
             <span />
@@ -316,28 +368,25 @@ export function RankingCoverTemplate({
                   className={[
                     "grid min-h-0 flex-1 items-center gap-1 px-1",
                     isCoverRow ? "rounded-[6px] bg-white/[0.055]" : "",
-                    showDailyAudience
-                      ? showTotalAudience
-                        ? "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem_4.6rem]"
-                        : "grid-cols-[1.45rem_minmax(0,1fr)_4.6rem]"
-                      : "grid-cols-[1.45rem_minmax(0,1fr)]",
+                    defaultRankingGridColumns,
                   ].join(" ")}
                 >
                   <span
                     style={rankingNumberStyle}
                     className={[
-                      "inline-flex h-[16px] min-w-[22px] -translate-y-[1px] items-center justify-center rounded-[5px] text-[10px] font-black tabular-nums",
-                      isCoverRow ? "bg-white/24 text-white" : "bg-neutral-600 text-white",
+                      "inline-flex h-[16px] -translate-y-[1px] items-center justify-center rounded-[5px] font-black tabular-nums",
+                      rankLabelClass,
+                      isCoverRow || allRowsWhite ? "bg-white/24 text-white" : "bg-neutral-600 text-white",
                     ].join(" ")}
                   >
-                    {getRankText(movie, index)}
+                    {getRankLabelText(movie, index)}
                   </span>
                   <div className="flex h-full min-w-0 items-center">
                     <p
-                      style={{ ...rankingNumberStyle, fontWeight: 500 }}
+                      style={{ ...titleFontStyle, fontWeight: 400 }}
                       className={[
-                        "min-w-0 truncate text-[13px] font-semibold leading-none",
-                        isCoverRow ? "text-white" : "text-white/68",
+                        "min-w-0 truncate text-[13px] leading-none",
+                        isCoverRow || allRowsWhite ? "text-white" : "text-white/68",
                       ].join(" ")}
                     >
                       {movie?.title ?? CAPTURE_TEXT.addMovie}
@@ -348,7 +397,7 @@ export function RankingCoverTemplate({
                       style={rankingNumberStyle}
                       className={[
                         "flex h-full min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-2 text-right text-[11px] font-black leading-none",
-                        isCoverRow ? "text-white" : "text-white/68",
+                        isCoverRow || allRowsWhite ? "text-white" : "text-white/68",
                       ].join(" ")}
                     >
                       {getDailyAudience(movie)}
@@ -359,7 +408,7 @@ export function RankingCoverTemplate({
                       style={rankingNumberStyle}
                       className={[
                         "flex h-full min-w-0 items-center justify-end overflow-hidden whitespace-nowrap pl-2 text-right text-[11px] font-black leading-none",
-                        isCoverRow ? "text-white" : "text-white/68",
+                        isCoverRow || allRowsWhite ? "text-white" : "text-white/68",
                       ].join(" ")}
                     >
                       {getTotalAudience(movie)}

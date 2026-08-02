@@ -17,7 +17,12 @@ import {
   type MovieListMetaMode,
   formatYear,
 } from "@/components/contents/capture/content-capture-templates";
-import { NewsCoverTemplate, RankingCoverTemplate, type RankingCoverLayout } from "@/components/contents/capture/content-capture-social-templates";
+import {
+  NewsCoverTemplate,
+  RankingCoverTemplate,
+  type RankingCoverLayout,
+  type RankingCoverRankLabelMode,
+} from "@/components/contents/capture/content-capture-social-templates";
 import { getBackdropUrl, getPosterUrl } from "@/components/contents/capture/content-capture-utils";
 import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 import { FastAverageColor } from "fast-average-color";
@@ -93,6 +98,8 @@ export default function ContentCapturePage() {
   const [rankingDailyAudienceLabel, setRankingDailyAudienceLabel] = useState("일일 관객");
   const [rankingTotalAudienceLabel, setRankingTotalAudienceLabel] = useState("누적 관객");
   const [rankingCoverLayout, setRankingCoverLayout] = useState<RankingCoverLayout>("default");
+  const [rankingCoverRankLabelMode, setRankingCoverRankLabelMode] = useState<RankingCoverRankLabelMode>("rank");
+  const [rankingCoverAllRowsWhite, setRankingCoverAllRowsWhite] = useState(false);
   const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(true);
   const [showRankingTotalAudience, setShowRankingTotalAudience] = useState(true);
   const [showRankingV2Ranks, setShowRankingV2Ranks] = useState(true);
@@ -127,7 +134,8 @@ export default function ContentCapturePage() {
   const isMovieMode = isNewsMode || isRankingTextMode || isReleaseMode || isMovieListMode;
   const movieMinCount = isNewsMode ? 1 : isReleaseMode ? 8 : 2;
   const movieMaxCount = getCaptureMovieMaxCount(captureMode);
-  const rankingSlotCount = isRankingV2Mode && selectedMovies.length > 10 ? 11 : 10;
+  const rankingSlotCount =
+    isRankingMode && rankingCoverLayout === "vertical" ? Math.max(movieMinCount, Math.min(selectedMovies.length, movieMaxCount)) : isRankingV2Mode && selectedMovies.length > 10 ? 11 : 10;
   const releaseSlotCount = Math.max(selectedMovies.length, 8);
   const movieSlotCount = isRankingTextMode
     ? rankingSlotCount
@@ -265,7 +273,7 @@ export default function ContentCapturePage() {
     [selectedMovies],
   );
   const rankingTextForCopy = useMemo(
-    () => Array.from({ length: rankingSlotCount }, (_, index) => `${index + 1}위 ${selectedMovies[index]?.title ?? ""}`).join("\n"),
+    () => Array.from({ length: Math.min(rankingSlotCount, selectedMovies.length) }, (_, index) => `${index + 1}위 ${selectedMovies[index]?.title ?? ""}`).join("\n"),
     [rankingSlotCount, selectedMovies],
   );
   const updateCurrentSinglePreview = (
@@ -744,6 +752,40 @@ export default function ContentCapturePage() {
                   </div>
                 </div>
               ) : null}
+              {!isRankingV2Mode ? (
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Left Label</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <CaptureToggleButton
+                      type="button"
+                      active={rankingCoverRankLabelMode === "rank"}
+                      onClick={() => setRankingCoverRankLabelMode("rank")}
+                    >
+                      순위
+                    </CaptureToggleButton>
+                    <CaptureToggleButton
+                      type="button"
+                      active={rankingCoverRankLabelMode === "year"}
+                      onClick={() => setRankingCoverRankLabelMode("year")}
+                    >
+                      년도
+                    </CaptureToggleButton>
+                  </div>
+                </div>
+              ) : null}
+              {!isRankingV2Mode ? (
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Text Color</span>
+                  <CaptureToggleButton
+                    type="button"
+                    active={rankingCoverAllRowsWhite}
+                    onClick={() => setRankingCoverAllRowsWhite((current) => !current)}
+                    className="w-full"
+                  >
+                    전체 흰색
+                  </CaptureToggleButton>
+                </div>
+              ) : null}
               <div className="mb-3">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Daily Audience</span>
                 <CaptureToggleButton
@@ -1108,6 +1150,9 @@ export default function ContentCapturePage() {
                   showDailyAudience={showRankingDailyAudience}
                   showTotalAudience={showRankingTotalAudience}
                   layout={rankingCoverLayout}
+                  rankLabelMode={rankingCoverRankLabelMode}
+                  allRowsWhite={rankingCoverAllRowsWhite}
+                  rowCount={rankingSlotCount}
                   isCapturing={isCapturing}
                 />
               ) : isRankingV2Mode ? (

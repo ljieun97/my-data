@@ -17,7 +17,7 @@ import {
   type MovieListMetaMode,
   formatYear,
 } from "@/components/contents/capture/content-capture-templates";
-import { NewsCoverTemplate, RankingCoverTemplate } from "@/components/contents/capture/content-capture-social-templates";
+import { NewsCoverTemplate, RankingCoverTemplate, type RankingCoverLayout } from "@/components/contents/capture/content-capture-social-templates";
 import { getBackdropUrl, getPosterUrl } from "@/components/contents/capture/content-capture-utils";
 import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 import { FastAverageColor } from "fast-average-color";
@@ -92,6 +92,7 @@ export default function ContentCapturePage() {
   const [rankingDateLabel, setRankingDateLabel] = useState(getYesterdayBoxOfficeDateLabel);
   const [rankingDailyAudienceLabel, setRankingDailyAudienceLabel] = useState("일일 관객");
   const [rankingTotalAudienceLabel, setRankingTotalAudienceLabel] = useState("누적 관객");
+  const [rankingCoverLayout, setRankingCoverLayout] = useState<RankingCoverLayout>("default");
   const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(true);
   const [showRankingTotalAudience, setShowRankingTotalAudience] = useState(true);
   const [showRankingV2Ranks, setShowRankingV2Ranks] = useState(true);
@@ -722,6 +723,27 @@ export default function ContentCapturePage() {
           {isRankingTextMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Ranking Cover</p>
+              {!isRankingV2Mode ? (
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Layout</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <CaptureToggleButton
+                      type="button"
+                      active={rankingCoverLayout === "default"}
+                      onClick={() => setRankingCoverLayout("default")}
+                    >
+                      기본
+                    </CaptureToggleButton>
+                    <CaptureToggleButton
+                      type="button"
+                      active={rankingCoverLayout === "vertical"}
+                      onClick={() => setRankingCoverLayout("vertical")}
+                    >
+                      세로분할
+                    </CaptureToggleButton>
+                  </div>
+                </div>
+              ) : null}
               <div className="mb-3">
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Daily Audience</span>
                 <CaptureToggleButton
@@ -1085,6 +1107,7 @@ export default function ContentCapturePage() {
                   totalAudienceLabel={rankingTotalAudienceLabel}
                   showDailyAudience={showRankingDailyAudience}
                   showTotalAudience={showRankingTotalAudience}
+                  layout={rankingCoverLayout}
                   isCapturing={isCapturing}
                 />
               ) : isRankingV2Mode ? (

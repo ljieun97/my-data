@@ -19,6 +19,8 @@ const rankingNumberStyle: CSSProperties = {
   lineHeight: 1,
 };
 
+export type RankingCoverLayout = "default" | "vertical";
+
 function getMovieImageCandidates(movie?: CaptureMovie) {
   return buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
 }
@@ -48,6 +50,7 @@ export function RankingCoverTemplate({
   totalAudienceLabel = "누적 관객",
   showDailyAudience = true,
   showTotalAudience = false,
+  layout = "default",
   isCapturing = false,
 }: {
   movies: Array<CaptureMovie | undefined>;
@@ -61,6 +64,7 @@ export function RankingCoverTemplate({
   totalAudienceLabel?: string;
   showDailyAudience?: boolean;
   showTotalAudience?: boolean;
+  layout?: RankingCoverLayout;
   isCapturing?: boolean;
 }) {
   const topMovie = movies[0];
@@ -77,6 +81,162 @@ export function RankingCoverTemplate({
     movie?.rankingText?.trim() || String(index + 1);
   const getDailyAudience = getRankingDailyAudience;
   const getTotalAudience = (movie?: CaptureMovie) => movie?.rankingTotalAudience?.trim() ?? "";
+  const rankingGridColumns = showDailyAudience
+    ? showTotalAudience
+      ? "grid-cols-[1.45rem_minmax(0,0.82fr)_4.15rem_4.15rem]"
+      : "grid-cols-[1.45rem_minmax(0,0.82fr)_4.45rem]"
+    : "grid-cols-[1.45rem_minmax(0,1fr)]";
+
+  if (layout === "vertical") {
+    return (
+      <div className="relative flex h-full flex-col overflow-hidden bg-neutral-950 text-white">
+        <div className="relative z-[2] shrink-0 px-4 pb-3 pt-4">
+          <CaptureHeadlineBlock
+            title={headlineValue}
+            titleSize={titleSize}
+            subtitle={subtextValue}
+            subtitlePlacement="below"
+            subtitleTone="light"
+          />
+        </div>
+        <div className="relative grid min-h-0 flex-1 grid-cols-[40%_60%] overflow-visible">
+          <div
+            className="absolute -bottom-5 -top-2 left-0 z-0 w-[47%] overflow-hidden bg-neutral-900"
+            style={{
+              WebkitMaskImage:
+                "linear-gradient(180deg,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(90deg,#000 0%,#000 88%,transparent 100%)",
+              WebkitMaskComposite: "source-in",
+              maskImage:
+                "linear-gradient(180deg,transparent 0%,#000 6%,#000 94%,transparent 100%),linear-gradient(90deg,#000 0%,#000 88%,transparent 100%)",
+              maskComposite: "intersect",
+            }}
+          >
+            {coverMovies.length ? (
+              coverMovies.map((coverMovie, index) => {
+                const imageCandidates = getMovieImageCandidates(coverMovie);
+                const rankingImagePosition = Math.min(100, (coverMovie?.imagePosition ?? 30) + 15);
+                const isSplit = coverMovies.length > 1;
+
+                return (
+                  <div
+                    key={`${coverMovie.id}-${index}`}
+                    className="absolute inset-x-0 overflow-hidden"
+                    style={{
+                      top: isSplit ? (index === 0 ? 0 : "calc(50% - 14px)") : 0,
+                      height: isSplit ? "calc(50% + 14px)" : "100%",
+                      WebkitMaskImage: isSplit
+                        ? index === 0
+                          ? "linear-gradient(180deg,#000 0%,#000 calc(100% - 28px),transparent 100%)"
+                          : "linear-gradient(180deg,transparent 0%,#000 28px,#000 100%)"
+                        : undefined,
+                      maskImage: isSplit
+                        ? index === 0
+                          ? "linear-gradient(180deg,#000 0%,#000 calc(100% - 28px),transparent 100%)"
+                          : "linear-gradient(180deg,transparent 0%,#000 28px,#000 100%)"
+                        : undefined,
+                    }}
+                  >
+                    {imageCandidates[0] ? (
+                      <img
+                        alt=""
+                        src={imageCandidates[0]}
+                        data-fallback-index="0"
+                        onError={(event) => handleImageFallback(event, imageCandidates)}
+                        className="absolute inset-0 h-full w-full object-cover"
+                        style={{ objectPosition: `center ${rankingImagePosition}%` }}
+                        crossOrigin="anonymous"
+                      />
+                    ) : (
+                      <EmptyBackdrop />
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <EmptyBackdrop />
+            )}
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03)_0%,rgba(0,0,0,0.18)_48%,rgba(0,0,0,0.34)_100%)]" />
+            <div className="absolute inset-y-0 right-0 w-[34%] bg-[linear-gradient(90deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.58)_72%,rgba(0,0,0,0.76)_100%)]" />
+          </div>
+          <div className="relative z-[1] col-start-2 -mt-3 flex min-w-0 flex-col pb-1 pl-5 pr-2 pt-1">
+            <div
+              style={rankingNumberStyle}
+              className={[
+                "grid h-5 shrink-0 items-center gap-1 px-1 text-[8px] font-bold leading-none text-white/38",
+                rankingGridColumns,
+              ].join(" ")}
+            >
+              <span />
+              <span className="truncate pr-px" />
+              {showDailyAudience ? <span className="truncate whitespace-nowrap pl-1 pr-px text-right">{dailyAudienceHeader}</span> : null}
+              {showDailyAudience && showTotalAudience ? <span className="truncate whitespace-nowrap pl-1 pr-px text-right">{totalAudienceHeader}</span> : null}
+            </div>
+            <div className="flex min-h-0 flex-1 flex-col">
+              {rankingRows.map((movie, index) => {
+                const isCoverRow = Boolean(movie?.id && coverMovies.some((coverMovie) => coverMovie.id === movie.id));
+
+                return (
+                  <div
+                    key={movie?.id ?? `ranking-vertical-placeholder-${index}`}
+                    className={[
+                      "grid min-h-0 flex-1 items-start gap-1 px-1 py-1",
+                      rankingGridColumns,
+                    ].join(" ")}
+                  >
+                    <span
+                      style={rankingNumberStyle}
+                      className={[
+                        "inline-flex h-[16px] min-w-[22px] items-center justify-center rounded-[5px] text-[10px] font-black tabular-nums",
+                        isCoverRow ? "bg-white/24 text-white" : "bg-neutral-600 text-white",
+                      ].join(" ")}
+                    >
+                      {getRankText(movie, index)}
+                    </span>
+                    <div className="flex min-w-0 items-start">
+                      <p
+                        style={{ ...rankingNumberStyle, fontWeight: 500 }}
+                        className={[
+                          "line-clamp-2 min-w-0 pt-[1px] text-[12px] font-semibold leading-[1.12]",
+                          isCoverRow ? "text-white" : "text-white/68",
+                        ].join(" ")}
+                      >
+                        {movie?.title ?? CAPTURE_TEXT.addMovie}
+                      </p>
+                    </div>
+                    {showDailyAudience ? (
+                      <span
+                        style={rankingNumberStyle}
+                        className={[
+                          "flex min-w-0 items-start justify-end overflow-hidden whitespace-nowrap pl-1 pt-[3px] text-right text-[10px] font-black leading-none",
+                          isCoverRow ? "text-white" : "text-white/68",
+                        ].join(" ")}
+                      >
+                        {getDailyAudience(movie)}
+                      </span>
+                    ) : null}
+                    {showDailyAudience && showTotalAudience ? (
+                      <span
+                        style={rankingNumberStyle}
+                        className={[
+                          "flex min-w-0 items-start justify-end overflow-hidden whitespace-nowrap pl-1 pt-[3px] text-right text-[10px] font-black leading-none",
+                          isCoverRow ? "text-white" : "text-white/68",
+                        ].join(" ")}
+                      >
+                        {getTotalAudience(movie)}
+                      </span>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+        <div className="relative z-[2] shrink-0 px-4 pb-2 pt-2">
+          <CaptureFooter footerLeft="" footerRight={footerRight} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-full overflow-hidden bg-neutral-950 text-white">

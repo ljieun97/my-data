@@ -349,7 +349,7 @@ export function RankingCoverTemplate({
           <div
             style={rankingNumberStyle}
             className={[
-              "grid h-4 shrink-0 items-center gap-1 px-1 text-[8px] font-bold leading-none text-white/38",
+              "grid h-4 shrink-0 items-center gap-1 px-1 pt-0.5 text-[8px] font-bold leading-[1.15] text-white/38",
               defaultRankingGridColumns,
             ].join(" ")}
           >
@@ -385,7 +385,7 @@ export function RankingCoverTemplate({
                     <p
                       style={{ ...titleFontStyle, fontWeight: 400 }}
                       className={[
-                        "min-w-0 truncate text-[13px] leading-none",
+                        "min-w-0 truncate pt-0.5 text-[13px] leading-[1.16]",
                         isCoverRow || allRowsWhite ? "text-white" : "text-white/68",
                       ].join(" ")}
                     >
@@ -505,7 +505,7 @@ export function NewsCoverTemplate({
   const hasSecondaryMovie = Boolean(secondaryMovie);
   const splitBodyCard = bodyCard && hasSecondaryMovie;
   const splitBodyDirection = splitBodyCard ? bodySplitDirection : "vertical";
-  const subtextValue = !bodyCard ? subText?.trim() : "";
+  const subtextValue = subText?.trim();
   const bottomText = bodyText?.trim() || "";
 
   return (
@@ -594,15 +594,15 @@ export function NewsCoverTemplate({
 
 function BodyTextBlock({ text }: { text: string; titleSize: number }) {
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className="flex flex-col items-start gap-1.5">
       {text.split("\n").map((line, index) => (
         <span
           key={`${line}-${index}`}
           style={{
             ...titleFontStyle,
-            fontSize: "14px",
+            fontSize: "16px",
           }}
-          className="block whitespace-pre-line pl-[2px] font-medium leading-[1.56] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.72)]"
+          className="block whitespace-pre-line pl-[2px] font-medium leading-[1.42] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.72)]"
         >
           {line || " "}
         </span>

@@ -481,6 +481,7 @@ export function NewsCoverTemplate({
   titleSize,
   bodyCard = false,
   bodySplitDirection = "vertical",
+  bottomTitle,
   bodyText,
   reviewRating,
   reviewText,
@@ -493,6 +494,7 @@ export function NewsCoverTemplate({
   titleSize: number;
   bodyCard?: boolean;
   bodySplitDirection?: "vertical" | "horizontal";
+  bottomTitle?: string;
   bodyText?: string;
   reviewRating?: number;
   reviewText?: string;
@@ -506,6 +508,7 @@ export function NewsCoverTemplate({
   const splitBodyCard = bodyCard && hasSecondaryMovie;
   const splitBodyDirection = splitBodyCard ? bodySplitDirection : "vertical";
   const subtextValue = subText?.trim();
+  const bottomTitleValue = bottomTitle?.trim() || "";
   const bottomText = bodyText?.trim() || "";
 
   return (
@@ -581,12 +584,38 @@ export function NewsCoverTemplate({
           subtitleTone="light"
         />
         <div className="min-h-0 flex-1" />
+        {!bodyCard && bottomTitleValue ? (
+          <BottomTitleBlock text={bottomTitleValue} titleSize={titleSize} />
+        ) : null}
         {bodyCard && bottomText ? (
           <div className={[splitBodyCard && splitBodyDirection === "vertical" ? "w-1/2 pl-5 pr-3" : "w-full px-5", "pb-16"].join(" ")}>
             <BodyTextBlock text={bottomText} titleSize={titleSize} />
           </div>
         ) : null}
         <CaptureFooter footerLeft="" footerRight={footerRight} />
+      </div>
+    </div>
+  );
+}
+
+function BottomTitleBlock({ text, titleSize }: { text: string; titleSize: number }) {
+  const lines = text.split("\n").slice(0, 2);
+
+  return (
+    <div className="pb-8 text-center">
+      <div className="inline-flex max-w-full flex-col items-center gap-1.5">
+        {lines.map((line, index) => (
+          <span
+            key={`${line}-${index}`}
+            style={{ ...titleFontStyle, fontSize: `${index === 0 ? Math.max(17, titleSize - 1) : titleSize + 1}px` }}
+            className={[
+              "max-w-full truncate px-2 leading-[1.1] tracking-[-0.04em] text-white drop-shadow-[0_2px_9px_rgba(0,0,0,0.76)]",
+              index === 0 ? "font-light" : "font-black",
+            ].join(" ")}
+          >
+            {line || " "}
+          </span>
+        ))}
       </div>
     </div>
   );

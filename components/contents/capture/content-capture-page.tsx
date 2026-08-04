@@ -111,6 +111,7 @@ export default function ContentCapturePage() {
   const [movieListCenterTitles, setMovieListCenterTitles] = useState<string[]>([]);
   const [captureHeadline, setCaptureHeadline] = useState<string>(CAPTURE_TEXT.newsHeadline);
   const [captureSubText, setCaptureSubText] = useState("");
+  const [newsBottomTitle, setNewsBottomTitle] = useState("라라랜드 10주년\n재개봉 확정");
   const [newsBodyText, setNewsBodyText] = useState<string>(CAPTURE_TEXT.newsBodyText);
   const [newsDisplayMode, setNewsDisplayMode] = useState<"default" | "review" | "body">("default");
   const [newsBodySplitDirection, setNewsBodySplitDirection] = useState<"vertical" | "horizontal">("vertical");
@@ -710,6 +711,17 @@ export default function ContentCapturePage() {
                     </label>
                   </>
                 ) : null}
+                {newsDisplayMode === "default" ? (
+                  <label className="mb-3 block">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Bottom Title</span>
+                    <CaptureTextArea
+                      value={newsBottomTitle}
+                      onChange={(event) => setNewsBottomTitle(event.target.value)}
+                      rows={2}
+                      placeholder="하단 제목을 입력하세요"
+                    />
+                  </label>
+                ) : null}
                 {newsDisplayMode === "review" ? (
                   <div className="mt-3 grid gap-3">
                     <label className="block">
@@ -1146,6 +1158,7 @@ export default function ContentCapturePage() {
                   titleSize={NEWS_HEADER_DEFAULT_SIZE}
                   bodyCard={newsDisplayMode === "body"}
                   bodySplitDirection={newsBodySplitDirection}
+                  bottomTitle={newsDisplayMode === "default" ? newsBottomTitle : undefined}
                   bodyText={newsDisplayMode === "body" ? newsBodyText : undefined}
                   reviewRating={newsDisplayMode === "review" ? Number(newsReviewRating) : undefined}
                   reviewText={newsDisplayMode === "review" ? newsReviewText : undefined}

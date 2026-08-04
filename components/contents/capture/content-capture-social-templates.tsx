@@ -603,11 +603,15 @@ function BottomTitleBlock({ text, titleSize }: { text: string; titleSize: number
 
   return (
     <div className="pb-8 text-center">
-      <div className="inline-flex max-w-full flex-col items-center gap-1.5">
+      <div className="inline-flex max-w-full flex-col items-center gap-0.5">
         {lines.map((line, index) => (
           <span
             key={`${line}-${index}`}
-            style={{ ...titleFontStyle, fontSize: `${index === 0 ? Math.max(17, titleSize - 1) : titleSize + 1}px` }}
+            style={{
+              ...titleFontStyle,
+              color: "#ffffff",
+              fontSize: `${index === 0 ? Math.max(17, titleSize - 1) : titleSize + 1}px`,
+            }}
             className={[
               "max-w-full truncate px-2 leading-[1.1] tracking-[-0.04em] text-white drop-shadow-[0_2px_9px_rgba(0,0,0,0.76)]",
               index === 0 ? "font-light" : "font-black",

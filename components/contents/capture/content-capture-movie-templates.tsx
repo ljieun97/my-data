@@ -532,7 +532,7 @@ function MovieCaptureRow({
             crossOrigin="anonymous"
           />
         ) : null}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.76)_0%,rgba(0,0,0,0.34)_24%,rgba(0,0,0,0.06)_52%,rgba(0,0,0,0.82)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.76)_0%,rgba(0,0,0,0.34)_24%,rgba(0,0,0,0.06)_52%,rgba(0,0,0,0.10)_100%)]" />
         {showTitle ? (
           <div className="absolute inset-x-0 top-0 z-[2] px-4 pt-3">
             <div className="flex min-w-0 items-start gap-2">
@@ -541,7 +541,8 @@ function MovieCaptureRow({
                 <p
                   style={titleFontStyle}
                   className={[
-                    "line-clamp-2 break-normal font-black leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
+                    "line-clamp-2 break-normal font-medium leading-tight",
+                    "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
                     titleSizeClass,
                   ].join(" ")}
                 >
@@ -557,11 +558,12 @@ function MovieCaptureRow({
           </div>
         ) : null}
         {subbodyValue ? (
-          <div className="absolute inset-x-0 bottom-0 z-[2] px-4 pb-4">
+          <div className="absolute inset-x-0 bottom-0 z-[2] flex justify-center px-4 pb-4">
+            <div className="w-full bg-white/82 px-3 py-2 text-center">
             {subbodyMetaLine ? (
               <p
                 style={titleFontStyle}
-                className="max-w-[58%] truncate text-left text-[9px] font-normal leading-[1.2] text-white/78 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]"
+                className="truncate text-center text-[9px] font-medium leading-[1.2] text-slate-950"
               >
                 {subbodyMetaLine}
               </p>
@@ -570,13 +572,14 @@ function MovieCaptureRow({
               <p
                 style={titleFontStyle}
                 className={[
-                  "mt-1.5 whitespace-pre-line text-left text-[10px] font-normal leading-[1.22] text-white/88 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                  "mt-1 whitespace-pre-line text-center text-[10px] font-normal leading-[1.22] text-slate-800",
                   overviewClampClass,
                 ].join(" ")}
               >
                 {bodyValue}
               </p>
             ) : null}
+            </div>
           </div>
         ) : null}
       </div>
@@ -606,7 +609,7 @@ function MovieCaptureRow({
               isCenterTitle
                 ? "bg-[linear-gradient(180deg,rgba(0,0,0,0.10)_0%,rgba(0,0,0,0.38)_50%,rgba(0,0,0,0.10)_100%)]"
                 : bottomAligned
-                ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_42%,rgba(0,0,0,0.32)_72%,rgba(0,0,0,0.68)_100%)]"
+                ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_58%,rgba(0,0,0,0.10)_100%)]"
                 : "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0)_46%,rgba(0,0,0,0.14)_100%)]",
             ].join(" ")}
           />
@@ -621,9 +624,6 @@ function MovieCaptureRow({
               : bottomAligned
               ? "absolute inset-x-0 bottom-0 z-[2] px-4 pb-3 pt-10"
               : "relative z-[1] flex items-stretch gap-1 px-[16px] py-[14px]",
-            !isCenterTitle && bottomAligned
-              ? "bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.62)_38%,rgba(0,0,0,0.78)_100%)]"
-              : "",
           ].join(" ")}
         >
           {showTitle && !isCenterTitle ? <span className="w-0.5 shrink-0 bg-amber-400/90" /> : null}
@@ -632,8 +632,10 @@ function MovieCaptureRow({
               <p
                 style={titleFontStyle}
                 className={[
-                  "leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)] break-normal",
-                  isCenterTitle ? "line-clamp-2 text-center text-[14px] font-black whitespace-normal" : titleSizeClass,
+                  "font-medium leading-tight break-normal",
+                  "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]",
+                  isCenterTitle ? "line-clamp-2 text-center whitespace-normal" : "",
+                  isCenterTitle ? "text-[14px]" : titleSizeClass,
                   !isCenterTitle && bottomAligned ? "line-clamp-2 whitespace-normal" : "",
                   !isCenterTitle && !bottomAligned ? "truncate" : "",
                 ].join(" ")}
@@ -649,7 +651,7 @@ function MovieCaptureRow({
             {subbodyValue ? (
               <p
                 style={titleFontStyle}
-                className="mt-1 line-clamp-3 whitespace-pre-line text-left text-[11px] font-medium leading-[1.24] text-white/86 drop-shadow-[0_1px_2px_rgba(0,0,0,0.58)]"
+                className="mt-1 line-clamp-3 bg-white/82 px-3 py-2 text-center text-[11px] font-normal leading-[1.24] text-slate-800"
               >
                 {subbodyValue}
               </p>
@@ -699,6 +701,7 @@ export function MovieListTemplate({
           {pairedSlots.map(({ left, right, rowIndex }) => {
             const defaultTitle = [left?.title, right?.title].filter(Boolean).join(CAPTURE_TEXT.movieListPairSeparator) || CAPTURE_TEXT.addMovie;
             const title = centerTitles[rowIndex]?.trim() || defaultTitle;
+            const hasMovie = Boolean(left || right);
 
             return (
               <div key={`preview-row-${rowIndex}`} className="relative grid min-h-0 flex-1 grid-cols-2 overflow-hidden">
@@ -714,7 +717,6 @@ export function MovieListTemplate({
                     showImageOverlay={false}
                     metaMode={metaMode}
                   />
-                  <span className="pointer-events-none absolute inset-y-0 right-0 z-[3] w-px bg-white/16" />
                 </div>
                 <div className="min-h-0">
                   <MovieCaptureRow
@@ -733,16 +735,14 @@ export function MovieListTemplate({
                   <p
                     style={titleFontStyle}
                     className={[
-                      "line-clamp-2 max-w-[82%] shrink-0 break-normal text-center font-black leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]",
+                      "line-clamp-2 max-w-[82%] shrink-0 break-normal text-center font-medium leading-tight",
+                      "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]",
                       sharedRowTitleSizeClass,
                     ].join(" ")}
                   >
                     {title}
                   </p>
                 </div>
-                {rowIndex < pairedSlots.length - 1 ? (
-                  <span className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-px bg-white/16" />
-                ) : null}
               </div>
             );
           })}
@@ -770,15 +770,11 @@ export function MovieListTemplate({
                   titleLayout={titleLayout}
                   metaMode={metaMode}
                 />
-                {index < leftSlots.length - 1 ? (
-                  <span className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-px bg-white/16" />
-                ) : null}
               </div>
             ))}
           </div>
           {isTwoColumn ? (
             <div className="relative flex min-h-0 flex-1 flex-col gap-0">
-              <span className="pointer-events-none absolute inset-y-0 left-0 z-[3] w-px bg-white/16" />
               {rightSlots.map((movie, index) => (
                 <div
                   key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-right-${index}` : `preview-right-${index * 2 + 1}`}
@@ -793,9 +789,6 @@ export function MovieListTemplate({
                     titleLayout={titleLayout}
                     metaMode={metaMode}
                   />
-                  {index < rightSlots.length - 1 ? (
-                    <span className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] h-px bg-white/16" />
-                  ) : null}
                 </div>
               ))}
             </div>

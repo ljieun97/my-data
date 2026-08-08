@@ -140,7 +140,7 @@ export default function ContentCapturePage() {
   const [footerRight, setFooterRight] = useState<string>(CAPTURE_TEXT.footerRight);
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
-  const [movieListCaptureChunkSize, setMovieListCaptureChunkSize] = useState<2 | 3>(2);
+  const [movieListCaptureChunkSize, setMovieListCaptureChunkSize] = useState<1 | 2 | 3>(2);
   const [movieListCaptureStartIndex, setMovieListCaptureStartIndex] = useState(0);
   const [rankingCoverMovieIds, setRankingCoverMovieIds] = useState<number[]>([]);
   const [rankingV2BackgroundMovieId, setRankingV2BackgroundMovieId] = useState<number | null>(null);
@@ -1010,14 +1010,14 @@ export default function ContentCapturePage() {
                 <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Layout</p>
                 <div className="mb-3">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Split</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[2, 3].map((count) => (
+                  <div className="grid grid-cols-3 gap-2">
+                    {[1, 2, 3].map((count) => (
                       <CaptureToggleButton
                         key={`movie-list-split-${count}`}
                         type="button"
                         active={movieListCaptureChunkSize === count}
                         onClick={() => {
-                          const nextChunkSize = count as 2 | 3;
+                          const nextChunkSize = count as 1 | 2 | 3;
                           setMovieListCaptureChunkSize(nextChunkSize);
                           setMovieListCaptureStartIndex((current) => getMovieListCaptureStart(current, nextChunkSize));
                         }}

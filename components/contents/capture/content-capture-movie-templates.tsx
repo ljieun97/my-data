@@ -141,7 +141,7 @@ export function ReleaseBoardTemplate({
 
         <div
           className={[
-            "relative mt-2 flex min-h-0 flex-1 flex-col px-0.5 pb-0 pt-1.5",
+            "relative mt-2 flex min-h-0 flex-1 flex-col px-2 pb-0 pt-1.5",
           ].join(" ")}
           style={{ gap: `${gapPx}px` }}
         >
@@ -267,7 +267,7 @@ export function ReleaseBoardTemplate({
             </div>
           ))}
         </div>
-        <div className="pt-0 text-center">
+        <div className="pt-1.5 text-center">
           <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || CAPTURE_TEXT.footerRight}</span>
         </div>
       </div>

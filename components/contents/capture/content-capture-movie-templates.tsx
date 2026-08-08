@@ -13,6 +13,7 @@ import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 import type { CSSProperties } from "react";
 
 export type MovieListMetaMode = "year" | "release-date";
+export type ReleaseBoardTextPlacement = "inside" | "below" | "none";
 
 const rankingNumberStyle: CSSProperties = {
   fontFamily: '"Helvetica Neue", Arial, sans-serif',
@@ -68,6 +69,13 @@ function getReleaseBoardDateLabel(movie: CaptureMovie | undefined) {
   return `${Number(month)}/${Number(day)}`;
 }
 
+function getLogoUrl(movie: CaptureMovie | undefined) {
+  if (movie?.releaseLogoDisabled) return "";
+  const logoPath = movie?.logo_path || movie?.logoOptions?.[0];
+  if (!logoPath) return "";
+  return `https://image.tmdb.org/t/p/original${logoPath}`;
+}
+
 function getMovieListSubbodyLines(value: string) {
   return value
     .split("\n")
@@ -92,6 +100,8 @@ export function ReleaseBoardTemplate({
   subtitle,
   titleSize,
   columns,
+  textPlacement = "inside",
+  showLogos = true,
   footerRight,
 }: {
   movies: Array<CaptureMovie | undefined>;
@@ -99,6 +109,8 @@ export function ReleaseBoardTemplate({
   subtitle?: string;
   titleSize: number;
   columns: number;
+  textPlacement?: ReleaseBoardTextPlacement;
+  showLogos?: boolean;
   footerRight: string;
 }) {
   const visibleMovies = movies.filter(Boolean) as CaptureMovie[];
@@ -107,6 +119,7 @@ export function ReleaseBoardTemplate({
   const isDense = rowCount >= 4 || columnCount >= 5;
   const isVeryDense = rowCount >= 6 || columnCount >= 6;
   const gapPx = isDense ? 4 : 8;
+  const belowTextSpaceClass = textPlacement === "below" ? (isVeryDense ? "pb-4" : isDense ? "pb-5" : "pb-6") : "";
   const rows = Array.from({ length: rowCount }, (_, rowIndex) =>
     visibleMovies.slice(rowIndex * columnCount, rowIndex * columnCount + columnCount),
   );
@@ -128,29 +141,60 @@ export function ReleaseBoardTemplate({
 
         <div
           className={[
-            "relative mt-2 flex min-h-0 flex-1 flex-col overflow-hidden px-0.5 pb-0 pt-1.5",
+            "relative mt-2 flex min-h-0 flex-1 flex-col px-0.5 pb-0 pt-1.5",
           ].join(" ")}
           style={{ gap: `${gapPx}px` }}
         >
           {rows.map((rowMovies, rowIndex) => (
-            <div key={`release-row-${rowIndex}`} className="flex min-h-0 flex-1 justify-center" style={{ gap: `${gapPx}px` }}>
+            <div
+              key={`release-row-${rowIndex}`}
+              className={["flex min-h-0 flex-1 justify-center", belowTextSpaceClass].join(" ")}
+              style={{ gap: `${gapPx}px` }}
+            >
               {rowMovies.map((movie, index) => {
                 const posterUrl = getPosterUrl(movie) || getBackdropUrl(movie);
                 const releaseDateLabel = getReleaseBoardDateLabel(movie);
+                const logoUrl = getLogoUrl(movie);
+                const showLogo = showLogos && Boolean(logoUrl);
+                const showTitleAsLogo = textPlacement === "inside" && showLogos && (movie.releaseLogoDisabled || !logoUrl);
+                const showInsideText = textPlacement === "inside" && !showLogo && !showTitleAsLogo;
 
                 return (
                   <div
                     key={`${movie.id}-${rowIndex}-${index}`}
-                    className={[
-                      "flex min-h-0 flex-col overflow-hidden bg-white/6 shadow-[0_10px_20px_rgba(0,0,0,0.22)]",
-                      isDense ? "rounded-[0.25rem]" : "rounded-[0.45rem]",
-                    ].join(" ")}
+                    className="relative min-h-0 shadow-[0_10px_20px_rgba(0,0,0,0.22)]"
                     style={{ flex: `0 0 calc((100% - ${gapPx * (columnCount - 1)}px) / ${columnCount})` }}
                   >
-                    <div className="relative min-h-0 flex-1 bg-white">
+                    <div className={["relative h-full min-h-0 overflow-hidden bg-white", isDense ? "rounded-[0.25rem]" : "rounded-[0.45rem]"].join(" ")}>
                       {posterUrl ? (
                         <>
                           <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
+                          {showLogo ? (
+                            <div className="absolute inset-x-[12%] bottom-[7%] z-[2] flex justify-center">
+                              <img
+                                alt=""
+                                src={logoUrl}
+                                className="max-h-[22px] max-w-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.78)]"
+                                crossOrigin="anonymous"
+                              />
+                            </div>
+                          ) : null}
+                          {showTitleAsLogo ? (
+                            <div className="absolute inset-x-[12%] bottom-[7%] z-[2] flex justify-center">
+                              <p
+                                style={{
+                                  ...titleFontStyle,
+                                  textShadow: "0 1px 2px rgba(0,0,0,0.95), 0 2px 7px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.78)",
+                                }}
+                                className={[
+                                  "break-keep text-center font-black leading-[1.06] tracking-[-0.04em] text-white",
+                                  isVeryDense ? "text-[8px]" : isDense ? "text-[9px]" : "text-[10px]",
+                                ].join(" ")}
+                              >
+                                {movie.title}
+                              </p>
+                            </div>
+                          ) : null}
                           {movie.releaseBadge ? (
                             <div
                               style={titleFontStyle}
@@ -162,28 +206,30 @@ export function ReleaseBoardTemplate({
                               재
                             </div>
                           ) : null}
-                          <div className={["absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.66)_64%,rgba(0,0,0,0.86)_100%)]", isDense ? "px-1 pb-1 pt-4" : "px-1.5 pb-1.5 pt-5"].join(" ")}>
-                            <p
-                              style={titleFontStyle}
-                              className={[
-                                "truncate break-keep text-center font-medium leading-[1.15] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
-                                isVeryDense ? "text-[7px]" : isDense ? "text-[8px]" : "text-[9px]",
-                              ].join(" ")}
-                            >
-                              {movie.title}
-                            </p>
-                            {releaseDateLabel ? (
+                          {showInsideText ? (
+                            <div className={["absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.66)_64%,rgba(0,0,0,0.86)_100%)]", isDense ? "px-1 pb-1 pt-4" : "px-1.5 pb-1.5 pt-5"].join(" ")}>
                               <p
                                 style={titleFontStyle}
                                 className={[
-                                  "mt-0.5 truncate text-center font-normal leading-none text-white/72 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
-                                  isVeryDense ? "text-[6px]" : isDense ? "text-[7px]" : "text-[8px]",
+                                  "truncate break-keep text-center font-medium leading-[1.15] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                                  isVeryDense ? "text-[7px]" : isDense ? "text-[8px]" : "text-[9px]",
                                 ].join(" ")}
                               >
-                                {releaseDateLabel}
+                                {movie.title}
                               </p>
-                            ) : null}
-                          </div>
+                              {releaseDateLabel ? (
+                                <p
+                                  style={titleFontStyle}
+                                  className={[
+                                    "mt-0.5 truncate text-center font-normal leading-none text-white/72 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                                    isVeryDense ? "text-[6px]" : isDense ? "text-[7px]" : "text-[8px]",
+                                  ].join(" ")}
+                                >
+                                  {releaseDateLabel}
+                                </p>
+                              ) : null}
+                            </div>
+                          ) : null}
                         </>
                       ) : (
                         <div className="flex h-full items-center justify-center bg-white/90 text-center text-[12px] font-bold tracking-[0.08em] text-slate-400">
@@ -191,6 +237,30 @@ export function ReleaseBoardTemplate({
                         </div>
                       )}
                     </div>
+                    {textPlacement === "below" ? (
+                      <div className={["pointer-events-none absolute inset-x-0 top-full text-center", isDense ? "mt-1" : "mt-1.5"].join(" ")}>
+                        <p
+                          style={titleFontStyle}
+                          className={[
+                            "truncate break-keep font-medium leading-[1.15] tracking-[-0.04em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                            isVeryDense ? "text-[7px]" : isDense ? "text-[8px]" : "text-[9px]",
+                          ].join(" ")}
+                        >
+                          {movie.title}
+                        </p>
+                        {releaseDateLabel ? (
+                          <p
+                            style={titleFontStyle}
+                            className={[
+                              "mt-0.5 truncate font-normal leading-none text-white/68 drop-shadow-[0_1px_2px_rgba(0,0,0,0.72)]",
+                              isVeryDense ? "text-[6px]" : isDense ? "text-[7px]" : "text-[8px]",
+                            ].join(" ")}
+                          >
+                            {releaseDateLabel}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 );
               })}

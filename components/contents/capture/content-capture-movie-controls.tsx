@@ -51,6 +51,7 @@ type MovieSlotsPanelProps = {
   updateMovieReleaseBadge: (id: number, value: boolean) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
+  updateMovieLogo?: (id: number, logoPath: string | null) => void;
   onSelectRankingCoverMovie?: (id: number) => void;
 };
 
@@ -83,6 +84,7 @@ export function MovieSlotsPanel({
   updateMovieReleaseBadge,
   updateMovieYear,
   updateMovieImagePosition,
+  updateMovieLogo,
   onSelectRankingCoverMovie,
 }: MovieSlotsPanelProps) {
   const activeRankingCoverMovieIds = rankingCoverMovieIds ?? (rankingCoverMovieId ? [rankingCoverMovieId] : []);
@@ -208,34 +210,73 @@ export function MovieSlotsPanel({
                     />
                   ) : null}
                   {isReleaseMode ? (
-                    <div className="grid grid-cols-2 gap-1">
-                      <button
-                        type="button"
-                        onMouseDown={(event) => event.stopPropagation()}
-                        onClick={() => updateMovieReleaseBadge(movie.id, true)}
-                        className={[
-                          "h-7 border px-2 text-[11px] font-bold transition",
-                          movie.releaseBadge
-                            ? "border-[#b58a45] bg-[#b58a45] text-white"
-                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                        ].join(" ")}
-                      >
-                        재개봉
-                      </button>
-                      <button
-                        type="button"
-                        onMouseDown={(event) => event.stopPropagation()}
-                        onClick={() => updateMovieReleaseBadge(movie.id, false)}
-                        className={[
-                          "h-7 border px-2 text-[11px] font-bold transition",
-                          !movie.releaseBadge
-                            ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
-                            : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-                        ].join(" ")}
-                      >
-                        일반
-                      </button>
-                    </div>
+                    <>
+                      <div className="grid grid-cols-2 gap-1">
+                        <button
+                          type="button"
+                          onMouseDown={(event) => event.stopPropagation()}
+                          onClick={() => updateMovieReleaseBadge(movie.id, true)}
+                          className={[
+                            "h-7 border px-2 text-[11px] font-bold transition",
+                            movie.releaseBadge
+                              ? "border-[#b58a45] bg-[#b58a45] text-white"
+                              : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                          ].join(" ")}
+                        >
+                          재개봉
+                        </button>
+                        <button
+                          type="button"
+                          onMouseDown={(event) => event.stopPropagation()}
+                          onClick={() => updateMovieReleaseBadge(movie.id, false)}
+                          className={[
+                            "h-7 border px-2 text-[11px] font-bold transition",
+                            !movie.releaseBadge
+                              ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                              : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                          ].join(" ")}
+                        >
+                          일반
+                        </button>
+                      </div>
+                      {updateMovieLogo ? (
+                        <div className="grid gap-1">
+                          <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">Logo</span>
+                          <div className="flex gap-1 overflow-x-auto pb-1">
+                            <button
+                              type="button"
+                              onMouseDown={(event) => event.stopPropagation()}
+                              onClick={() => updateMovieLogo(movie.id, null)}
+                              className={[
+                                "flex h-8 min-w-14 items-center justify-center border bg-white px-2 text-[11px] font-bold text-slate-700 transition dark:bg-slate-950 dark:text-slate-200",
+                                movie.releaseLogoDisabled
+                                  ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
+                                  : "border-slate-200 dark:border-slate-700",
+                              ].join(" ")}
+                            >
+                              제목
+                            </button>
+                            {(movie.logoOptions ?? []).map((logoPath) => (
+                              <button
+                                key={logoPath}
+                                type="button"
+                                onMouseDown={(event) => event.stopPropagation()}
+                                onClick={() => updateMovieLogo(movie.id, logoPath)}
+                                className={[
+                                  "flex h-8 min-w-14 items-center justify-center border bg-slate-950 px-1 transition",
+                                  !movie.releaseLogoDisabled && (movie.logo_path || movie.logoOptions?.[0]) === logoPath
+                                    ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
+                                    : "border-slate-200 dark:border-slate-700",
+                                ].join(" ")}
+                                aria-label="Select logo"
+                              >
+                                <img alt="" src={`https://image.tmdb.org/t/p/w185${logoPath}`} className="max-h-6 max-w-full object-contain" />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </>
                   ) : null}
                   {(!isRankingMode || showImagePositionControls) ? (
                     <div className="grid gap-1">

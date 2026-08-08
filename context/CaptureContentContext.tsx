@@ -22,6 +22,9 @@ export type CaptureMovie = {
   imagePositionX?: number;
   imagePosition?: number;
   posterOptions?: string[];
+  logo_path?: string;
+  releaseLogoDisabled?: boolean;
+  logoOptions?: string[];
   singlePreviewTitle?: string;
   singlePreviewSubtitle?: string;
   singlePreviewSubbody?: string;
@@ -61,6 +64,7 @@ type CaptureContentContextValue = {
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   updateMovieImagePositionX: (id: number, imagePositionX: number) => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
+  updateMovieLogo: (id: number, logoPath: string | null) => void;
   updateMovieSinglePreview: (
     id: number,
     patch: Partial<
@@ -130,6 +134,9 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     imagePositionX: typeof movie.imagePositionX === "number" ? movie.imagePositionX : 50,
     imagePosition: typeof movie.imagePosition === "number" ? movie.imagePosition : 20,
     posterOptions: movie.posterOptions,
+    logo_path: movie.logo_path || movie.logoOptions?.[0],
+    releaseLogoDisabled: Boolean(movie.releaseLogoDisabled || !movie.logoOptions?.length),
+    logoOptions: movie.logoOptions,
     singlePreviewTitle: movie.singlePreviewTitle ?? title,
     singlePreviewSubtitle: movie.singlePreviewSubtitle ?? (movie.original_title || movie.original_name || title),
     singlePreviewSubbody: sanitizeSinglePreviewSubbody(movie.singlePreviewSubbody),
@@ -275,6 +282,23 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
+  const updateMovieLogo = (id: number, logoPath: string | null) => {
+    setSelectedMovies((current) =>
+      current.map((movie) =>
+        movie.id === id
+          ? {
+              ...movie,
+              logo_path: logoPath ?? movie.logo_path,
+              releaseLogoDisabled: logoPath === null,
+              logoOptions: logoPath
+                ? Array.from(new Set([...(movie.logoOptions ?? []), logoPath]))
+                : movie.logoOptions,
+            }
+          : movie,
+      ),
+    );
+  };
+
   const updateMovieSinglePreview = (
     id: number,
     patch: Partial<
@@ -338,6 +362,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       updateMovieImagePosition,
       updateMovieImagePositionX,
       updateMoviePoster,
+      updateMovieLogo,
       updateMovieSinglePreview,
       clearMovies,
       hasMovie,

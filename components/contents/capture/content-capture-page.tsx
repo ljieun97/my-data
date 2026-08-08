@@ -14,6 +14,7 @@ import {
   MovieListTemplate,
   ReleaseBoardTemplate,
   RankingV2Template,
+  type ReleaseBoardTextPlacement,
   type MovieListMetaMode,
   formatYear,
 } from "@/components/contents/capture/content-capture-templates";
@@ -99,6 +100,7 @@ export default function ContentCapturePage() {
     updateMovieYear,
     updateMovieImagePosition,
     updateMoviePoster,
+    updateMovieLogo,
     updateMovieSinglePreview,
     clearMovies,
   } = useCaptureContent();
@@ -110,7 +112,7 @@ export default function ContentCapturePage() {
   const [movieListMetaMode, setMovieListMetaMode] = useState<MovieListMetaMode>("year");
   const [movieListCenterTitles, setMovieListCenterTitles] = useState<string[]>([]);
   const [captureHeadline, setCaptureHeadline] = useState<string>(CAPTURE_TEXT.newsHeadline);
-  const [captureSubText, setCaptureSubText] = useState("");
+  const [captureSubText, setCaptureSubText] = useState<string>(getYesterdayBoxOfficeDateLabel);
   const [newsBottomTitle, setNewsBottomTitle] = useState("라라랜드 10주년\n재개봉 확정");
   const [newsBodyText, setNewsBodyText] = useState<string>(CAPTURE_TEXT.newsBodyText);
   const [newsDisplayMode, setNewsDisplayMode] = useState<"default" | "review" | "body">("default");
@@ -131,6 +133,8 @@ export default function ContentCapturePage() {
   const [rankingV2BackgroundEnd, setRankingV2BackgroundEnd] = useState("#34384c");
   const [rankingV2RowBackgroundColors, setRankingV2RowBackgroundColors] = useState<string[]>([]);
   const [releaseBoardColumns, setReleaseBoardColumns] = useState(4);
+  const [releaseBoardTextPlacement, setReleaseBoardTextPlacement] = useState<ReleaseBoardTextPlacement>("inside");
+  const [releaseBoardShowLogos, setReleaseBoardShowLogos] = useState(true);
   const [isExtractingRankingRowColors, setIsExtractingRankingRowColors] = useState(false);
   const [footerLeft, setFooterLeft] = useState(CAPTURE_TEXT.footerLeft);
   const [footerRight, setFooterRight] = useState<string>(CAPTURE_TEXT.footerRight);
@@ -177,8 +181,8 @@ export default function ContentCapturePage() {
     ? currentSingleMovie?.singlePreviewSubtitle ?? ""
     : isRankingTextMode
       ? getYesterdayBoxOfficeDateLabel()
-      : "예: 2026.08";
-  const captureSubTextValue = captureSubText || (isNewsMode ? currentSingleMovie?.singlePreviewSubtitle ?? "" : "");
+      : getYesterdayBoxOfficeDateLabel();
+  const captureSubTextValue = captureSubText || captureSubTextPlaceholder;
   useEffect(() => {
     if (!selectedMovies.length) {
       setPreviewMovieIndex(0);
@@ -575,6 +579,7 @@ export default function ContentCapturePage() {
               updateMovieReleaseBadge={updateMovieReleaseBadge}
               updateMovieYear={updateMovieYear}
               updateMovieImagePosition={updateMovieImagePosition}
+              updateMovieLogo={updateMovieLogo}
               onSelectRankingCoverMovie={(id) => {
                 if (isRankingV2Mode) {
                   setRankingV2BackgroundMovieId((current) => (current === id ? null : id));
@@ -628,6 +633,43 @@ export default function ContentCapturePage() {
           {isReleaseMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Release Board</p>
+              <div className="mb-3">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Text Position</span>
+                <div className="grid grid-cols-3 gap-2">
+                  <CaptureToggleButton
+                    type="button"
+                    active={releaseBoardTextPlacement === "inside"}
+                    onClick={() => setReleaseBoardTextPlacement("inside")}
+                  >
+                    포스터 안
+                  </CaptureToggleButton>
+                  <CaptureToggleButton
+                    type="button"
+                    active={releaseBoardTextPlacement === "below"}
+                    onClick={() => setReleaseBoardTextPlacement("below")}
+                  >
+                    포스터 밑
+                  </CaptureToggleButton>
+                  <CaptureToggleButton
+                    type="button"
+                    active={releaseBoardTextPlacement === "none"}
+                    onClick={() => setReleaseBoardTextPlacement("none")}
+                  >
+                    없음
+                  </CaptureToggleButton>
+                </div>
+              </div>
+              <div className="mb-3">
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">TMDB Logo</span>
+                <CaptureToggleButton
+                  type="button"
+                  active={releaseBoardShowLogos}
+                  onClick={() => setReleaseBoardShowLogos((current) => !current)}
+                  className="w-full"
+                >
+                  로고 표시
+                </CaptureToggleButton>
+              </div>
               <div>
                 <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Grid Columns</span>
                 <div className="grid grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] gap-2">
@@ -1207,6 +1249,8 @@ export default function ContentCapturePage() {
                   subtitle={captureSubTextValue}
                   titleSize={NEWS_HEADER_DEFAULT_SIZE}
                   columns={releaseBoardColumns}
+                  textPlacement={releaseBoardTextPlacement}
+                  showLogos={releaseBoardShowLogos}
                   footerRight={footerRight}
                 />
               ) : (

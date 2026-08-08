@@ -88,6 +88,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
 
   const handleSelectCaptureMovie = async (movie: any) => {
     let posterOptions: string[] = [];
+    let logoOptions: string[] = [];
     let detail: any = null;
     const mediaType = movie?.media_type === "tv" ? "tv" : "movie";
     const posterLanguageOrder = [null, "en"];
@@ -110,6 +111,25 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
             .filter(Boolean)
             .slice(0, 20)
         : [];
+      const originalLanguage =
+        detail?.original_language || movie?.original_language || null;
+      const logoLanguageOrder = Array.from(
+        new Set(["ko", originalLanguage, "en"].filter(Boolean)),
+      );
+      logoOptions = Array.isArray(images?.logos)
+        ? [...images.logos]
+            .sort((a: any, b: any) => {
+              const aScore = logoLanguageOrder.indexOf(a?.iso_639_1);
+              const bScore = logoLanguageOrder.indexOf(b?.iso_639_1);
+              const normalizedAScore = aScore < 0 ? logoLanguageOrder.length : aScore;
+              const normalizedBScore = bScore < 0 ? logoLanguageOrder.length : bScore;
+              if (normalizedAScore !== normalizedBScore) return normalizedAScore - normalizedBScore;
+              return (b?.vote_average ?? 0) - (a?.vote_average ?? 0);
+            })
+            .map((logo: any) => logo.file_path)
+            .filter(Boolean)
+            .slice(0, 5)
+        : [];
     } finally {
       setIsLoadingCaptureResults(false);
     }
@@ -125,6 +145,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       poster_path: posterOptions[0] || detail?.poster_path || movie.poster_path,
       backdrop_path: detail?.backdrop_path || movie.backdrop_path || posterOptions[0],
       posterOptions,
+      logoOptions,
       singlePreviewSubbody: buildCaptureSubbody(detail),
     });
     if (didAdd) {

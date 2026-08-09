@@ -14,6 +14,7 @@ import type { CSSProperties } from "react";
 
 export type MovieListMetaMode = "year" | "release-date";
 export type ReleaseBoardTextPlacement = "inside" | "below" | "none";
+export type RankingV2TitleDisplay = "title" | "logo";
 
 const rankingNumberStyle: CSSProperties = {
   fontFamily: '"Helvetica Neue", Arial, sans-serif',
@@ -290,6 +291,7 @@ export function RankingV2Template({
   showRanks = true,
   showImages = true,
   showRowBackgrounds = true,
+  titleDisplay = "title",
 }: {
   movies: Array<CaptureMovie | undefined>;
   title: string;
@@ -305,6 +307,7 @@ export function RankingV2Template({
   showRanks?: boolean;
   showImages?: boolean;
   showRowBackgrounds?: boolean;
+  titleDisplay?: RankingV2TitleDisplay;
 }) {
   const rankingRows = movies;
   const isDenseRanking = rankingRows.length > 10;
@@ -331,6 +334,7 @@ export function RankingV2Template({
   );
   const audienceColumnWidthRem = Math.max(5, Math.min(7.2, audienceColumnCharacterCount * 0.62));
   const backgroundCandidates = buildImageCandidates(getPosterUrl(backgroundMovie), getBackdropUrl(backgroundMovie));
+  const useLogoTitles = titleDisplay === "logo";
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#221f2e] text-white">
@@ -442,16 +446,25 @@ export function RankingV2Template({
                             {getRankText(movie, index)}
                           </span>
                         ) : null}
-                        <div className="min-w-0 translate-y-[0.75px]">
-                          <p
-                            style={titleFontStyle}
-                            className={[
-                              "truncate font-bold uppercase leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
-                              isDenseRanking ? "text-[13px]" : "text-[14px]",
-                            ].join(" ")}
-                          >
-                            {movie?.title ?? CAPTURE_TEXT.addMovie}
-                          </p>
+                        <div className="flex h-full min-w-0 translate-y-[0.75px] items-center">
+                          {useLogoTitles && getLogoUrl(movie) ? (
+                            <img
+                              alt={movie?.title ?? ""}
+                              src={getLogoUrl(movie)}
+                              className={["max-w-full object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]", isDenseRanking ? "max-h-[17px]" : "max-h-[19px]"].join(" ")}
+                              crossOrigin="anonymous"
+                            />
+                          ) : (
+                            <p
+                              style={titleFontStyle}
+                              className={[
+                                "truncate font-bold uppercase leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
+                                isDenseRanking ? "text-[13px]" : "text-[14px]",
+                              ].join(" ")}
+                            >
+                              {movie?.title ?? CAPTURE_TEXT.addMovie}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -514,8 +527,8 @@ function MovieCaptureRow({
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
   const metaValue = getMovieListMetaLabel(movie, metaMode);
-  const titleSizeClass = stackCount >= 3 ? "text-[14px]" : "text-[16px]";
-  const metaSizeClass = stackCount >= 3 ? "text-[9px]" : "text-[10px]";
+  const titleSizeClass = stackCount >= 3 ? "text-[13px]" : "text-[15px]";
+  const metaSizeClass = stackCount >= 3 ? "text-[8px]" : "text-[9px]";
   const overviewClampClass = stackCount >= 3 ? "line-clamp-3" : "line-clamp-4";
 
   if (!isCenterTitle) {
@@ -635,7 +648,7 @@ function MovieCaptureRow({
                   "font-medium leading-tight break-normal",
                   "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.52)]",
                   isCenterTitle ? "line-clamp-2 text-center whitespace-normal" : "",
-                  isCenterTitle ? "text-[14px]" : titleSizeClass,
+                  isCenterTitle ? "text-[13px]" : titleSizeClass,
                   !isCenterTitle && bottomAligned ? "line-clamp-2 whitespace-normal" : "",
                   !isCenterTitle && !bottomAligned ? "truncate" : "",
                 ].join(" ")}
@@ -683,7 +696,7 @@ export function MovieListTemplate({
   const isTwoColumn = columns === 2;
   const titleLayout = isTwoColumn ? twoColumnTextMode : "corner";
   const shouldUseSharedRowTitle = isTwoColumn && twoColumnTextMode === "center";
-  const sharedRowTitleSizeClass = slots.length >= 8 ? "text-[13px]" : slots.length >= 6 ? "text-[14px]" : "text-[16px]";
+  const sharedRowTitleSizeClass = slots.length >= 8 ? "text-[12px]" : slots.length >= 6 ? "text-[13px]" : "text-[15px]";
   const leftSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 0) : slots;
   const rightSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 1) : [];
   const pairedSlots = shouldUseSharedRowTitle

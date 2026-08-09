@@ -14,6 +14,7 @@ import {
   MovieListTemplate,
   ReleaseBoardTemplate,
   RankingV2Template,
+  type RankingV2TitleDisplay,
   type ReleaseBoardTextPlacement,
   type MovieListMetaMode,
   formatYear,
@@ -123,6 +124,7 @@ export default function ContentCapturePage() {
   const [rankingTotalAudienceLabel, setRankingTotalAudienceLabel] = useState("누적 관객");
   const [rankingCoverLayout, setRankingCoverLayout] = useState<RankingCoverLayout>("default");
   const [rankingCoverRankLabelMode, setRankingCoverRankLabelMode] = useState<RankingCoverRankLabelMode>("rank");
+  const [rankingV2TitleDisplay, setRankingV2TitleDisplay] = useState<RankingV2TitleDisplay>("title");
   const [rankingCoverAllRowsWhite, setRankingCoverAllRowsWhite] = useState(false);
   const [showRankingDailyAudience, setShowRankingDailyAudience] = useState(true);
   const [showRankingTotalAudience, setShowRankingTotalAudience] = useState(true);
@@ -920,6 +922,23 @@ export default function ContentCapturePage() {
               {isRankingV2Mode ? (
                 <>
                   <div className="mb-3">
+                    <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Movie Label</span>
+                    <div className="mb-3 grid grid-cols-2 gap-2">
+                      <CaptureToggleButton
+                        type="button"
+                        active={rankingV2TitleDisplay === "title"}
+                        onClick={() => setRankingV2TitleDisplay("title")}
+                      >
+                        제목
+                      </CaptureToggleButton>
+                      <CaptureToggleButton
+                        type="button"
+                        active={rankingV2TitleDisplay === "logo"}
+                        onClick={() => setRankingV2TitleDisplay("logo")}
+                      >
+                        로고
+                      </CaptureToggleButton>
+                    </div>
                     <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Rank</span>
                     <CaptureToggleButton
                       type="button"
@@ -1241,6 +1260,7 @@ export default function ContentCapturePage() {
                   showRanks={showRankingV2Ranks}
                   showImages={showRankingV2Images}
                   showRowBackgrounds={showRankingV2RowBackgrounds}
+                  titleDisplay={rankingV2TitleDisplay}
                 />
               ) : isReleaseMode ? (
                 <ReleaseBoardTemplate

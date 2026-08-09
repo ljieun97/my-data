@@ -1,8 +1,6 @@
 ﻿"use client";
 
 import { CaptureMovie } from "@/context/CaptureContentContext";
-import { faGripVertical, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CaptureHelperText, CapturePanel } from "@/components/contents/capture/content-capture-controls";
 import type { MovieListMetaMode } from "@/components/contents/capture/content-capture-templates";
 import { formatYear } from "@/components/contents/capture/content-capture-utils";
@@ -132,8 +130,8 @@ export function MovieSlotsPanel({
                 : "border-slate-200 dark:border-slate-800",
             ].join(" ")}
           >
-            <span className="inline-flex h-8 w-5 shrink-0 items-center justify-center text-slate-300 dark:text-slate-600">
-              {movie ? <FontAwesomeIcon icon={faGripVertical} /> : null}
+            <span className="inline-flex h-8 w-5 shrink-0 items-center justify-center text-[10px] font-bold text-slate-300 dark:text-slate-600">
+              {movie ? "drag" : null}
             </span>
             <span className="w-5 shrink-0 text-xs font-bold text-slate-400 sm:w-6">{index + 1}</span>
             <div className="min-w-0 flex-1">
@@ -347,11 +345,11 @@ export function MovieSlotsPanel({
                 <button
                   type="button"
                   onClick={() => removeMovie(movie.id)}
-                  className="inline-flex h-8 w-8 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                  className="inline-flex h-8 items-center justify-center px-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                   aria-label={`${movie.title} remove`}
                   title="Remove"
                 >
-                  <FontAwesomeIcon icon={faTrash} />
+                  삭제
                 </button>
               </div>
             ) : null}

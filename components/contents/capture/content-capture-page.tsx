@@ -4,8 +4,6 @@ import Title from "@/components/common/title";
 import { CaptureTextArea, CaptureTextInput, CaptureToggleButton } from "@/components/contents/capture/content-capture-controls";
 import { MovieSlotsPanel } from "@/components/contents/capture/content-capture-movie-controls";
 import { CaptureMovie, CaptureMode, getCaptureMovieMaxCount, sanitizeSinglePreviewSubbody, useCaptureContent } from "@/context/CaptureContentContext";
-import { faDownload, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toPng } from "html-to-image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -505,19 +503,18 @@ export default function ContentCapturePage() {
             type="button"
             onClick={clearMovies}
             disabled={!selectedMovies.length}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-slate-300 bg-white text-sm text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+            className="inline-flex h-10 shrink-0 items-center justify-center border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-default disabled:opacity-45 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
             aria-label="Reset selected movies"
             title="Reset"
           >
-            <FontAwesomeIcon icon={faRotateLeft} />
+            reset
           </button>
           <button
             type="button"
             onClick={handleCapture}
             disabled={isCapturing || !selectedMovies.length}
-            className="inline-flex h-10 flex-1 items-center justify-center gap-2 border border-slate-900 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-default disabled:opacity-45 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-white sm:flex-none"
+            className="inline-flex h-10 flex-1 items-center justify-center border border-slate-900 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-default disabled:opacity-45 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-white sm:flex-none"
           >
-            <FontAwesomeIcon icon={faDownload} />
             {isCapturing ? "capturing" : "download"}
           </button>
         </div>

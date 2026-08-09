@@ -314,14 +314,11 @@ export function RankingV2Template({
   const titleValue = title.trim() || `${movies[0]?.title ?? "1위 작품"} 박스오피스 1위`;
   const subtextValue = dateLabel?.trim().replace(/\s*\n\s*/g, " ");
   const dailyAudienceCounts = rankingRows.map((movie) => parseAudienceCount(movie?.rankingDailyAudience));
-  const dailyAudienceRankByCount = Array.from(
-    new Set(dailyAudienceCounts.filter((value): value is number => value !== null)),
-  )
-    .sort((a, b) => b - a)
-    .reduce<Record<number, number>>((ranks, audienceCount, rankIndex) => {
-      ranks[audienceCount] = rankIndex;
-      return ranks;
-    }, {});
+  const validDailyAudienceCounts = dailyAudienceCounts.filter((value): value is number => value !== null);
+  const maxDailyAudienceCount = Math.max(0, ...validDailyAudienceCounts);
+  const minDailyAudienceCount = Math.min(maxDailyAudienceCount, ...validDailyAudienceCounts);
+  const dailyAudienceRange = maxDailyAudienceCount - minDailyAudienceCount;
+  const maxRowTipInsetPx = isDenseRanking ? 64 : 78;
   const getRankText = (movie: CaptureMovie | undefined, index: number) =>
     movie?.rankingText?.trim() || String(index + 1);
   const getDailyAudience = getRankingDailyAudience;
@@ -332,7 +329,7 @@ export function RankingV2Template({
       Math.max(getDailyAudience(movie).length, showTotalAudience ? getTotalAudience(movie).length : 0),
     ),
   );
-  const audienceColumnWidthRem = Math.max(5, Math.min(7.2, audienceColumnCharacterCount * 0.62));
+  const audienceColumnWidthRem = Math.max(showTotalAudience ? 3.5 : 3, Math.min(showTotalAudience ? 4.7 : 3.9, audienceColumnCharacterCount * 0.41));
   const backgroundCandidates = buildImageCandidates(getPosterUrl(backgroundMovie), getBackdropUrl(backgroundMovie));
   const useLogoTitles = titleDisplay === "logo";
 
@@ -375,7 +372,10 @@ export function RankingV2Template({
               const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
               const rowBackgroundColor = rowBackgroundColors[index] || "#221f2e";
               const audienceCount = dailyAudienceCounts[index];
-              const rowTipInsetPx = (audienceCount === null ? 0 : dailyAudienceRankByCount[audienceCount] ?? 0) * 6;
+              const rowTipInsetPx =
+                audienceCount === null || dailyAudienceRange <= 0
+                  ? 0
+                  : Math.round(Math.pow((maxDailyAudienceCount - audienceCount) / dailyAudienceRange, 0.78) * maxRowTipInsetPx);
               const rowBackgroundFull = hexToRgba(rowBackgroundColor, 0.96, "rgba(34,31,46,0.96)");
               const rowBackgroundStrong = hexToRgba(rowBackgroundColor, 1, "rgba(34,31,46,1)");
               const rowBackgroundMid = hexToRgba(rowBackgroundColor, 0.38, "rgba(34,31,46,0.38)");
@@ -390,7 +390,7 @@ export function RankingV2Template({
                   key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-${index}` : `ranking-v2-placeholder-${index}`}
                   className="grid min-h-0 flex-1 items-stretch"
                   style={{
-                    columnGap: showDailyAudience ? "0.35rem" : undefined,
+                    columnGap: showDailyAudience ? "0.12rem" : undefined,
                     gridTemplateColumns: showDailyAudience ? `minmax(0,1fr) ${audienceColumnWidthRem.toFixed(2)}rem` : "minmax(0,1fr)",
                   }}
                 >
@@ -474,11 +474,16 @@ export function RankingV2Template({
                       style={rankingNumberStyle}
                       className="flex h-full min-w-0 flex-col items-end justify-center py-[1px] text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.28)]"
                     >
-                      <span className={["w-full whitespace-nowrap leading-[1.05]", isDenseRanking ? "text-[12px]" : "text-[13px]"].join(" ")}>
+                      <span
+                        className={[
+                          "w-full whitespace-nowrap leading-none text-white",
+                          isDenseRanking ? "text-[13px]" : "text-[14px]",
+                        ].join(" ")}
+                      >
                         {getDailyAudience(movie)}
                       </span>
                       {showTotalAudience ? (
-                        <span className="mt-[1px] w-full whitespace-nowrap text-[8px] font-extrabold leading-[1.05] text-white/48">
+                        <span className="mt-[1px] w-full whitespace-nowrap text-[8px] font-extrabold leading-none text-white/58">
                           {getTotalAudience(movie)}
                         </span>
                       ) : null}

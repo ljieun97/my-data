@@ -45,6 +45,12 @@ function buildCaptureSubbody(detail: any) {
   ].filter(Boolean).join("\n");
 }
 
+function getImageLanguageScore(language: string | null | undefined, languageOrder: Array<string | null>) {
+  if (!language) return 0;
+  const languageIndex = languageOrder.indexOf(language);
+  return languageIndex < 0 ? languageOrder.length : languageIndex + 1;
+}
+
 export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -91,7 +97,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
     let logoOptions: string[] = [];
     let detail: any = null;
     const mediaType = movie?.media_type === "tv" ? "tv" : "movie";
-    const posterLanguageOrder = [null, "en"];
+    const posterLanguageOrder = ["ko", "en"];
     try {
       setIsLoadingCaptureResults(true);
       const [images, detailResult] = await Promise.all([
@@ -102,14 +108,13 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       posterOptions = Array.isArray(images?.posters)
         ? [...images.posters]
             .sort((a: any, b: any) => {
-              const aScore = posterLanguageOrder.indexOf(a?.iso_639_1);
-              const bScore = posterLanguageOrder.indexOf(b?.iso_639_1);
-              if (aScore !== bScore) return (aScore < 0 ? posterLanguageOrder.length : aScore) - (bScore < 0 ? posterLanguageOrder.length : bScore);
-              return aScore - bScore;
+              const aScore = getImageLanguageScore(a?.iso_639_1, posterLanguageOrder);
+              const bScore = getImageLanguageScore(b?.iso_639_1, posterLanguageOrder);
+              if (aScore !== bScore) return aScore - bScore;
+              return (b?.vote_average ?? 0) - (a?.vote_average ?? 0);
             })
             .map((poster: any) => poster.file_path)
             .filter(Boolean)
-            .slice(0, 20)
         : [];
       const originalLanguage =
         detail?.original_language || movie?.original_language || null;

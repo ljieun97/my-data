@@ -13,6 +13,8 @@ import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 import type { CSSProperties } from "react";
 
 export type MovieListMetaMode = "year" | "release-date";
+export type MovieListTextStyle = "box" | "plain";
+export type MovieListTextSize = "small" | "large";
 export type ReleaseBoardTextPlacement = "inside" | "below" | "none";
 export type RankingV2TitleDisplay = "title" | "logo";
 
@@ -512,6 +514,9 @@ function MovieCaptureRow({
   showTitle = true,
   showImageOverlay = true,
   showBody = true,
+  textStyle = "box",
+  subbodyTextSize = "small",
+  bodyTextSize = "small",
   metaMode = "year",
 }: {
   movie?: CaptureMovie;
@@ -523,6 +528,9 @@ function MovieCaptureRow({
   showTitle?: boolean;
   showImageOverlay?: boolean;
   showBody?: boolean;
+  textStyle?: MovieListTextStyle;
+  subbodyTextSize?: MovieListTextSize;
+  bodyTextSize?: MovieListTextSize;
   metaMode?: MovieListMetaMode;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
@@ -532,14 +540,19 @@ function MovieCaptureRow({
   const bodyValue = showBody ? (movie?.singlePreviewBody ?? movie?.overview ?? legacySubbodyOverview).trim() : "";
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
-  const metaValue = getMovieListMetaLabel(movie, metaMode);
-  const subbodyMetaValue = [metaValue, subbodyMetaLine].filter(Boolean).join(" ");
+  const subbodyMetaValue = subbodyMetaLine;
   const subbodyValue = showBody ? [subbodyMetaValue, bodyValue].filter(Boolean).join("\n") : "";
   const logoUrl = getLogoUrl(movie);
   const titleSizeClass = stackCount >= 3 ? "text-[13px]" : "text-[15px]";
   const logoSizeClass = stackCount >= 3 ? "max-h-[22px]" : "max-h-[30px]";
   const logoWidthClass = stackCount >= 3 ? "max-w-[116px]" : "max-w-[150px]";
   const overviewClampClass = stackCount >= 3 ? "line-clamp-3" : "line-clamp-4";
+  const isPlainText = textStyle === "plain";
+  const subbodyTextSizeClass = subbodyTextSize === "large" ? "text-[14px] leading-[1.18]" : "text-[9px] leading-[1.2]";
+  const bodyTextSizeClass = bodyTextSize === "large" ? "text-[16px] leading-[1.18]" : "text-[10px] leading-[1.22]";
+  const centerSubbodyTextSizeClass = subbodyTextSize === "large" ? "text-[14px] leading-[1.18]" : "text-[10px] leading-[1.2]";
+  const centerBodyTextSizeClass = bodyTextSize === "large" ? "text-[16px] leading-[1.18]" : "text-[11px] leading-[1.24]";
+  const bottomTextPaddingClass = stackCount <= 1 ? "pb-11" : "pb-4";
 
   if (!isCenterTitle) {
     return (
@@ -555,22 +568,23 @@ function MovieCaptureRow({
             crossOrigin="anonymous"
           />
         ) : null}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.76)_0%,rgba(0,0,0,0.34)_24%,rgba(0,0,0,0.06)_52%,rgba(0,0,0,0.10)_100%)]" />
-        {showTitle ? (
-          <div className="absolute inset-x-0 top-0 z-[2] px-4 pt-3">
-            <div className="min-w-0">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.04)_45%,rgba(0,0,0,0.46)_100%)]" />
+        {showTitle || subbodyValue ? (
+          <div className={["absolute inset-x-0 bottom-0 z-[2] px-4", bottomTextPaddingClass].join(" ")}>
+            {showTitle ? (
+              <div className="mb-2 flex min-w-0 justify-center text-center">
               {logoUrl ? (
                 <img
                   alt=""
                   src={logoUrl}
-                  className={["object-contain object-left drop-shadow-[0_2px_5px_rgba(0,0,0,0.72)]", logoSizeClass, logoWidthClass].join(" ")}
+                  className={["object-contain object-center drop-shadow-[0_2px_5px_rgba(0,0,0,0.72)]", logoSizeClass, logoWidthClass].join(" ")}
                   crossOrigin="anonymous"
                 />
               ) : (
                 <p
                   style={titleFontStyle}
                   className={[
-                    "line-clamp-2 max-w-[72%] break-normal font-medium leading-tight",
+                    "line-clamp-2 max-w-[86%] break-normal text-center font-medium leading-tight",
                     "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
                     titleSizeClass,
                   ].join(" ")}
@@ -578,16 +592,23 @@ function MovieCaptureRow({
                   {movie?.title ?? CAPTURE_TEXT.addMovie}
                 </p>
               )}
-            </div>
-          </div>
-        ) : null}
-        {subbodyValue ? (
-          <div className="absolute inset-x-0 bottom-0 z-[2] flex justify-center px-4 pb-4">
-            <div className="w-full bg-white/82 px-3 py-2 text-center">
+              </div>
+            ) : null}
+            {subbodyValue ? (
+            <div
+              className={[
+                "w-full px-3 py-2 text-center",
+                isPlainText ? "bg-transparent text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.70)]" : "bg-white/82",
+              ].join(" ")}
+            >
             {subbodyMetaValue ? (
               <p
                 style={titleFontStyle}
-                className="truncate text-center text-[9px] font-medium leading-[1.2] text-slate-950"
+                className={[
+                  "truncate text-center font-medium",
+                  subbodyTextSizeClass,
+                  isPlainText ? "text-white" : "text-slate-800",
+                ].join(" ")}
               >
                 {subbodyMetaValue}
               </p>
@@ -596,7 +617,9 @@ function MovieCaptureRow({
               <p
                 style={titleFontStyle}
                 className={[
-                  "mt-1 whitespace-pre-line text-center text-[10px] font-normal leading-[1.22] text-slate-800",
+                  "mt-1 whitespace-pre-line text-center font-normal",
+                  bodyTextSizeClass,
+                  isPlainText ? "text-white" : "text-slate-800",
                   overviewClampClass,
                 ].join(" ")}
               >
@@ -604,6 +627,7 @@ function MovieCaptureRow({
               </p>
             ) : null}
             </div>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -644,7 +668,7 @@ function MovieCaptureRow({
         <div
           className={[
             isCenterTitle
-              ? "relative z-[1] flex h-full items-center justify-center px-[16px] py-[14px] text-center"
+              ? "absolute inset-x-0 bottom-0 z-[2] px-4 pb-4 text-center"
               : bottomAligned
               ? "absolute inset-x-0 bottom-0 z-[2] px-4 pb-3 pt-10"
               : "relative z-[1] flex items-stretch gap-1 px-[16px] py-[14px]",
@@ -668,12 +692,39 @@ function MovieCaptureRow({
               </p>
             ) : null}
             {subbodyValue ? (
-              <p
-                style={titleFontStyle}
-                className="mt-1 line-clamp-3 bg-white/82 px-3 py-2 text-center text-[11px] font-normal leading-[1.24] text-slate-800"
+              <div
+                className={[
+                  "mt-1 px-3 py-2 text-center",
+                  isPlainText
+                    ? "bg-transparent text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.70)]"
+                    : "bg-white/82",
+                ].join(" ")}
               >
-                {subbodyValue}
-              </p>
+                {subbodyMetaValue ? (
+                  <p
+                    style={titleFontStyle}
+                    className={[
+                      "truncate text-center font-medium",
+                      centerSubbodyTextSizeClass,
+                      isPlainText ? "text-white" : "text-slate-800",
+                    ].join(" ")}
+                  >
+                    {subbodyMetaValue}
+                  </p>
+                ) : null}
+                {bodyValue ? (
+                  <p
+                    style={titleFontStyle}
+                    className={[
+                      "mt-1 line-clamp-3 whitespace-pre-line text-center font-normal",
+                      centerBodyTextSizeClass,
+                      isPlainText ? "text-white" : "text-slate-800",
+                    ].join(" ")}
+                  >
+                    {bodyValue}
+                  </p>
+                ) : null}
+              </div>
             ) : null}
           </div>
         </div>
@@ -684,26 +735,41 @@ function MovieCaptureRow({
 
 export function MovieListTemplate({
   slots,
+  headline,
+  subtitle,
+  titleSize,
+  showHeadline,
   columns,
   twoColumnTextMode,
   centerTitles,
   metaMode,
   showBody,
+  textStyle,
+  subbodyTextSize,
+  bodyTextSize,
   footerLeft,
   footerRight,
 }: {
   slots: Array<CaptureMovie | undefined>;
+  headline: string;
+  subtitle?: string;
+  titleSize: number;
+  showHeadline: boolean;
   columns: 1 | 2;
   twoColumnTextMode: "corner" | "center";
   centerTitles: string[];
   metaMode: MovieListMetaMode;
   showBody: boolean;
+  textStyle: MovieListTextStyle;
+  subbodyTextSize: MovieListTextSize;
+  bodyTextSize: MovieListTextSize;
   footerLeft: string;
   footerRight: string;
 }) {
   const isTwoColumn = columns === 2;
   const titleLayout = isTwoColumn ? twoColumnTextMode : "corner";
   const shouldUseSharedRowTitle = isTwoColumn && twoColumnTextMode === "center";
+  const shouldPlaceFooterAtBottom = slots.length <= 1;
   const sharedRowTitleSizeClass = slots.length >= 8 ? "text-[12px]" : slots.length >= 6 ? "text-[13px]" : "text-[15px]";
   const leftSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 0) : slots;
   const rightSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 1) : [];
@@ -714,9 +780,22 @@ export function MovieListTemplate({
         rowIndex: index,
       }))
     : [];
+  const headlineValue = headline.trim() || CAPTURE_TEXT.movieListCenterTitleFallback;
+  const subtitleValue = subtitle?.trim().replace(/\s*\n\s*/g, " ");
 
   return (
     <div className="relative flex h-full flex-col bg-slate-950 text-white">
+      {showHeadline ? (
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-[4] px-4 pt-4">
+          <CaptureHeadlineBlock
+            title={headlineValue}
+            titleSize={titleSize}
+            subtitle={subtitleValue}
+            subtitlePlacement="below"
+            subtitleTone="light"
+          />
+        </div>
+      ) : null}
       {shouldUseSharedRowTitle ? (
         <div className="flex min-h-0 flex-1 flex-col gap-0 bg-slate-950 px-0 pt-0">
           {pairedSlots.map(({ left, right, rowIndex }) => {
@@ -737,6 +816,9 @@ export function MovieListTemplate({
                     showTitle={false}
                     showImageOverlay={false}
                     showBody={showBody}
+                    textStyle={textStyle}
+                    subbodyTextSize={subbodyTextSize}
+                    bodyTextSize={bodyTextSize}
                     metaMode={metaMode}
                   />
                 </div>
@@ -751,10 +833,13 @@ export function MovieListTemplate({
                     showTitle={false}
                     showImageOverlay={false}
                     showBody={showBody}
+                    textStyle={textStyle}
+                    subbodyTextSize={subbodyTextSize}
+                    bodyTextSize={bodyTextSize}
                     metaMode={metaMode}
                   />
                 </div>
-                <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center px-5 text-center">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] flex justify-center px-5 pb-[86px] text-center">
                   <p
                     style={titleFontStyle}
                     className={[
@@ -792,6 +877,9 @@ export function MovieListTemplate({
                   bottomAligned={isTwoColumn}
                   titleLayout={titleLayout}
                   showBody={showBody}
+                  textStyle={textStyle}
+                  subbodyTextSize={subbodyTextSize}
+                  bodyTextSize={bodyTextSize}
                   metaMode={metaMode}
                 />
               </div>
@@ -812,6 +900,9 @@ export function MovieListTemplate({
                     bottomAligned={isTwoColumn}
                     titleLayout={titleLayout}
                     showBody={showBody}
+                    textStyle={textStyle}
+                    subbodyTextSize={subbodyTextSize}
+                    bodyTextSize={bodyTextSize}
                     metaMode={metaMode}
                   />
                 </div>
@@ -821,7 +912,12 @@ export function MovieListTemplate({
         </div>
       )}
 
-      <div className="pointer-events-none absolute right-6 top-[8px] z-[10]">
+      <div
+        className={[
+          "pointer-events-none absolute z-[10]",
+          shouldPlaceFooterAtBottom ? "inset-x-0 bottom-3 flex justify-center" : "right-6 top-[8px]",
+        ].join(" ")}
+      >
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>

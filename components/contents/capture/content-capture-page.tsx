@@ -15,6 +15,8 @@ import {
   type RankingV2TitleDisplay,
   type ReleaseBoardTextPlacement,
   type MovieListMetaMode,
+  type MovieListTextSize,
+  type MovieListTextStyle,
   formatYear,
 } from "@/components/contents/capture/content-capture-templates";
 import {
@@ -54,6 +56,8 @@ const rankingV2BackgroundPresets = [
 ];
 
 const NEWS_HEADER_DEFAULT_SIZE = 22;
+const POSTER_IMAGE_PICKER_PAGE_SIZE = 16;
+const BACKDROP_IMAGE_PICKER_PAGE_SIZE = 10;
 
 async function waitForCaptureImages(element: HTMLElement) {
   const images = Array.from(element.querySelectorAll("img"));
@@ -99,6 +103,7 @@ export default function ContentCapturePage() {
     updateMovieYear,
     updateMovieImagePosition,
     updateMoviePoster,
+    updateMovieBackdrop,
     updateMovieLogo,
     updateMovieSinglePreview,
     clearMovies,
@@ -109,6 +114,7 @@ export default function ContentCapturePage() {
   const [movieListColumns, setMovieListColumns] = useState<1 | 2>(1);
   const [movieListTwoColumnTextMode, setMovieListTwoColumnTextMode] = useState<"corner" | "center">("corner");
   const [movieListMetaMode, setMovieListMetaMode] = useState<MovieListMetaMode>("year");
+  const [showMovieListHeadline, setShowMovieListHeadline] = useState(false);
   const [movieListCenterTitles, setMovieListCenterTitles] = useState<string[]>([]);
   const [captureHeadline, setCaptureHeadline] = useState<string>(CAPTURE_TEXT.newsHeadline);
   const [captureSubText, setCaptureSubText] = useState<string>(getYesterdayBoxOfficeDateLabel);
@@ -140,8 +146,11 @@ export default function ContentCapturePage() {
   const [footerRight, setFooterRight] = useState<string>(CAPTURE_TEXT.footerRight);
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
-  const [movieListCaptureChunkSize, setMovieListCaptureChunkSize] = useState(2);
+  const [movieListCaptureChunkSize, setMovieListCaptureChunkSize] = useState(1);
   const [showMovieListBody, setShowMovieListBody] = useState(true);
+  const [movieListTextStyle, setMovieListTextStyle] = useState<MovieListTextStyle>("plain");
+  const [movieListSubbodyTextSize, setMovieListSubbodyTextSize] = useState<MovieListTextSize>("large");
+  const [movieListBodyTextSize, setMovieListBodyTextSize] = useState<MovieListTextSize>("small");
   const [movieListCaptureStartIndex, setMovieListCaptureStartIndex] = useState(0);
   const [rankingCoverMovieIds, setRankingCoverMovieIds] = useState<number[]>([]);
   const [rankingV2BackgroundMovieId, setRankingV2BackgroundMovieId] = useState<number | null>(null);
@@ -150,6 +159,8 @@ export default function ContentCapturePage() {
   const [didCopyRankingText, setDidCopyRankingText] = useState(false);
   const [externalImageUrl, setExternalImageUrl] = useState("");
   const [externalImageError, setExternalImageError] = useState("");
+  const [imagePickerImageTab, setImagePickerImageTab] = useState<"poster" | "backdrop">("poster");
+  const [imagePickerPage, setImagePickerPage] = useState(0);
   const isNewsMode = captureMode === "news-cover";
   const isRankingMode = captureMode === "ranking-cover";
   const isRankingV2Mode = captureMode === "ranking-cover-v2";
@@ -214,7 +225,11 @@ export default function ContentCapturePage() {
   useEffect(() => {
     setExternalImageUrl("");
     setExternalImageError("");
+    setImagePickerPage(0);
   }, [currentSingleMovieId]);
+  useEffect(() => {
+    setImagePickerPage(0);
+  }, [imagePickerImageTab]);
   const handleApplyExternalImageUrl = () => {
     const imageUrl = externalImageUrl.trim();
     if (!imageUrl) {
@@ -227,7 +242,11 @@ export default function ContentCapturePage() {
     }
     const imagePickerMovie = isRankingTextMode ? currentCoverMovie : selectedMovies[previewMovieIndex];
     if (!imagePickerMovie) return;
-    updateMoviePoster(imagePickerMovie.id, imageUrl);
+    if (imagePickerImageTab === "backdrop") {
+      updateMovieBackdrop(imagePickerMovie.id, imageUrl);
+    } else {
+      updateMoviePoster(imagePickerMovie.id, imageUrl);
+    }
     setExternalImageUrl("");
     setExternalImageError("");
   };
@@ -375,6 +394,16 @@ export default function ContentCapturePage() {
     const imagePickerMovie = isRankingTextMode ? currentCoverMovie : currentSingleMovie;
     if (!(isMovieListMode || isNewsMode || isRankingTextMode || isReleaseMode) || !imagePickerMovie) return null;
     const imagePickerIndex = selectedMovies.findIndex((movie) => movie.id === imagePickerMovie.id);
+    const imageOptions = imagePickerImageTab === "backdrop" ? imagePickerMovie.backdropOptions : imagePickerMovie.posterOptions;
+    const selectedImagePath = imagePickerImageTab === "backdrop" ? imagePickerMovie.backdrop_path : imagePickerMovie.poster_path;
+    const selectedImageCount = imageOptions?.length ?? 0;
+    const imagePickerPageSize = imagePickerImageTab === "backdrop" ? BACKDROP_IMAGE_PICKER_PAGE_SIZE : POSTER_IMAGE_PICKER_PAGE_SIZE;
+    const imagePageCount = Math.max(1, Math.ceil(selectedImageCount / imagePickerPageSize));
+    const currentImagePage = Math.min(imagePickerPage, imagePageCount - 1);
+    const pagedImageOptions = imageOptions?.slice(
+      currentImagePage * imagePickerPageSize,
+      (currentImagePage + 1) * imagePickerPageSize,
+    );
     return (
       <div className="mt-4 overflow-hidden border border-slate-200 bg-white/72 dark:border-slate-800 dark:bg-slate-950/70">
         <div className="p-4 pb-3">
@@ -402,30 +431,113 @@ export default function ContentCapturePage() {
             ))}
           </div>
         </div>
-        {imagePickerMovie.posterOptions?.length ? (
+        <div className="mx-4 mb-3 flex border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-900/70">
+          {[
+            { key: "poster", label: "포스터", count: imagePickerMovie.posterOptions?.length ?? 0 },
+            { key: "backdrop", label: "배경사진", count: imagePickerMovie.backdropOptions?.length ?? 0 },
+          ].map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => setImagePickerImageTab(item.key as "poster" | "backdrop")}
+              className={[
+                "flex-1 px-3 py-2 text-xs font-bold transition",
+                imagePickerImageTab === item.key
+                  ? "bg-white text-slate-950 shadow-sm dark:bg-slate-100 dark:text-slate-950"
+                  : "text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white",
+              ].join(" ")}
+            >
+              {item.label} {item.count}
+            </button>
+          ))}
+        </div>
+        {pagedImageOptions?.length ? (
           <div className="m-4 mt-0 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Image</p>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{imagePickerMovie.posterOptions.length}</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {currentImagePage + 1}/{imagePageCount} · {selectedImageCount}
+              </p>
             </div>
-            <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-              {imagePickerMovie.posterOptions.map((posterPath) => (
+            <div className={imagePickerImageTab === "backdrop" ? "grid grid-cols-2 gap-2" : "grid grid-cols-4 gap-2 sm:grid-cols-5"}>
+              {pagedImageOptions.map((imagePath) => (
                 <button
-                  key={posterPath}
+                  key={imagePath}
                   type="button"
-                  onClick={() => updateMoviePoster(imagePickerMovie.id, posterPath)}
+                  onClick={() => {
+                    if (imagePickerImageTab === "backdrop") {
+                      updateMovieBackdrop(imagePickerMovie.id, imagePath);
+                    } else {
+                      updateMoviePoster(imagePickerMovie.id, imagePath);
+                    }
+                  }}
                   className={[
-                    "aspect-[4/5] overflow-hidden border transition",
-                    imagePickerMovie.poster_path === posterPath
+                    imagePickerImageTab === "backdrop"
+                      ? "aspect-video overflow-hidden border transition"
+                      : "aspect-[4/5] overflow-hidden border transition",
+                    selectedImagePath === imagePath
                       ? "border-slate-950 ring-2 ring-slate-950/15 dark:border-white dark:ring-white/20"
                       : "border-slate-200 dark:border-slate-800",
                   ].join(" ")}
                   aria-label="Select cover image"
                 >
-                  <img alt="" src={getPosterThumbUrl(posterPath)} className="h-full w-full object-cover" />
+                  <img alt="" src={getPosterThumbUrl(imagePath)} className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
+            {imagePageCount > 1 ? (
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setImagePickerPage(0)}
+                  disabled={currentImagePage === 0}
+                  className="border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 transition hover:border-slate-950 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-white dark:hover:text-white"
+                >
+                  처음
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setImagePickerPage((current) => Math.max(0, current - 1))}
+                  disabled={currentImagePage === 0}
+                  className="border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 transition hover:border-slate-950 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-white dark:hover:text-white"
+                >
+                  이전
+                </button>
+                <div className="flex min-w-0 flex-1 flex-wrap justify-center gap-1">
+                  {Array.from({ length: imagePageCount }, (_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setImagePickerPage(index)}
+                      className={[
+                        "h-7 min-w-7 border px-2 text-xs font-bold transition",
+                        currentImagePage === index
+                          ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                          : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white",
+                      ].join(" ")}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setImagePickerPage((current) => Math.min(imagePageCount - 1, current + 1))}
+                  disabled={currentImagePage >= imagePageCount - 1}
+                  className="border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 transition hover:border-slate-950 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-white dark:hover:text-white"
+                >
+                  다음
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setImagePickerPage(imagePageCount - 1)}
+                  disabled={currentImagePage >= imagePageCount - 1}
+                  className="border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 transition hover:border-slate-950 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-white dark:hover:text-white"
+                >
+                  끝
+                </button>
+              </div>
+            ) : null}
           </div>
         ) : null}
         <div className="m-4 border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
@@ -459,7 +571,10 @@ export default function ContentCapturePage() {
               <button
                 type="button"
                 onClick={handleApplyExternalImageUrl}
-                className="aspect-[4/5] overflow-hidden border border-slate-200 transition hover:border-slate-950 dark:border-slate-800 dark:hover:border-white"
+                className={[
+                  "overflow-hidden border border-slate-200 transition hover:border-slate-950 dark:border-slate-800 dark:hover:border-white",
+                  imagePickerImageTab === "backdrop" ? "aspect-video" : "aspect-[4/5]",
+                ].join(" ")}
                 aria-label="Apply external image"
               >
                 <img
@@ -598,7 +713,7 @@ export default function ContentCapturePage() {
                 if (nextIndex >= 0) setPreviewMovieIndex(nextIndex);
               }}
             />
-          {(isNewsMode || isRankingTextMode || isReleaseMode) ? (
+          {(isNewsMode || isRankingTextMode || isReleaseMode || isMovieListMode) ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Cover Text</p>
               <label className="mb-3 block">
@@ -1031,6 +1146,17 @@ export default function ContentCapturePage() {
               <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
                 <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Layout</p>
                 <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Headline</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <CaptureToggleButton type="button" active={showMovieListHeadline} onClick={() => setShowMovieListHeadline(true)}>
+                      표시
+                    </CaptureToggleButton>
+                    <CaptureToggleButton type="button" active={!showMovieListHeadline} onClick={() => setShowMovieListHeadline(false)}>
+                      숨김
+                    </CaptureToggleButton>
+                  </div>
+                </div>
+                <div className="mb-3">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Split</span>
                   <div className="grid grid-cols-[40px_1fr_40px] gap-2">
                     <CaptureToggleButton type="button" active={false} onClick={() => updateMovieListCaptureChunkSize(movieListCaptureChunkSize - 1)}>
@@ -1047,12 +1173,51 @@ export default function ContentCapturePage() {
                 </div>
                 <div className="mb-3">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <CaptureToggleButton type="button" active={showMovieListBody} onClick={() => setShowMovieListBody(true)}>
-                      켜기
+                  <div className="grid grid-cols-3 gap-2">
+                    <CaptureToggleButton
+                      type="button"
+                      active={showMovieListBody && movieListTextStyle === "box"}
+                      onClick={() => {
+                        setShowMovieListBody(true);
+                        setMovieListTextStyle("box");
+                      }}
+                    >
+                      상자
+                    </CaptureToggleButton>
+                    <CaptureToggleButton
+                      type="button"
+                      active={showMovieListBody && movieListTextStyle === "plain"}
+                      onClick={() => {
+                        setShowMovieListBody(true);
+                        setMovieListTextStyle("plain");
+                      }}
+                    >
+                      흰글자
                     </CaptureToggleButton>
                     <CaptureToggleButton type="button" active={!showMovieListBody} onClick={() => setShowMovieListBody(false)}>
                       끄기
+                    </CaptureToggleButton>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subbody Size</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <CaptureToggleButton type="button" active={movieListSubbodyTextSize === "small"} onClick={() => setMovieListSubbodyTextSize("small")}>
+                      작게
+                    </CaptureToggleButton>
+                    <CaptureToggleButton type="button" active={movieListSubbodyTextSize === "large"} onClick={() => setMovieListSubbodyTextSize("large")}>
+                      크게
+                    </CaptureToggleButton>
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body Size</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <CaptureToggleButton type="button" active={movieListBodyTextSize === "small"} onClick={() => setMovieListBodyTextSize("small")}>
+                      작게
+                    </CaptureToggleButton>
+                    <CaptureToggleButton type="button" active={movieListBodyTextSize === "large"} onClick={() => setMovieListBodyTextSize("large")}>
+                      크게
                     </CaptureToggleButton>
                   </div>
                 </div>
@@ -1286,11 +1451,18 @@ export default function ContentCapturePage() {
               ) : (
               <MovieListTemplate
                 slots={movieListCaptureSlots}
+                headline={captureHeadline}
+                subtitle={captureSubTextValue}
+                titleSize={NEWS_HEADER_DEFAULT_SIZE}
+                showHeadline={showMovieListHeadline}
                 columns={movieListColumns}
                 twoColumnTextMode={movieListTwoColumnTextMode}
                 centerTitles={movieListCaptureCenterTitles}
                 metaMode={movieListMetaMode}
                 showBody={showMovieListBody}
+                textStyle={movieListTextStyle}
+                subbodyTextSize={movieListSubbodyTextSize}
+                bodyTextSize={movieListBodyTextSize}
                 footerLeft={footerLeft}
                 footerRight={footerRight}
               />

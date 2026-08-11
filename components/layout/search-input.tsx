@@ -45,6 +45,23 @@ function buildCaptureSubbody(detail: any) {
   ].filter(Boolean).join("\n");
 }
 
+function formatKoreanAgeRating(value: string) {
+  const certification = value.trim();
+  if (!certification) return "";
+  if (/^(all|전체|전체관람가)$/i.test(certification)) return "전체";
+  if (certification === "18") return "청불";
+  if (/^\d+$/.test(certification)) return `${certification}세`;
+  return certification;
+}
+
+function buildMovieListDefaultSubbody(detail: any) {
+  const releaseDate = (detail?.release_date || detail?.first_air_date || "").trim();
+  const year = releaseDate.match(/^(\d{4})/)?.[1] ?? "";
+  const title = (detail?.title || detail?.name || "").trim();
+
+  return [title, year ? `(${year})` : ""].filter(Boolean).join(" ");
+}
+
 function getImageLanguageScore(language: string | null | undefined, languageOrder: Array<string | null>) {
   if (!language) return 0;
   const languageIndex = languageOrder.indexOf(language);
@@ -94,6 +111,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
 
   const handleSelectCaptureMovie = async (movie: any) => {
     let posterOptions: string[] = [];
+    let backdropOptions: string[] = [];
     let logoOptions: string[] = [];
     let detail: any = null;
     const mediaType = movie?.media_type === "tv" ? "tv" : "movie";
@@ -114,6 +132,12 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
               return (b?.vote_average ?? 0) - (a?.vote_average ?? 0);
             })
             .map((poster: any) => poster.file_path)
+            .filter(Boolean)
+        : [];
+      backdropOptions = Array.isArray(images?.backdrops)
+        ? [...images.backdrops]
+            .sort((a: any, b: any) => (b?.vote_average ?? 0) - (a?.vote_average ?? 0))
+            .map((backdrop: any) => backdrop.file_path)
             .filter(Boolean)
         : [];
       const originalLanguage =
@@ -148,10 +172,11 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       overview: movie.overview || detail?.overview || CAPTURE_TEXT.overviewMissing,
       release_date: detail?.release_date || detail?.first_air_date || movie.release_date || movie.first_air_date,
       poster_path: posterOptions[0] || detail?.poster_path || movie.poster_path,
-      backdrop_path: detail?.backdrop_path || movie.backdrop_path || posterOptions[0],
+      backdrop_path: backdropOptions[0] || detail?.backdrop_path || movie.backdrop_path || posterOptions[0],
       posterOptions,
+      backdropOptions,
       logoOptions,
-      singlePreviewSubbody: buildCaptureSubbody(detail),
+      singlePreviewSubbody: buildMovieListDefaultSubbody(detail),
     });
     if (didAdd) {
       setInputValue("");

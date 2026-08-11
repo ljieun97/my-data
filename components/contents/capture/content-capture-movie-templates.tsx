@@ -770,7 +770,6 @@ export function MovieListTemplate({
   const isTwoColumn = columns === 2;
   const titleLayout = isTwoColumn ? twoColumnTextMode : "corner";
   const shouldUseSharedRowTitle = isTwoColumn && twoColumnTextMode === "center";
-  const shouldPlaceFooterAtBottom = slots.length <= 1;
   const sharedRowTitleSizeClass = slots.length >= 8 ? "text-[12px]" : slots.length >= 6 ? "text-[13px]" : "text-[15px]";
   const leftSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 0) : slots;
   const rightSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 1) : [];
@@ -913,12 +912,7 @@ export function MovieListTemplate({
         </div>
       )}
 
-      <div
-        className={[
-          "pointer-events-none absolute z-[10]",
-          shouldPlaceFooterAtBottom ? "inset-x-0 bottom-3 flex justify-center" : "right-6 top-[8px]",
-        ].join(" ")}
-      >
+      <div className="pointer-events-none absolute right-6 top-[8px] z-[10]">
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>

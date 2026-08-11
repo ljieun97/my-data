@@ -548,7 +548,6 @@ function MovieCaptureRow({
   const logoWidthClass = stackCount >= 3 ? "max-w-[116px]" : "max-w-[150px]";
   const overviewClampClass = stackCount >= 3 ? "line-clamp-3" : "line-clamp-4";
   const isPlainText = textStyle === "plain";
-  const boxStyle = isPlainText ? undefined : { minWidth: "50%", width: "fit-content" };
   const subbodyTextSizeClass = subbodyTextSize === "large" ? "text-[14px] leading-[1.18]" : "text-[9px] leading-[1.2]";
   const bodyTextSizeClass = bodyTextSize === "large" ? "text-[16px] leading-[1.18]" : "text-[10px] leading-[1.22]";
   const centerSubbodyTextSizeClass = subbodyTextSize === "large" ? "text-[14px] leading-[1.18]" : "text-[10px] leading-[1.2]";
@@ -598,11 +597,9 @@ function MovieCaptureRow({
             {subbodyValue ? (
             <div
               className={[
-                "px-3 py-2 text-center",
-                isPlainText ? "w-full" : "mx-auto max-w-full",
+                "w-full px-3 py-2 text-center",
                 isPlainText ? "bg-transparent text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.70)]" : "bg-white/82",
               ].join(" ")}
-              style={boxStyle}
             >
             {subbodyMetaValue ? (
               <p
@@ -703,7 +700,6 @@ function MovieCaptureRow({
                     ? "bg-transparent text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.70)]"
                     : "bg-white/82",
                 ].join(" ")}
-                style={boxStyle}
               >
                 {subbodyMetaValue ? (
                   <p
@@ -774,6 +770,7 @@ export function MovieListTemplate({
   const isTwoColumn = columns === 2;
   const titleLayout = isTwoColumn ? twoColumnTextMode : "corner";
   const shouldUseSharedRowTitle = isTwoColumn && twoColumnTextMode === "center";
+  const shouldPlaceFooterAtBottom = slots.length <= 1;
   const sharedRowTitleSizeClass = slots.length >= 8 ? "text-[12px]" : slots.length >= 6 ? "text-[13px]" : "text-[15px]";
   const leftSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 0) : slots;
   const rightSlots = isTwoColumn ? slots.filter((_, index) => index % 2 === 1) : [];
@@ -916,7 +913,12 @@ export function MovieListTemplate({
         </div>
       )}
 
-      <div className="pointer-events-none absolute right-6 top-[8px] z-[10]">
+      <div
+        className={[
+          "pointer-events-none absolute z-[10]",
+          shouldPlaceFooterAtBottom ? "inset-x-0 bottom-3 flex justify-center" : "right-6 top-[8px]",
+        ].join(" ")}
+      >
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>

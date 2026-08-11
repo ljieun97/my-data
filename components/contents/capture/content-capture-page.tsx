@@ -148,7 +148,7 @@ export default function ContentCapturePage() {
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
   const [movieListCaptureChunkSize, setMovieListCaptureChunkSize] = useState(1);
   const [showMovieListBody, setShowMovieListBody] = useState(true);
-  const [movieListTextStyle, setMovieListTextStyle] = useState<MovieListTextStyle>("plain");
+  const [movieListTextStyle, setMovieListTextStyle] = useState<MovieListTextStyle>("box");
   const [movieListSubbodyTextSize, setMovieListSubbodyTextSize] = useState<MovieListTextSize>("large");
   const [movieListBodyTextSize, setMovieListBodyTextSize] = useState<MovieListTextSize>("small");
   const [movieListCaptureStartIndex, setMovieListCaptureStartIndex] = useState(0);

@@ -6,6 +6,8 @@ export {
 export {
   MovieListTemplate,
   type MovieListMetaMode,
+  type MovieListTextSize,
+  type MovieListTextStyle,
   type RankingV2TitleDisplay,
   type ReleaseBoardTextPlacement,
   RankingV2Template,

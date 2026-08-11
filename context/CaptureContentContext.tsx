@@ -22,6 +22,7 @@ export type CaptureMovie = {
   imagePositionX?: number;
   imagePosition?: number;
   posterOptions?: string[];
+  backdropOptions?: string[];
   logo_path?: string;
   releaseLogoDisabled?: boolean;
   logoOptions?: string[];
@@ -64,6 +65,7 @@ type CaptureContentContextValue = {
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
   updateMovieImagePositionX: (id: number, imagePositionX: number) => void;
   updateMoviePoster: (id: number, posterPath: string) => void;
+  updateMovieBackdrop: (id: number, backdropPath: string) => void;
   updateMovieLogo: (id: number, logoPath: string | null) => void;
   updateMovieSinglePreview: (
     id: number,
@@ -134,6 +136,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     imagePositionX: typeof movie.imagePositionX === "number" ? movie.imagePositionX : 50,
     imagePosition: typeof movie.imagePosition === "number" ? movie.imagePosition : 20,
     posterOptions: movie.posterOptions,
+    backdropOptions: movie.backdropOptions,
     logo_path: movie.logo_path || movie.logoOptions?.[0],
     releaseLogoDisabled: Boolean(movie.releaseLogoDisabled || !movie.logoOptions?.length),
     logoOptions: movie.logoOptions,
@@ -282,6 +285,22 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
     );
   };
 
+  const updateMovieBackdrop = (id: number, backdropPath: string) => {
+    setSelectedMovies((current) =>
+      current.map((movie) =>
+        movie.id === id
+          ? {
+              ...movie,
+              backdrop_path: backdropPath,
+              backdropOptions: backdropPath
+                ? Array.from(new Set([...(movie.backdropOptions ?? []), backdropPath]))
+                : movie.backdropOptions,
+            }
+          : movie,
+      ),
+    );
+  };
+
   const updateMovieLogo = (id: number, logoPath: string | null) => {
     setSelectedMovies((current) =>
       current.map((movie) =>
@@ -362,6 +381,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
       updateMovieImagePosition,
       updateMovieImagePositionX,
       updateMoviePoster,
+      updateMovieBackdrop,
       updateMovieLogo,
       updateMovieSinglePreview,
       clearMovies,

@@ -530,12 +530,15 @@ function MovieCaptureRow({
   const [subbodyMetaLine, ...subbodyRestLines] = subbodyLines;
   const legacySubbodyOverview = subbodyRestLines.join(" ");
   const bodyValue = showBody ? (movie?.singlePreviewBody ?? movie?.overview ?? legacySubbodyOverview).trim() : "";
-  const subbodyValue = [subbodyMetaLine, bodyValue].filter(Boolean).join("\n");
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
   const metaValue = getMovieListMetaLabel(movie, metaMode);
+  const subbodyMetaValue = [metaValue, subbodyMetaLine].filter(Boolean).join(" ");
+  const subbodyValue = showBody ? [subbodyMetaValue, bodyValue].filter(Boolean).join("\n") : "";
+  const logoUrl = getLogoUrl(movie);
   const titleSizeClass = stackCount >= 3 ? "text-[13px]" : "text-[15px]";
-  const metaSizeClass = stackCount >= 3 ? "text-[8px]" : "text-[9px]";
+  const logoSizeClass = stackCount >= 3 ? "max-h-[22px]" : "max-h-[30px]";
+  const logoWidthClass = stackCount >= 3 ? "max-w-[116px]" : "max-w-[150px]";
   const overviewClampClass = stackCount >= 3 ? "line-clamp-3" : "line-clamp-4";
 
   if (!isCenterTitle) {
@@ -555,37 +558,38 @@ function MovieCaptureRow({
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.76)_0%,rgba(0,0,0,0.34)_24%,rgba(0,0,0,0.06)_52%,rgba(0,0,0,0.10)_100%)]" />
         {showTitle ? (
           <div className="absolute inset-x-0 top-0 z-[2] px-4 pt-3">
-            <div className="flex min-w-0 items-start gap-2">
-              <span className="h-[2.15rem] w-0.5 shrink-0 bg-amber-400/90" />
-              <div className="min-w-0 flex-1">
+            <div className="min-w-0">
+              {logoUrl ? (
+                <img
+                  alt=""
+                  src={logoUrl}
+                  className={["object-contain object-left drop-shadow-[0_2px_5px_rgba(0,0,0,0.72)]", logoSizeClass, logoWidthClass].join(" ")}
+                  crossOrigin="anonymous"
+                />
+              ) : (
                 <p
                   style={titleFontStyle}
                   className={[
-                    "line-clamp-2 break-normal font-medium leading-tight",
+                    "line-clamp-2 max-w-[72%] break-normal font-medium leading-tight",
                     "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]",
                     titleSizeClass,
                   ].join(" ")}
                 >
                   {movie?.title ?? CAPTURE_TEXT.addMovie}
                 </p>
-                {metaValue ? (
-                  <p style={titleFontStyle} className={[metaSizeClass, "mt-0.5 leading-tight text-white/78"].join(" ")}>
-                    {metaValue}
-                  </p>
-                ) : null}
-              </div>
+              )}
             </div>
           </div>
         ) : null}
         {subbodyValue ? (
           <div className="absolute inset-x-0 bottom-0 z-[2] flex justify-center px-4 pb-4">
             <div className="w-full bg-white/82 px-3 py-2 text-center">
-            {subbodyMetaLine ? (
+            {subbodyMetaValue ? (
               <p
                 style={titleFontStyle}
                 className="truncate text-center text-[9px] font-medium leading-[1.2] text-slate-950"
               >
-                {subbodyMetaLine}
+                {subbodyMetaValue}
               </p>
             ) : null}
             {bodyValue ? (
@@ -661,11 +665,6 @@ function MovieCaptureRow({
                 ].join(" ")}
               >
                 {movie?.title ?? CAPTURE_TEXT.addMovie}
-              </p>
-            ) : null}
-            {showTitle && !isCenterTitle && metaValue ? (
-              <p style={titleFontStyle} className={[metaSizeClass, "leading-tight text-white/72"].join(" ")}>
-                {metaValue}
               </p>
             ) : null}
             {subbodyValue ? (

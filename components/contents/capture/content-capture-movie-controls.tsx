@@ -207,7 +207,7 @@ export function MovieSlotsPanel({
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
                   ) : null}
-                  {isReleaseMode || isRankingV2Mode ? (
+                  {isReleaseMode || isRankingV2Mode || isMovieListCaptureMode ? (
                     <>
                       {isReleaseMode ? (
                         <div className="grid grid-cols-2 gap-1">

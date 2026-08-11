@@ -363,6 +363,12 @@ export default function ContentCapturePage() {
     setMovieListCaptureChunkSize(clampedSize);
     setMovieListCaptureStartIndex((current) => getMovieListCaptureStart(current, clampedSize));
   };
+  const handleSelectImagePickerMovie = (index: number) => {
+    setPreviewMovieIndex(index);
+    if (isMovieListMode) {
+      setMovieListCaptureStartIndex(getMovieListCaptureStart(index, movieListCaptureChunkSize));
+    }
+  };
   const handleExtractRankingRowBackgroundColors = async () => {
     if (isExtractingRankingRowColors) return;
 
@@ -418,7 +424,7 @@ export default function ContentCapturePage() {
               <button
                 key={movie.id}
                 type="button"
-                onClick={() => setPreviewMovieIndex(index)}
+                onClick={() => handleSelectImagePickerMovie(index)}
                 className={[
                   "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
                   previewMovieIndex === index
@@ -1340,7 +1346,7 @@ export default function ContentCapturePage() {
                     <button
                       key={movie.id}
                       type="button"
-                      onClick={() => setPreviewMovieIndex(index)}
+                      onClick={() => handleSelectImagePickerMovie(index)}
                       className={[
                         "inline-flex h-8 min-w-8 items-center justify-center border px-2 text-xs font-bold transition",
                         previewMovieIndex === index

@@ -511,6 +511,7 @@ function MovieCaptureRow({
   titleLayout = "corner",
   showTitle = true,
   showImageOverlay = true,
+  showBody = true,
   metaMode = "year",
 }: {
   movie?: CaptureMovie;
@@ -521,13 +522,14 @@ function MovieCaptureRow({
   titleLayout?: "corner" | "center";
   showTitle?: boolean;
   showImageOverlay?: boolean;
+  showBody?: boolean;
   metaMode?: MovieListMetaMode;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
   const subbodyLines = getMovieListSubbodyLines(sanitizeSinglePreviewSubbody(movie?.singlePreviewSubbody));
   const [subbodyMetaLine, ...subbodyRestLines] = subbodyLines;
   const legacySubbodyOverview = subbodyRestLines.join(" ");
-  const bodyValue = (movie?.singlePreviewBody ?? movie?.overview ?? legacySubbodyOverview).trim();
+  const bodyValue = showBody ? (movie?.singlePreviewBody ?? movie?.overview ?? legacySubbodyOverview).trim() : "";
   const subbodyValue = [subbodyMetaLine, bodyValue].filter(Boolean).join("\n");
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
@@ -687,6 +689,7 @@ export function MovieListTemplate({
   twoColumnTextMode,
   centerTitles,
   metaMode,
+  showBody,
   footerLeft,
   footerRight,
 }: {
@@ -695,6 +698,7 @@ export function MovieListTemplate({
   twoColumnTextMode: "corner" | "center";
   centerTitles: string[];
   metaMode: MovieListMetaMode;
+  showBody: boolean;
   footerLeft: string;
   footerRight: string;
 }) {
@@ -733,6 +737,7 @@ export function MovieListTemplate({
                     titleLayout="center"
                     showTitle={false}
                     showImageOverlay={false}
+                    showBody={showBody}
                     metaMode={metaMode}
                   />
                 </div>
@@ -746,6 +751,7 @@ export function MovieListTemplate({
                     titleLayout="center"
                     showTitle={false}
                     showImageOverlay={false}
+                    showBody={showBody}
                     metaMode={metaMode}
                   />
                 </div>
@@ -786,6 +792,7 @@ export function MovieListTemplate({
                   stackCount={leftSlots.length}
                   bottomAligned={isTwoColumn}
                   titleLayout={titleLayout}
+                  showBody={showBody}
                   metaMode={metaMode}
                 />
               </div>
@@ -805,6 +812,7 @@ export function MovieListTemplate({
                     stackCount={rightSlots.length}
                     bottomAligned={isTwoColumn}
                     titleLayout={titleLayout}
+                    showBody={showBody}
                     metaMode={metaMode}
                   />
                 </div>

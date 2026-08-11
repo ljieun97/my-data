@@ -140,7 +140,8 @@ export default function ContentCapturePage() {
   const [footerRight, setFooterRight] = useState<string>(CAPTURE_TEXT.footerRight);
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewMovieIndex, setPreviewMovieIndex] = useState(0);
-  const [movieListCaptureChunkSize, setMovieListCaptureChunkSize] = useState<1 | 2 | 3>(2);
+  const [movieListCaptureChunkSize, setMovieListCaptureChunkSize] = useState(2);
+  const [showMovieListBody, setShowMovieListBody] = useState(true);
   const [movieListCaptureStartIndex, setMovieListCaptureStartIndex] = useState(0);
   const [rankingCoverMovieIds, setRankingCoverMovieIds] = useState<number[]>([]);
   const [rankingV2BackgroundMovieId, setRankingV2BackgroundMovieId] = useState<number | null>(null);
@@ -337,6 +338,11 @@ export default function ContentCapturePage() {
       nextTitles[index] = title;
       return nextTitles;
     });
+  };
+  const updateMovieListCaptureChunkSize = (nextSize: number) => {
+    const clampedSize = Math.min(10, Math.max(1, nextSize));
+    setMovieListCaptureChunkSize(clampedSize);
+    setMovieListCaptureStartIndex((current) => getMovieListCaptureStart(current, clampedSize));
   };
   const handleExtractRankingRowBackgroundColors = async () => {
     if (isExtractingRankingRowColors) return;
@@ -1026,21 +1032,28 @@ export default function ContentCapturePage() {
                 <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Layout</p>
                 <div className="mb-3">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Split</span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[1, 2, 3].map((count) => (
-                      <CaptureToggleButton
-                        key={`movie-list-split-${count}`}
-                        type="button"
-                        active={movieListCaptureChunkSize === count}
-                        onClick={() => {
-                          const nextChunkSize = count as 1 | 2 | 3;
-                          setMovieListCaptureChunkSize(nextChunkSize);
-                          setMovieListCaptureStartIndex((current) => getMovieListCaptureStart(current, nextChunkSize));
-                        }}
-                      >
-                        {count}개씩
-                      </CaptureToggleButton>
-                    ))}
+                  <div className="grid grid-cols-[40px_1fr_40px] gap-2">
+                    <CaptureToggleButton type="button" active={false} onClick={() => updateMovieListCaptureChunkSize(movieListCaptureChunkSize - 1)}>
+                      ←
+                    </CaptureToggleButton>
+                    <div className="flex h-8 items-center justify-center border border-slate-200 bg-white text-xs font-bold text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100">
+                      {movieListCaptureChunkSize}개씩
+                    </div>
+                    <CaptureToggleButton type="button" active={false} onClick={() => updateMovieListCaptureChunkSize(movieListCaptureChunkSize + 1)}>
+                      →
+                    </CaptureToggleButton>
+                  </div>
+                  <p className="mt-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">1~10개까지 조절</p>
+                </div>
+                <div className="mb-3">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Body</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <CaptureToggleButton type="button" active={showMovieListBody} onClick={() => setShowMovieListBody(true)}>
+                      켜기
+                    </CaptureToggleButton>
+                    <CaptureToggleButton type="button" active={!showMovieListBody} onClick={() => setShowMovieListBody(false)}>
+                      끄기
+                    </CaptureToggleButton>
                   </div>
                 </div>
                 <div className="mb-3">
@@ -1277,6 +1290,7 @@ export default function ContentCapturePage() {
                 twoColumnTextMode={movieListTwoColumnTextMode}
                 centerTitles={movieListCaptureCenterTitles}
                 metaMode={movieListMetaMode}
+                showBody={showMovieListBody}
                 footerLeft={footerLeft}
                 footerRight={footerRight}
               />

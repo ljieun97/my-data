@@ -17,7 +17,7 @@ function formatMovieListYearMetaText(movie?: CaptureMovie) {
   const releaseDate = movie?.release_date?.trim() ?? "";
   const [, year] = releaseDate.match(/^(\d{4})-\d{2}-\d{2}$/) ?? [];
   if (!year) return releaseDate;
-  return `${year} ·`;
+  return `${year} · `;
 }
 
 function formatReleaseBoardDateText(movie?: CaptureMovie) {

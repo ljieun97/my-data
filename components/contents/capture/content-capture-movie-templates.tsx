@@ -61,7 +61,7 @@ function getMovieListMetaLabel(movie: CaptureMovie | undefined, mode: MovieListM
   }
 
   const [, year] = releaseDate.match(/^(\d{4})-\d{2}-\d{2}$/) ?? [];
-  return year ? `${year} ·` : releaseDate;
+  return year ? `${year} · ` : releaseDate;
 }
 
 function getReleaseBoardDateLabel(movie: CaptureMovie | undefined) {

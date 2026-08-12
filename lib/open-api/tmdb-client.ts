@@ -56,6 +56,12 @@ async function normalizeContent(content: any): Promise<any[]> {
 }
 
 export async function getDetail(type: string, id: any) {
+  if (type === "person") {
+    const URL = `${BASE_URL}/person/${id}?language=ko&api_key=${API_KEY}`
+    const response = await fetch(URL, { next: { revalidate: 3600 } })
+    return response.json()
+  }
+
   const appendToResponse = type === "tv" ? "content_ratings" : "release_dates"
   const URL = `${BASE_URL}/${type}/${id}?language=ko&append_to_response=${appendToResponse}&api_key=${API_KEY}`
   const response = await fetch(URL, { next: { revalidate: 3600 } })

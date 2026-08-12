@@ -5,7 +5,7 @@ import { CAPTURE_TEXT } from "@/lib/capture-defaults";
 
 export type CaptureMovie = {
   id: number;
-  media_type?: "movie" | "tv";
+  media_type?: "movie" | "tv" | "person";
   title: string;
   original_title?: string;
   overview?: string;
@@ -112,7 +112,7 @@ export function sanitizeSinglePreviewSubbody(value: string | undefined) {
 function normalizeMovie(movie: any): CaptureMovie | null {
   const id = Number(movie?.id);
   const title = movie?.title || movie?.name;
-  const mediaType = movie?.media_type === "tv" ? "tv" : "movie";
+  const mediaType = movie?.media_type === "person" ? "person" : movie?.media_type === "tv" ? "tv" : "movie";
 
   if (!Number.isFinite(id) || !title) {
     return null;

@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getCaptureMovieMaxCount, useCaptureContent } from "@/context/CaptureContentContext";
 import { CAPTURE_TEXT } from "@/lib/capture-defaults";
-import { getDetail, getImages, getSearchMulti } from "@/lib/open-api/tmdb-client";
+import { getDetail, getImages, getSearchMulti, getSearchPeople } from "@/lib/open-api/tmdb-client";
 
 function getKoreanCertification(detail: any) {
   const movieCertification = Array.isArray(detail?.release_dates?.results)
@@ -83,7 +83,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
   const isCapturePage = pathname?.startsWith("/capture");
   const maxCaptureMovies = getCaptureMovieMaxCount(captureMode);
 
-  const getCaptureResultMediaType = (result: any) => (result?.media_type === "tv" ? "tv" : "movie");
+  const getCaptureResultMediaType = (result: any) => (result?.media_type === "person" ? "person" : result?.media_type === "tv" ? "tv" : "movie");
   const isCaptureResultDisabled = (result: any) => {
     const mediaType = getCaptureResultMediaType(result);
     return hasMovie(Number(result.id), mediaType) || selectedMovies.length >= maxCaptureMovies;
@@ -112,7 +112,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
     let backdropOptions: string[] = [];
     let logoOptions: string[] = [];
     let detail: any = null;
-    const mediaType = movie?.media_type === "tv" ? "tv" : "movie";
+    const mediaType = getCaptureResultMediaType(movie);
     const posterLanguageOrder = ["ko", "en"];
     try {
       setIsLoadingCaptureResults(true);
@@ -132,6 +132,14 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
             .map((poster: any) => poster.file_path)
             .filter(Boolean)
         : [];
+      if (mediaType === "person") {
+        posterOptions = Array.isArray(images?.profiles)
+          ? [...images.profiles]
+              .sort((a: any, b: any) => (b?.vote_average ?? 0) - (a?.vote_average ?? 0))
+              .map((profile: any) => profile.file_path)
+              .filter(Boolean)
+          : [];
+      }
       backdropOptions = Array.isArray(images?.backdrops)
         ? [...images.backdrops]
             .sort((a: any, b: any) => (b?.vote_average ?? 0) - (a?.vote_average ?? 0))
@@ -167,10 +175,10 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
       media_type: mediaType,
       title: detail?.title || detail?.name || movie.title || movie.name,
       original_title: detail?.original_title || detail?.original_name || movie.original_title || movie.original_name,
-      overview: movie.overview || detail?.overview || CAPTURE_TEXT.overviewMissing,
+      overview: movie.overview || detail?.biography || detail?.overview || CAPTURE_TEXT.overviewMissing,
       release_date: detail?.release_date || detail?.first_air_date || movie.release_date || movie.first_air_date,
-      poster_path: posterOptions[0] || detail?.poster_path || movie.poster_path,
-      backdrop_path: backdropOptions[0] || detail?.backdrop_path || movie.backdrop_path || posterOptions[0],
+      poster_path: posterOptions[0] || detail?.profile_path || detail?.poster_path || movie.profile_path || movie.poster_path,
+      backdrop_path: backdropOptions[0] || detail?.profile_path || detail?.backdrop_path || movie.profile_path || movie.backdrop_path || posterOptions[0],
       posterOptions,
       backdropOptions,
       logoOptions,
@@ -218,17 +226,21 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
 
     const timerId = window.setTimeout(async () => {
       try {
-        const data = await getSearchMulti(keyword, 1);
+        const [data, peopleData] = await Promise.all([getSearchMulti(keyword, 1), getSearchPeople(keyword, 1)]);
         if (isCancelled) return;
 
-        const results = Array.isArray(data?.results)
-          ? data.results
-              .filter((item: any) => item?.media_type === "movie" || item?.media_type === "tv" || item?.title || item?.name)
+        const mixedResults = [
+          ...(Array.isArray(data?.results) ? data.results : []),
+          ...(Array.isArray(peopleData?.results) ? peopleData.results.map((person: any) => ({ ...person, media_type: "person" })) : []),
+        ];
+        const results = mixedResults.length
+          ? mixedResults
+              .filter((item: any) => item?.media_type === "movie" || item?.media_type === "tv" || item?.media_type === "person")
               .filter((item: any, index: number, items: any[]) => {
-                const mediaType = item?.media_type === "tv" ? "tv" : "movie";
+                const mediaType = getCaptureResultMediaType(item);
                 const key = `${mediaType}-${item?.id}`;
                 return items.findIndex((candidate: any) => {
-                  const candidateMediaType = candidate?.media_type === "tv" ? "tv" : "movie";
+                  const candidateMediaType = getCaptureResultMediaType(candidate);
                   return `${candidateMediaType}-${candidate?.id}` === key;
                 }) === index;
               })
@@ -238,7 +250,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
         setCaptureResults(results);
         setHighlightedCaptureIndex(() =>
           results.findIndex((result: any) => {
-            const mediaType = result?.media_type === "tv" ? "tv" : "movie";
+            const mediaType = getCaptureResultMediaType(result);
             return !hasMovie(Number(result.id), mediaType) && selectedMovies.length < maxCaptureMovies;
           }),
         );
@@ -357,9 +369,10 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
             const isDisabled = isCaptureResultDisabled(result);
             const yearSource = result.release_date || result.first_air_date;
             const year = yearSource ? String(yearSource).slice(0, 4) : "";
-            const imagePath = result.poster_path || result.backdrop_path;
+            const imagePath = result.poster_path || result.profile_path || result.backdrop_path;
             const title = result.title || result.name;
             const isHighlighted = highlightedCaptureIndex === index;
+            const mediaLabel = mediaType === "person" ? "인물" : mediaType === "tv" ? "시리즈" : "영화";
 
             return (
               <button
@@ -394,7 +407,7 @@ export default function SearchInput({ autoFocus = false }: { autoFocus?: boolean
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</span>
                   <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                    {`${mediaType === "tv" ? "시리즈" : "영화"}${year ? ` · ${year}` : ""}`}
+                    {`${mediaLabel}${year ? ` · ${year}` : ""}`}
                   </span>
                 </span>
                 <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">

@@ -11,7 +11,7 @@ export function formatYear(movie: CaptureMovie) {
 
 export function getExternalImageUrl(imagePath: string) {
   const normalizedPath = imagePath.startsWith("//") ? `https:${imagePath}` : imagePath;
-  return `/api/proxy?url=${encodeURIComponent(normalizedPath)}`;
+  return `/api/proxy?url=${encodeURIComponent(normalizedPath)}&v=${encodeURIComponent(normalizedPath)}`;
 }
 
 export function getBackdropUrl(movie?: CaptureMovie) {

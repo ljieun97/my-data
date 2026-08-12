@@ -171,7 +171,7 @@ export function ReleaseBoardTemplate({
                     <div className={["relative h-full min-h-0 overflow-hidden bg-white", isDense ? "rounded-[0.25rem]" : "rounded-[0.45rem]"].join(" ")}>
                       {posterUrl ? (
                         <>
-                          <img alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
+                          <img key={posterUrl} alt="" src={posterUrl} className="h-full w-full object-cover" crossOrigin="anonymous" />
                           {showLogo ? (
                             <div className="absolute inset-x-[12%] bottom-[7%] z-[2] flex justify-center">
                               <img
@@ -414,6 +414,7 @@ export function RankingV2Template({
                     >
                       {showRowBackgrounds && showImages && imageCandidates[0] ? (
                         <img
+                          key={imageCandidates[0]}
                           alt=""
                           src={imageCandidates[0]}
                           data-fallback-index="0"
@@ -562,6 +563,7 @@ function MovieCaptureRow({
       <div className={["relative h-full min-h-0 w-full flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "" : "rounded-none"].join(" ")}>
         {imageCandidates[0] ? (
           <img
+            key={imageCandidates[0]}
             alt=""
             src={imageCandidates[0]}
             data-fallback-index="0"
@@ -657,6 +659,7 @@ function MovieCaptureRow({
     <div className={["relative h-full min-h-0 w-full flex-1 overflow-hidden bg-slate-900 text-white", rounded ? "" : "rounded-none"].join(" ")}>
       {imageCandidates[0] ? (
         <img
+          key={imageCandidates[0]}
           alt=""
           src={imageCandidates[0]}
           data-fallback-index="0"

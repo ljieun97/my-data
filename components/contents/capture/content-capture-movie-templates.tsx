@@ -60,8 +60,8 @@ function getMovieListMetaLabel(movie: CaptureMovie | undefined, mode: MovieListM
     return `${Number(month)}/${Number(day)} 개봉`;
   }
 
-  const yearMatch = releaseDate.match(/^(\d{4})/);
-  return yearMatch?.[1] ?? releaseDate;
+  const [, year] = releaseDate.match(/^(\d{4})-\d{2}-\d{2}$/) ?? [];
+  return year ? `${year} ·` : releaseDate;
 }
 
 function getReleaseBoardDateLabel(movie: CaptureMovie | undefined) {
@@ -542,7 +542,7 @@ function MovieCaptureRow({
   const isCenterTitle = titleLayout === "center";
   const metaValue = getMovieListMetaLabel(movie, metaMode);
   const subbodyMetaValue = subbodyMetaLine;
-  const bodyMetaValue = metaValue ? `${metaValue} ·` : "";
+  const bodyMetaValue = metaValue;
   const bodyDisplayValue = [bodyMetaValue, bodyValue].filter(Boolean).join("\n");
   const subbodyValue = showBody ? [subbodyMetaValue, bodyDisplayValue].filter(Boolean).join("\n") : "";
   const logoUrl = getLogoUrl(movie);
@@ -551,10 +551,10 @@ function MovieCaptureRow({
   const logoWidthClass = stackCount >= 3 ? "max-w-[116px]" : "max-w-[150px]";
   const overviewClampClass = stackCount >= 3 ? "line-clamp-3" : "line-clamp-4";
   const isPlainText = textStyle === "plain";
-  const subbodyTextSizeClass = subbodyTextSize === "large" ? "text-[14px] leading-[1.18]" : "text-[9px] leading-[1.2]";
-  const bodyTextSizeClass = bodyTextSize === "large" ? "text-[16px] leading-[1.18]" : "text-[10px] leading-[1.22]";
-  const centerSubbodyTextSizeClass = subbodyTextSize === "large" ? "text-[14px] leading-[1.18]" : "text-[10px] leading-[1.2]";
-  const centerBodyTextSizeClass = bodyTextSize === "large" ? "text-[16px] leading-[1.18]" : "text-[11px] leading-[1.24]";
+  const subbodyTextSizeClass = subbodyTextSize === "large" ? "text-[15px] leading-[1.18]" : "text-[10px] leading-[1.2]";
+  const bodyTextSizeClass = bodyTextSize === "large" ? "text-[17px] leading-[1.18]" : "text-[11px] leading-[1.22]";
+  const centerSubbodyTextSizeClass = subbodyTextSize === "large" ? "text-[15px] leading-[1.18]" : "text-[11px] leading-[1.2]";
+  const centerBodyTextSizeClass = bodyTextSize === "large" ? "text-[17px] leading-[1.18]" : "text-[12px] leading-[1.24]";
   const bottomTextPaddingClass = "pb-4";
 
   if (!isCenterTitle) {

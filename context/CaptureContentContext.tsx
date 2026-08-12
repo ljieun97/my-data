@@ -95,6 +95,7 @@ export function sanitizeSinglePreviewSubbody(value: string | undefined) {
   return (value ?? "")
     .split("\n")
     .map((line) => line.trim())
+    .map((line) => line.replace(/\s*\(\d{4}\)$/, ""))
     .filter((line) => {
       if (!line) return false;
       if (/^감독\s*[:|]/.test(line)) return false;

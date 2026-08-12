@@ -55,11 +55,9 @@ function formatKoreanAgeRating(value: string) {
 }
 
 function buildMovieListDefaultSubbody(detail: any) {
-  const releaseDate = (detail?.release_date || detail?.first_air_date || "").trim();
-  const year = releaseDate.match(/^(\d{4})/)?.[1] ?? "";
   const title = (detail?.title || detail?.name || "").trim();
 
-  return [title, year ? `(${year})` : ""].filter(Boolean).join(" ");
+  return title;
 }
 
 function getImageLanguageScore(language: string | null | undefined, languageOrder: Array<string | null>) {

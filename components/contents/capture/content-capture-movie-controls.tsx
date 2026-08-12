@@ -13,6 +13,13 @@ function formatMovieListReleaseText(movie?: CaptureMovie) {
   return `${Number(month)}/${Number(day)} 개봉`;
 }
 
+function formatMovieListYearMetaText(movie?: CaptureMovie) {
+  const releaseDate = movie?.release_date?.trim() ?? "";
+  const [, year] = releaseDate.match(/^(\d{4})-\d{2}-\d{2}$/) ?? [];
+  if (!year) return releaseDate;
+  return `${year} ·`;
+}
+
 function formatReleaseBoardDateText(movie?: CaptureMovie) {
   const releaseDate = movie?.release_date?.trim() ?? "";
   const [, month, day] = releaseDate.match(/^\d{4}-(\d{2})-(\d{2})$/) ?? [];
@@ -184,6 +191,8 @@ export function MovieSlotsPanel({
                           ? formatReleaseBoardDateText(movie)
                           : isMovieListCaptureMode && movieListMetaMode === "release-date"
                           ? formatMovieListReleaseText(movie)
+                          : isMovieListCaptureMode
+                          ? formatMovieListYearMetaText(movie)
                           : movie.release_date
                           ? formatYear(movie)
                           : ""
@@ -191,8 +200,8 @@ export function MovieSlotsPanel({
                       onChange={(event) => updateMovieYear(movie.id, event.target.value)}
                       onMouseDown={(event) => event.stopPropagation()}
                       onDragStart={(event) => event.preventDefault()}
-                      maxLength={16}
-                      placeholder={isReleaseMode ? "7/15" : movieListMetaMode === "release-date" ? "7/15 개봉" : "연도"}
+                      maxLength={24}
+                      placeholder={isReleaseMode ? "7/15" : movieListMetaMode === "release-date" ? "7/15 개봉" : isMovieListCaptureMode ? "연도 ·" : "연도"}
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
                   )}

@@ -562,7 +562,7 @@ function MovieCaptureRow({
   const bodyTextSizeClass = bodyTextSize === "large" ? "text-[17px] leading-[1.18]" : "text-[11px] leading-[1.22]";
   const centerSubbodyTextSizeClass = subbodyTextSize === "large" ? "text-[15px] leading-[1.18]" : "text-[11px] leading-[1.2]";
   const centerBodyTextSizeClass = bodyTextSize === "large" ? "text-[17px] leading-[1.18]" : "text-[12px] leading-[1.24]";
-  const bottomTextPaddingClass = "pb-4";
+  const bottomTextPaddingClass = "pb-12";
 
   if (!isCenterTitle) {
     return (
@@ -696,9 +696,9 @@ function MovieCaptureRow({
         <div
           className={[
             isCenterTitle
-              ? "absolute inset-x-0 bottom-0 z-[2] px-4 pb-4 text-center"
+              ? "absolute inset-x-0 bottom-0 z-[2] px-4 pb-12 text-center"
               : bottomAligned
-              ? "absolute inset-x-0 bottom-0 z-[2] px-4 pb-3 pt-10"
+              ? "absolute inset-x-0 bottom-0 z-[2] px-4 pb-10 pt-10"
               : "relative z-[1] flex items-stretch gap-1 px-[16px] py-[14px]",
           ].join(" ")}
         >
@@ -962,7 +962,7 @@ export function MovieListTemplate({
         </div>
       )}
 
-      <div className="pointer-events-none absolute right-6 top-[8px] z-[10]">
+      <div className="pointer-events-none absolute inset-x-0 bottom-4 z-[10]">
         <CaptureFooter footerLeft={footerLeft} footerRight={footerRight} />
       </div>
     </div>

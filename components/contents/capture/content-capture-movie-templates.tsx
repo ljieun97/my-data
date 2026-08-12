@@ -540,8 +540,11 @@ function MovieCaptureRow({
   const bodyValue = showBody ? (movie?.singlePreviewBody ?? movie?.overview ?? legacySubbodyOverview).trim() : "";
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
+  const metaValue = getMovieListMetaLabel(movie, metaMode);
   const subbodyMetaValue = subbodyMetaLine;
-  const subbodyValue = showBody ? [subbodyMetaValue, bodyValue].filter(Boolean).join("\n") : "";
+  const bodyMetaValue = metaValue ? `${metaValue} ·` : "";
+  const bodyDisplayValue = [bodyMetaValue, bodyValue].filter(Boolean).join("\n");
+  const subbodyValue = showBody ? [subbodyMetaValue, bodyDisplayValue].filter(Boolean).join("\n") : "";
   const logoUrl = getLogoUrl(movie);
   const titleSizeClass = stackCount >= 3 ? "text-[13px]" : "text-[15px]";
   const logoSizeClass = stackCount >= 3 ? "max-h-[22px]" : "max-h-[30px]";
@@ -613,7 +616,21 @@ function MovieCaptureRow({
                 {subbodyMetaValue}
               </p>
             ) : null}
-            {bodyValue ? (
+            {bodyDisplayValue ? (
+              <>
+              {bodyMetaValue ? (
+                <p
+                  style={titleFontStyle}
+                  className={[
+                    "mt-1 whitespace-pre-line text-center font-normal",
+                    bodyTextSizeClass,
+                    isPlainText ? "text-white" : "text-slate-800",
+                  ].join(" ")}
+                >
+                  {bodyMetaValue}
+                </p>
+              ) : null}
+              {bodyValue ? (
               <p
                 style={titleFontStyle}
                 className={[
@@ -625,6 +642,8 @@ function MovieCaptureRow({
               >
                 {bodyValue}
               </p>
+              ) : null}
+              </>
             ) : null}
             </div>
             ) : null}
@@ -713,7 +732,21 @@ function MovieCaptureRow({
                     {subbodyMetaValue}
                   </p>
                 ) : null}
-                {bodyValue ? (
+                {bodyDisplayValue ? (
+                  <>
+                  {bodyMetaValue ? (
+                    <p
+                      style={titleFontStyle}
+                      className={[
+                        "mt-1 whitespace-pre-line text-center font-normal",
+                        centerBodyTextSizeClass,
+                        isPlainText ? "text-white" : "text-slate-800",
+                      ].join(" ")}
+                    >
+                      {bodyMetaValue}
+                    </p>
+                  ) : null}
+                  {bodyValue ? (
                   <p
                     style={titleFontStyle}
                     className={[
@@ -724,6 +757,8 @@ function MovieCaptureRow({
                   >
                     {bodyValue}
                   </p>
+                  ) : null}
+                  </>
                 ) : null}
               </div>
             ) : null}

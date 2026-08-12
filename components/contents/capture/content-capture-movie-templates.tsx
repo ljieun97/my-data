@@ -509,6 +509,151 @@ export function RankingV2Template({
   );
 }
 
+export function RankingV3Template({
+  movies,
+  title,
+  titleSize,
+  footerRight,
+  dateLabel,
+  backgroundStart = "#07131a",
+  backgroundEnd = "#221f2e",
+  backgroundMovie,
+  showDailyAudience = true,
+  showTotalAudience = false,
+  showRanks = true,
+  showImages = true,
+  titleDisplay = "title",
+}: {
+  movies: Array<CaptureMovie | undefined>;
+  title: string;
+  titleSize: number;
+  footerRight: string;
+  dateLabel?: string;
+  backgroundStart?: string;
+  backgroundEnd?: string;
+  backgroundMovie?: CaptureMovie;
+  showDailyAudience?: boolean;
+  showTotalAudience?: boolean;
+  showRanks?: boolean;
+  showImages?: boolean;
+  titleDisplay?: RankingV2TitleDisplay;
+}) {
+  const titleValue = title.trim() || `${movies[0]?.title ?? "1위 작품"} 박스오피스 1위`;
+  const subtextValue = dateLabel?.trim().replace(/\s*\n\s*/g, " ");
+  const backgroundCandidates = buildImageCandidates(getPosterUrl(backgroundMovie), getBackdropUrl(backgroundMovie));
+  const rankingCards = Array.from({ length: 10 }, (_, index) => movies[index]);
+  const useLogoTitles = titleDisplay === "logo";
+
+  return (
+    <div className="relative flex h-full flex-col overflow-hidden bg-[#221f2e] text-white">
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(circle at top right, rgba(236,72,153,0.12), transparent 34%), radial-gradient(circle at bottom left, rgba(59,130,246,0.1), transparent 36%), linear-gradient(180deg, ${backgroundStart} 0%, ${backgroundEnd} 100%)`,
+        }}
+      />
+      {backgroundCandidates[0] ? (
+        <>
+          <img
+            key={backgroundCandidates[0]}
+            alt=""
+            src={backgroundCandidates[0]}
+            data-fallback-index="0"
+            onError={(event) => handleImageFallback(event, backgroundCandidates)}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: `center ${backgroundMovie?.imagePosition ?? 34}%` }}
+            crossOrigin="anonymous"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.78)_0%,rgba(2,6,23,0.58)_42%,rgba(2,6,23,0.92)_100%)]" />
+        </>
+      ) : null}
+      <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.18)_0.8px,transparent_0.8px)] [background-size:11px_11px]" />
+
+      <div className="relative z-[1] flex h-full min-h-0 flex-col px-4 pb-2 pt-4">
+        <CaptureHeadlineBlock
+          title={titleValue}
+          titleSize={titleSize}
+          subtitle={subtextValue}
+          subtitlePlacement="below"
+          subtitleTone="light"
+        />
+
+        <div className="mt-2 grid min-h-0 flex-1 grid-cols-2 grid-rows-5 gap-1.5 overflow-hidden pb-1 pt-1.5">
+          {rankingCards.map((movie, index) => {
+            const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
+            const rankText = movie?.rankingText?.trim() || String(index + 1);
+            const dailyAudience = getRankingDailyAudience(movie);
+            const totalAudience = movie?.rankingTotalAudience?.trim() ?? "";
+
+            return (
+              <div
+                key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-ranking-v3-${index}` : `ranking-v3-placeholder-${index}`}
+                className="relative min-h-0 overflow-hidden rounded-[0.28rem] bg-slate-950 shadow-[0_6px_14px_rgba(0,0,0,0.22)]"
+              >
+                {showImages && imageCandidates[0] ? (
+                  <img
+                    key={imageCandidates[0]}
+                    alt=""
+                    src={imageCandidates[0]}
+                    data-fallback-index="0"
+                    onError={(event) => handleImageFallback(event, imageCandidates)}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    style={{ objectPosition: `center ${movie?.imagePosition ?? 35}%` }}
+                    crossOrigin="anonymous"
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.9)_0%,rgba(2,6,23,0.66)_44%,rgba(2,6,23,0.24)_100%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.08)_0%,rgba(2,6,23,0.3)_100%)]" />
+
+                <div className="relative z-[1] flex h-full min-w-0 flex-col justify-between px-2.5 py-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    {showRanks ? (
+                      <span
+                        style={titleFontStyle}
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/92 text-[12px] font-black leading-none text-slate-950 shadow-[0_2px_6px_rgba(0,0,0,0.24)]"
+                      >
+                        {rankText}
+                      </span>
+                    ) : null}
+                    <div className="min-w-0 flex-1">
+                      {useLogoTitles && getLogoUrl(movie) ? (
+                        <img
+                          alt={movie?.title ?? ""}
+                          src={getLogoUrl(movie)}
+                          className="max-h-[18px] max-w-full object-contain object-left drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                          crossOrigin="anonymous"
+                        />
+                      ) : (
+                        <p
+                          style={titleFontStyle}
+                          className="truncate text-[13px] font-bold uppercase leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                        >
+                          {movie?.title ?? CAPTURE_TEXT.addMovie}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {(showDailyAudience || showTotalAudience) ? (
+                    <div style={rankingNumberStyle} className="flex flex-col items-end text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                      {showDailyAudience ? <span className="whitespace-nowrap text-[13px] leading-none">{dailyAudience}</span> : null}
+                      {showTotalAudience ? <span className="mt-1 whitespace-nowrap text-[9px] font-extrabold leading-none text-white/72">{totalAudience}</span> : null}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="pt-0 text-center">
+          <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || CAPTURE_TEXT.footerRight}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MovieCaptureRow({
   movie,
   index,

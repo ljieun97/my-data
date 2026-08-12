@@ -12,6 +12,7 @@ import {
   MovieListTemplate,
   ReleaseBoardTemplate,
   RankingV2Template,
+  RankingV3Template,
   type RankingV2TitleDisplay,
   type ReleaseBoardTextPlacement,
   type MovieListMetaMode,
@@ -165,7 +166,8 @@ export default function ContentCapturePage() {
   const isNewsMode = captureMode === "news-cover";
   const isRankingMode = captureMode === "ranking-cover";
   const isRankingV2Mode = captureMode === "ranking-cover-v2";
-  const isRankingTextMode = isRankingMode || isRankingV2Mode;
+  const isRankingV3Mode = captureMode === "ranking-cover-v3";
+  const isRankingTextMode = isRankingMode || isRankingV2Mode || isRankingV3Mode;
   const isReleaseMode = captureMode === "release-board";
   const isMovieListMode = captureMode === "movie-list";
   const isMovieMode = isNewsMode || isRankingTextMode || isReleaseMode || isMovieListMode;
@@ -652,6 +654,7 @@ export default function ContentCapturePage() {
           { key: "news-cover", label: "뉴스형" },
           { key: "ranking-cover", label: "순위형" },
           { key: "ranking-cover-v2", label: "순위형 V2" },
+          { key: "ranking-cover-v3", label: "순위형 V3" },
           { key: "release-board", label: "릴리즈형" },
           { key: "movie-list", label: "목록형" },
         ].map((item) => (
@@ -678,14 +681,14 @@ export default function ContentCapturePage() {
               isRankingMode={isRankingTextMode}
               isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode}
               isMovieListCaptureMode={isMovieListMode}
-              isRankingV2Mode={isRankingV2Mode}
+              isRankingV2Mode={isRankingV2Mode || isRankingV3Mode}
               isReleaseMode={isReleaseMode}
               movieListMetaMode={movieListMetaMode}
               movieListBaseYear={movieListBaseYear}
               showRankingTotalAudience={showRankingTotalAudience}
-              showImagePositionControls={isRankingV2Mode}
+              showImagePositionControls={isRankingV2Mode || isRankingV3Mode}
               rankingCoverMovieId={rankingV2BackgroundMovieId}
-              rankingCoverMovieIds={isRankingV2Mode ? undefined : rankingCoverMovieIds}
+              rankingCoverMovieIds={isRankingV2Mode || isRankingV3Mode ? undefined : rankingCoverMovieIds}
               selectedMoviesCount={isRankingTextMode || isReleaseMode ? Math.min(selectedMovies.length, movieSlotCount) : selectedMovies.length}
               movieSlotCount={movieSlotCount}
               movies={slots}
@@ -709,7 +712,7 @@ export default function ContentCapturePage() {
               updateMovieImagePosition={updateMovieImagePosition}
               updateMovieLogo={updateMovieLogo}
               onSelectRankingCoverMovie={(id) => {
-                if (isRankingV2Mode) {
+                if (isRankingV2Mode || isRankingV3Mode) {
                   setRankingV2BackgroundMovieId((current) => (current === id ? null : id));
                 } else {
                   setRankingCoverMovieIds((current) => {
@@ -1045,7 +1048,7 @@ export default function ContentCapturePage() {
                   </label>
                 </div>
               ) : null}
-              {isRankingV2Mode ? (
+              {isRankingV2Mode || isRankingV3Mode ? (
                 <>
                   <div className="mb-3">
                     <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Movie Label</span>
@@ -1453,6 +1456,22 @@ export default function ContentCapturePage() {
                   showRanks={showRankingV2Ranks}
                   showImages={showRankingV2Images}
                   showRowBackgrounds={showRankingV2RowBackgrounds}
+                  titleDisplay={rankingV2TitleDisplay}
+                />
+              ) : isRankingV3Mode ? (
+                <RankingV3Template
+                  movies={slots}
+                  title={captureHeadline}
+                  titleSize={NEWS_HEADER_DEFAULT_SIZE}
+                  footerRight={footerRight}
+                  dateLabel={captureSubTextValue}
+                  backgroundStart={rankingV2BackgroundStart}
+                  backgroundEnd={rankingV2BackgroundEnd}
+                  backgroundMovie={rankingV2BackgroundMovie}
+                  showDailyAudience={showRankingDailyAudience}
+                  showTotalAudience={showRankingTotalAudience}
+                  showRanks={showRankingV2Ranks}
+                  showImages={showRankingV2Images}
                   titleDisplay={rankingV2TitleDisplay}
                 />
               ) : isReleaseMode ? (

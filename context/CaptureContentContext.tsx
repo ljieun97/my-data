@@ -37,12 +37,13 @@ export type CaptureMovie = {
   singlePreviewShowBody?: boolean;
 };
 
-export type CaptureMode = "news-cover" | "ranking-cover" | "ranking-cover-v2" | "release-board" | "movie-list";
+export type CaptureMode = "news-cover" | "ranking-cover" | "ranking-cover-v2" | "ranking-cover-v3" | "release-board" | "movie-list";
 
 export function getCaptureMovieMaxCount(captureMode: CaptureMode) {
   if (captureMode === "release-board") return Infinity;
   if (captureMode === "ranking-cover") return 20;
   if (captureMode === "ranking-cover-v2") return 11;
+  if (captureMode === "ranking-cover-v3") return 10;
   if (captureMode === "movie-list") return 24;
   return 5;
 }

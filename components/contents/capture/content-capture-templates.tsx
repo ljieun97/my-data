@@ -11,5 +11,6 @@ export {
   type RankingV2TitleDisplay,
   type ReleaseBoardTextPlacement,
   RankingV2Template,
+  RankingV3Template,
   ReleaseBoardTemplate,
 } from "@/components/contents/capture/content-capture-movie-templates";

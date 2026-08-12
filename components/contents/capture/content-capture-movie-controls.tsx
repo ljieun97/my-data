@@ -13,11 +13,14 @@ function formatMovieListReleaseText(movie?: CaptureMovie) {
   return `${Number(month)}/${Number(day)} 개봉`;
 }
 
-function formatMovieListYearMetaText(movie?: CaptureMovie) {
-  const releaseDate = movie?.release_date?.trim() ?? "";
+function formatMovieListYearMetaText(movie?: CaptureMovie, baseYear?: string) {
+  const releaseDate = movie?.release_date ?? "";
   const [, year] = releaseDate.match(/^(\d{4})-\d{2}-\d{2}$/) ?? [];
   if (!year) return releaseDate;
-  return `${year} · `;
+  const birthYear = Number(baseYear);
+  const age = Number(year) - birthYear;
+  const ageText = /^\d{4}$/.test(baseYear ?? "") && age >= 0 ? `${age}세 ` : "";
+  return `${year} · ${ageText}`;
 }
 
 function formatReleaseBoardDateText(movie?: CaptureMovie) {
@@ -34,6 +37,7 @@ type MovieSlotsPanelProps = {
   isRankingV2Mode?: boolean;
   isReleaseMode?: boolean;
   movieListMetaMode?: MovieListMetaMode;
+  movieListBaseYear?: string;
   showRankingTotalAudience?: boolean;
   showImagePositionControls?: boolean;
   rankingCoverMovieId?: number | null;
@@ -67,6 +71,7 @@ export function MovieSlotsPanel({
   isRankingV2Mode = false,
   isReleaseMode = false,
   movieListMetaMode = "year",
+  movieListBaseYear = "",
   showRankingTotalAudience = false,
   showImagePositionControls = false,
   rankingCoverMovieId,
@@ -192,7 +197,7 @@ export function MovieSlotsPanel({
                           : isMovieListCaptureMode && movieListMetaMode === "release-date"
                           ? formatMovieListReleaseText(movie)
                           : isMovieListCaptureMode
-                          ? formatMovieListYearMetaText(movie)
+                          ? formatMovieListYearMetaText(movie, movieListBaseYear)
                           : movie.release_date
                           ? formatYear(movie)
                           : ""

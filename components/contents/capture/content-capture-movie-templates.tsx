@@ -50,7 +50,7 @@ function getRankingDailyAudience(movie?: CaptureMovie) {
   return `${audience}${unit}`;
 }
 
-function getMovieListMetaLabel(movie: CaptureMovie | undefined, mode: MovieListMetaMode) {
+function getMovieListMetaLabel(movie: CaptureMovie | undefined, mode: MovieListMetaMode, baseYear = "") {
   const releaseDate = movie?.release_date?.trim();
   if (!releaseDate) return "";
 
@@ -61,7 +61,11 @@ function getMovieListMetaLabel(movie: CaptureMovie | undefined, mode: MovieListM
   }
 
   const [, year] = releaseDate.match(/^(\d{4})-\d{2}-\d{2}$/) ?? [];
-  return year ? `${year} · ` : releaseDate;
+  if (!year) return releaseDate;
+  const birthYear = Number(baseYear);
+  const age = Number(year) - birthYear;
+  const ageText = /^\d{4}$/.test(baseYear) && age >= 0 ? `${age}세 ` : "";
+  return `${year} · ${ageText}`;
 }
 
 function getReleaseBoardDateLabel(movie: CaptureMovie | undefined) {
@@ -518,6 +522,7 @@ function MovieCaptureRow({
   textStyle = "box",
   subbodyTextSize = "small",
   bodyTextSize = "small",
+  baseYear = "",
   metaMode = "year",
 }: {
   movie?: CaptureMovie;
@@ -532,6 +537,7 @@ function MovieCaptureRow({
   textStyle?: MovieListTextStyle;
   subbodyTextSize?: MovieListTextSize;
   bodyTextSize?: MovieListTextSize;
+  baseYear?: string;
   metaMode?: MovieListMetaMode;
 }) {
   const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
@@ -541,7 +547,7 @@ function MovieCaptureRow({
   const bodyValue = showBody ? (movie?.singlePreviewBody ?? movie?.overview ?? legacySubbodyOverview).trim() : "";
   const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
   const isCenterTitle = titleLayout === "center";
-  const metaValue = getMovieListMetaLabel(movie, metaMode);
+  const metaValue = getMovieListMetaLabel(movie, metaMode, baseYear);
   const subbodyMetaValue = subbodyMetaLine;
   const bodyMetaValue = metaValue;
   const bodyDisplayValue = [bodyMetaValue, bodyValue].filter(Boolean).join("\n");
@@ -786,6 +792,7 @@ export function MovieListTemplate({
   textStyle,
   subbodyTextSize,
   bodyTextSize,
+  baseYear,
   footerLeft,
   footerRight,
 }: {
@@ -802,6 +809,7 @@ export function MovieListTemplate({
   textStyle: MovieListTextStyle;
   subbodyTextSize: MovieListTextSize;
   bodyTextSize: MovieListTextSize;
+  baseYear: string;
   footerLeft: string;
   footerRight: string;
 }) {
@@ -857,6 +865,7 @@ export function MovieListTemplate({
                     textStyle={textStyle}
                     subbodyTextSize={subbodyTextSize}
                     bodyTextSize={bodyTextSize}
+                    baseYear={baseYear}
                     metaMode={metaMode}
                   />
                 </div>
@@ -874,6 +883,7 @@ export function MovieListTemplate({
                     textStyle={textStyle}
                     subbodyTextSize={subbodyTextSize}
                     bodyTextSize={bodyTextSize}
+                    baseYear={baseYear}
                     metaMode={metaMode}
                   />
                 </div>
@@ -918,6 +928,7 @@ export function MovieListTemplate({
                   textStyle={textStyle}
                   subbodyTextSize={subbodyTextSize}
                   bodyTextSize={bodyTextSize}
+                  baseYear={baseYear}
                   metaMode={metaMode}
                 />
               </div>
@@ -941,6 +952,7 @@ export function MovieListTemplate({
                     textStyle={textStyle}
                     subbodyTextSize={subbodyTextSize}
                     bodyTextSize={bodyTextSize}
+                    baseYear={baseYear}
                     metaMode={metaMode}
                   />
                 </div>

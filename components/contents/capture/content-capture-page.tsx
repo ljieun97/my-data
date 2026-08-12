@@ -151,6 +151,7 @@ export default function ContentCapturePage() {
   const [movieListTextStyle, setMovieListTextStyle] = useState<MovieListTextStyle>("box");
   const [movieListSubbodyTextSize, setMovieListSubbodyTextSize] = useState<MovieListTextSize>("large");
   const [movieListBodyTextSize, setMovieListBodyTextSize] = useState<MovieListTextSize>("small");
+  const [movieListBaseYear, setMovieListBaseYear] = useState("");
   const [movieListCaptureStartIndex, setMovieListCaptureStartIndex] = useState(0);
   const [rankingCoverMovieIds, setRankingCoverMovieIds] = useState<number[]>([]);
   const [rankingV2BackgroundMovieId, setRankingV2BackgroundMovieId] = useState<number | null>(null);
@@ -680,6 +681,7 @@ export default function ContentCapturePage() {
               isRankingV2Mode={isRankingV2Mode}
               isReleaseMode={isReleaseMode}
               movieListMetaMode={movieListMetaMode}
+              movieListBaseYear={movieListBaseYear}
               showRankingTotalAudience={showRankingTotalAudience}
               showImagePositionControls={isRankingV2Mode}
               rankingCoverMovieId={rankingV2BackgroundMovieId}
@@ -1205,6 +1207,16 @@ export default function ContentCapturePage() {
                     </CaptureToggleButton>
                   </div>
                 </div>
+                <label className="mb-3 block">
+                  <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">기준연도</span>
+                  <input
+                    value={movieListBaseYear}
+                    onChange={(event) => setMovieListBaseYear(event.target.value.replace(/[^\d]/g, "").slice(0, 4))}
+                    placeholder="예: 2002"
+                    inputMode="numeric"
+                    className="h-8 w-full border border-slate-200 bg-white px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                  />
+                </label>
                 <div className="mb-3">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Subbody Size</span>
                   <div className="grid grid-cols-2 gap-2">
@@ -1465,6 +1477,7 @@ export default function ContentCapturePage() {
                 twoColumnTextMode={movieListTwoColumnTextMode}
                 centerTitles={movieListCaptureCenterTitles}
                 metaMode={movieListMetaMode}
+                baseYear={movieListBaseYear}
                 showBody={showMovieListBody}
                 textStyle={movieListTextStyle}
                 subbodyTextSize={movieListSubbodyTextSize}

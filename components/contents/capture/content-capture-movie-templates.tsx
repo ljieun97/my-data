@@ -33,6 +33,10 @@ function hexToRgba(hexColor: string, alpha: number, fallback: string) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+function getImageLayerTranslateX(movie?: CaptureMovie) {
+  return `${((movie?.imagePositionX ?? 50) - 50) * 0.4}%`;
+}
+
 function parseAudienceCount(value: string | undefined) {
   const normalizedValue = value?.trim();
   if (!normalizedValue) return null;
@@ -329,13 +333,6 @@ export function RankingV2Template({
     movie?.rankingText?.trim() || String(index + 1);
   const getDailyAudience = getRankingDailyAudience;
   const getTotalAudience = (movie?: CaptureMovie) => movie?.rankingTotalAudience?.trim() ?? "";
-  const audienceColumnCharacterCount = Math.max(
-    0,
-    ...rankingRows.map((movie) =>
-      Math.max(getDailyAudience(movie).length, showTotalAudience ? getTotalAudience(movie).length : 0),
-    ),
-  );
-  const audienceColumnWidthRem = Math.max(showTotalAudience ? 3.5 : 3, Math.min(showTotalAudience ? 4.7 : 3.9, audienceColumnCharacterCount * 0.41));
   const backgroundCandidates = buildImageCandidates(getPosterUrl(backgroundMovie), getBackdropUrl(backgroundMovie));
   const useLogoTitles = titleDisplay === "logo";
 
@@ -355,7 +352,7 @@ export function RankingV2Template({
             data-fallback-index="0"
             onError={(event) => handleImageFallback(event, backgroundCandidates)}
             className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition: `center ${backgroundMovie?.imagePosition ?? 34}%` }}
+            style={{ objectPosition: `50% ${backgroundMovie?.imagePosition ?? 34}%`, transform: `translateX(${getImageLayerTranslateX(backgroundMovie)})` }}
             crossOrigin="anonymous"
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.78)_0%,rgba(2,6,23,0.58)_42%,rgba(2,6,23,0.9)_100%)]" />
@@ -394,11 +391,7 @@ export function RankingV2Template({
               return (
                 <div
                   key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-${index}` : `ranking-v2-placeholder-${index}`}
-                  className="grid min-h-0 flex-1 items-stretch"
-                  style={{
-                    columnGap: showDailyAudience ? "0.12rem" : undefined,
-                    gridTemplateColumns: showDailyAudience ? `minmax(0,1fr) ${audienceColumnWidthRem.toFixed(2)}rem` : "minmax(0,1fr)",
-                  }}
+                  className="min-h-0 flex-1"
                 >
                   <div
                     className={[
@@ -410,6 +403,7 @@ export function RankingV2Template({
                       justifySelf: "start",
                       width: `calc(100% - ${rowTipInsetPx}px)`,
                       clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)",
+                      height: "100%",
                     }}
                   >
                     <div
@@ -423,10 +417,12 @@ export function RankingV2Template({
                           src={imageCandidates[0]}
                           data-fallback-index="0"
                           onError={(event) => handleImageFallback(event, imageCandidates)}
-                          className="absolute inset-y-0 right-0 block h-full object-cover"
+                          className="absolute inset-y-0 block h-full object-cover"
                           style={{
-                            objectPosition: `center ${movie?.imagePosition ?? 35}%`,
-                            width: "50%",
+                            objectPosition: `50% ${movie?.imagePosition ?? 35}%`,
+                            right: showDailyAudience ? "4.85rem" : 0,
+                            width: showDailyAudience ? "42%" : "50%",
+                            transform: `translateX(${getImageLayerTranslateX(movie)})`,
                           }}
                           crossOrigin="anonymous"
                         />
@@ -441,7 +437,17 @@ export function RankingV2Template({
                           }}
                         />
                       ) : null}
-                      <div className={["relative z-[1] flex h-full min-w-0 items-center pr-7", showRanks ? "gap-3 pl-2" : "gap-0 pl-2.5"].join(" ")}>
+                      {showDailyAudience ? (
+                        <div
+                          className="absolute inset-y-0 right-0 z-[1] w-[5.8rem]"
+                          style={{
+                            background: showRowBackgrounds
+                              ? `linear-gradient(90deg,rgba(34,31,46,0) 0%,${rowBackgroundMid} 24%,${rowBackgroundFull} 58%,${rowBackgroundStrong} 100%)`
+                              : "linear-gradient(90deg,rgba(2,6,23,0) 0%,rgba(2,6,23,0.78) 55%,rgba(2,6,23,0.96) 100%)",
+                          }}
+                        />
+                      ) : null}
+                      <div className={["relative z-[1] flex h-full min-w-0 items-center", showDailyAudience ? "pr-[4.8rem]" : "pr-7", showRanks ? "gap-3 pl-2" : "gap-0 pl-2.5"].join(" ")}>
                         {showRanks ? (
                           <span
                             style={titleFontStyle}
@@ -474,28 +480,28 @@ export function RankingV2Template({
                           )}
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  {showDailyAudience ? (
-                    <div
-                      style={rankingNumberStyle}
-                      className="flex h-full min-w-0 flex-col items-end justify-center py-[1px] text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.28)]"
-                    >
-                      <span
-                        className={[
-                          "w-full whitespace-nowrap leading-none text-white",
-                          isDenseRanking ? "text-[13px]" : "text-[14px]",
-                        ].join(" ")}
-                      >
-                        {getDailyAudience(movie)}
-                      </span>
-                      {showTotalAudience ? (
-                        <span className="mt-[1px] w-full whitespace-nowrap text-[8px] font-extrabold leading-none text-white/58">
-                          {getTotalAudience(movie)}
-                        </span>
+                      {showDailyAudience ? (
+                        <div
+                          style={rankingNumberStyle}
+                          className="absolute inset-y-0 right-5 z-[2] flex min-w-[3.6rem] flex-col items-end justify-center py-[1px] text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.34)]"
+                        >
+                          <span
+                            className={[
+                              "whitespace-nowrap leading-none text-white",
+                              isDenseRanking ? "text-[12px]" : "text-[13px]",
+                            ].join(" ")}
+                          >
+                            {getDailyAudience(movie)}
+                          </span>
+                          {showTotalAudience ? (
+                            <span className="mt-[1px] whitespace-nowrap text-[8px] font-extrabold leading-none text-white/62">
+                              {getTotalAudience(movie)}
+                            </span>
+                          ) : null}
+                        </div>
                       ) : null}
                     </div>
-                  ) : null}
+                  </div>
                 </div>
               );
             })}
@@ -561,7 +567,7 @@ export function RankingV3Template({
             data-fallback-index="0"
             onError={(event) => handleImageFallback(event, backgroundCandidates)}
             className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition: `center ${backgroundMovie?.imagePosition ?? 34}%` }}
+            style={{ objectPosition: `50% ${backgroundMovie?.imagePosition ?? 34}%`, transform: `translateX(${getImageLayerTranslateX(backgroundMovie)})` }}
             crossOrigin="anonymous"
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.78)_0%,rgba(2,6,23,0.58)_42%,rgba(2,6,23,0.92)_100%)]" />
@@ -598,7 +604,7 @@ export function RankingV3Template({
                     data-fallback-index="0"
                     onError={(event) => handleImageFallback(event, imageCandidates)}
                     className="absolute inset-0 h-full w-full object-cover"
-                    style={{ objectPosition: `center ${movie?.imagePosition ?? 35}%` }}
+                    style={{ objectPosition: `50% ${movie?.imagePosition ?? 35}%`, transform: `translateX(${getImageLayerTranslateX(movie)})` }}
                     crossOrigin="anonymous"
                   />
                 ) : null}
@@ -690,7 +696,8 @@ function MovieCaptureRow({
   const [subbodyMetaLine, ...subbodyRestLines] = subbodyLines;
   const legacySubbodyOverview = subbodyRestLines.join(" ");
   const bodyValue = showBody ? (movie?.singlePreviewBody ?? movie?.overview ?? legacySubbodyOverview).trim() : "";
-  const objectPosition = `center ${movie?.imagePosition ?? 20}%`;
+  const objectPosition = `50% ${movie?.imagePosition ?? 20}%`;
+  const imageLayerTranslateX = `translateX(${getImageLayerTranslateX(movie)})`;
   const isCenterTitle = titleLayout === "center";
   const metaValue = getMovieListMetaLabel(movie, metaMode, baseYear);
   const subbodyMetaValue = subbodyMetaLine;
@@ -720,7 +727,7 @@ function MovieCaptureRow({
             data-fallback-index="0"
             onError={(event) => handleImageFallback(event, imageCandidates)}
             className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition }}
+            style={{ objectPosition, transform: imageLayerTranslateX }}
             crossOrigin="anonymous"
           />
         ) : null}
@@ -816,7 +823,7 @@ function MovieCaptureRow({
           data-fallback-index="0"
           onError={(event) => handleImageFallback(event, imageCandidates)}
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ objectPosition, transform: "scale(1.1)" }}
+          style={{ objectPosition, transform: `${imageLayerTranslateX} scale(1.1)` }}
           crossOrigin="anonymous"
         />
       ) : null}

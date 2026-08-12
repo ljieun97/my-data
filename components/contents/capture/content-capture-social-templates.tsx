@@ -26,6 +26,10 @@ function getMovieImageCandidates(movie?: CaptureMovie) {
   return buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
 }
 
+function getImageLayerTranslateX(movie?: CaptureMovie) {
+  return `${((movie?.imagePositionX ?? 50) - 50) * 0.4}%`;
+}
+
 function getRankingDailyAudience(movie?: CaptureMovie) {
   if (!movie) return "";
   const audience = movie.rankingDailyAudience?.trim() || "1,000";
@@ -178,7 +182,7 @@ export function RankingCoverTemplate({
                         data-fallback-index="0"
                         onError={(event) => handleImageFallback(event, imageCandidates)}
                         className="absolute inset-0 h-full w-full object-cover"
-                        style={{ objectPosition: `center ${rankingImagePosition}%` }}
+                        style={{ objectPosition: `50% ${rankingImagePosition}%`, transform: `translateX(${getImageLayerTranslateX(coverMovie)})` }}
                         crossOrigin="anonymous"
                       />
                     ) : (
@@ -331,7 +335,7 @@ export function RankingCoverTemplate({
                     data-fallback-index="0"
                     onError={(event) => handleImageFallback(event, imageCandidates)}
                     className="absolute inset-0 h-full w-full object-cover"
-                    style={{ objectPosition: `center ${rankingImagePosition}%` }}
+                    style={{ objectPosition: `50% ${rankingImagePosition}%`, transform: `translateX(${getImageLayerTranslateX(coverMovie)})` }}
                     crossOrigin="anonymous"
                   />
                 ) : (
@@ -526,7 +530,7 @@ export function NewsCoverTemplate({
                 data-fallback-index="0"
                 onError={(event) => handleImageFallback(event, imageCandidates)}
                 className="h-full w-full object-cover"
-                style={{ objectPosition: `center ${movie?.imagePosition ?? 42}%` }}
+                style={{ objectPosition: `50% ${movie?.imagePosition ?? 42}%`, transform: `translateX(${getImageLayerTranslateX(movie)})` }}
                 crossOrigin="anonymous"
               />
             ) : (
@@ -542,7 +546,7 @@ export function NewsCoverTemplate({
                 data-fallback-index="0"
                 onError={(event) => handleImageFallback(event, secondaryImageCandidates)}
                 className="h-full w-full object-cover"
-                style={{ objectPosition: `center ${secondaryMovie?.imagePosition ?? 42}%` }}
+                style={{ objectPosition: `50% ${secondaryMovie?.imagePosition ?? 42}%`, transform: `translateX(${getImageLayerTranslateX(secondaryMovie)})` }}
                 crossOrigin="anonymous"
               />
             ) : imageCandidates[0] ? (
@@ -553,7 +557,7 @@ export function NewsCoverTemplate({
                 data-fallback-index="0"
                 onError={(event) => handleImageFallback(event, imageCandidates)}
                 className="h-full w-full object-cover"
-                style={{ objectPosition: `center ${movie?.imagePosition ?? 42}%` }}
+                style={{ objectPosition: `50% ${movie?.imagePosition ?? 42}%`, transform: `translateX(${getImageLayerTranslateX(movie)})` }}
                 crossOrigin="anonymous"
               />
             ) : (
@@ -569,7 +573,7 @@ export function NewsCoverTemplate({
           data-fallback-index="0"
           onError={(event) => handleImageFallback(event, imageCandidates)}
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ objectPosition: `center ${movie?.imagePosition ?? 42}%` }}
+          style={{ objectPosition: `50% ${movie?.imagePosition ?? 42}%`, transform: `translateX(${getImageLayerTranslateX(movie)})` }}
           crossOrigin="anonymous"
         />
       ) : (

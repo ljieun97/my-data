@@ -103,6 +103,7 @@ export default function ContentCapturePage() {
     updateMovieReleaseBadge,
     updateMovieYear,
     updateMovieImagePosition,
+    updateMovieImagePositionX,
     updateMoviePoster,
     updateMovieBackdrop,
     updateMovieLogo,
@@ -710,6 +711,7 @@ export default function ContentCapturePage() {
               updateMovieReleaseBadge={updateMovieReleaseBadge}
               updateMovieYear={updateMovieYear}
               updateMovieImagePosition={updateMovieImagePosition}
+              updateMovieImagePositionX={updateMovieImagePositionX}
               updateMovieLogo={updateMovieLogo}
               onSelectRankingCoverMovie={(id) => {
                 if (isRankingV2Mode || isRankingV3Mode) {

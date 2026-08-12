@@ -60,6 +60,7 @@ type MovieSlotsPanelProps = {
   updateMovieReleaseBadge: (id: number, value: boolean) => void;
   updateMovieYear: (id: number, year: string) => void;
   updateMovieImagePosition: (id: number, imagePosition: number) => void;
+  updateMovieImagePositionX: (id: number, imagePositionX: number) => void;
   updateMovieLogo?: (id: number, logoPath: string | null) => void;
   onSelectRankingCoverMovie?: (id: number) => void;
 };
@@ -94,6 +95,7 @@ export function MovieSlotsPanel({
   updateMovieReleaseBadge,
   updateMovieYear,
   updateMovieImagePosition,
+  updateMovieImagePositionX,
   updateMovieLogo,
   onSelectRankingCoverMovie,
 }: MovieSlotsPanelProps) {
@@ -321,6 +323,40 @@ export function MovieSlotsPanel({
                           className={[
                             "h-7 border px-2 text-[11px] font-bold transition",
                             (movie.imagePosition ?? 20) === 20
+                              ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
+                              : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                          ].join(" ")}
+                        >
+                          기본
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onMouseDown={(event) => event.stopPropagation()}
+                          onClick={() => updateMovieImagePositionX(movie.id, (movie.imagePositionX ?? 50) - 5)}
+                          className="inline-flex h-7 min-w-8 items-center justify-center border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+                        >
+                          ←
+                        </button>
+                        <div className="flex h-7 min-w-0 flex-1 items-center justify-center border border-slate-200 bg-slate-50 px-2 text-[11px] font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                          X {(movie.imagePositionX ?? 50)}%
+                        </div>
+                        <button
+                          type="button"
+                          onMouseDown={(event) => event.stopPropagation()}
+                          onClick={() => updateMovieImagePositionX(movie.id, (movie.imagePositionX ?? 50) + 5)}
+                          className="inline-flex h-7 min-w-8 items-center justify-center border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+                        >
+                          →
+                        </button>
+                        <button
+                          type="button"
+                          onMouseDown={(event) => event.stopPropagation()}
+                          onClick={() => updateMovieImagePositionX(movie.id, 50)}
+                          className={[
+                            "h-7 border px-2 text-[11px] font-bold transition",
+                            (movie.imagePositionX ?? 50) === 50
                               ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950"
                               : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
                           ].join(" ")}

@@ -445,7 +445,7 @@ export function RankingV2Template({
               return (
                 <div
                   key={movie ? `${movie.media_type ?? "movie"}-${movie.id}-${index}` : `ranking-v2-placeholder-${index}`}
-                  className="min-h-0 flex-1"
+                  className="relative min-h-0 flex-1"
                 >
                   <div
                     className={[
@@ -455,7 +455,7 @@ export function RankingV2Template({
                     style={{
                       gridTemplateColumns: "minmax(0,1fr)",
                       justifySelf: "start",
-                      width: `calc(100% - ${rowTipInsetPx}px)`,
+                      width: `calc(100% - ${rowTipInsetPx + (showDailyAudience ? 78 : 0)}px)`,
                       clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)",
                       height: "100%",
                     }}
@@ -475,7 +475,7 @@ export function RankingV2Template({
                           style={{
                             objectPosition: `50% ${movie?.imagePosition ?? 35}%`,
                             right: 0,
-                            width: showDailyAudience ? "48%" : "50%",
+                            width: showDailyAudience ? "62%" : "58%",
                             transform: `translateX(${getImageLayerTranslateX(movie)})`,
                           }}
                           crossOrigin="anonymous"
@@ -496,12 +496,12 @@ export function RankingV2Template({
                           className="absolute inset-y-0 right-0 z-[1] w-[5.8rem]"
                           style={{
                             background: showRowBackgrounds
-                              ? `linear-gradient(90deg,rgba(34,31,46,0) 0%,${rowBackgroundMid} 38%,${rowBackgroundFull} 74%,${rowBackgroundStrong} 100%)`
+                              ? `linear-gradient(270deg,${rowBackgroundStrong} 0%,${rowBackgroundFull} 26%,${rowBackgroundMid} 62%,rgba(34,31,46,0) 100%)`
                               : "linear-gradient(90deg,rgba(2,6,23,0) 0%,rgba(2,6,23,0.78) 55%,rgba(2,6,23,0.96) 100%)",
                           }}
                         />
                       ) : null}
-                      <div className={["relative z-[1] flex h-full min-w-0 items-center", showDailyAudience ? "pr-[4.8rem]" : "pr-7", showRanks ? "gap-3 pl-2" : "gap-0 pl-2.5"].join(" ")}>
+                      <div className={["relative z-[1] flex h-full min-w-0 items-center pr-7", showRanks ? "gap-3 pl-2" : "gap-0 pl-2.5"].join(" ")}>
                         {showRanks ? (
                           <span
                             style={titleFontStyle}
@@ -534,28 +534,28 @@ export function RankingV2Template({
                           )}
                         </div>
                       </div>
-                      {showDailyAudience ? (
-                        <div
-                          style={rankingNumberStyle}
-                          className="absolute inset-y-0 right-5 z-[2] flex min-w-[3.6rem] flex-col items-end justify-center py-[1px] text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.34)]"
-                        >
-                          <span
-                            className={[
-                              "whitespace-nowrap leading-none text-white",
-                              isDenseRanking ? "text-[12px]" : "text-[13px]",
-                            ].join(" ")}
-                          >
-                            {getDailyAudience(movie)}
-                          </span>
-                          {showTotalAudience ? (
-                            <span className="mt-[1px] whitespace-nowrap text-[8px] font-extrabold leading-none text-white/62">
-                              {getTotalAudience(movie)}
-                            </span>
-                          ) : null}
-                        </div>
-                      ) : null}
                     </div>
                   </div>
+                  {showDailyAudience ? (
+                    <div
+                      style={rankingNumberStyle}
+                      className="absolute inset-y-0 right-0 z-[2] flex min-w-[3.7rem] flex-col items-end justify-center py-[1px] text-right font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.34)]"
+                    >
+                      <span
+                        className={[
+                          "whitespace-nowrap leading-none text-white",
+                          isDenseRanking ? "text-[12px]" : "text-[13px]",
+                        ].join(" ")}
+                      >
+                        {getDailyAudience(movie)}
+                      </span>
+                      {showTotalAudience ? (
+                        <span className="mt-[1px] whitespace-nowrap text-[8px] font-extrabold leading-none text-white/62">
+                          {getTotalAudience(movie)}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               );
             })}

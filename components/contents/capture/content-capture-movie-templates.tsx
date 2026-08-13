@@ -87,6 +87,60 @@ function getLogoUrl(movie: CaptureMovie | undefined) {
   return `https://image.tmdb.org/t/p/original${logoPath}`;
 }
 
+function getCollageText(movie: CaptureMovie | undefined) {
+  const text = movie?.release_date?.trim();
+  if (!text) return "";
+  const [, year] = text.match(/^(\d{4})-\d{2}-\d{2}$/) ?? [];
+  return year || text;
+}
+
+function MovieCollageCaption({ movie, large = false }: { movie?: CaptureMovie; large?: boolean }) {
+  const logoUrl = getLogoUrl(movie);
+  const rightText = getCollageText(movie);
+  const positionClass = large ? "top-[62%] -translate-y-1/2" : "inset-y-0";
+
+  if (!movie && !rightText) return null;
+
+  return (
+    <div className={["pointer-events-none absolute inset-x-0 z-[3] flex items-center justify-between gap-3 px-3", positionClass].join(" ")}>
+      <div className="min-w-0 flex-1">
+        {logoUrl ? (
+          <img
+            alt={movie?.title ?? ""}
+            src={logoUrl}
+            className={[large ? "max-h-[34px] max-w-[180px]" : "max-h-[24px] max-w-[136px]", "object-contain object-left"].join(" ")}
+            crossOrigin="anonymous"
+          />
+        ) : (
+          <p
+            style={titleFontStyle}
+            className={[large ? "text-[18px]" : "text-[13px]", "truncate font-black uppercase leading-none tracking-[-0.04em] text-white"].join(" ")}
+          >
+            {movie?.title ?? CAPTURE_TEXT.addMovie}
+          </p>
+        )}
+      </div>
+      {rightText ? (
+        <span
+          style={titleFontStyle}
+          className={[large ? "text-[15px]" : "text-[11px]", "shrink-0 font-extrabold leading-none text-white/92"].join(" ")}
+        >
+          {rightText}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function MovieCollageSideGradients() {
+  return (
+    <>
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-[2] w-[42%] bg-[linear-gradient(90deg,rgba(0,0,0,0.72)_0%,rgba(0,0,0,0.34)_48%,rgba(0,0,0,0)_100%)]" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-[2] w-[34%] bg-[linear-gradient(270deg,rgba(0,0,0,0.62)_0%,rgba(0,0,0,0.28)_46%,rgba(0,0,0,0)_100%)]" />
+    </>
+  );
+}
+
 function getMovieListSubbodyLines(value: string) {
   return value
     .split("\n")
@@ -420,8 +474,8 @@ export function RankingV2Template({
                           className="absolute inset-y-0 block h-full object-cover"
                           style={{
                             objectPosition: `50% ${movie?.imagePosition ?? 35}%`,
-                            right: showDailyAudience ? "4.85rem" : 0,
-                            width: showDailyAudience ? "42%" : "50%",
+                            right: 0,
+                            width: showDailyAudience ? "48%" : "50%",
                             transform: `translateX(${getImageLayerTranslateX(movie)})`,
                           }}
                           crossOrigin="anonymous"
@@ -442,7 +496,7 @@ export function RankingV2Template({
                           className="absolute inset-y-0 right-0 z-[1] w-[5.8rem]"
                           style={{
                             background: showRowBackgrounds
-                              ? `linear-gradient(90deg,rgba(34,31,46,0) 0%,${rowBackgroundMid} 24%,${rowBackgroundFull} 58%,${rowBackgroundStrong} 100%)`
+                              ? `linear-gradient(90deg,rgba(34,31,46,0) 0%,${rowBackgroundMid} 38%,${rowBackgroundFull} 74%,${rowBackgroundStrong} 100%)`
                               : "linear-gradient(90deg,rgba(2,6,23,0) 0%,rgba(2,6,23,0.78) 55%,rgba(2,6,23,0.96) 100%)",
                           }}
                         />
@@ -655,6 +709,106 @@ export function RankingV3Template({
         <div className="pt-0 text-center">
           <span className="text-[10px] font-semibold tracking-[0.03em] text-white/45">{footerRight || CAPTURE_TEXT.footerRight}</span>
         </div>
+      </div>
+    </div>
+  );
+}
+
+export function MovieCollageTemplate({
+  movies,
+  title,
+  subtitle,
+  titleSize,
+  footerRight,
+  heroExtendsToHeader = true,
+}: {
+  movies: Array<CaptureMovie | undefined>;
+  title: string;
+  subtitle?: string;
+  titleSize: number;
+  footerRight: string;
+  heroExtendsToHeader?: boolean;
+}) {
+  const visibleMovies = movies.filter(Boolean).slice(0, 10) as CaptureMovie[];
+  const heroMovie = visibleMovies[0];
+  const tileMovies = visibleMovies.slice(1);
+  const heroCandidates = buildImageCandidates(getBackdropUrl(heroMovie), getPosterUrl(heroMovie));
+  const subtextValue = subtitle?.trim().replace(/\s*\n\s*/g, " ");
+  const tileCount = tileMovies.length;
+  const tileColumns = tileCount <= 2 ? 1 : 2;
+  const headline = (
+    <CaptureHeadlineBlock
+      title={title}
+      titleSize={titleSize}
+      subtitle={subtextValue}
+      subtitlePlacement="below"
+      subtitleTone="light"
+    />
+  );
+
+  return (
+    <div className="relative flex h-full flex-col overflow-hidden bg-black text-white">
+      {!heroExtendsToHeader ? (
+        <div className="relative z-[4] shrink-0 px-4 pb-2 pt-4">
+          {headline}
+        </div>
+      ) : null}
+      <div className="relative min-h-0 flex-[1.16] overflow-hidden">
+        {heroCandidates[0] ? (
+          <img
+            key={heroCandidates[0]}
+            alt=""
+            src={heroCandidates[0]}
+            data-fallback-index="0"
+            onError={(event) => handleImageFallback(event, heroCandidates)}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: `50% ${heroMovie?.imagePosition ?? 34}%`, transform: `translateX(${getImageLayerTranslateX(heroMovie)})` }}
+            crossOrigin="anonymous"
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.62)_0%,rgba(0,0,0,0.18)_46%,rgba(0,0,0,0.08)_100%)]" />
+        <MovieCollageSideGradients />
+        {heroExtendsToHeader ? <div className="absolute inset-x-0 top-0 z-[2] px-4 pt-4">{headline}</div> : null}
+        <MovieCollageCaption movie={heroMovie} large />
+      </div>
+
+      <div
+        className="grid min-h-0 flex-1 gap-0 overflow-hidden"
+        style={{
+          gridTemplateColumns: `repeat(${tileColumns}, minmax(0, 1fr))`,
+        }}
+      >
+        {tileMovies.map((movie, index) => {
+          const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
+          const isLastOddTile = tileColumns === 2 && tileCount % 2 === 1 && index === tileCount - 1;
+
+          return (
+            <div
+              key={`${movie.media_type ?? "movie"}-${movie.id}-movie-collage-${index}`}
+              className="relative min-h-0 overflow-hidden bg-black"
+              style={{ gridColumn: isLastOddTile ? "span 2" : undefined }}
+            >
+              {imageCandidates[0] ? (
+                <img
+                  key={imageCandidates[0]}
+                  alt=""
+                  src={imageCandidates[0]}
+                  data-fallback-index="0"
+                  onError={(event) => handleImageFallback(event, imageCandidates)}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  style={{ objectPosition: `50% ${movie.imagePosition ?? 35}%`, transform: `translateX(${getImageLayerTranslateX(movie)})` }}
+                  crossOrigin="anonymous"
+                />
+              ) : null}
+              <MovieCollageSideGradients />
+              <MovieCollageCaption movie={movie} />
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.56)_100%)] px-4 pb-2 pt-10 text-center">
+        <span className="text-[10px] font-semibold tracking-[0.03em] text-white/55">{footerRight || CAPTURE_TEXT.footerRight}</span>
       </div>
     </div>
   );

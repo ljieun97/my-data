@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getPosterThumbUrl,
   isExternalImageUrl,
+  MovieCollageTemplate,
   MovieListTemplate,
   ReleaseBoardTemplate,
   RankingV2Template,
@@ -154,6 +155,7 @@ export default function ContentCapturePage() {
   const [movieListSubbodyTextSize, setMovieListSubbodyTextSize] = useState<MovieListTextSize>("large");
   const [movieListBodyTextSize, setMovieListBodyTextSize] = useState<MovieListTextSize>("small");
   const [movieListBaseYear, setMovieListBaseYear] = useState("");
+  const [movieCollageHeroExtendsToHeader, setMovieCollageHeroExtendsToHeader] = useState(true);
   const [movieListCaptureStartIndex, setMovieListCaptureStartIndex] = useState(0);
   const [rankingCoverMovieIds, setRankingCoverMovieIds] = useState<number[]>([]);
   const [rankingV2BackgroundMovieId, setRankingV2BackgroundMovieId] = useState<number | null>(null);
@@ -171,8 +173,9 @@ export default function ContentCapturePage() {
   const isRankingTextMode = isRankingMode || isRankingV2Mode || isRankingV3Mode;
   const isReleaseMode = captureMode === "release-board";
   const isMovieListMode = captureMode === "movie-list";
-  const isMovieMode = isNewsMode || isRankingTextMode || isReleaseMode || isMovieListMode;
-  const movieMinCount = isNewsMode ? 1 : isReleaseMode ? 8 : 2;
+  const isMovieCollageMode = captureMode === "movie-collage";
+  const isMovieMode = isNewsMode || isRankingTextMode || isReleaseMode || isMovieListMode || isMovieCollageMode;
+  const movieMinCount = isNewsMode ? 1 : isMovieCollageMode ? 3 : isReleaseMode ? 8 : 2;
   const movieMaxCount = getCaptureMovieMaxCount(captureMode);
   const rankingSlotCount =
     isRankingMode && rankingCoverLayout === "vertical" ? Math.max(movieMinCount, Math.min(selectedMovies.length, movieMaxCount)) : isRankingV2Mode && selectedMovies.length > 10 ? 11 : 10;
@@ -658,6 +661,7 @@ export default function ContentCapturePage() {
           { key: "ranking-cover-v3", label: "순위형 V3" },
           { key: "release-board", label: "릴리즈형" },
           { key: "movie-list", label: "목록형" },
+          { key: "movie-collage", label: "콜라주형" },
         ].map((item) => (
           <button
             key={item.key}
@@ -680,14 +684,15 @@ export default function ContentCapturePage() {
           <>
             <MovieSlotsPanel
               isRankingMode={isRankingTextMode}
-              isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode}
+              isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode || isMovieCollageMode}
               isMovieListCaptureMode={isMovieListMode}
+              isMovieCollageMode={isMovieCollageMode}
               isRankingV2Mode={isRankingV2Mode || isRankingV3Mode}
               isReleaseMode={isReleaseMode}
               movieListMetaMode={movieListMetaMode}
               movieListBaseYear={movieListBaseYear}
               showRankingTotalAudience={showRankingTotalAudience}
-              showImagePositionControls={isRankingV2Mode || isRankingV3Mode}
+              showImagePositionControls={isRankingV2Mode || isRankingV3Mode || isMovieCollageMode}
               rankingCoverMovieId={rankingV2BackgroundMovieId}
               rankingCoverMovieIds={isRankingV2Mode || isRankingV3Mode ? undefined : rankingCoverMovieIds}
               selectedMoviesCount={isRankingTextMode || isReleaseMode ? Math.min(selectedMovies.length, movieSlotCount) : selectedMovies.length}
@@ -726,7 +731,7 @@ export default function ContentCapturePage() {
                 if (nextIndex >= 0) setPreviewMovieIndex(nextIndex);
               }}
             />
-          {(isNewsMode || isRankingTextMode || isReleaseMode || isMovieListMode) ? (
+          {(isNewsMode || isRankingTextMode || isReleaseMode || isMovieListMode || isMovieCollageMode) ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Cover Text</p>
               <label className="mb-3 block">
@@ -749,7 +754,7 @@ export default function ContentCapturePage() {
               </label>
             </div>
           ) : null}
-          {(isNewsMode || isRankingTextMode || isReleaseMode) ? (
+          {(isNewsMode || isRankingTextMode || isReleaseMode || isMovieCollageMode) ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Footer</p>
               <label className="block">
@@ -826,6 +831,28 @@ export default function ContentCapturePage() {
                     +
                   </CaptureToggleButton>
                 </div>
+              </div>
+            </div>
+          ) : null}
+          {isMovieCollageMode ? (
+            <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+              <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Collage Cover</p>
+              <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">First Image</span>
+              <div className="grid grid-cols-2 gap-2">
+                <CaptureToggleButton
+                  type="button"
+                  active={movieCollageHeroExtendsToHeader}
+                  onClick={() => setMovieCollageHeroExtendsToHeader(true)}
+                >
+                  위까지
+                </CaptureToggleButton>
+                <CaptureToggleButton
+                  type="button"
+                  active={!movieCollageHeroExtendsToHeader}
+                  onClick={() => setMovieCollageHeroExtendsToHeader(false)}
+                >
+                  제목 아래
+                </CaptureToggleButton>
               </div>
             </div>
           ) : null}
@@ -1476,6 +1503,15 @@ export default function ContentCapturePage() {
                   showImages={showRankingV2Images}
                   titleDisplay={rankingV2TitleDisplay}
                 />
+              ) : isMovieCollageMode ? (
+                <MovieCollageTemplate
+                  movies={slots}
+                  title={captureHeadline}
+                  subtitle={captureSubTextValue}
+                  titleSize={NEWS_HEADER_DEFAULT_SIZE}
+                  footerRight={footerRight}
+                  heroExtendsToHeader={movieCollageHeroExtendsToHeader}
+                />
               ) : isReleaseMode ? (
                 <ReleaseBoardTemplate
                   movies={slots}
@@ -1508,7 +1544,7 @@ export default function ContentCapturePage() {
               />
               )}
             </div>
-            {(isMovieListMode || isNewsMode || isRankingTextMode || isReleaseMode) && selectedMovies.length ? renderMovieListImagePicker() : null}
+            {(isMovieListMode || isNewsMode || isRankingTextMode || isReleaseMode || isMovieCollageMode) && selectedMovies.length ? renderMovieListImagePicker() : null}
           </div>
         </section>
       </div>

@@ -5,6 +5,7 @@ export {
 } from "@/components/contents/capture/content-capture-utils";
 export {
   MovieListTemplate,
+  MovieCollageTemplate,
   type MovieListMetaMode,
   type MovieListTextSize,
   type MovieListTextStyle,

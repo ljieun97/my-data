@@ -34,6 +34,7 @@ type MovieSlotsPanelProps = {
   isRankingMode: boolean;
   isMovieListMode: boolean;
   isMovieListCaptureMode?: boolean;
+  isMovieCollageMode?: boolean;
   isRankingV2Mode?: boolean;
   isReleaseMode?: boolean;
   movieListMetaMode?: MovieListMetaMode;
@@ -69,6 +70,7 @@ export function MovieSlotsPanel({
   isRankingMode,
   isMovieListMode,
   isMovieListCaptureMode = false,
+  isMovieCollageMode = false,
   isRankingV2Mode = false,
   isReleaseMode = false,
   movieListMetaMode = "year",
@@ -196,6 +198,10 @@ export function MovieSlotsPanel({
                       value={
                         isReleaseMode
                           ? formatReleaseBoardDateText(movie)
+                          : isMovieCollageMode
+                          ? movie.release_date
+                            ? formatYear(movie)
+                            : ""
                           : isMovieListCaptureMode && movieListMetaMode === "release-date"
                           ? formatMovieListReleaseText(movie)
                           : isMovieListCaptureMode
@@ -208,7 +214,7 @@ export function MovieSlotsPanel({
                       onMouseDown={(event) => event.stopPropagation()}
                       onDragStart={(event) => event.preventDefault()}
                       maxLength={24}
-                      placeholder={isReleaseMode ? "7/15" : movieListMetaMode === "release-date" ? "7/15 개봉" : isMovieListCaptureMode ? "연도 ·" : "연도"}
+                      placeholder={isReleaseMode ? "7/15" : isMovieCollageMode ? "오른쪽 텍스트" : movieListMetaMode === "release-date" ? "7/15 개봉" : isMovieListCaptureMode ? "연도 ·" : "연도"}
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
                   )}
@@ -223,7 +229,7 @@ export function MovieSlotsPanel({
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
                   ) : null}
-                  {isReleaseMode || isRankingV2Mode || isMovieListCaptureMode ? (
+                  {isReleaseMode || isRankingV2Mode || isMovieListCaptureMode || isMovieCollageMode ? (
                     <>
                       {isReleaseMode ? (
                         <div className="grid grid-cols-2 gap-1">

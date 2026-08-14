@@ -100,6 +100,34 @@ async function waitForCaptureImages(element: HTMLElement) {
   );
 }
 
+async function reloadCaptureImages(element: HTMLElement) {
+  const images = Array.from(element.querySelectorAll("img"));
+  const captureVersion = `${Date.now()}`;
+
+  await Promise.all(
+    images.map(async (image, index) => {
+      const source = image.currentSrc || image.src;
+      if (!source || source.startsWith("data:") || source.startsWith("blob:")) return;
+
+      const nextSource = `${source}${source.includes("?") ? "&" : "?"}captureReload=${captureVersion}-${index}`;
+
+      await new Promise<void>((resolve) => {
+        image.addEventListener("load", () => resolve(), { once: true });
+        image.addEventListener("error", () => resolve(), { once: true });
+        image.src = nextSource;
+      });
+
+      if (typeof image.decode === "function") {
+        try {
+          await image.decode();
+        } catch {
+          // Reloaded fallback images should not block capture.
+        }
+      }
+    }),
+  );
+}
+
 function getMovieListCaptureStart(index: number, chunkSize: number) {
   return Math.max(0, Math.floor(index / chunkSize) * chunkSize);
 }
@@ -170,6 +198,7 @@ export default function ContentCapturePage() {
   const [movieListSubbodyTextSize, setMovieListSubbodyTextSize] = useState<MovieListTextSize>("large");
   const [movieListBodyTextSize, setMovieListBodyTextSize] = useState<MovieListTextSize>("small");
   const [movieListBaseYear, setMovieListBaseYear] = useState("");
+  const [showMovieCollageHeadline, setShowMovieCollageHeadline] = useState(true);
   const [movieCollageBackgroundStart, setMovieCollageBackgroundStart] = useState("#07131a");
   const [movieCollageBackgroundEnd, setMovieCollageBackgroundEnd] = useState("#221f2e");
   const [isExtractingMovieCollageColors, setIsExtractingMovieCollageColors] = useState(false);
@@ -293,7 +322,9 @@ export default function ContentCapturePage() {
     const imagePickerMovie = isRankingTextMode ? currentCoverMovie : selectedMovies[previewMovieIndex];
     if (!imagePickerMovie) return;
     const cacheSafeImageUrl = withExternalImageCacheBust(imageUrl);
-    if (imagePickerImageTab === "backdrop") {
+    if (isMovieCollageMode) {
+      updateMoviePoster(imagePickerMovie.id, cacheSafeImageUrl);
+    } else if (imagePickerImageTab === "backdrop") {
       updateMovieBackdrop(imagePickerMovie.id, cacheSafeImageUrl);
     } else {
       updateMoviePoster(imagePickerMovie.id, cacheSafeImageUrl);
@@ -308,6 +339,7 @@ export default function ContentCapturePage() {
       if (!targetRef.current) return "";
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+      await reloadCaptureImages(targetRef.current);
       await waitForCaptureImages(targetRef.current);
       const rect = targetRef.current.getBoundingClientRect();
       const captureWidth = Math.max(1, Math.round(rect.width));
@@ -522,7 +554,9 @@ export default function ContentCapturePage() {
                   key={imagePath}
                   type="button"
                   onClick={() => {
-                    if (imagePickerImageTab === "backdrop") {
+                    if (isMovieCollageMode) {
+                      updateMoviePoster(imagePickerMovie.id, imagePath);
+                    } else if (imagePickerImageTab === "backdrop") {
                       updateMovieBackdrop(imagePickerMovie.id, imagePath);
                     } else {
                       updateMoviePoster(imagePickerMovie.id, imagePath);
@@ -882,6 +916,23 @@ export default function ContentCapturePage() {
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Collage Cover</p>
               <div>
+                <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">Cover Text</span>
+                <div className="mb-3 grid grid-cols-2 gap-2">
+                  <CaptureToggleButton
+                    type="button"
+                    active={showMovieCollageHeadline}
+                    onClick={() => setShowMovieCollageHeadline(true)}
+                  >
+                    표시
+                  </CaptureToggleButton>
+                  <CaptureToggleButton
+                    type="button"
+                    active={!showMovieCollageHeadline}
+                    onClick={() => setShowMovieCollageHeadline(false)}
+                  >
+                    숨김
+                  </CaptureToggleButton>
+                </div>
                 <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Cover Background</span>
                 <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-2">
                   <div
@@ -1554,6 +1605,7 @@ export default function ContentCapturePage() {
                   subtitle={captureSubTextValue}
                   titleSize={NEWS_HEADER_DEFAULT_SIZE}
                   footerRight={footerRight}
+                  showHeadline={showMovieCollageHeadline}
                   backgroundStart={movieCollageBackgroundStart}
                   backgroundEnd={movieCollageBackgroundEnd}
                 />

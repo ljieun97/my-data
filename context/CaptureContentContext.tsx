@@ -10,6 +10,7 @@ export type CaptureMovie = {
   original_title?: string;
   overview?: string;
   release_date?: string;
+  original_release_date?: string;
   poster_path?: string;
   backdrop_path?: string;
   vote_average?: number;
@@ -21,6 +22,7 @@ export type CaptureMovie = {
   releaseBadge?: boolean;
   imagePositionX?: number;
   imagePosition?: number;
+  imageVersion?: number;
   posterOptions?: string[];
   backdropOptions?: string[];
   logo_path?: string;
@@ -127,6 +129,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     original_title: movie.original_title || movie.original_name,
     overview: movie.overview,
     release_date: movie.release_date || movie.first_air_date,
+    original_release_date: movie.original_release_date || movie.release_date || movie.first_air_date,
     poster_path: movie.poster_path,
     backdrop_path: movie.backdrop_path,
     vote_average: movie.vote_average,
@@ -138,6 +141,7 @@ function normalizeMovie(movie: any): CaptureMovie | null {
     releaseBadge: Boolean(movie.releaseBadge),
     imagePositionX: typeof movie.imagePositionX === "number" ? movie.imagePositionX : 50,
     imagePosition: typeof movie.imagePosition === "number" ? movie.imagePosition : 20,
+    imageVersion: typeof movie.imageVersion === "number" ? movie.imageVersion : 0,
     posterOptions: movie.posterOptions,
     backdropOptions: movie.backdropOptions,
     logo_path: movie.logo_path || movie.logoOptions?.[0],
@@ -279,6 +283,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
               ...movie,
               poster_path: posterPath,
               backdrop_path: posterPath,
+              imageVersion: Date.now(),
               posterOptions: posterPath
                 ? Array.from(new Set([...(movie.posterOptions ?? []), posterPath]))
                 : movie.posterOptions,
@@ -295,6 +300,7 @@ export function CaptureContentProvider({ children }: { children: React.ReactNode
           ? {
               ...movie,
               backdrop_path: backdropPath,
+              imageVersion: Date.now(),
               backdropOptions: backdropPath
                 ? Array.from(new Set([...(movie.backdropOptions ?? []), backdropPath]))
                 : movie.backdropOptions,

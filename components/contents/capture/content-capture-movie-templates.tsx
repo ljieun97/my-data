@@ -3,6 +3,7 @@ import {
   buildImageCandidates,
   CaptureFooter,
   CaptureHeadlineBlock,
+  formatYear,
   getBackdropUrl,
   getPosterUrl,
   getTextOverlayClass,
@@ -42,6 +43,11 @@ function hexToRgba(hexColor: string, alpha: number, fallback: string) {
 
 function getImageLayerTranslateX(movie?: CaptureMovie) {
   return `${((movie?.imagePositionX ?? 50) - 50) * 0.4}%`;
+}
+
+function getVersionedImageUrl(imageUrl: string, version?: number) {
+  if (!version) return imageUrl;
+  return `${imageUrl}${imageUrl.includes("?") ? "&" : "?"}captureImageVersion=${version}`;
 }
 
 function parseAudienceCount(value: string | undefined) {
@@ -727,6 +733,7 @@ export function MovieCollageTemplate({
   subtitle,
   titleSize,
   footerRight,
+  showHeadline = true,
   backgroundStart = "#07131a",
   backgroundEnd = "#221f2e",
 }: {
@@ -735,12 +742,13 @@ export function MovieCollageTemplate({
   subtitle?: string;
   titleSize: number;
   footerRight: string;
+  showHeadline?: boolean;
   backgroundStart?: string;
   backgroundEnd?: string;
 }) {
   const visibleMovies = movies.filter(Boolean).slice(0, 10) as CaptureMovie[];
   const subtextValue = subtitle?.trim().replace(/\s*\n\s*/g, " ");
-  const headerBackground = backgroundStart;
+  const headerBackground = "#000000";
   const headline = (
     <CaptureHeadlineBlock
       title={title}
@@ -753,38 +761,36 @@ export function MovieCollageTemplate({
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-black text-white">
-      <div className="relative z-[4] shrink-0 overflow-hidden px-4 pb-2 pt-4" style={{ background: headerBackground }}>
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-[64%]"
-          style={{
-            background: "linear-gradient(270deg,rgba(0,0,0,0.98) 0%,rgba(0,0,0,0.96) 24%,rgba(0,0,0,0.92) 46%,rgba(0,0,0,0.72) 55%,rgba(0,0,0,0.36) 68%,rgba(0,0,0,0) 84%)",
-          }}
-        />
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-[30%] bg-[linear-gradient(90deg,rgba(0,0,0,0.7)_0%,rgba(0,0,0,0.18)_58%,rgba(0,0,0,0)_100%)]" />
-        <div className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(0,0,0,0.16)_0%,rgba(0,0,0,0.03)_48%,rgba(0,0,0,0.24)_100%)]" />
-        <div className="relative z-[2]">
-          {headline}
+      {showHeadline ? (
+        <div className="relative z-[4] shrink-0 overflow-hidden px-4 pb-2 pt-4" style={{ background: headerBackground }}>
+          <div className="relative z-[1]">
+            {headline}
+          </div>
         </div>
-      </div>
+      ) : null}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <div className="flex h-full min-h-0 flex-col">
           {visibleMovies.map((movie, index) => {
-          const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
+          const imageCandidates = buildImageCandidates(getBackdropUrl(movie) || getPosterUrl(movie));
+          const imageUrl = imageCandidates[0] ? getVersionedImageUrl(imageCandidates[0], movie.imageVersion) : "";
           const rankText = movie.rankingText?.trim() || String(index + 1);
           const valueText = getCollageText(movie) || getRankingDailyAudience(movie);
+          const fixedYear = formatYear({ ...movie, release_date: movie.original_release_date });
+          const titleText = [movie.title, fixedYear].filter(Boolean).join(" ");
           const bottomText = movie.rankingTotalAudience?.trim();
           const isDense = visibleMovies.length >= 6;
+          const isDoubleDigitRank = rankText.length >= 2;
 
           return (
             <div
               key={`${movie.media_type ?? "movie"}-${movie.id}-movie-collage-row-${index}`}
               className="relative min-h-0 flex-1 overflow-hidden bg-black"
             >
-              {imageCandidates[0] ? (
+              {imageUrl ? (
                 <img
-                  key={imageCandidates[0]}
+                  key={imageUrl}
                   alt=""
-                  src={imageCandidates[0]}
+                  src={imageUrl}
                   data-fallback-index="0"
                   onError={(event) => handleImageFallback(event, imageCandidates)}
                   className="absolute inset-y-0 left-0 z-0 h-full w-[80%] object-cover"
@@ -808,28 +814,32 @@ export function MovieCollageTemplate({
                       WebkitTextStroke: isDense ? "0.72px rgba(255,255,255,0.9)" : "1px rgba(255,255,255,0.9)",
                       color: "rgba(255,255,255,0.12)",
                     }}
-                    className={[isDense ? "text-[68px]" : "text-[104px]", "-translate-y-[3px] scale-y-[1.26] font-black leading-none tracking-[-0.08em]"].join(" ")}
+                    className={[
+                      isDense ? (isDoubleDigitRank ? "text-[60px]" : "text-[68px]") : isDoubleDigitRank ? "text-[94px]" : "text-[104px]",
+                      isDoubleDigitRank ? "scale-x-[0.78]" : "scale-x-100",
+                      "-translate-y-[3px] scale-y-[1.26] font-black leading-none tracking-[-0.08em] origin-left",
+                    ].join(" ")}
                   >
                     {rankText}
                   </span>
                 </div>
                 <div className="flex min-w-0 flex-col items-end justify-center self-center text-right">
                   <p
-                    style={titleFontStyle}
-                    className={[isDense ? "max-w-[136px] text-[9px]" : "max-w-[190px] text-[13px]", "line-clamp-2 pb-[1px] pt-[1px] font-extrabold uppercase leading-[1.12] tracking-[-0.04em] text-white"].join(" ")}
+                    style={{ ...titleFontStyle, fontWeight: 500 }}
+                    className={[isDense ? "max-w-[136px] text-[8px]" : "max-w-[190px] text-[11px]", "line-clamp-2 pb-[1px] pt-[1px] font-medium uppercase leading-[1.12] tracking-[-0.04em] text-white/78"].join(" ")}
                   >
-                    {movie.title}
+                    {titleText}
                   </p>
                   <p
                     style={collageRankNumberStyle}
-                    className={[isDense ? "text-[40px]" : "text-[64px]", "-mt-[5px] scale-x-[0.84] whitespace-nowrap font-black leading-[0.86] tracking-[-0.08em] text-[#25e06f] origin-right"].join(" ")}
+                    className={[isDense ? "text-[38px]" : "text-[60px]", "-mt-[7px] scale-x-[0.84] whitespace-nowrap font-black leading-[0.86] tracking-[-0.08em] text-[#35c86f] origin-right"].join(" ")}
                   >
                     {valueText}
                   </p>
                   {bottomText ? (
                     <p
                       style={titleFontStyle}
-                      className={[isDense ? "max-w-[136px] text-[9px]" : "max-w-[190px] text-[13px]", "line-clamp-2 pt-[1px] font-extrabold uppercase leading-[1.06] tracking-[-0.04em] text-white"].join(" ")}
+                      className={[isDense ? "max-w-[136px] text-[9px]" : "max-w-[190px] text-[13px]", "line-clamp-2 pt-[1px] font-extrabold uppercase leading-[1.06] tracking-[-0.04em] text-white/68"].join(" ")}
                     >
                       {bottomText}
                     </p>
@@ -842,7 +852,7 @@ export function MovieCollageTemplate({
         </div>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.56)_100%)] px-4 pb-2 pt-8 text-center">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] px-4 pb-2 pt-8 text-center">
         <span className="text-[10px] font-semibold tracking-[0.03em] text-white/55">{footerRight || CAPTURE_TEXT.footerRight}</span>
       </div>
     </div>

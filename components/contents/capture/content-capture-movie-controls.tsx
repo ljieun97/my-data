@@ -153,7 +153,7 @@ export function MovieSlotsPanel({
             <div className="min-w-0 flex-1">
               {movie && (isMovieListMode || isMovieCollageMode) ? (
                 <div className="mt-1 flex flex-col gap-1.5">
-                  {isRankingMode ? (
+                  {isRankingMode || isMovieCollageMode ? (
                     <input
                       value={movie.rankingText ?? ""}
                       onChange={(event) => updateMovieRankingText(movie.id, event.target.value)}

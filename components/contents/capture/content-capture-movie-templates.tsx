@@ -25,6 +25,13 @@ const rankingNumberStyle: CSSProperties = {
   lineHeight: 1,
 };
 
+const collageRankNumberStyle: CSSProperties = {
+  fontFamily: '"Arial Narrow", "Helvetica Neue Condensed Black", "Roboto Condensed", "DIN Condensed", sans-serif',
+  fontStretch: "condensed",
+  fontVariantNumeric: "tabular-nums",
+  lineHeight: 1,
+};
+
 function hexToRgba(hexColor: string, alpha: number, fallback: string) {
   const hex = hexColor.replace("#", "");
   if (!/^[0-9a-f]{6}$/i.test(hex)) return fallback;
@@ -720,22 +727,20 @@ export function MovieCollageTemplate({
   subtitle,
   titleSize,
   footerRight,
-  heroExtendsToHeader = true,
+  backgroundStart = "#07131a",
+  backgroundEnd = "#221f2e",
 }: {
   movies: Array<CaptureMovie | undefined>;
   title: string;
   subtitle?: string;
   titleSize: number;
   footerRight: string;
-  heroExtendsToHeader?: boolean;
+  backgroundStart?: string;
+  backgroundEnd?: string;
 }) {
   const visibleMovies = movies.filter(Boolean).slice(0, 10) as CaptureMovie[];
-  const heroMovie = visibleMovies[0];
-  const tileMovies = visibleMovies.slice(1);
-  const heroCandidates = buildImageCandidates(getBackdropUrl(heroMovie), getPosterUrl(heroMovie));
   const subtextValue = subtitle?.trim().replace(/\s*\n\s*/g, " ");
-  const tileCount = tileMovies.length;
-  const tileColumns = tileCount <= 2 ? 1 : 2;
+  const headerBackground = `radial-gradient(circle at top right, ${hexToRgba(backgroundStart, 0.46, "rgba(7,19,26,0.46)")}, transparent 42%), linear-gradient(180deg, ${backgroundEnd} 0%, ${backgroundStart} 100%)`;
   const headline = (
     <CaptureHeadlineBlock
       title={title}
@@ -748,45 +753,21 @@ export function MovieCollageTemplate({
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-black text-white">
-      {!heroExtendsToHeader ? (
-        <div className="relative z-[4] shrink-0 px-4 pb-2 pt-4">
-          {headline}
-        </div>
-      ) : null}
-      <div className="relative min-h-0 flex-[1.16] overflow-hidden">
-        {heroCandidates[0] ? (
-          <img
-            key={heroCandidates[0]}
-            alt=""
-            src={heroCandidates[0]}
-            data-fallback-index="0"
-            onError={(event) => handleImageFallback(event, heroCandidates)}
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition: `50% ${heroMovie?.imagePosition ?? 34}%`, transform: `translateX(${getImageLayerTranslateX(heroMovie)})` }}
-            crossOrigin="anonymous"
-          />
-        ) : null}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.62)_0%,rgba(0,0,0,0.18)_46%,rgba(0,0,0,0.08)_100%)]" />
-        <MovieCollageSideGradients />
-        {heroExtendsToHeader ? <div className="absolute inset-x-0 top-0 z-[2] px-4 pt-4">{headline}</div> : null}
-        <MovieCollageCaption movie={heroMovie} large />
+      <div className="relative z-[4] shrink-0 px-4 pb-2 pt-4" style={{ background: headerBackground }}>
+        {headline}
       </div>
-
-      <div
-        className="grid min-h-0 flex-1 gap-0 overflow-hidden"
-        style={{
-          gridTemplateColumns: `repeat(${tileColumns}, minmax(0, 1fr))`,
-        }}
-      >
-        {tileMovies.map((movie, index) => {
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div className="flex h-full min-h-0 flex-col">
+          {visibleMovies.map((movie, index) => {
           const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
-          const isLastOddTile = tileColumns === 2 && tileCount % 2 === 1 && index === tileCount - 1;
+          const rankText = movie.rankingText?.trim() || String(index + 1);
+          const valueText = getCollageText(movie) || getRankingDailyAudience(movie);
+          const isDense = visibleMovies.length >= 6;
 
           return (
             <div
-              key={`${movie.media_type ?? "movie"}-${movie.id}-movie-collage-${index}`}
-              className="relative min-h-0 overflow-hidden bg-black"
-              style={{ gridColumn: isLastOddTile ? "span 2" : undefined }}
+              key={`${movie.media_type ?? "movie"}-${movie.id}-movie-collage-row-${index}`}
+              className="relative min-h-0 flex-1 overflow-hidden bg-black"
             >
               {imageCandidates[0] ? (
                 <img
@@ -795,19 +776,54 @@ export function MovieCollageTemplate({
                   src={imageCandidates[0]}
                   data-fallback-index="0"
                   onError={(event) => handleImageFallback(event, imageCandidates)}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  style={{ objectPosition: `50% ${movie.imagePosition ?? 35}%`, transform: `translateX(${getImageLayerTranslateX(movie)})` }}
+                  className="absolute inset-y-0 left-0 z-0 h-full w-[80%] object-cover"
+                  style={{ objectPosition: `50% ${movie.imagePosition ?? 50}%`, transform: `translateX(${getImageLayerTranslateX(movie)})` }}
                   crossOrigin="anonymous"
                 />
               ) : null}
-              <MovieCollageSideGradients />
-              <MovieCollageCaption movie={movie} />
+              <div
+                className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-[56%]"
+                style={{
+                  background: "linear-gradient(270deg,rgba(0,0,0,0.98) 0%,rgba(0,0,0,0.96) 24%,rgba(0,0,0,0.92) 46%,rgba(0,0,0,0.72) 55%,rgba(0,0,0,0.36) 68%,rgba(0,0,0,0) 84%)",
+                }}
+              />
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-[30%] bg-[linear-gradient(90deg,rgba(0,0,0,0.7)_0%,rgba(0,0,0,0.18)_58%,rgba(0,0,0,0)_100%)]" />
+              <div className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(0,0,0,0.16)_0%,rgba(0,0,0,0.03)_48%,rgba(0,0,0,0.24)_100%)]" />
+              <div className="relative z-[3] grid h-full min-w-0 grid-cols-[38%_minmax(0,1fr)] items-center px-4">
+                <div className="flex min-w-0 items-center self-center">
+                  <span
+                    style={{
+                      ...collageRankNumberStyle,
+                      WebkitTextStroke: isDense ? "0.72px rgba(255,255,255,0.9)" : "1px rgba(255,255,255,0.9)",
+                      color: "rgba(255,255,255,0.12)",
+                    }}
+                    className={[isDense ? "text-[68px]" : "text-[104px]", "-translate-y-[3px] scale-y-[1.26] font-black leading-none tracking-[-0.08em]"].join(" ")}
+                  >
+                    {rankText}
+                  </span>
+                </div>
+                <div className="flex min-w-0 flex-col items-end justify-center self-center text-right">
+                  <p
+                    style={collageRankNumberStyle}
+                    className={[isDense ? "text-[42px]" : "text-[68px]", "whitespace-nowrap font-black leading-[0.86] tracking-[-0.08em] text-[#25e06f]"].join(" ")}
+                  >
+                    {valueText}
+                  </p>
+                  <p
+                    style={titleFontStyle}
+                    className={[isDense ? "max-w-[136px] text-[9px]" : "max-w-[190px] text-[13px]", "line-clamp-2 pt-[1px] font-extrabold uppercase leading-[1.06] tracking-[-0.04em] text-white"].join(" ")}
+                  >
+                    {movie.title}
+                  </p>
+                </div>
+              </div>
             </div>
           );
         })}
+        </div>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[3] bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.56)_100%)] px-4 pb-2 pt-10 text-center">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,rgba(0,0,0,0.56)_100%)] px-4 pb-2 pt-8 text-center">
         <span className="text-[10px] font-semibold tracking-[0.03em] text-white/55">{footerRight || CAPTURE_TEXT.footerRight}</span>
       </div>
     </div>

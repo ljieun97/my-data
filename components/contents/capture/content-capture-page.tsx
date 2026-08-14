@@ -46,6 +46,11 @@ function toReleaseLabelColor(rgb: [number, number, number]) {
   return `#${[r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
 }
 
+function toScaledHexColor(rgb: [number, number, number], scale: number) {
+  const [r, g, b] = rgb.map((value) => Math.max(0, Math.min(255, Math.round(value * scale))));
+  return `#${[r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+}
+
 const rankingV2BackgroundPresets = [
   { key: "classic", label: "Classic", start: "#7a3f52", end: "#34384c" },
   { key: "boxoffice", label: "Box Office", start: "#3a3d42", end: "#31343a" },
@@ -155,7 +160,9 @@ export default function ContentCapturePage() {
   const [movieListSubbodyTextSize, setMovieListSubbodyTextSize] = useState<MovieListTextSize>("large");
   const [movieListBodyTextSize, setMovieListBodyTextSize] = useState<MovieListTextSize>("small");
   const [movieListBaseYear, setMovieListBaseYear] = useState("");
-  const [movieCollageHeroExtendsToHeader, setMovieCollageHeroExtendsToHeader] = useState(true);
+  const [movieCollageBackgroundStart, setMovieCollageBackgroundStart] = useState("#07131a");
+  const [movieCollageBackgroundEnd, setMovieCollageBackgroundEnd] = useState("#221f2e");
+  const [isExtractingMovieCollageColors, setIsExtractingMovieCollageColors] = useState(false);
   const [movieListCaptureStartIndex, setMovieListCaptureStartIndex] = useState(0);
   const [rankingCoverMovieIds, setRankingCoverMovieIds] = useState<number[]>([]);
   const [rankingV2BackgroundMovieId, setRankingV2BackgroundMovieId] = useState<number | null>(null);
@@ -191,6 +198,7 @@ export default function ContentCapturePage() {
     ? selectedMovies.find((movie) => movie.id === rankingV2BackgroundMovieId)
     : undefined;
   const currentCoverMovie = isRankingV2Mode ? rankingV2BackgroundMovie : currentSingleMovie;
+  const movieCollageColorImageUrl = getBackdropUrl(selectedMovies[0]) || getPosterUrl(selectedMovies[0]) || "";
   const captureHeadlinePlaceholder = isReleaseMode
     ? CAPTURE_TEXT.releaseBoardTitle
     : isRankingTextMode
@@ -226,6 +234,31 @@ export default function ContentCapturePage() {
     if (selectedMovies.some((movie) => movie.id === rankingV2BackgroundMovieId)) return;
     setRankingV2BackgroundMovieId(null);
   }, [rankingV2BackgroundMovieId, selectedMovies]);
+
+  const extractMovieCollageBackgroundColors = async (imageUrl = movieCollageColorImageUrl) => {
+    if (!imageUrl) return;
+
+    const averageColor = new FastAverageColor();
+    setIsExtractingMovieCollageColors(true);
+
+    try {
+      const color = await averageColor.getColorAsync(imageUrl, { crossOrigin: "anonymous" });
+      const rgb: [number, number, number] = [color.value[0], color.value[1], color.value[2]];
+      setMovieCollageBackgroundStart(toScaledHexColor(rgb, 0.78));
+      setMovieCollageBackgroundEnd(toScaledHexColor(rgb, 0.42));
+    } catch {
+      setMovieCollageBackgroundStart("#07131a");
+      setMovieCollageBackgroundEnd("#221f2e");
+    } finally {
+      averageColor.destroy();
+      setIsExtractingMovieCollageColors(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isMovieCollageMode || !movieCollageColorImageUrl) return;
+    void extractMovieCollageBackgroundColors(movieCollageColorImageUrl);
+  }, [isMovieCollageMode, movieCollageColorImageUrl]);
   useEffect(() => {
     setRankingCoverMovieIds((current) => current.filter((id) => selectedMovies.some((movie) => movie.id === id)).slice(0, 2));
   }, [selectedMovies]);
@@ -684,7 +717,7 @@ export default function ContentCapturePage() {
           <>
             <MovieSlotsPanel
               isRankingMode={isRankingTextMode}
-              isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode || isMovieCollageMode}
+              isMovieListMode={isMovieListMode || isRankingTextMode || isReleaseMode}
               isMovieListCaptureMode={isMovieListMode}
               isMovieCollageMode={isMovieCollageMode}
               isRankingV2Mode={isRankingV2Mode || isRankingV3Mode}
@@ -837,22 +870,22 @@ export default function ContentCapturePage() {
           {isMovieCollageMode ? (
             <div className="border border-slate-200 bg-white/72 p-4 dark:border-slate-800 dark:bg-slate-950/70">
               <p className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Collage Cover</p>
-              <span className="mb-1 block text-xs font-semibold text-slate-500 dark:text-slate-400">First Image</span>
-              <div className="grid grid-cols-2 gap-2">
-                <CaptureToggleButton
-                  type="button"
-                  active={movieCollageHeroExtendsToHeader}
-                  onClick={() => setMovieCollageHeroExtendsToHeader(true)}
-                >
-                  위까지
-                </CaptureToggleButton>
-                <CaptureToggleButton
-                  type="button"
-                  active={!movieCollageHeroExtendsToHeader}
-                  onClick={() => setMovieCollageHeroExtendsToHeader(false)}
-                >
-                  제목 아래
-                </CaptureToggleButton>
+              <div>
+                <span className="mb-2 block text-xs font-semibold text-slate-500 dark:text-slate-400">Cover Background</span>
+                <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] gap-2">
+                  <div
+                    className="h-9 border border-slate-200 dark:border-slate-800"
+                    style={{ background: `linear-gradient(135deg, ${movieCollageBackgroundStart}, ${movieCollageBackgroundEnd})` }}
+                  />
+                  <CaptureToggleButton
+                    type="button"
+                    active={false}
+                    onClick={() => void extractMovieCollageBackgroundColors()}
+                    disabled={!movieCollageColorImageUrl || isExtractingMovieCollageColors}
+                  >
+                    {isExtractingMovieCollageColors ? "추출중" : "재추출"}
+                  </CaptureToggleButton>
+                </div>
               </div>
             </div>
           ) : null}
@@ -1510,7 +1543,8 @@ export default function ContentCapturePage() {
                   subtitle={captureSubTextValue}
                   titleSize={NEWS_HEADER_DEFAULT_SIZE}
                   footerRight={footerRight}
-                  heroExtendsToHeader={movieCollageHeroExtendsToHeader}
+                  backgroundStart={movieCollageBackgroundStart}
+                  backgroundEnd={movieCollageBackgroundEnd}
                 />
               ) : isReleaseMode ? (
                 <ReleaseBoardTemplate

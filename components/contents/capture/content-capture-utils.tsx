@@ -135,7 +135,7 @@ export function CaptureHeadlineBlock({
         <p
           style={titleFontStyle}
           className={[
-            "ml-3 mt-1.5 max-w-[calc(100%-1.5rem)] truncate pl-[2px] text-left text-[10px] font-black leading-[1.15] tracking-[-0.03em] drop-shadow-[0_1px_4px_rgba(0,0,0,0.48)]",
+            "ml-3 mt-1.5 max-w-[calc(100%-1.5rem)] truncate pb-[1px] pl-[2px] pt-[1px] text-left text-[10px] font-black leading-[1.25] tracking-[-0.03em] drop-shadow-[0_1px_4px_rgba(0,0,0,0.48)]",
             subtitleTone === "light" ? "text-white/72" : "text-slate-500",
           ].join(" ")}
         >

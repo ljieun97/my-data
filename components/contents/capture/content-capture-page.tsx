@@ -51,6 +51,16 @@ function toScaledHexColor(rgb: [number, number, number], scale: number) {
   return `#${[r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
 }
 
+function withExternalImageCacheBust(imageUrl: string) {
+  try {
+    const url = new URL(imageUrl);
+    url.searchParams.set("__capture_v", `${Date.now()}`);
+    return url.toString();
+  } catch {
+    return imageUrl;
+  }
+}
+
 const rankingV2BackgroundPresets = [
   { key: "classic", label: "Classic", start: "#7a3f52", end: "#34384c" },
   { key: "boxoffice", label: "Box Office", start: "#3a3d42", end: "#31343a" },
@@ -282,10 +292,11 @@ export default function ContentCapturePage() {
     }
     const imagePickerMovie = isRankingTextMode ? currentCoverMovie : selectedMovies[previewMovieIndex];
     if (!imagePickerMovie) return;
+    const cacheSafeImageUrl = withExternalImageCacheBust(imageUrl);
     if (imagePickerImageTab === "backdrop") {
-      updateMovieBackdrop(imagePickerMovie.id, imageUrl);
+      updateMovieBackdrop(imagePickerMovie.id, cacheSafeImageUrl);
     } else {
-      updateMoviePoster(imagePickerMovie.id, imageUrl);
+      updateMoviePoster(imagePickerMovie.id, cacheSafeImageUrl);
     }
     setExternalImageUrl("");
     setExternalImageError("");
@@ -438,7 +449,7 @@ export default function ContentCapturePage() {
   };
   const renderMovieListImagePicker = () => {
     const imagePickerMovie = isRankingTextMode ? currentCoverMovie : currentSingleMovie;
-    if (!(isMovieListMode || isNewsMode || isRankingTextMode || isReleaseMode) || !imagePickerMovie) return null;
+    if (!(isMovieListMode || isNewsMode || isRankingTextMode || isReleaseMode || isMovieCollageMode) || !imagePickerMovie) return null;
     const imagePickerIndex = selectedMovies.findIndex((movie) => movie.id === imagePickerMovie.id);
     const imageOptions = imagePickerImageTab === "backdrop" ? imagePickerMovie.backdropOptions : imagePickerMovie.posterOptions;
     const selectedImagePath = imagePickerImageTab === "backdrop" ? imagePickerMovie.backdrop_path : imagePickerMovie.poster_path;

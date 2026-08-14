@@ -782,7 +782,7 @@ export function MovieCollageTemplate({
                 />
               ) : null}
               <div
-                className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-[56%]"
+                className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-[64%]"
                 style={{
                   background: "linear-gradient(270deg,rgba(0,0,0,0.98) 0%,rgba(0,0,0,0.96) 24%,rgba(0,0,0,0.92) 46%,rgba(0,0,0,0.72) 55%,rgba(0,0,0,0.36) 68%,rgba(0,0,0,0) 84%)",
                 }}

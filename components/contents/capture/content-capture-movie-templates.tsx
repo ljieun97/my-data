@@ -740,7 +740,7 @@ export function MovieCollageTemplate({
 }) {
   const visibleMovies = movies.filter(Boolean).slice(0, 10) as CaptureMovie[];
   const subtextValue = subtitle?.trim().replace(/\s*\n\s*/g, " ");
-  const headerBackground = `radial-gradient(circle at top right, ${hexToRgba(backgroundStart, 0.46, "rgba(7,19,26,0.46)")}, transparent 42%), linear-gradient(180deg, ${backgroundEnd} 0%, ${backgroundStart} 100%)`;
+  const headerBackground = backgroundStart;
   const headline = (
     <CaptureHeadlineBlock
       title={title}
@@ -753,8 +753,18 @@ export function MovieCollageTemplate({
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-black text-white">
-      <div className="relative z-[4] shrink-0 px-4 pb-2 pt-4" style={{ background: headerBackground }}>
-        {headline}
+      <div className="relative z-[4] shrink-0 overflow-hidden px-4 pb-2 pt-4" style={{ background: headerBackground }}>
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-[64%]"
+          style={{
+            background: "linear-gradient(270deg,rgba(0,0,0,0.98) 0%,rgba(0,0,0,0.96) 24%,rgba(0,0,0,0.92) 46%,rgba(0,0,0,0.72) 55%,rgba(0,0,0,0.36) 68%,rgba(0,0,0,0) 84%)",
+          }}
+        />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-[30%] bg-[linear-gradient(90deg,rgba(0,0,0,0.7)_0%,rgba(0,0,0,0.18)_58%,rgba(0,0,0,0)_100%)]" />
+        <div className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(0,0,0,0.16)_0%,rgba(0,0,0,0.03)_48%,rgba(0,0,0,0.24)_100%)]" />
+        <div className="relative z-[2]">
+          {headline}
+        </div>
       </div>
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <div className="flex h-full min-h-0 flex-col">
@@ -762,6 +772,7 @@ export function MovieCollageTemplate({
           const imageCandidates = buildImageCandidates(getBackdropUrl(movie), getPosterUrl(movie));
           const rankText = movie.rankingText?.trim() || String(index + 1);
           const valueText = getCollageText(movie) || getRankingDailyAudience(movie);
+          const bottomText = movie.rankingTotalAudience?.trim();
           const isDense = visibleMovies.length >= 6;
 
           return (
@@ -804,17 +815,25 @@ export function MovieCollageTemplate({
                 </div>
                 <div className="flex min-w-0 flex-col items-end justify-center self-center text-right">
                   <p
-                    style={collageRankNumberStyle}
-                    className={[isDense ? "text-[42px]" : "text-[68px]", "whitespace-nowrap font-black leading-[0.86] tracking-[-0.08em] text-[#25e06f]"].join(" ")}
-                  >
-                    {valueText}
-                  </p>
-                  <p
                     style={titleFontStyle}
-                    className={[isDense ? "max-w-[136px] text-[9px]" : "max-w-[190px] text-[13px]", "line-clamp-2 pt-[1px] font-extrabold uppercase leading-[1.06] tracking-[-0.04em] text-white"].join(" ")}
+                    className={[isDense ? "max-w-[136px] text-[9px]" : "max-w-[190px] text-[13px]", "line-clamp-2 pb-[1px] pt-[1px] font-extrabold uppercase leading-[1.12] tracking-[-0.04em] text-white"].join(" ")}
                   >
                     {movie.title}
                   </p>
+                  <p
+                    style={collageRankNumberStyle}
+                    className={[isDense ? "text-[40px]" : "text-[64px]", "-mt-[5px] scale-x-[0.84] whitespace-nowrap font-black leading-[0.86] tracking-[-0.08em] text-[#25e06f] origin-right"].join(" ")}
+                  >
+                    {valueText}
+                  </p>
+                  {bottomText ? (
+                    <p
+                      style={titleFontStyle}
+                      className={[isDense ? "max-w-[136px] text-[9px]" : "max-w-[190px] text-[13px]", "line-clamp-2 pt-[1px] font-extrabold uppercase leading-[1.06] tracking-[-0.04em] text-white"].join(" ")}
+                    >
+                      {bottomText}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </div>

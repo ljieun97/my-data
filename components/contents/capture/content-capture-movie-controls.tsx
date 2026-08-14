@@ -151,7 +151,7 @@ export function MovieSlotsPanel({
             </span>
             <span className="w-5 shrink-0 text-xs font-bold text-slate-400 sm:w-6">{index + 1}</span>
             <div className="min-w-0 flex-1">
-              {movie && isMovieListMode ? (
+              {movie && (isMovieListMode || isMovieCollageMode) ? (
                 <div className="mt-1 flex flex-col gap-1.5">
                   {isRankingMode ? (
                     <input
@@ -214,7 +214,7 @@ export function MovieSlotsPanel({
                       onMouseDown={(event) => event.stopPropagation()}
                       onDragStart={(event) => event.preventDefault()}
                       maxLength={24}
-                      placeholder={isReleaseMode ? "7/15" : isMovieCollageMode ? "오른쪽 텍스트" : movieListMetaMode === "release-date" ? "7/15 개봉" : isMovieListCaptureMode ? "연도 ·" : "연도"}
+                      placeholder={isReleaseMode ? "7/15" : isMovieCollageMode ? "연도" : movieListMetaMode === "release-date" ? "7/15 개봉" : isMovieListCaptureMode ? "연도 ·" : "연도"}
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
                   )}
@@ -229,7 +229,18 @@ export function MovieSlotsPanel({
                       className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
                     />
                   ) : null}
-                  {isReleaseMode || isRankingV2Mode || isMovieListCaptureMode || isMovieCollageMode ? (
+                  {isMovieCollageMode ? (
+                    <input
+                      value={movie.rankingTotalAudience ?? ""}
+                      onChange={(event) => updateMovieRankingTotalAudience(movie.id, event.target.value)}
+                      onMouseDown={(event) => event.stopPropagation()}
+                      onDragStart={(event) => event.preventDefault()}
+                      maxLength={32}
+                      placeholder="아래 텍스트"
+                      className="h-7 w-full border border-slate-200 bg-slate-50 px-2 text-xs text-slate-900 outline-none placeholder:text-slate-400 focus:border-slate-950 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-slate-100"
+                    />
+                  ) : null}
+                  {isReleaseMode || isRankingV2Mode || isMovieListCaptureMode ? (
                     <>
                       {isReleaseMode ? (
                         <div className="grid grid-cols-2 gap-1">

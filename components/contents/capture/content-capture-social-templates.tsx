@@ -367,13 +367,14 @@ export function RankingCoverTemplate({
           <div className="flex min-h-0 flex-1 flex-col">
             {rankingRows.map((movie, index) => {
               const isCoverRow = Boolean(movie?.id && coverMovies.some((coverMovie) => coverMovie.id === movie.id));
+              const showCoverRowStyle = isCoverRow && !allRowsWhite;
 
               return (
                 <div
                   key={movie?.id ?? `ranking-placeholder-${index}`}
                   className={[
                     "grid min-h-0 flex-1 items-center gap-1 px-1",
-                    isCoverRow ? "rounded-[6px] bg-white/[0.055]" : "",
+                    showCoverRowStyle ? "rounded-[6px] bg-white/[0.055]" : "",
                     defaultRankingGridColumns,
                   ].join(" ")}
                 >

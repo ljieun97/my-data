@@ -55,6 +55,7 @@ const navItems = [
   { href: "/awards", label: "Awards" },
   { href: "/movie", label: "Movies" },
   { href: "/tv", label: "Series" },
+  { href: "/movie-export", label: "Export" },
 ];
 
 function SettingsModal({

@@ -96,7 +96,9 @@ export async function GET(request: NextRequest) {
       )));
       details.forEach((detail, index) => {
         const movie = normalizeMovie(batch[index], detail, offset + index + 1);
-        if (movie.runtime >= MIN_RUNTIME_MINUTES && (movie.vote_count ?? 0) >= MIN_VOTE_COUNT) movies.push(movie);
+        if (movie.runtime >= MIN_RUNTIME_MINUTES
+          && (movie.vote_count ?? 0) >= MIN_VOTE_COUNT
+          && movie.overview?.trim()) movies.push(movie);
         else excludedIds.push(movie.id);
       });
     }

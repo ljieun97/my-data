@@ -7,6 +7,8 @@ import {
 } from "@/lib/movie-export";
 
 const currentYear = new Date().getFullYear();
+// 임시 샘플: 월별 분리 없이 연도 전체에서 첫 12페이지만 조회합니다.
+const SAMPLE_PAGE_LIMIT = 12;
 const availableYears = Array.from({ length: currentYear + 2 - 1888 + 1 }, (_, index) => currentYear + 2 - index);
 type Phase = "idle" | "planning" | "collecting" | "building";
 
@@ -42,7 +44,7 @@ export default function MovieExportPage() {
         const response = await fetch(query(window, { mode: "summary" }), { signal: controller.signal });
         return readApiResponse<ExportSummary>(response);
       });
-      const expected = plan.reduce((sum, window) => sum + window.totalResults, 0);
+      const expected = Math.min(plan.reduce((sum, window) => sum + window.totalResults, 0), SAMPLE_PAGE_LIMIT * 20);
       setPlannedCount(expected);
       if (expected === 0) throw new Error(`${year}년 조건에 맞는 영화가 없습니다.`);
 
@@ -54,6 +56,7 @@ export default function MovieExportPage() {
           return readApiResponse<ExportPage>(response);
         },
         setProgress,
+        { maxPages: SAMPLE_PAGE_LIMIT },
       );
       if (controller.signal.aborted) return;
 
@@ -88,7 +91,7 @@ export default function MovieExportPage() {
     ? Math.round((progress.completedPages / progress.totalPages) * 100)
     : 0;
   const statusText = phase === "planning"
-    ? "월별 영화 수를 확인하고 있습니다..."
+    ? "선택한 연도의 영화 수를 확인하고 있습니다..."
     : phase === "collecting" && progress
       ? `${progressPercent}% · ${progress.scannedMovies.toLocaleString()} / ${progress.expectedMovies.toLocaleString()}편 확인 · ${progress.collectedMovies.toLocaleString()}편 포함 · ${progress.excludedMovies.toLocaleString()}편 제외`
       : phase === "building"
@@ -101,7 +104,7 @@ export default function MovieExportPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">TMDB Export</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">영화 엑셀 다운로드</h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-          연도를 선택하면 투표가 {MIN_VOTE_COUNT}개 이상이고 상영시간이 {MIN_RUNTIME_MINUTES}분 이상인 영화를 모두 수집합니다.
+          연도를 선택하면 투표가 {MIN_VOTE_COUNT}개 이상이고 상영시간이 {MIN_RUNTIME_MINUTES}분 이상이며 한국어 줄거리가 있는 영화를 수집합니다.
           제작 국가·제작사, 감독, 전체 출연진도 포함되며, 제목 형태로는 제외하지 않습니다.
         </p>
 
@@ -121,7 +124,7 @@ export default function MovieExportPage() {
           {isRunning ? (
             <button type="button" onClick={cancelDownload} className="mt-4 inline-flex h-14 w-full shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white px-7 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 sm:mt-0 sm:w-auto">취소</button>
           ) : (
-            <button type="button" onClick={downloadExcel} className="mt-4 inline-flex h-14 w-full shrink-0 items-center justify-center rounded-xl bg-slate-950 px-7 text-sm font-semibold text-white transition hover:bg-amber-600 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300 sm:mt-0 sm:w-auto">전체 엑셀 다운로드</button>
+            <button type="button" onClick={downloadExcel} className="mt-4 inline-flex h-14 w-full shrink-0 items-center justify-center rounded-xl bg-slate-950 px-7 text-sm font-semibold text-white transition hover:bg-amber-600 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300 sm:mt-0 sm:w-auto">샘플 엑셀 다운로드</button>
           )}
         </div>
 
@@ -137,11 +140,12 @@ export default function MovieExportPage() {
         {error ? <p role="alert" className="mt-4 text-sm font-medium text-red-600 dark:text-red-400">{error}</p> : null}
 
         <p className="mt-6 text-xs leading-5 text-slate-500 dark:text-slate-400">
-          전체 배우 정보까지 조회하므로 수천 편은 몇 분 이상 걸릴 수 있습니다. 완료될 때까지 이 페이지를 닫지 마세요.
+          현재는 선택한 연도의 첫 {SAMPLE_PAGE_LIMIT}페이지(최대 {SAMPLE_PAGE_LIMIT * 20}편)를 확인한 뒤 조건에 맞는 영화만 저장합니다. 완료될 때까지 이 페이지를 닫지 마세요.
         </p>
         <div className="mt-5 grid gap-3 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">전체 영화</strong>TOP 제한 없음</div>
+          <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">연도 단위 조회</strong>첫 {SAMPLE_PAGE_LIMIT}페이지 샘플</div>
           <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">40분 이상</strong>단편·미등록 제외</div>
+          <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">한국어 줄거리</strong>줄거리 미등록 제외</div>
           <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">상세 항목</strong>제작진·전체 배우</div>
         </div>
       </div>

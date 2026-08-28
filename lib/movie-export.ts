@@ -46,12 +46,7 @@ export type ExportProgress = {
 };
 
 export function getYearWindows(year: number): DateWindow[] {
-  return Array.from({ length: 12 }, (_, index) => {
-    const month = index + 1;
-    const from = `${year}-${String(month).padStart(2, "0")}-01`;
-    const to = new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10);
-    return { from, to };
-  });
+  return [{ from: `${year}-01-01`, to: `${year}-12-31` }];
 }
 
 export function validateYear(value: unknown, currentYear = new Date().getFullYear()): number | null {
@@ -113,16 +108,30 @@ export async function collectExportMovies(
   plan: ExportSummary[],
   requestPage: (window: DateWindow, page: number) => Promise<ExportPage>,
   onProgress?: (progress: ExportProgress) => void,
+  options?: { maxPages?: number },
 ): Promise<ExportMovie[]> {
-  const totalPages = plan.reduce((sum, window) => sum + window.totalPages, 0);
-  const expectedMovies = plan.reduce((sum, window) => sum + window.totalResults, 0);
+  const maxPages = options?.maxPages;
+  const isLimited = maxPages !== undefined;
+  if (isLimited && (!Number.isInteger(maxPages) || maxPages < 1)) {
+    throw new Error("페이지 제한은 1 이상의 정수여야 합니다.");
+  }
+  let remainingPages = maxPages ?? Infinity;
+  const pagesByWindow = plan.map((window) => {
+    const pages = Math.min(window.totalPages, remainingPages);
+    remainingPages -= pages;
+    return pages;
+  });
+  const totalPages = pagesByWindow.reduce((sum, pages) => sum + pages, 0);
+  const expectedMovies = isLimited
+    ? plan.reduce((sum, window, index) => sum + Math.min(window.totalResults, pagesByWindow[index] * 20), 0)
+    : plan.reduce((sum, window) => sum + window.totalResults, 0);
   const scannedIds = new Set<number>();
   const excludedIds = new Set<number>();
   const collected = new Map<number, ExportMovie>();
   let completedPages = 0;
 
-  for (const window of plan) {
-    for (let page = 1; page <= window.totalPages; page++) {
+  for (const [index, window] of plan.entries()) {
+    for (let page = 1; page <= pagesByWindow[index]; page++) {
       const result = await requestPage(window, page);
       if (result.from !== window.from || result.to !== window.to || result.page !== page
         || result.totalPages !== window.totalPages || result.totalResults !== window.totalResults
@@ -137,7 +146,9 @@ export async function collectExportMovies(
       }
       const accountedOnPage = new Set<number>();
       for (const movie of result.movies) {
-        if (movie.runtime < MIN_RUNTIME_MINUTES || (movie.vote_count ?? 0) < MIN_VOTE_COUNT) {
+        if (movie.runtime < MIN_RUNTIME_MINUTES
+          || (movie.vote_count ?? 0) < MIN_VOTE_COUNT
+          || !movie.overview?.trim()) {
           throw new Error("내보내기 조건에 맞지 않는 영화가 포함되었습니다.");
         }
         collected.set(movie.id, movie);
@@ -162,7 +173,8 @@ export async function collectExportMovies(
     }
   }
 
-  if (scannedIds.size !== expectedMovies || collected.size + excludedIds.size !== expectedMovies) {
+  if ((!isLimited && scannedIds.size !== expectedMovies)
+    || collected.size + excludedIds.size !== scannedIds.size) {
     throw new Error(`예상 ${expectedMovies.toLocaleString()}편 중 ${collected.size.toLocaleString()}편만 검증되어 파일을 만들지 않았습니다.`);
   }
 

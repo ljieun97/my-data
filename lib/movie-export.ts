@@ -108,23 +108,12 @@ export async function collectExportMovies(
   plan: ExportSummary[],
   requestPage: (window: DateWindow, page: number) => Promise<ExportPage>,
   onProgress?: (progress: ExportProgress) => void,
-  options?: { maxPages?: number },
 ): Promise<ExportMovie[]> {
-  const maxPages = options?.maxPages;
-  const isLimited = maxPages !== undefined;
-  if (isLimited && (!Number.isInteger(maxPages) || maxPages < 1)) {
-    throw new Error("페이지 제한은 1 이상의 정수여야 합니다.");
-  }
-  let remainingPages = maxPages ?? Infinity;
-  const pagesByWindow = plan.map((window) => {
-    const pages = Math.min(window.totalPages, remainingPages);
-    remainingPages -= pages;
-    return pages;
-  });
-  const totalPages = pagesByWindow.reduce((sum, pages) => sum + pages, 0);
-  const expectedMovies = isLimited
-    ? plan.reduce((sum, window, index) => sum + Math.min(window.totalResults, pagesByWindow[index] * 20), 0)
-    : plan.reduce((sum, window) => sum + window.totalResults, 0);
+  const pagesByWindow = plan.map((window) => window.totalPages);
+  let totalPages = pagesByWindow.reduce((sum, pages) => sum + pages, 0);
+  const expectedByWindow = plan.map((window) => window.totalResults);
+  let expectedMovies = expectedByWindow.reduce((sum, count) => sum + count, 0);
+  let totalsChanged = false;
   const scannedIds = new Set<number>();
   const excludedIds = new Set<number>();
   const collected = new Map<number, ExportMovie>();
@@ -134,14 +123,24 @@ export async function collectExportMovies(
     for (let page = 1; page <= pagesByWindow[index]; page++) {
       const result = await requestPage(window, page);
       if (result.from !== window.from || result.to !== window.to || result.page !== page
-        || result.totalPages !== window.totalPages || result.totalResults !== window.totalResults
+        || !Number.isInteger(result.totalPages) || result.totalPages < 0 || result.totalPages > TMDB_MAX_PAGE
+        || !Number.isInteger(result.totalResults) || result.totalResults < 0
         || !Array.isArray(result.movies) || !Array.isArray(result.scannedIds) || !Array.isArray(result.excludedIds)) {
-        throw new Error("TMDB 조회 중 결과가 변경되었습니다. 잠시 후 다시 시도해 주세요.");
+        throw new Error("TMDB 조회 응답이 올바르지 않습니다. 잠시 후 다시 시도해 주세요.");
       }
+      if (result.totalPages !== pagesByWindow[index] || result.totalResults !== expectedByWindow[index]) {
+        totalsChanged = true;
+        totalPages += result.totalPages - pagesByWindow[index];
+        expectedMovies += result.totalResults - expectedByWindow[index];
+        pagesByWindow[index] = result.totalPages;
+        expectedByWindow[index] = result.totalResults;
+      }
+      const pageIds = new Set<number>();
       for (const id of result.scannedIds) {
-        if (!Number.isInteger(id) || scannedIds.has(id)) {
-          throw new Error("중복되거나 잘못된 영화가 감지되었습니다. 누락 방지를 위해 내보내기를 중단했습니다.");
+        if (!Number.isInteger(id) || pageIds.has(id)) {
+          throw new Error("한 페이지 안에 중복되거나 잘못된 영화가 감지되었습니다.");
         }
+        pageIds.add(id);
         scannedIds.add(id);
       }
       const accountedOnPage = new Set<number>();
@@ -151,14 +150,16 @@ export async function collectExportMovies(
           || !movie.overview?.trim()) {
           throw new Error("내보내기 조건에 맞지 않는 영화가 포함되었습니다.");
         }
+        if (accountedOnPage.has(movie.id)) throw new Error("상세 확인 결과에 중복 영화가 있습니다.");
         collected.set(movie.id, movie);
+        excludedIds.delete(movie.id);
         accountedOnPage.add(movie.id);
       }
       for (const id of result.excludedIds) {
-        if (!Number.isInteger(id) || excludedIds.has(id) || collected.has(id)) {
+        if (!Number.isInteger(id) || accountedOnPage.has(id)) {
           throw new Error("제외 항목이 중복되거나 올바르지 않습니다.");
         }
-        excludedIds.add(id);
+        if (!collected.has(id)) excludedIds.add(id);
         accountedOnPage.add(id);
       }
       if (accountedOnPage.size !== result.scannedIds.length
@@ -173,7 +174,7 @@ export async function collectExportMovies(
     }
   }
 
-  if ((!isLimited && scannedIds.size !== expectedMovies)
+  if ((!totalsChanged && scannedIds.size !== expectedMovies)
     || collected.size + excludedIds.size !== scannedIds.size) {
     throw new Error(`예상 ${expectedMovies.toLocaleString()}편 중 ${collected.size.toLocaleString()}편만 검증되어 파일을 만들지 않았습니다.`);
   }

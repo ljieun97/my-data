@@ -7,8 +7,6 @@ import {
 } from "@/lib/movie-export";
 
 const currentYear = new Date().getFullYear();
-// 임시 샘플: 월별 분리 없이 연도 전체에서 첫 12페이지만 조회합니다.
-const SAMPLE_PAGE_LIMIT = 12;
 const availableYears = Array.from({ length: currentYear + 2 - 1888 + 1 }, (_, index) => currentYear + 2 - index);
 type Phase = "idle" | "planning" | "collecting" | "building";
 
@@ -44,7 +42,7 @@ export default function MovieExportPage() {
         const response = await fetch(query(window, { mode: "summary" }), { signal: controller.signal });
         return readApiResponse<ExportSummary>(response);
       });
-      const expected = Math.min(plan.reduce((sum, window) => sum + window.totalResults, 0), SAMPLE_PAGE_LIMIT * 20);
+      const expected = plan.reduce((sum, window) => sum + window.totalResults, 0);
       setPlannedCount(expected);
       if (expected === 0) throw new Error(`${year}년 조건에 맞는 영화가 없습니다.`);
 
@@ -56,7 +54,6 @@ export default function MovieExportPage() {
           return readApiResponse<ExportPage>(response);
         },
         setProgress,
-        { maxPages: SAMPLE_PAGE_LIMIT },
       );
       if (controller.signal.aborted) return;
 
@@ -88,7 +85,7 @@ export default function MovieExportPage() {
 
   const cancelDownload = () => controllerRef.current?.abort();
   const progressPercent = progress && progress.totalPages > 0
-    ? Math.round((progress.completedPages / progress.totalPages) * 100)
+    ? Math.min(100, Math.round((progress.completedPages / progress.totalPages) * 100))
     : 0;
   const statusText = phase === "planning"
     ? "선택한 연도의 영화 수를 확인하고 있습니다..."
@@ -124,7 +121,7 @@ export default function MovieExportPage() {
           {isRunning ? (
             <button type="button" onClick={cancelDownload} className="mt-4 inline-flex h-14 w-full shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white px-7 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 sm:mt-0 sm:w-auto">취소</button>
           ) : (
-            <button type="button" onClick={downloadExcel} className="mt-4 inline-flex h-14 w-full shrink-0 items-center justify-center rounded-xl bg-slate-950 px-7 text-sm font-semibold text-white transition hover:bg-amber-600 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300 sm:mt-0 sm:w-auto">샘플 엑셀 다운로드</button>
+            <button type="button" onClick={downloadExcel} className="mt-4 inline-flex h-14 w-full shrink-0 items-center justify-center rounded-xl bg-slate-950 px-7 text-sm font-semibold text-white transition hover:bg-amber-600 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300 sm:mt-0 sm:w-auto">엑셀 다운로드</button>
           )}
         </div>
 
@@ -140,10 +137,10 @@ export default function MovieExportPage() {
         {error ? <p role="alert" className="mt-4 text-sm font-medium text-red-600 dark:text-red-400">{error}</p> : null}
 
         <p className="mt-6 text-xs leading-5 text-slate-500 dark:text-slate-400">
-          현재는 선택한 연도의 첫 {SAMPLE_PAGE_LIMIT}페이지(최대 {SAMPLE_PAGE_LIMIT * 20}편)를 확인한 뒤 조건에 맞는 영화만 저장합니다. 완료될 때까지 이 페이지를 닫지 마세요.
+          선택한 연도의 전체 페이지를 확인한 뒤 조건에 맞는 영화를 모두 저장합니다. 영화가 많은 연도는 시간이 걸릴 수 있으니 완료될 때까지 이 페이지를 닫지 마세요.
         </p>
         <div className="mt-5 grid gap-3 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">연도 단위 조회</strong>첫 {SAMPLE_PAGE_LIMIT}페이지 샘플</div>
+          <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">연도 단위 조회</strong>전체 페이지 수집</div>
           <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">40분 이상</strong>단편·미등록 제외</div>
           <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">한국어 줄거리</strong>줄거리 미등록 제외</div>
           <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">상세 항목</strong>제작진·전체 배우</div>

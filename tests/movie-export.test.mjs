@@ -65,10 +65,10 @@ test("TOP 제한 없이 모든 페이지를 모으고 마지막에 인기도순�
   assert.deepEqual(movies.map((movie) => movie.rank), [1, 2, 3]);
 });
 
-test("샘플 페이지 제한은 구간 수와 관계없이 누적 페이지에 적용한다", async () => {
+test("여러 날짜 구간의 모든 페이지를 빠짐없이 수집한다", async () => {
   const plan = [
-    { from: "2025-01-01", to: "2025-01-31", totalPages: 2, totalResults: 3 },
-    { from: "2025-02-01", to: "2025-02-28", totalPages: 2, totalResults: 3 },
+    { from: "2025-01-01", to: "2025-01-31", totalPages: 2, totalResults: 2 },
+    { from: "2025-02-01", to: "2025-02-28", totalPages: 2, totalResults: 2 },
   ];
   const requested = [];
   const progress = [];
@@ -76,15 +76,29 @@ test("샘플 페이지 제한은 구간 수와 관계없이 누적 페이지에 
     requested.push([window.from, page]);
     const id = requested.length;
     return {
-      ...window, page, totalPages: 2, totalResults: 3,
+      ...window, page, totalPages: 2, totalResults: 2,
       scannedIds: [id], excludedIds: [], movies: [makeMovie(id)],
     };
-  }, (value) => progress.push(value), { maxPages: 3 });
+  }, (value) => progress.push(value));
 
-  assert.deepEqual(requested, [["2025-01-01", 1], ["2025-01-01", 2], ["2025-02-01", 1]]);
+  assert.deepEqual(requested, [["2025-01-01", 1], ["2025-01-01", 2], ["2025-02-01", 1], ["2025-02-01", 2]]);
+  assert.deepEqual(movies.map((movie) => movie.id), [4, 3, 2, 1]);
+  assert.equal(progress.at(-1).completedPages, 4);
+  assert.equal(progress.at(-1).totalPages, 4);
+});
+
+test("조회 중 TMDB 전체 편수가 바뀌면 새 페이지 수에 맞춰 계속 수집한다", async () => {
+  const plan = [{ from: "2025-01-01", to: "2025-12-31", totalPages: 2, totalResults: 2 }];
+  const requested = [];
+  const movies = await movieExport.collectExportMovies(plan, async (window, page) => {
+    requested.push(page);
+    return {
+      ...window, page, totalPages: 3, totalResults: 3,
+      scannedIds: [page], excludedIds: [], movies: [makeMovie(page)],
+    };
+  });
+  assert.deepEqual(requested, [1, 2, 3]);
   assert.deepEqual(movies.map((movie) => movie.id), [3, 2, 1]);
-  assert.equal(progress.at(-1).completedPages, 3);
-  assert.equal(progress.at(-1).totalPages, 3);
 });
 
 test("중복이나 누락이 있으면 부분 엑셀을 만들지 않는다", async () => {
@@ -93,7 +107,7 @@ test("중복이나 누락이 있으면 부분 엑셀을 만들지 않는다", as
     movieExport.collectExportMovies(plan, async (window, page) => ({
       ...window, page, totalPages: 2, totalResults: 2, scannedIds: [1], excludedIds: [], movies: [makeMovie(1)],
     })),
-    /중복되거나/,
+    /예상 2편 중 1편만 검증/,
   );
 });
 

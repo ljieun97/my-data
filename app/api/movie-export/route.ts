@@ -27,7 +27,7 @@ async function fetchTmdb<T>(path: string, params: Record<string, string>, apiKey
   const url = new URL(`${TMDB_API_BASE}${path}`);
   url.search = new URLSearchParams({ ...params, api_key: apiKey }).toString();
   for (let attempt = 0; attempt < 4; attempt++) {
-    const response = await fetch(url, { next: { revalidate: 3600 }, headers: { accept: "application/json" }, signal });
+    const response = await fetch(url, { cache: "no-store", headers: { accept: "application/json" }, signal });
     if (response.ok) return response.json() as Promise<T>;
     if (response.status !== 429 && response.status < 500) throw new Error(`TMDB request failed with status ${response.status}`);
     const retryAfter = Number(response.headers.get("retry-after"));
@@ -84,9 +84,6 @@ export async function GET(request: NextRequest) {
     const discover = await fetchTmdb<DiscoverResponse>("/discover/movie", getDiscoverParams(input.year, input.window, input.page), apiKey, request.signal);
     const base = { ...input.window, page: input.page, totalPages: discover.total_pages, totalResults: discover.total_results };
     if (input.mode === "summary") return NextResponse.json(base);
-    if (input.page > discover.total_pages && discover.total_pages > 0) {
-      return NextResponse.json({ error: "조회 페이지가 전체 페이지 수를 초과했습니다." }, { status: 400 });
-    }
     const movies: ExportMovie[] = [];
     const excludedIds: number[] = [];
     for (let offset = 0; offset < discover.results.length; offset += DETAIL_BATCH_SIZE) {

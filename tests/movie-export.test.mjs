@@ -179,18 +179,35 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     assert.deepEqual(listValues.getColumn(3).values.slice(1, 11), [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]);
     assert.equal(workbook.worksheets[2].name, "통계");
     const statistics = workbook.getWorksheet("통계");
+    assert.equal(statistics.getCell("A1").fill.fgColor.argb, "FF4B5563");
+    assert.equal(statistics.getCell("A2").fill.fgColor.argb, "FFF3F4F6");
+    assert.equal(statistics.getCell("N4").fill.fgColor.argb, "FF6B7280");
+    const yearValues = statistics.getColumn(1).values.filter((value) => typeof value === "number");
+    assert.deepEqual(yearValues, [...yearValues].sort((left, right) => left - right));
     const yearRow = statistics.getColumn(1).values.findIndex((value) => value === 2025);
     assert.ok(yearRow >= 5);
     assert.equal(statistics.getCell(yearRow, 2).value.formula,
       `COUNTIFS(MovieReviews[개봉일],">="&DATE(A${yearRow},1,1),MovieReviews[개봉일],"<"&DATE(A${yearRow}+1,1,1),MovieReviews[TMDB ID],">0")`);
     assert.match(statistics.getCell(yearRow, 4).value.formula, /RatingOptions\),RatingScores\)\/C/);
-    assert.equal(statistics.getCell("J4").value.formula, 'COUNTIF(MovieReviews[TMDB ID],">0")');
-    assert.equal(statistics.getCell("J6").value.formula,
-      'IF(J5=0,"",SUMPRODUCT(COUNTIF(MovieReviews[내 별점],RatingOptions),RatingScores)/J5)');
+    const ratings = listValues.getColumn(2).values.slice(1, 11);
+    assert.deepEqual(statistics.getRow(4).values.slice(5, 15), ratings);
+    ratings.forEach((_, index) => {
+      const column = String.fromCharCode(69 + index);
+      assert.equal(statistics.getCell(yearRow, index + 5).value.formula,
+        `COUNTIFS(MovieReviews[개봉일],">="&DATE(A${yearRow},1,1),MovieReviews[개봉일],"<"&DATE(A${yearRow}+1,1,1),MovieReviews[내 별점],${column}$4)`);
+    });
+    const summaryRow = statistics.getColumn(1).values.findIndex((value) => value === "별점");
+    assert.ok(summaryRow > yearRow);
+    assert.equal(statistics.getCell(summaryRow, 1).fill.fgColor.argb, "FF6B7280");
+    assert.equal(statistics.getCell(summaryRow, 4).fill.fgColor.argb, "FFE5E7EB");
+    assert.equal(statistics.getCell(summaryRow, 5).value.formula, 'COUNTIF(MovieReviews[TMDB ID],">0")');
+    assert.equal(statistics.getCell(summaryRow + 2, 5).value.formula,
+      `IF(E${summaryRow + 1}=0,"",SUMPRODUCT(COUNTIF(MovieReviews[내 별점],RatingOptions),RatingScores)/E${summaryRow + 1})`);
     assert.equal(statistics.getTable("MovieViewingStatistics").table.style.showRowStripes, false);
     assert.equal(statistics.getTable("MovieRatingDistribution").table.style.showRowStripes, false);
-    assert.equal(statistics.getCell("F5").value, "☆");
-    assert.equal(statistics.getCell("G5").value.formula, "COUNTIF(MovieReviews[내 별점],F5)");
+    assert.equal(statistics.getCell(summaryRow + 1, 1).value, "☆");
+    assert.equal(statistics.getCell(summaryRow + 1, 2).value.formula, `COUNTIF(MovieReviews[내 별점],A${summaryRow + 1})`);
+    assert.equal(statistics.getCell(yearRow, 14).border.bottom.style, "thin");
     assert.equal(statistics.getCell(yearRow, 2).border.bottom.style, "thin");
   } finally {
     await unlink(compiledPath).catch(() => undefined);

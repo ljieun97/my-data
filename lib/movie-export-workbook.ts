@@ -184,73 +184,95 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     views: [{ state: "frozen", ySplit: 4, activeCell: "A5", showGridLines: true }],
     properties: { defaultRowHeight: 22 },
   });
-  statistics.mergeCells("A1:D1");
+  statistics.mergeCells("A1:N1");
   statistics.getCell("A1").value = "감상기록 통계";
-  statistics.getCell("A1").font = { bold: true, size: 15, color: { argb: "FF333333" } };
+  statistics.getCell("A1").font = { bold: true, size: 15, color: { argb: "FFFFFFFF" } };
+  statistics.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF4B5563" } };
+  statistics.getCell("A1").alignment = { vertical: "middle" };
   statistics.getRow(1).height = 30;
-  statistics.mergeCells("A2:J2");
+  statistics.mergeCells("A2:N2");
   statistics.getCell("A2").value = "감상기록 시트를 기준으로 개봉연도별 감상 편수와 별점을 집계합니다. 별점이 없는 영화도 감상 편수에는 포함됩니다.";
   statistics.getCell("A2").alignment = { wrapText: true, vertical: "middle" };
+  statistics.getCell("A2").font = { color: { argb: "FF4B5563" } };
+  statistics.getCell("A2").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF3F4F6" } };
   statistics.getRow(2).height = 36;
+  const ratingLabels = ["☆", "★", "★☆", "★★", "★★☆", "★★★", "★★★☆", "★★★★", "★★★★☆", "★★★★★"];
   const latestYear = Math.max(year, new Date().getFullYear() + 2);
   const earliestYear = Math.min(year, 2020);
   const yearRows = Array.from({ length: latestYear - earliestYear + 1 }, (_, index) => {
     const rowNumber = index + 5;
     const dateCriteria = `MovieReviews[개봉일],">="&DATE(A${rowNumber},1,1),MovieReviews[개봉일],"<"&DATE(A${rowNumber}+1,1,1)`;
     return [
-      latestYear - index,
+      earliestYear + index,
       { formula: `COUNTIFS(${dateCriteria},MovieReviews[TMDB ID],">0")`, result: 0 },
       { formula: `COUNTIFS(${dateCriteria},MovieReviews[내 별점],"<>")`, result: 0 },
       {
         formula: `IF(C${rowNumber}=0,"",SUMPRODUCT(COUNTIFS(${dateCriteria},MovieReviews[내 별점],RatingOptions),RatingScores)/C${rowNumber})`,
         result: "",
       },
+      ...ratingLabels.map((_, ratingIndex) => ({
+        formula: `COUNTIFS(${dateCriteria},MovieReviews[내 별점],${String.fromCharCode(69 + ratingIndex)}$4)`,
+        result: 0,
+      })),
     ];
   });
   statistics.addTable({
     name: "MovieViewingStatistics", ref: "A4", headerRow: true, totalsRow: false,
     style: { theme: "TableStyleLight1", showRowStripes: false },
-    columns: ["개봉연도", "감상 영화 수", "별점 입력 수", "평균 별점"].map((name) => ({ name, filterButton: true })),
+    columns: ["개봉연도", "감상 영화 수", "별점 입력 수", "평균 별점", ...ratingLabels].map((name) => ({ name, filterButton: true })),
     rows: yearRows,
   });
 
-  const ratingLabels = ["☆", "★", "★☆", "★★", "★★☆", "★★★", "★★★☆", "★★★★", "★★★★☆", "★★★★★"];
+  const summaryRow = yearRows.length + 7;
   statistics.addTable({
-    name: "MovieRatingDistribution", ref: "F4", headerRow: true, totalsRow: false,
+    name: "MovieRatingDistribution", ref: `A${summaryRow}`, headerRow: true, totalsRow: false,
     style: { theme: "TableStyleLight1", showRowStripes: false },
     columns: ["별점", "영화 수"].map((name) => ({ name, filterButton: false })),
     rows: ratingLabels.map((rating, index) => [rating, {
-      formula: `COUNTIF(MovieReviews[내 별점],F${index + 5})`, result: 0,
+      formula: `COUNTIF(MovieReviews[내 별점],A${summaryRow + index + 1})`, result: 0,
     }]),
   });
 
-  statistics.getCell("I4").value = "전체 감상 영화";
-  statistics.getCell("J4").value = { formula: 'COUNTIF(MovieReviews[TMDB ID],">0")', result: 0 };
-  statistics.getCell("I5").value = "별점 입력 영화";
-  statistics.getCell("J5").value = { formula: 'COUNTIF(MovieReviews[내 별점],"<>")', result: 0 };
-  statistics.getCell("I6").value = "전체 평균 별점";
-  statistics.getCell("J6").value = {
-    formula: 'IF(J5=0,"",SUMPRODUCT(COUNTIF(MovieReviews[내 별점],RatingOptions),RatingScores)/J5)', result: "",
+  statistics.getCell(summaryRow, 4).value = "전체 감상 영화";
+  statistics.getCell(summaryRow, 5).value = { formula: 'COUNTIF(MovieReviews[TMDB ID],">0")', result: 0 };
+  statistics.getCell(summaryRow + 1, 4).value = "별점 입력 영화";
+  statistics.getCell(summaryRow + 1, 5).value = { formula: 'COUNTIF(MovieReviews[내 별점],"<>")', result: 0 };
+  statistics.getCell(summaryRow + 2, 4).value = "전체 평균 별점";
+  statistics.getCell(summaryRow + 2, 5).value = {
+    formula: `IF(E${summaryRow + 1}=0,"",SUMPRODUCT(COUNTIF(MovieReviews[내 별점],RatingOptions),RatingScores)/E${summaryRow + 1})`, result: "",
   };
-  statistics.getCell("I7").value = "개봉일 미등록";
-  statistics.getCell("J7").value = {
+  statistics.getCell(summaryRow + 3, 4).value = "개봉일 미등록";
+  statistics.getCell(summaryRow + 3, 5).value = {
     formula: 'COUNTIFS(MovieReviews[TMDB ID],">0",MovieReviews[개봉일],"")', result: 0,
   };
 
-  [15, 17, 17, 14, 3, 13, 14, 3, 18, 15].forEach((width, index) => { statistics.getColumn(index + 1).width = width; });
-  statistics.getColumn(1).numFmt = '0"년"';
+  [4, summaryRow].forEach((rowNumber) => {
+    const lastColumn = rowNumber === 4 ? 14 : 2;
+    for (let column = 1; column <= lastColumn; column++) {
+      const cell = statistics.getCell(rowNumber, column);
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF6B7280" } };
+      cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    }
+  });
+  for (let rowNumber = summaryRow; rowNumber <= summaryRow + 3; rowNumber++) {
+    statistics.getCell(rowNumber, 4).font = { bold: true, color: { argb: "FF374151" } };
+    statistics.getCell(rowNumber, 4).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE5E7EB" } };
+    statistics.getCell(rowNumber, 5).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF9FAFB" } };
+  }
+
+  [15, 17, 17, 20, ...ratingLabels.map(() => 13)].forEach((width, index) => { statistics.getColumn(index + 1).width = width; });
+  yearRows.forEach((_, index) => { statistics.getCell(index + 5, 1).numFmt = '0"년"'; });
   statistics.getColumn(2).numFmt = '0"편"';
   statistics.getColumn(3).numFmt = '0"편"';
   statistics.getColumn(4).numFmt = '0.0';
-  statistics.getColumn(7).numFmt = '0"편"';
-  statistics.getCell("J4").numFmt = '0"편"';
-  statistics.getCell("J5").numFmt = '0"편"';
-  statistics.getCell("J6").numFmt = '0.0';
-  statistics.getCell("J7").numFmt = '0"편"';
+  ratingLabels.forEach((_, index) => { statistics.getColumn(index + 5).numFmt = '0"편"'; });
+  statistics.getCell(summaryRow + 2, 5).numFmt = '0.0';
   statistics.getRow(4).height = 28;
-  addGrid(statistics, 4, yearRows.length + 4, 4);
-  addGrid(statistics, 4, ratingLabels.length + 4, 7, 6);
-  addGrid(statistics, 4, 7, 10, 9);
+  statistics.getRow(summaryRow).height = 28;
+  addGrid(statistics, 4, yearRows.length + 4, 14);
+  addGrid(statistics, summaryRow, summaryRow + ratingLabels.length, 2);
+  addGrid(statistics, summaryRow, summaryRow + 3, 5, 4);
 
   const info = workbook.addWorksheet("조회정보");
   info.views = [{ showGridLines: false }];
@@ -282,7 +304,7 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   listValues.state = "veryHidden";
   listValues.getCell("A1").value = "미선택";
   listValues.getCell("A2").value = "선택";
-  ["☆", "★", "★☆", "★★", "★★☆", "★★★", "★★★☆", "★★★★", "★★★★☆", "★★★★★"].forEach((rating, index) => {
+  ratingLabels.forEach((rating, index) => {
     listValues.getCell(index + 1, 2).value = rating;
     listValues.getCell(index + 1, 3).value = (index + 1) / 2;
   });

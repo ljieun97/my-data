@@ -14,7 +14,7 @@ const movieExport = await import(`data:text/javascript;base64,${Buffer.from(js).
 const makeMovie = (id, popularity = id) => ({
   id, rank: 0, runtime: 40, title: `Movie ${id}`, original_title: `Movie ${id}`,
   release_date: "2025-01-01", genre_ids: [], original_language: "en",
-  vote_average: 5, vote_count: 11, popularity, overview: "Overview", poster_path: null,
+  vote_average: 5, vote_count: 2, popularity, overview: "Overview", poster_path: null,
   genres: "", countries: "", companies: "", directors: "Director", actors: "",
 });
 
@@ -167,9 +167,9 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     assert.equal(sheet.getCell("A4").value, "감상여부");
     assert.equal(sheet.getCell("A5").value, "미감상");
     assert.equal(sheet.getCell("M5").value, 40);
-    assert.equal(sheet.getCell("N5").value, 11);
+    assert.equal(sheet.getCell("N5").value, 2);
     assert.deepEqual(sheet.getRow(4).values.slice(1, 15), [
-      "감상여부", "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "제작 국가", "제작사", "감독",
+      "감상여부", "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "대표 제작국가", "대표 제작사", "감독",
       "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
     ]);
     assert.equal(sheet.getCell("O4").value, "_감상번호");
@@ -192,8 +192,8 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     assert.equal(reviewTable.table.style.showRowStripes, false);
     assert.equal(reviews.getCell("B5").border.right.style, "thin");
     assert.deepEqual(reviewTable.table.columns.map((column) => column.name), [
-      "TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제", "개봉일", "장르", "제작 국가",
-      "제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
+      "TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제", "개봉일", "장르", "대표 제작국가",
+      "대표 제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
     ]);
     assert.match(reviews.getCell("A5").value.formula, /'영화목록'!\$O\$5:\$O\$6/);
     assert.match(reviews.getCell("A6").value.formula, /ROWS\(\$A\$5:A6\)/);

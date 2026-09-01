@@ -1,4 +1,4 @@
-export const MIN_VOTE_COUNT = 11;
+export const MIN_VOTE_COUNT = 2;
 export const MIN_RUNTIME_MINUTES = 40;
 export const TMDB_MAX_PAGE = 500;
 

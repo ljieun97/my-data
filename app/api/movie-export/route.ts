@@ -68,7 +68,9 @@ function normalizeMovie(movie: TmdbMovie, details: DetailResponse, rank: number)
     overview: details.overview ?? movie.overview, poster_path: details.poster_path ?? movie.poster_path,
     runtime: Number(details.runtime) || 0, rank,
     genres: (details.genres ?? []).map((genre) => genre.name).join(", "),
-    countries: (details.production_countries ?? []).map((country) => regionNames.of(country.iso_3166_1) ?? country.name).join(", "),
+    countries: details.production_countries?.[0]
+      ? regionNames.of(details.production_countries[0].iso_3166_1) ?? details.production_countries[0].name
+      : "",
     companies: details.production_companies?.[0]?.name ?? "",
     directors: (details.credits?.crew ?? []).filter((person) => person.job === "Director").map((person) => person.name).join(", "),
     actors,

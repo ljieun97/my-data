@@ -61,12 +61,12 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   sheet.getCell("A1").alignment = { vertical: "middle" };
   sheet.getRow(1).height = 30;
   sheet.mergeCells("A2:N2");
-  sheet.getCell("A2").value = "투표 수 11개 이상 · 상영시간 40분 이상 · 한국어 줄거리 있음 · 감독 있음 · 성인물 제외";
+  sheet.getCell("A2").value = "투표 수 2개 이상 · 상영시간 40분 이상 · 한국어 줄거리 있음 · 감독 있음 · 성인물 제외";
   sheet.getCell("A2").font = { color: { argb: "FF4B5563" } };
   sheet.getCell("A2").alignment = { vertical: "middle" };
 
   const columns = [
-    "감상여부", "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "제작 국가", "제작사", "감독",
+    "감상여부", "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "대표 제작국가", "대표 제작사", "감독",
     "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수", "_감상번호",
   ];
   const rows = movies.map((movie, index) => [
@@ -185,8 +185,8 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     totalsRow: false,
     style: { theme: "TableStyleLight1", showRowStripes: false },
     columns: [
-      "TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제", "개봉일", "장르", "제작 국가",
-      "제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
+      "TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제", "개봉일", "장르", "대표 제작국가",
+      "대표 제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
     ].map((name) => ({ name, filterButton: true })),
     rows: reviewRows,
   });
@@ -197,8 +197,8 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     };
   }
   const reviewColumns = [
-    "TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제", "개봉일", "장르", "제작 국가",
-    "제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
+    "TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제", "개봉일", "장르", "대표 제작국가",
+    "대표 제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
   ];
   const reviewWidthRows = movies.map((movie) => [
     movie.id,
@@ -317,7 +317,7 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     ["출처", "TMDB API"],
     ["대상 연도", year],
     ["정렬", "TMDB 기본 순서"],
-    ["투표 수 조건", "11개 이상"],
+    ["투표 수 조건", "2개 이상"],
     ["영화 수", movies.length],
     ["언어", "한국어 (ko-KR)"],
     ["상영시간 조건", "40분 이상 (미등록 제외)"],

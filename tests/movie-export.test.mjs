@@ -199,7 +199,7 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     assert.match(reviews.getCell("A6").value.formula, /ROWS\(\$A\$5:A6\)/);
     assert.match(reviews.getCell("B5").value.formula, /INDEX\('영화목록'!\$C\$5:\$C\$6,MATCH\(A5/);
     assert.equal(reviews.getCell("C5").value, null);
-    assert.equal(reviews.getCell("D5").value, null);
+    assert.match(reviews.getCell("D5").value.formula, /INDEX\('영화목록'!\$E\$5:\$E\$6,MATCH\(A5/);
     assert.match(reviews.getCell("I5").value.formula, /INDEX\('영화목록'!\$H\$5:\$H\$6,MATCH\(A5/);
     assert.match(reviews.getCell("N5").value.formula, /INDEX\('영화목록'!\$M\$5:\$M\$6,MATCH\(A5/);
     assert.match(reviews.getCell("O5").value.formula, /INDEX\('영화목록'!\$N\$5:\$N\$6,MATCH\(A5/);
@@ -216,31 +216,34 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     const statistics = workbook.getWorksheet("통계");
     assert.equal(statistics.getCell("A1").fill.fgColor.argb, "FF4B5563");
     assert.equal(statistics.getCell("A2").fill.fgColor.argb, "FFF3F4F6");
-    assert.equal(statistics.getCell("Q4").fill.fgColor.argb, "FF6B7280");
+    assert.equal(statistics.getCell("O4").fill.fgColor.argb, "FF6B7280");
+    assert.deepEqual(statistics.getRow(4).values.slice(1, 6), ["연도", "개봉연도 감상 수", "감상연도 감상 수", "별점 입력 수", "평균 별점"]);
+    assert.equal(statistics.getColumn(2).width, statistics.getColumn(3).width);
     const yearValues = statistics.getColumn(1).values.filter((value) => typeof value === "number");
     assert.deepEqual(yearValues, [...yearValues].sort((left, right) => right - left));
     assert.equal(statistics.getCell("A5").value, "전체");
     assert.equal(statistics.getCell("B5").value.formula, 'COUNTIF(MovieReviews[TMDB ID],">0")');
-    assert.equal(statistics.getCell("C5").value.formula, 'COUNTIF(MovieReviews[내 별점],"<>")');
+    assert.equal(statistics.getCell("C5").value.formula, 'COUNTIFS(MovieReviews[감상날짜],"<>",MovieReviews[TMDB ID],">0")');
+    assert.equal(statistics.getCell("D5").value.formula, 'COUNTIF(MovieReviews[내 별점],"<>")');
+    assert.equal(statistics.getColumn(2).numFmt, "0");
+    assert.equal(statistics.getColumn(6).numFmt, "0");
     const yearRow = statistics.getColumn(1).values.findIndex((value) => value === 2025);
     assert.ok(yearRow >= 6);
     assert.equal(statistics.getCell(yearRow, 2).value.formula,
       `COUNTIFS(MovieReviews[개봉일],">="&DATE(A${yearRow},1,1),MovieReviews[개봉일],"<"&DATE(A${yearRow}+1,1,1),MovieReviews[TMDB ID],">0")`);
-    assert.match(statistics.getCell(yearRow, 4).value.formula, /RatingOptions\),RatingScores\)\/C/);
-    assert.equal(statistics.getCell(yearRow, 5).value.formula,
-      `COUNTIFS(MovieReviews[개봉일],">="&DATE(A${yearRow},1,1),MovieReviews[개봉일],"<"&DATE(A${yearRow}+1,1,1),MovieReviews[감상날짜],"<>",MovieReviews[TMDB ID],">0")`);
-    assert.match(statistics.getCell(yearRow, 6).value.formula, /MINIFS\(MovieReviews\[감상날짜\]/);
-    assert.match(statistics.getCell(yearRow, 7).value.formula, /MAXIFS\(MovieReviews\[감상날짜\]/);
+    assert.equal(statistics.getCell(yearRow, 3).value.formula,
+      `COUNTIFS(MovieReviews[감상날짜],">="&DATE(A${yearRow},1,1),MovieReviews[감상날짜],"<"&DATE(A${yearRow}+1,1,1),MovieReviews[TMDB ID],">0")`);
+    assert.match(statistics.getCell(yearRow, 5).value.formula, /RatingOptions\),RatingScores\)\/D/);
     const ratings = listValues.getColumn(2).values.slice(1, 11).reverse();
-    assert.deepEqual(statistics.getRow(4).values.slice(8, 18), ratings);
+    assert.deepEqual(statistics.getRow(4).values.slice(6, 16), ratings);
     ratings.forEach((_, index) => {
-      const column = String.fromCharCode(72 + index);
-      assert.equal(statistics.getCell(yearRow, index + 8).value.formula,
+      const column = String.fromCharCode(70 + index);
+      assert.equal(statistics.getCell(yearRow, index + 6).value.formula,
         `COUNTIFS(MovieReviews[개봉일],">="&DATE(A${yearRow},1,1),MovieReviews[개봉일],"<"&DATE(A${yearRow}+1,1,1),MovieReviews[내 별점],${column}$4)`);
     });
     assert.equal(statistics.getTable("MovieViewingStatistics").table.style.showRowStripes, false);
     assert.equal(statistics.getTable("MovieRatingDistribution"), undefined);
-    assert.equal(statistics.getCell(yearRow, 17).border.bottom.style, "thin");
+    assert.equal(statistics.getCell(yearRow, 15).border.bottom.style, "thin");
     assert.equal(statistics.getCell(yearRow, 2).border.bottom.style, "thin");
   } finally {
     await unlink(compiledPath).catch(() => undefined);

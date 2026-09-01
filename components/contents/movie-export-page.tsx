@@ -8,7 +8,6 @@ import {
 
 const currentYear = new Date().getFullYear();
 const availableYears = Array.from({ length: currentYear + 2 - 1888 + 1 }, (_, index) => currentYear + 2 - index);
-const SAMPLE_EXPORT_PAGE_LIMIT = 10;
 type Phase = "idle" | "planning" | "collecting" | "building";
 
 async function readApiResponse<T>(response: Response): Promise<T> {
@@ -43,26 +42,16 @@ export default function MovieExportPage() {
         const response = await fetch(query(window, { mode: "summary" }), { signal: controller.signal });
         return readApiResponse<ExportSummary>(response);
       });
-      const samplePlan = plan.slice(0, 1).map((window) => ({
-        ...window,
-        totalPages: Math.min(window.totalPages, SAMPLE_EXPORT_PAGE_LIMIT),
-        totalResults: Math.min(window.totalResults, SAMPLE_EXPORT_PAGE_LIMIT * 20),
-      }));
-      const expected = samplePlan.reduce((sum, window) => sum + window.totalResults, 0);
+      const expected = plan.reduce((sum, window) => sum + window.totalResults, 0);
       setPlannedCount(expected);
       if (expected === 0) throw new Error(`${year}년 조건에 맞는 영화가 없습니다.`);
 
       setPhase("collecting");
       const movies = await collectExportMovies(
-        samplePlan,
+        plan,
         async (window, page) => {
           const response = await fetch(query(window, { page: String(page) }), { signal: controller.signal });
-          const data = await readApiResponse<ExportPage>(response);
-          return {
-            ...data,
-            totalPages: Math.min(data.totalPages, SAMPLE_EXPORT_PAGE_LIMIT),
-            totalResults: data.scannedIds.length,
-          };
+          return readApiResponse<ExportPage>(response);
         },
         setProgress,
       );

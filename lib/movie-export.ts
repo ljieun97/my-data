@@ -1,4 +1,4 @@
-export const MIN_VOTE_COUNT = 1;
+export const MIN_VOTE_COUNT = 11;
 export const MIN_RUNTIME_MINUTES = 40;
 export const TMDB_MAX_PAGE = 500;
 
@@ -147,7 +147,8 @@ export async function collectExportMovies(
       for (const movie of result.movies) {
         if (movie.runtime < MIN_RUNTIME_MINUTES
           || (movie.vote_count ?? 0) < MIN_VOTE_COUNT
-          || !movie.overview?.trim()) {
+          || !movie.overview?.trim()
+          || !movie.directors.trim()) {
           throw new Error("내보내기 조건에 맞지 않는 영화가 포함되었습니다.");
         }
         if (accountedOnPage.has(movie.id)) throw new Error("상세 확인 결과에 중복 영화가 있습니다.");
@@ -179,7 +180,5 @@ export async function collectExportMovies(
     throw new Error(`예상 ${expectedMovies.toLocaleString()}편 중 ${collected.size.toLocaleString()}편만 검증되어 파일을 만들지 않았습니다.`);
   }
 
-  return [...collected.values()]
-    .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0) || a.id - b.id)
-    .map((movie, index) => ({ ...movie, rank: index + 1 }));
+  return [...collected.values()].map((movie, index) => ({ ...movie, rank: index + 1 }));
 }

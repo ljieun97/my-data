@@ -1,10 +1,38 @@
 import ExcelJS from "exceljs";
 import type { ExportMovie } from "./movie-export";
 
+const DATA_ROW_HEIGHT = 36;
+const MAX_TEXT_FIT_WIDTH = 45;
+const OVERVIEW_COLUMN_WIDTH = 50;
+
 function safeText(value: unknown) {
   const text = String(value ?? "");
   if (text.length > 32766) throw new Error("엑셀 셀 글자 수 한도를 초과한 영화 정보가 있습니다. 데이터를 자르지 않고 내보내기를 중단했습니다.");
   return /^[=+\-@]/.test(text) ? `'${text}` : text;
+}
+
+function getTextLength(value: unknown) {
+  if (value instanceof Date) return 10;
+  if (value && typeof value === "object" && "formula" in value) return 0;
+  return Array.from(String(value ?? "")).length;
+}
+
+function fitColumnWidths(
+  sheet: ExcelJS.Worksheet,
+  headers: string[],
+  rows: unknown[][],
+  fixedWidths: Record<number, number> = {},
+) {
+  headers.forEach((header, index) => {
+    const columnNumber = index + 1;
+    const fixedWidth = fixedWidths[columnNumber];
+    if (fixedWidth) {
+      sheet.getColumn(columnNumber).width = fixedWidth;
+      return;
+    }
+    const maxLength = Math.max(getTextLength(header), ...rows.map((row) => getTextLength(row[index])));
+    sheet.getColumn(columnNumber).width = Math.min(MAX_TEXT_FIT_WIDTH, Math.max(8, maxLength + 2));
+  });
 }
 
 function addGrid(sheet: ExcelJS.Worksheet, firstRow: number, lastRow: number, lastColumn: number, firstColumn = 1) {
@@ -26,23 +54,23 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     views: [{ state: "frozen", xSplit: 3, ySplit: 4, activeCell: "D5", showGridLines: false }],
     properties: { defaultRowHeight: 20 },
   });
-  sheet.mergeCells("A1:M1");
+  sheet.mergeCells("A1:N1");
   sheet.getCell("A1").value = `${year}년 TMDB 영화 ${movies.length}편`;
   sheet.getCell("A1").font = { bold: true, color: { argb: "FFFFFFFF" }, size: 15 };
   sheet.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF4B5563" } };
   sheet.getCell("A1").alignment = { vertical: "middle" };
   sheet.getRow(1).height = 30;
-  sheet.mergeCells("A2:M2");
-  sheet.getCell("A2").value = "투표 수 1개 이상 · 상영시간 40분 이상 · 한국어 줄거리 있음 · 성인물 제외 · 인기도 내림차순";
+  sheet.mergeCells("A2:N2");
+  sheet.getCell("A2").value = "투표 수 11개 이상 · 상영시간 40분 이상 · 한국어 줄거리 있음 · 감독 있음 · 성인물 제외";
   sheet.getCell("A2").font = { color: { argb: "FF4B5563" } };
   sheet.getCell("A2").alignment = { vertical: "middle" };
 
   const columns = [
-    "선택", "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "제작 국가", "제작사", "감독",
-    "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "_선택번호",
+    "감상여부", "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "제작 국가", "제작사", "감독",
+    "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수", "_감상번호",
   ];
   const rows = movies.map((movie, index) => [
-    "미선택",
+    "미감상",
     movie.id,
     safeText(movie.title),
     safeText(movie.original_title),
@@ -55,7 +83,8 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     safeText(movie.original_language),
     safeText(movie.overview),
     movie.runtime,
-    { formula: `IF(A${index + 5}=\"선택\",COUNTIF($A$5:A${index + 5},\"선택\"),\"\")`, result: "" },
+    movie.vote_count ?? 0,
+    { formula: `IF(A${index + 5}=\"감상\",COUNTIF($A$5:A${index + 5},\"감상\"),\"\")`, result: "" },
   ]);
 
   sheet.addTable({
@@ -68,10 +97,7 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     rows,
   });
 
-  const widths = [8, 12, 28, 28, 13, 22, 18, 32, 22, 58, 9, 60, 16, 10];
-  widths.forEach((width, index) => {
-    sheet.getColumn(index + 1).width = width;
-  });
+  fitColumnWidths(sheet, columns, rows, { 12: OVERVIEW_COLUMN_WIDTH, 15: 10 });
 
   if (movies.length > 0) {
     for (let rowNumber = 5; rowNumber <= movies.length + 4; rowNumber++) {
@@ -80,16 +106,16 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
         allowBlank: true,
         formulae: ["SelectionOptions"],
         showErrorMessage: true,
-        errorTitle: "선택 값 확인",
-        error: "목록에서 '미선택' 또는 '선택'을 골라 주세요.",
+        errorTitle: "감상여부 확인",
+        error: "목록에서 '미감상' 또는 '감상'을 골라 주세요.",
       };
     }
     sheet.addConditionalFormatting({
-      ref: `A5:M${movies.length + 4}`,
+      ref: `A5:N${movies.length + 4}`,
       rules: [{
         type: "expression",
         priority: 1,
-        formulae: ['$A5="선택"'],
+        formulae: ['$A5="감상"'],
         style: {
           fill: {
             type: "pattern", pattern: "solid",
@@ -103,29 +129,28 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   sheet.getRow(4).height = 28;
   sheet.getRow(4).alignment = { horizontal: "center", vertical: "middle", wrapText: true };
   sheet.getColumn(5).numFmt = "yyyy-mm-dd";
-  sheet.getColumn(14).hidden = true;
+  sheet.getColumn(15).hidden = true;
 
   movies.forEach((movie, index) => {
     const rowNumber = index + 5;
     const row = sheet.getRow(rowNumber);
     row.alignment = { vertical: "top", wrapText: true };
-    const longestText = Math.max(movie.overview?.length ?? 0, movie.actors.length, movie.companies.length);
-    row.height = Math.min(180, Math.max(42, Math.ceil(longestText / 55) * 18));
+    row.height = DATA_ROW_HEIGHT;
   });
 
-  addGrid(sheet, 4, movies.length + 4, 13);
+  addGrid(sheet, 4, movies.length + 4, 14);
 
   const reviews = workbook.addWorksheet("감상기록", {
-    views: [{ state: "frozen", ySplit: 4, activeCell: "A5", showGridLines: false }],
+    views: [{ state: "frozen", xSplit: 4, ySplit: 4, activeCell: "E5", showGridLines: false }],
     properties: { defaultRowHeight: 20 },
   });
-  reviews.mergeCells("A1:N1");
+  reviews.mergeCells("A1:O1");
   reviews.getCell("A1").value = "감상기록";
   reviews.getCell("A1").font = { bold: true, color: { argb: "FFFFFFFF" }, size: 15 };
   reviews.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF4B5563" } };
   reviews.getRow(1).height = 30;
-  reviews.mergeCells("A2:N2");
-  reviews.getCell("A2").value = "영화목록에서 '선택'하면 TMDB ID와 영화 정보가 자동으로 표시됩니다. 내 별점은 목록에서 선택하고 감상평을 입력하세요.";
+  reviews.mergeCells("A2:O2");
+  reviews.getCell("A2").value = "영화목록에서 '감상'하면 TMDB ID와 영화 정보가 자동으로 표시됩니다. 내 별점과 감상날짜를 입력하세요.";
   reviews.getCell("A2").alignment = { wrapText: true, vertical: "middle" };
   reviews.getCell("A2").font = { color: { argb: "FF4B5563" } };
   reviews.getRow(2).height = 34;
@@ -133,11 +158,13 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   const lastMovieRow = Math.max(5, movies.length + 4);
   const reviewRows = Array.from({ length: Math.max(1, movies.length) }, (_, index) => {
     const rowNumber = index + 5;
-    const idFormula = `IFERROR(INDEX('영화목록'!$B$5:$B$${lastMovieRow},MATCH(ROWS($A$5:A${rowNumber}),'영화목록'!$N$5:$N$${lastMovieRow},0)),\"\")`;
+    const idFormula = `IFERROR(INDEX('영화목록'!$B$5:$B$${lastMovieRow},MATCH(ROWS($A$5:A${rowNumber}),'영화목록'!$O$5:$O$${lastMovieRow},0)),\"\")`;
     const lookupFormula = (column: string) => `IF(A${rowNumber}=\"\",\"\",IFERROR(INDEX('영화목록'!$${column}$5:$${column}$${lastMovieRow},MATCH(A${rowNumber},'영화목록'!$B$5:$B$${lastMovieRow},0)),\"\"))`;
     return [
       { formula: idFormula, result: "" },
       { formula: lookupFormula("C"), result: "" },
+      null,
+      null,
       { formula: lookupFormula("D"), result: "" },
       { formula: lookupFormula("E"), result: "" },
       { formula: lookupFormula("F"), result: "" },
@@ -148,8 +175,7 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
       { formula: lookupFormula("K"), result: "" },
       { formula: lookupFormula("L"), result: "" },
       { formula: lookupFormula("M"), result: "" },
-      null,
-      null,
+      { formula: lookupFormula("N"), result: "" },
     ];
   });
   reviews.addTable({
@@ -159,26 +185,48 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     totalsRow: false,
     style: { theme: "TableStyleLight1", showRowStripes: false },
     columns: [
-      "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "제작 국가", "제작사", "감독",
-      "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "내 별점", "감상평",
+      "TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제", "개봉일", "장르", "제작 국가",
+      "제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
     ].map((name) => ({ name, filterButton: true })),
     rows: reviewRows,
   });
   for (let rowNumber = 5; rowNumber < reviewRows.length + 5; rowNumber++) {
-    reviews.getCell(rowNumber, 13).dataValidation = {
+    reviews.getCell(rowNumber, 3).dataValidation = {
       type: "list", allowBlank: true, formulae: ["RatingOptions"],
       showErrorMessage: true, errorTitle: "별점 확인", error: "목록에서 별점을 선택해 주세요.",
     };
   }
-  [14, 28, 28, 13, 22, 18, 32, 22, 58, 9, 60, 16, 11, 70].forEach((width, index) => {
-    reviews.getColumn(index + 1).width = width;
-  });
+  const reviewColumns = [
+    "TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제", "개봉일", "장르", "제작 국가",
+    "제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
+  ];
+  const reviewWidthRows = movies.map((movie) => [
+    movie.id,
+    movie.title,
+    "★★★★★",
+    new Date(),
+    movie.original_title,
+    movie.release_date ? new Date(`${movie.release_date}T00:00:00Z`) : null,
+    movie.genres,
+    movie.countries,
+    movie.companies,
+    movie.directors,
+    movie.actors,
+    movie.original_language,
+    movie.overview,
+    movie.runtime,
+    movie.vote_count ?? 0,
+  ]);
+  fitColumnWidths(reviews, reviewColumns, reviewWidthRows, { 3: 16, 13: OVERVIEW_COLUMN_WIDTH });
   reviews.getColumn(4).numFmt = "yyyy-mm-dd";
-  reviews.getColumn(11).alignment = { vertical: "top", wrapText: true };
-  reviews.getColumn(14).alignment = { vertical: "top", wrapText: true };
+  reviews.getColumn(6).numFmt = "yyyy-mm-dd";
+  reviews.getColumn(13).alignment = { vertical: "top", wrapText: true };
   reviews.getRow(4).height = 28;
+  for (let rowNumber = 5; rowNumber < reviewRows.length + 5; rowNumber++) {
+    reviews.getRow(rowNumber).height = DATA_ROW_HEIGHT;
+  }
 
-  addGrid(reviews, 4, reviewRows.length + 4, 14);
+  addGrid(reviews, 4, reviewRows.length + 4, 15);
 
   const statistics = workbook.addWorksheet("통계", {
     views: [{ state: "frozen", ySplit: 4, activeCell: "A5", showGridLines: true }],
@@ -282,12 +330,13 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     ["항목", "값"],
     ["출처", "TMDB API"],
     ["대상 연도", year],
-    ["정렬", "인기도 내림차순"],
-    ["투표 수 조건", "1개 이상 (투표 0개 제외)"],
+    ["정렬", "TMDB 기본 순서"],
+    ["투표 수 조건", "11개 이상"],
     ["영화 수", movies.length],
     ["언어", "한국어 (ko-KR)"],
     ["상영시간 조건", "40분 이상 (미등록 제외)"],
     ["줄거리 조건", "한국어(ko-KR) 줄거리가 있는 영화만 포함"],
+    ["감독 조건", "감독이 있는 영화만 포함"],
     ["조회 시각", new Date()],
   ]);
   info.mergeCells("A1:B1");
@@ -297,13 +346,13 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   info.getRow(3).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF6B7280" } };
   info.getColumn(1).width = 20;
   info.getColumn(2).width = 44;
-  info.getCell("B12").numFmt = "yyyy-mm-dd hh:mm";
-  addGrid(info, 3, 12, 2);
+  info.getCell("B13").numFmt = "yyyy-mm-dd hh:mm";
+  addGrid(info, 3, 13, 2);
 
   const listValues = workbook.addWorksheet("_목록값");
   listValues.state = "veryHidden";
-  listValues.getCell("A1").value = "미선택";
-  listValues.getCell("A2").value = "선택";
+  listValues.getCell("A1").value = "미감상";
+  listValues.getCell("A2").value = "감상";
   ratingLabels.forEach((rating, index) => {
     listValues.getCell(index + 1, 2).value = rating;
     listValues.getCell(index + 1, 3).value = (index + 1) / 2;
@@ -314,5 +363,3 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
 
   return workbook.xlsx.writeBuffer();
 }
-
-

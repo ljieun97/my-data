@@ -8,6 +8,7 @@ import {
 
 const currentYear = new Date().getFullYear();
 const availableYears = Array.from({ length: currentYear + 2 - 1888 + 1 }, (_, index) => currentYear + 2 - index);
+const SAMPLE_EXPORT_PAGE_LIMIT = 10;
 type Phase = "idle" | "planning" | "collecting" | "building";
 
 async function readApiResponse<T>(response: Response): Promise<T> {
@@ -42,16 +43,26 @@ export default function MovieExportPage() {
         const response = await fetch(query(window, { mode: "summary" }), { signal: controller.signal });
         return readApiResponse<ExportSummary>(response);
       });
-      const expected = plan.reduce((sum, window) => sum + window.totalResults, 0);
+      const samplePlan = plan.slice(0, 1).map((window) => ({
+        ...window,
+        totalPages: Math.min(window.totalPages, SAMPLE_EXPORT_PAGE_LIMIT),
+        totalResults: Math.min(window.totalResults, SAMPLE_EXPORT_PAGE_LIMIT * 20),
+      }));
+      const expected = samplePlan.reduce((sum, window) => sum + window.totalResults, 0);
       setPlannedCount(expected);
       if (expected === 0) throw new Error(`${year}년 조건에 맞는 영화가 없습니다.`);
 
       setPhase("collecting");
       const movies = await collectExportMovies(
-        plan,
+        samplePlan,
         async (window, page) => {
           const response = await fetch(query(window, { page: String(page) }), { signal: controller.signal });
-          return readApiResponse<ExportPage>(response);
+          const data = await readApiResponse<ExportPage>(response);
+          return {
+            ...data,
+            totalPages: Math.min(data.totalPages, SAMPLE_EXPORT_PAGE_LIMIT),
+            totalResults: data.scannedIds.length,
+          };
         },
         setProgress,
       );
@@ -102,7 +113,7 @@ export default function MovieExportPage() {
         <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">영화 엑셀 다운로드</h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
           연도를 선택하면 투표가 {MIN_VOTE_COUNT}개 이상이고 상영시간이 {MIN_RUNTIME_MINUTES}분 이상이며 한국어 줄거리가 있는 영화를 수집합니다.
-          제작 국가·제작사, 감독, 전체 출연진도 포함되며, 제목 형태로는 제외하지 않습니다.
+          감독이 없는 항목은 제외하고 제작 국가·제작사, 전체 출연진도 포함합니다.
         </p>
 
         <div className="mt-10 rounded-2xl bg-slate-50 p-5 dark:bg-slate-900/80 sm:flex sm:items-end sm:gap-4">
@@ -119,9 +130,9 @@ export default function MovieExportPage() {
             </select>
           </label>
           {isRunning ? (
-            <button type="button" onClick={cancelDownload} className="mt-4 inline-flex h-14 w-full shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white px-7 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 sm:mt-0 sm:w-auto">취소</button>
+            <button type="button" onClick={cancelDownload} className="mt-4 inline-flex h-11 w-full shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 sm:mt-0 sm:w-auto">취소</button>
           ) : (
-            <button type="button" onClick={downloadExcel} className="mt-4 inline-flex h-14 w-full shrink-0 items-center justify-center rounded-xl bg-slate-950 px-7 text-sm font-semibold text-white transition hover:bg-amber-600 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300 sm:mt-0 sm:w-auto">엑셀 다운로드</button>
+            <button type="button" onClick={downloadExcel} className="mt-4 inline-flex h-11 w-full shrink-0 items-center justify-center rounded-lg bg-slate-950 px-4 text-xs font-semibold text-white transition hover:bg-amber-600 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300 sm:mt-0 sm:w-auto">엑셀 다운로드</button>
           )}
         </div>
 

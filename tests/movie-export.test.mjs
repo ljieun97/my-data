@@ -14,8 +14,8 @@ const movieExport = await import(`data:text/javascript;base64,${Buffer.from(js).
 const makeMovie = (id, popularity = id) => ({
   id, rank: 0, runtime: 40, title: `Movie ${id}`, original_title: `Movie ${id}`,
   release_date: "2025-01-01", genre_ids: [], original_language: "en",
-  vote_average: 5, vote_count: 1, popularity, overview: "Overview", poster_path: null,
-  genres: "", countries: "", companies: "", directors: "", actors: "",
+  vote_average: 5, vote_count: 11, popularity, overview: "Overview", poster_path: null,
+  genres: "", countries: "", companies: "", directors: "Director", actors: "",
 });
 
 test("연도와 날짜 범위를 엄격하게 검증한다", () => {
@@ -53,7 +53,7 @@ test("500페이지가 넘을 때만 날짜 구간을 겹치지 않게 나눈다"
   ]);
 });
 
-test("TOP 제한 없이 모든 페이지를 모으고 마지막에 인기도순으로 정렬한다", async () => {
+test("TOP 제한 없이 모든 페이지를 모으고 조회 순서를 유지한다", async () => {
   const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 2, totalResults: 3 }];
   const movies = await movieExport.collectExportMovies(plan, async (window, page) => ({
     ...window, page, totalPages: 2, totalResults: 3,
@@ -61,7 +61,7 @@ test("TOP 제한 없이 모든 페이지를 모으고 마지막에 인기도순�
     excludedIds: [],
     movies: page === 1 ? [makeMovie(1, 1), makeMovie(2, 3)] : [makeMovie(3, 2)],
   }));
-  assert.deepEqual(movies.map((movie) => movie.id), [2, 3, 1]);
+  assert.deepEqual(movies.map((movie) => movie.id), [1, 2, 3]);
   assert.deepEqual(movies.map((movie) => movie.rank), [1, 2, 3]);
 });
 
@@ -82,7 +82,7 @@ test("여러 날짜 구간의 모든 페이지를 빠짐없이 수집한다", as
   }, (value) => progress.push(value));
 
   assert.deepEqual(requested, [["2025-01-01", 1], ["2025-01-01", 2], ["2025-02-01", 1], ["2025-02-01", 2]]);
-  assert.deepEqual(movies.map((movie) => movie.id), [4, 3, 2, 1]);
+  assert.deepEqual(movies.map((movie) => movie.id), [1, 2, 3, 4]);
   assert.equal(progress.at(-1).completedPages, 4);
   assert.equal(progress.at(-1).totalPages, 4);
 });
@@ -98,7 +98,7 @@ test("조회 중 TMDB 전체 편수가 바뀌면 새 페이지 수에 맞춰 계
     };
   });
   assert.deepEqual(requested, [1, 2, 3]);
-  assert.deepEqual(movies.map((movie) => movie.id), [3, 2, 1]);
+  assert.deepEqual(movies.map((movie) => movie.id), [1, 2, 3]);
 });
 
 test("중복이나 누락이 있으면 부분 엑셀을 만들지 않는다", async () => {
@@ -131,6 +131,17 @@ test("한국어 줄거리가 없는 영화가 포함되면 내보내기를 중�
   );
 });
 
+test("감독이 없는 영화가 포함되면 내보내기를 중단한다", async () => {
+  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 1, totalResults: 1 }];
+  await assert.rejects(
+    movieExport.collectExportMovies(plan, async (window, page) => ({
+      ...window, page, totalPages: 1, totalResults: 1,
+      scannedIds: [1], excludedIds: [], movies: [{ ...makeMovie(1), directors: "" }],
+    })),
+    /조건에 맞지 않는/,
+  );
+});
+
 test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", async () => {
   const builderPath = new URL("../lib/movie-export-workbook.ts", import.meta.url);
   const builderSource = await readFile(builderPath, "utf8");
@@ -151,42 +162,52 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     const sheet = workbook.getWorksheet("영화목록");
     const table = sheet.getTable("TmdbMovieExport");
     assert.equal(sheet.rowCount, 6);
-    assert.equal(sheet.columnCount, 14);
+    assert.equal(sheet.columnCount, 15);
     assert.match(sheet.getCell("A1").value, /2025년 TMDB 영화 2편/);
-    assert.equal(sheet.getCell("A4").value, "선택");
-    assert.equal(sheet.getCell("A5").value, "미선택");
+    assert.equal(sheet.getCell("A4").value, "감상여부");
+    assert.equal(sheet.getCell("A5").value, "미감상");
     assert.equal(sheet.getCell("M5").value, 40);
-    assert.deepEqual(sheet.getRow(4).values.slice(1, 14), [
-      "선택", "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "제작 국가", "제작사", "감독",
-      "배우 전체", "원어", "한국어 줄거리", "상영시간(분)",
+    assert.equal(sheet.getCell("N5").value, 11);
+    assert.deepEqual(sheet.getRow(4).values.slice(1, 15), [
+      "감상여부", "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "제작 국가", "제작사", "감독",
+      "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
     ]);
-    assert.equal(sheet.getCell("N4").value, "_선택번호");
-    assert.equal(sheet.getColumn(14).hidden, true);
-    assert.match(sheet.getCell("N5").value.formula, /COUNTIF\(\$A\$5:A5,"선택"\)/);
+    assert.equal(sheet.getCell("O4").value, "_감상번호");
+    assert.equal(sheet.getColumn(15).hidden, true);
+    assert.match(sheet.getCell("O5").value.formula, /COUNTIF\(\$A\$5:A5,"감상"\)/);
     assert.equal(table.table.columns.every((column) => column.filterButton !== false), true);
     assert.equal(table.table.style.theme, "TableStyleLight1");
     assert.equal(table.table.style.showRowStripes, false);
     assert.equal(sheet.getCell("B5").border.bottom.style, "thin");
     assert.equal(sheet.getCell("B5").border.right.color.argb, "FFD9D9D9");
     assert.equal(sheet.getCell("A5").dataValidation.formulae[0], "SelectionOptions");
+    assert.equal(sheet.getCell("D5").dataValidation, undefined);
 
     const reviews = workbook.getWorksheet("감상기록");
     const reviewTable = reviews.getTable("MovieReviews");
+    assert.equal(reviews.views[0].xSplit, 4);
+    assert.equal(reviews.views[0].ySplit, 4);
+    assert.equal(reviews.views[0].activeCell, "E5");
     assert.equal(reviewTable.table.style.theme, "TableStyleLight1");
     assert.equal(reviewTable.table.style.showRowStripes, false);
     assert.equal(reviews.getCell("B5").border.right.style, "thin");
     assert.deepEqual(reviewTable.table.columns.map((column) => column.name), [
-      "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "제작 국가", "제작사", "감독",
-      "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "내 별점", "감상평",
+      "TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제", "개봉일", "장르", "제작 국가",
+      "제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
     ]);
-    assert.match(reviews.getCell("A5").value.formula, /^IFERROR\(INDEX\('영화목록'!\$B\$5:\$B\$6,MATCH/);
+    assert.match(reviews.getCell("A5").value.formula, /'영화목록'!\$O\$5:\$O\$6/);
     assert.match(reviews.getCell("A6").value.formula, /ROWS\(\$A\$5:A6\)/);
     assert.match(reviews.getCell("B5").value.formula, /INDEX\('영화목록'!\$C\$5:\$C\$6,MATCH\(A5/);
-    assert.match(reviews.getCell("H5").value.formula, /INDEX\('영화목록'!\$I\$5:\$I\$6,MATCH\(A5/);
-    assert.match(reviews.getCell("L5").value.formula, /INDEX\('영화목록'!\$M\$5:\$M\$6,MATCH\(A5/);
-    assert.equal(reviews.getCell("M5").dataValidation.formulae[0], "RatingOptions");
-    assert.equal(reviews.getCell("O5").value, null);
+    assert.equal(reviews.getCell("C5").value, null);
+    assert.equal(reviews.getCell("D5").value, null);
+    assert.match(reviews.getCell("I5").value.formula, /INDEX\('영화목록'!\$H\$5:\$H\$6,MATCH\(A5/);
+    assert.match(reviews.getCell("N5").value.formula, /INDEX\('영화목록'!\$M\$5:\$M\$6,MATCH\(A5/);
+    assert.match(reviews.getCell("O5").value.formula, /INDEX\('영화목록'!\$N\$5:\$N\$6,MATCH\(A5/);
+    assert.equal(reviews.getCell("C5").dataValidation.formulae[0], "RatingOptions");
+    assert.equal(reviews.getColumn(3).width, 16);
+    assert.equal(reviews.getCell("P5").value, null);
     const listValues = workbook.getWorksheet("_목록값");
+    assert.deepEqual(listValues.getColumn(1).values.slice(1, 3), ["미감상", "감상"]);
     assert.deepEqual(listValues.getColumn(2).values.slice(1, 11), [
       "☆", "★", "★☆", "★★", "★★☆", "★★★", "★★★☆", "★★★★", "★★★★☆", "★★★★★",
     ]);

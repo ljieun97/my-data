@@ -45,7 +45,7 @@ function getDiscoverParams(year: number, window: DateWindow, page: number) {
     language: "ko-KR", include_adult: "false", include_video: "false",
     primary_release_year: String(year), "primary_release_date.gte": window.from,
     "primary_release_date.lte": window.to, "vote_count.gte": String(MIN_VOTE_COUNT),
-    "with_runtime.gte": String(MIN_RUNTIME_MINUTES), sort_by: "primary_release_date.asc", page: String(page),
+    "with_runtime.gte": String(MIN_RUNTIME_MINUTES), page: String(page),
   };
 }
 
@@ -69,7 +69,7 @@ function normalizeMovie(movie: TmdbMovie, details: DetailResponse, rank: number)
     runtime: Number(details.runtime) || 0, rank,
     genres: (details.genres ?? []).map((genre) => genre.name).join(", "),
     countries: (details.production_countries ?? []).map((country) => regionNames.of(country.iso_3166_1) ?? country.name).join(", "),
-    companies: (details.production_companies ?? []).map((company) => company.name).join(", "),
+    companies: details.production_companies?.[0]?.name ?? "",
     directors: (details.credits?.crew ?? []).filter((person) => person.job === "Director").map((person) => person.name).join(", "),
     actors,
   };
@@ -95,7 +95,8 @@ export async function GET(request: NextRequest) {
         const movie = normalizeMovie(batch[index], detail, offset + index + 1);
         if (movie.runtime >= MIN_RUNTIME_MINUTES
           && (movie.vote_count ?? 0) >= MIN_VOTE_COUNT
-          && movie.overview?.trim()) movies.push(movie);
+          && movie.overview?.trim()
+          && movie.directors.trim()) movies.push(movie);
         else excludedIds.push(movie.id);
       });
     }

@@ -58,11 +58,9 @@ function toClipboardCell(value: unknown) {
 
 export function createSelectedReviewsClipboardText(movies: ExportMovie[]) {
   return movies.map((movie) => [
-    movie.id,
     movie.title,
     "",
     movie.release_date,
-    movie.original_title,
     movie.release_date,
     movie.genres,
     movie.countries,

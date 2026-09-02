@@ -73,7 +73,11 @@ export default function MylistPage({ year, counts }: { year: any; counts: any[] 
     [...items].sort((a, b) => String(b.user_date || "").localeCompare(String(a.user_date || "")));
 
   const sortByRating = (items: any[]) =>
-    [...items].sort((a, b) => (Number(b.user_rating) || 0) - (Number(a.user_rating) || 0));
+    [...items].sort((a, b) => {
+      const ratingDiff = (Number(b.user_rating) || 0) - (Number(a.user_rating) || 0);
+      if (ratingDiff !== 0) return ratingDiff;
+      return String(b.user_date || "").localeCompare(String(a.user_date || ""));
+    });
 
   const removeItemFromView = (cid: string) => {
     setBaseList((prev: any[]) => prev.filter((item) => item._id !== cid));

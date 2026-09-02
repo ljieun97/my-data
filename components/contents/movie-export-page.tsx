@@ -34,7 +34,7 @@ export default function MovieExportPage() {
   const filteredMovies = useMemo(() => {
     const keyword = search.trim().toLocaleLowerCase("ko-KR");
     if (!keyword) return movies;
-    return movies.filter((movie) => [movie.title, movie.original_title, movie.directors, movie.id]
+    return movies.filter((movie) => [movie.title, movie.directors]
       .some((value) => String(value ?? "").toLocaleLowerCase("ko-KR").includes(keyword)));
   }, [movies, search]);
 
@@ -107,7 +107,7 @@ export default function MovieExportPage() {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `tmdb-${year}-watched-${selectedMovies.length}${includeHeaderAndStatistics ? "-with-header-statistics" : "-rows-only"}.xlsx`;
+      anchor.download = `movies-${year}-watched-${selectedMovies.length}${includeHeaderAndStatistics ? "-with-header-statistics" : "-rows-only"}.xlsx`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
@@ -128,7 +128,7 @@ export default function MovieExportPage() {
     try {
       await navigator.clipboard.writeText(createSelectedReviewsClipboardText(selectedMovies));
       setError("");
-      setCopyMessage(`${selectedMovies.length.toLocaleString()}편의 감상기록 행을 복사했습니다. 감상기록 표 바로 아래 첫 빈 행의 TMDB ID 셀에 붙여넣으세요.`);
+      setCopyMessage(`${selectedMovies.length.toLocaleString()}편의 감상기록 행을 복사했습니다. 감상기록 표 바로 아래 첫 빈 행에 붙여넣으세요.`);
     } catch {
       setCopyMessage("");
       setError("클립보드에 복사하지 못했습니다. 브라우저의 클립보드 권한을 확인해 주세요.");
@@ -172,10 +172,10 @@ export default function MovieExportPage() {
   return (
     <section className="mx-auto max-w-4xl py-8 sm:py-16">
       <div className="rounded-[28px] border border-white/70 bg-white/75 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">TMDB Export</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">Excel Export</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">감상 영화 선택 · 엑셀 다운로드</h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-          연도를 조회하고 감상한 영화를 화면에서 선택하세요. 선택한 영화는 TMDB ID가 고정된 감상기록 행으로 저장되며, 파일끼리 직접 합칠 수 있습니다.
+          연도를 조회하고 감상한 영화를 화면에서 선택하세요. 선택한 영화는 감상기록 행으로 저장되며, 파일끼리 직접 합칠 수 있습니다.
         </p>
 
         <div className="mt-10 rounded-2xl bg-slate-50 p-5 dark:bg-slate-900/80 sm:flex sm:items-end sm:gap-4">
@@ -223,7 +223,7 @@ export default function MovieExportPage() {
                   type="search"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="제목, 원제, 감독, TMDB ID"
+                  placeholder="제목, 감독"
                   className="h-11 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900/30"
                 />
               </label>
@@ -246,10 +246,9 @@ export default function MovieExportPage() {
                     className="mt-1 h-4 w-4 shrink-0 accent-amber-500"
                   />
                   <span className="min-w-0 flex-1">
-                    <strong className="block truncate text-sm text-slate-950 dark:text-white">{movie.title || movie.original_title || `TMDB ${movie.id}`}</strong>
-                    <span className="mt-1 block truncate text-xs text-slate-500">{movie.original_title} · {movie.release_date || "개봉일 미정"} · {movie.directors}</span>
+                    <strong className="block truncate text-sm text-slate-950 dark:text-white">{movie.title || "제목 없음"}</strong>
+                    <span className="mt-1 block truncate text-xs text-slate-500">{movie.release_date || "개봉일 미정"} · {movie.directors}</span>
                   </span>
-                  <span className="shrink-0 text-xs text-slate-400">TMDB {movie.id}</span>
                 </label>
               ))}
               {filteredMovies.length === 0 ? <p className="px-4 py-10 text-center text-sm text-slate-500">검색 결과가 없습니다.</p> : null}
@@ -273,7 +272,7 @@ export default function MovieExportPage() {
               <button type="button" onClick={downloadSelected} disabled={isRunning || selectedIds.size === 0} className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300 sm:mt-0 sm:w-auto">선택한 {selectedIds.size.toLocaleString()}편 다운로드</button>
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
-              헤더 포함 파일에는 자동 통계 시트가 있습니다. `선택 행 복사` 후 감상기록 표 바로 아래 첫 빈 행의 TMDB ID 셀에 붙여넣으면 표가 확장되어 통계도 갱신됩니다.
+              헤더 포함 파일에는 자동 통계 시트가 있습니다. `선택 행 복사` 후 감상기록 표 바로 아래 첫 빈 행에 붙여넣으면 표가 확장되어 통계도 갱신됩니다.
             </p>
           </div>
         ) : (

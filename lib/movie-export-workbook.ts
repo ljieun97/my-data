@@ -61,7 +61,7 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   sheet.getCell("A1").alignment = { vertical: "middle" };
   sheet.getRow(1).height = 30;
   sheet.mergeCells("A2:N2");
-  sheet.getCell("A2").value = "투표 수 2개 이상 · 상영시간 40분 이상 · 한국어 줄거리 있음 · 감독 있음 · 성인물 제외";
+  sheet.getCell("A2").value = "전체 영화 투표 수 11개 이상 · 한국 영화 1개 이상 · 상영시간 40분 이상 · 한국어 줄거리 있음 · 감독 있음 · 성인물 제외";
   sheet.getCell("A2").font = { color: { argb: "FF4B5563" } };
   sheet.getCell("A2").alignment = { vertical: "middle" };
 
@@ -155,27 +155,26 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   reviews.getCell("A2").font = { color: { argb: "FF4B5563" } };
   reviews.getRow(2).height = 34;
 
-  const lastMovieRow = Math.max(5, movies.length + 4);
   const reviewRows = Array.from({ length: Math.max(1, movies.length) }, (_, index) => {
     const rowNumber = index + 5;
-    const idFormula = `IFERROR(INDEX('영화목록'!$B$5:$B$${lastMovieRow},MATCH(ROWS($A$5:A${rowNumber}),'영화목록'!$O$5:$O$${lastMovieRow},0)),\"\")`;
-    const lookupFormula = (column: string) => `IF(A${rowNumber}=\"\",\"\",IFERROR(INDEX('영화목록'!$${column}$5:$${column}$${lastMovieRow},MATCH(A${rowNumber},'영화목록'!$B$5:$B$${lastMovieRow},0)),\"\"))`;
+    const idFormula = `IFERROR(INDEX(TmdbMovieExport[TMDB ID],MATCH(ROWS($A$5:A${rowNumber}),TmdbMovieExport[_감상번호],0)),\"\")`;
+    const lookupFormula = (column: string) => `IF(A${rowNumber}=\"\",\"\",IFERROR(INDEX(TmdbMovieExport[${column}],MATCH(A${rowNumber},TmdbMovieExport[TMDB ID],0)),\"\"))`;
     return [
       { formula: idFormula, result: "" },
-      { formula: lookupFormula("C"), result: "" },
+      { formula: lookupFormula("한국어 제목"), result: "" },
       null,
-      { formula: lookupFormula("E"), result: "" },
-      { formula: lookupFormula("D"), result: "" },
-      { formula: lookupFormula("E"), result: "" },
-      { formula: lookupFormula("F"), result: "" },
-      { formula: lookupFormula("G"), result: "" },
-      { formula: lookupFormula("H"), result: "" },
-      { formula: lookupFormula("I"), result: "" },
-      { formula: lookupFormula("J"), result: "" },
-      { formula: lookupFormula("K"), result: "" },
-      { formula: lookupFormula("L"), result: "" },
-      { formula: lookupFormula("M"), result: "" },
-      { formula: lookupFormula("N"), result: "" },
+      { formula: lookupFormula("개봉일"), result: "" },
+      { formula: lookupFormula("원제"), result: "" },
+      { formula: lookupFormula("개봉일"), result: "" },
+      { formula: lookupFormula("장르"), result: "" },
+      { formula: lookupFormula("대표 제작국가"), result: "" },
+      { formula: lookupFormula("대표 제작사"), result: "" },
+      { formula: lookupFormula("감독"), result: "" },
+      { formula: lookupFormula("배우 전체"), result: "" },
+      { formula: lookupFormula("원어"), result: "" },
+      { formula: lookupFormula("한국어 줄거리"), result: "" },
+      { formula: lookupFormula("상영시간(분)"), result: "" },
+      { formula: lookupFormula("투표수"), result: "" },
     ];
   });
   reviews.addTable({
@@ -317,7 +316,7 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     ["출처", "TMDB API"],
     ["대상 연도", year],
     ["정렬", "TMDB 기본 순서"],
-    ["투표 수 조건", "2개 이상"],
+    ["투표 수 조건", "전체 영화 11개 이상 · 한국 영화 1개 이상"],
     ["영화 수", movies.length],
     ["언어", "한국어 (ko-KR)"],
     ["상영시간 조건", "40분 이상 (미등록 제외)"],

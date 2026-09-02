@@ -178,6 +178,7 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     assert.equal(sheet.rowCount, 6);
     assert.equal(sheet.columnCount, 15);
     assert.match(sheet.getCell("A1").value, /2025년 TMDB 영화 2편/);
+    assert.match(sheet.getCell("A2").value, /전체 영화 투표 수 11개 이상 · 한국 영화 1개 이상/);
     assert.equal(sheet.getCell("A4").value, "감상여부");
     assert.equal(sheet.getCell("A5").value, "미감상");
     assert.equal(sheet.getCell("M5").value, 40);
@@ -209,17 +210,18 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
       "TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제", "개봉일", "장르", "대표 제작국가",
       "대표 제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",
     ]);
-    assert.match(reviews.getCell("A5").value.formula, /'영화목록'!\$O\$5:\$O\$6/);
+    assert.match(reviews.getCell("A5").value.formula, /TmdbMovieExport\[TMDB ID\].*TmdbMovieExport\[_감상번호\]/);
     assert.match(reviews.getCell("A6").value.formula, /ROWS\(\$A\$5:A6\)/);
-    assert.match(reviews.getCell("B5").value.formula, /INDEX\('영화목록'!\$C\$5:\$C\$6,MATCH\(A5/);
+    assert.match(reviews.getCell("B5").value.formula, /INDEX\(TmdbMovieExport\[한국어 제목\],MATCH\(A5,TmdbMovieExport\[TMDB ID\]/);
     assert.equal(reviews.getCell("C5").value, null);
-    assert.match(reviews.getCell("D5").value.formula, /INDEX\('영화목록'!\$E\$5:\$E\$6,MATCH\(A5/);
-    assert.match(reviews.getCell("I5").value.formula, /INDEX\('영화목록'!\$H\$5:\$H\$6,MATCH\(A5/);
-    assert.match(reviews.getCell("N5").value.formula, /INDEX\('영화목록'!\$M\$5:\$M\$6,MATCH\(A5/);
-    assert.match(reviews.getCell("O5").value.formula, /INDEX\('영화목록'!\$N\$5:\$N\$6,MATCH\(A5/);
+    assert.match(reviews.getCell("D5").value.formula, /INDEX\(TmdbMovieExport\[개봉일\],MATCH\(A5/);
+    assert.match(reviews.getCell("I5").value.formula, /INDEX\(TmdbMovieExport\[대표 제작사\],MATCH\(A5/);
+    assert.match(reviews.getCell("N5").value.formula, /INDEX\(TmdbMovieExport\[상영시간\(분\)\],MATCH\(A5/);
+    assert.match(reviews.getCell("O5").value.formula, /INDEX\(TmdbMovieExport\[투표수\],MATCH\(A5/);
     assert.equal(reviews.getCell("C5").dataValidation.formulae[0], "RatingOptions");
     assert.equal(reviews.getColumn(3).width, 16);
     assert.equal(reviews.getCell("P5").value, null);
+    assert.match(workbook.getWorksheet("조회정보").getCell("B7").value, /전체 영화 11개 이상 · 한국 영화 1개 이상/);
     const listValues = workbook.getWorksheet("_목록값");
     assert.deepEqual(listValues.getColumn(1).values.slice(1, 3), ["미감상", "감상"]);
     assert.deepEqual(listValues.getColumn(2).values.slice(1, 11), [

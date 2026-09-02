@@ -51,6 +51,31 @@ export type ExportProgress = {
   page: number;
 };
 
+function toClipboardCell(value: unknown) {
+  const text = String(value ?? "").replace(/[\t\r\n]+/g, " ");
+  return /^[=+\-@]/.test(text) ? `'${text}` : text;
+}
+
+export function createSelectedReviewsClipboardText(movies: ExportMovie[]) {
+  return movies.map((movie) => [
+    movie.id,
+    movie.title,
+    "",
+    "",
+    movie.original_title,
+    movie.release_date,
+    movie.genres,
+    movie.countries,
+    movie.companies,
+    movie.directors,
+    movie.actors,
+    movie.original_language,
+    movie.overview,
+    movie.runtime,
+    movie.vote_count ?? 0,
+  ].map(toClipboardCell).join("\t")).join("\r\n");
+}
+
 export function getYearWindows(year: number): DateWindow[] {
   return [{ from: `${year}-01-01`, to: `${year}-12-31` }];
 }

@@ -18,6 +18,22 @@ const makeMovie = (id, popularity = id) => ({
   genres: "", countries: "", companies: "", directors: "Director", actors: "",
 });
 
+test("선택한 영화는 엑셀 감상기록 15열에 맞는 행으로 복사한다", () => {
+  const text = movieExport.createSelectedReviewsClipboardText([
+    { ...makeMovie(1), title: "Movie\tOne", overview: "Line 1\nLine 2" },
+    { ...makeMovie(2), title: "=Formula" },
+  ]);
+  const rows = text.split("\r\n").map((row) => row.split("\t"));
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].length, 15);
+  assert.equal(rows[0][0], "1");
+  assert.equal(rows[0][1], "Movie One");
+  assert.equal(rows[0][2], "");
+  assert.equal(rows[0][3], "");
+  assert.equal(rows[0][12], "Line 1 Line 2");
+  assert.equal(rows[1][1], "'=Formula");
+});
+
 test("연도와 날짜 범위를 엄격하게 검증한다", () => {
   assert.equal(movieExport.validateYear("2025", 2026), 2025);
   assert.equal(movieExport.validateYear("2025.5", 2026), null);
@@ -168,7 +184,7 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     const require = createRequire(import.meta.url);
     const compiledFile = fileURLToPath(compiledPath);
     delete require.cache[require.resolve(compiledFile)];
-    const { createWorkbook } = require(compiledFile);
+    const { createCopyWorkbook, createSelectedReviewsWorkbook, createWorkbook } = require(compiledFile);
     const ExcelJS = require("exceljs");
     const buffer = await createWorkbook(2025, [makeMovie(1), makeMovie(2)]);
     const workbook = new ExcelJS.Workbook();
@@ -261,6 +277,55 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     assert.equal(statistics.getTable("MovieRatingDistribution"), undefined);
     assert.equal(statistics.getCell(yearRow, 15).border.bottom.style, "thin");
     assert.equal(statistics.getCell(yearRow, 2).border.bottom.style, "thin");
+
+    const copyBuffer = await createCopyWorkbook(2025, [makeMovie(1), makeMovie(2)]);
+    const copyWorkbook = new ExcelJS.Workbook();
+    await copyWorkbook.xlsx.load(copyBuffer);
+    assert.equal(copyWorkbook.worksheets.length, 1);
+    const copySheet = copyWorkbook.getWorksheet("영화목록 복사용");
+    assert.equal(copySheet.rowCount, 2);
+    assert.equal(copySheet.columnCount, 14);
+    assert.equal(copySheet.getCell("A1").value, "미감상");
+    assert.equal(copySheet.getCell("B1").value, 1);
+    assert.equal(copySheet.getCell("C1").value, "Movie 1");
+    assert.equal(copySheet.getCell("A2").value, "미감상");
+    assert.equal(copySheet.getCell("B2").value, 2);
+    assert.equal(copySheet.getCell("E1").numFmt, "yyyy-mm-dd");
+    assert.equal(copySheet.getTables().length, 0);
+
+    const selectedWithHeaderBuffer = await createSelectedReviewsWorkbook(2025, [makeMovie(1), makeMovie(2)], true);
+    const selectedWithHeaderWorkbook = new ExcelJS.Workbook();
+    await selectedWithHeaderWorkbook.xlsx.load(selectedWithHeaderBuffer);
+    const selectedWithHeader = selectedWithHeaderWorkbook.getWorksheet("감상기록");
+    assert.equal(selectedWithHeader.rowCount, 3);
+    assert.equal(selectedWithHeader.columnCount, 15);
+    assert.deepEqual(selectedWithHeader.getRow(1).values.slice(1, 6), ["TMDB ID", "한국어 제목", "내 별점", "감상날짜", "원제"]);
+    assert.equal(selectedWithHeader.getCell("A2").value, 1);
+    assert.equal(selectedWithHeader.getCell("B2").value, "Movie 1");
+    assert.equal(selectedWithHeader.getCell("C2").value, "");
+    assert.equal(selectedWithHeader.getCell("D2").value, "");
+    assert.equal(selectedWithHeader.getCell("F2").numFmt, "yyyy-mm-dd");
+    assert.equal(selectedWithHeader.getTable("MovieReviews").table.style.theme, "TableStyleLight1");
+    assert.equal(selectedWithHeaderWorkbook.worksheets.length, 3);
+    const selectedStatistics = selectedWithHeaderWorkbook.getWorksheet("통계");
+    assert.equal(selectedStatistics.getCell("B5").value.formula, 'COUNTIF(MovieReviews[TMDB ID],">0")');
+    assert.equal(selectedStatistics.getCell("C5").value.formula, 'COUNTIFS(MovieReviews[감상날짜],"<>",MovieReviews[TMDB ID],">0")');
+    assert.equal(selectedStatistics.getCell("A146").value, 1888);
+    assert.equal(selectedWithHeaderWorkbook.getWorksheet("_목록값").state, "veryHidden");
+
+    const selectedWithoutHeaderBuffer = await createSelectedReviewsWorkbook(2025, [makeMovie(1), makeMovie(2)], false);
+    const selectedWithoutHeaderWorkbook = new ExcelJS.Workbook();
+    await selectedWithoutHeaderWorkbook.xlsx.load(selectedWithoutHeaderBuffer);
+    const selectedWithoutHeader = selectedWithoutHeaderWorkbook.getWorksheet("감상기록 복사용");
+    assert.equal(selectedWithoutHeader.rowCount, 2);
+    assert.equal(selectedWithoutHeader.columnCount, 15);
+    assert.equal(selectedWithoutHeader.getCell("A1").value, 1);
+    assert.equal(selectedWithoutHeader.getCell("B1").value, "Movie 1");
+    assert.equal(selectedWithoutHeader.getCell("C1").value, "");
+    assert.equal(selectedWithoutHeader.getCell("D1").value, "");
+    assert.equal(selectedWithoutHeader.getCell("E1").value, "Movie 1");
+    assert.equal(selectedWithoutHeader.getCell("F1").numFmt, "yyyy-mm-dd");
+    assert.equal(selectedWithoutHeader.getTables().length, 0);
   } finally {
     await unlink(compiledPath).catch(() => undefined);
   }

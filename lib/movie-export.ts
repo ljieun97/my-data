@@ -211,9 +211,11 @@ export async function collectExportMovies(
     }
   }
 
-  if ((!totalsChanged && scannedIds.size !== expectedMovies)
-    || collected.size + excludedIds.size !== scannedIds.size) {
-    throw new Error(`예상 ${expectedMovies.toLocaleString()}편 중 ${collected.size.toLocaleString()}편만 검증되어 파일을 만들지 않았습니다.`);
+  if (!totalsChanged && scannedIds.size !== expectedMovies) {
+    throw new Error(`TMDB 페이지가 중복되거나 누락되었습니다. 예상 ${expectedMovies.toLocaleString()}편 중 ${scannedIds.size.toLocaleString()}편만 조회되어 파일을 만들지 않았습니다. 다시 조회해 주세요.`);
+  }
+  if (collected.size + excludedIds.size !== scannedIds.size) {
+    throw new Error(`TMDB 상세 검증 결과가 맞지 않습니다. 조회 ${scannedIds.size.toLocaleString()}편, 포함 ${collected.size.toLocaleString()}편, 제외 ${excludedIds.size.toLocaleString()}편입니다.`);
   }
 
   return [...collected.values()].map((movie, index) => ({ ...movie, rank: index + 1 }));

@@ -10,7 +10,7 @@ import {
 const currentYear = new Date().getFullYear();
 const availableYears = Array.from({ length: currentYear + 2 - 1888 + 1 }, (_, index) => currentYear + 2 - index);
 type Phase = "idle" | "planning" | "collecting" | "building";
-type DownloadMode = "with-header" | "without-header";
+type DownloadMode = "with-header-statistics" | "rows-only";
 
 async function readApiResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => null);
@@ -20,7 +20,7 @@ async function readApiResponse<T>(response: Response): Promise<T> {
 
 export default function MovieExportPage() {
   const [year, setYear] = useState(currentYear);
-  const [downloadMode, setDownloadMode] = useState<DownloadMode>("with-header");
+  const [downloadMode, setDownloadMode] = useState<DownloadMode>("with-header-statistics");
   const [phase, setPhase] = useState<Phase>("idle");
   const [progress, setProgress] = useState<ExportProgress | null>(null);
   const [movies, setMovies] = useState<ExportMovie[]>([]);
@@ -101,13 +101,13 @@ export default function MovieExportPage() {
     setPhase("building");
     try {
       const { createSelectedReviewsWorkbook } = await import("@/lib/movie-export-workbook");
-      const includeHeader = downloadMode === "with-header";
-      const buffer = await createSelectedReviewsWorkbook(year, selectedMovies, includeHeader);
+      const includeHeaderAndStatistics = downloadMode === "with-header-statistics";
+      const buffer = await createSelectedReviewsWorkbook(year, selectedMovies, includeHeaderAndStatistics);
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = `tmdb-${year}-watched-${selectedMovies.length}${includeHeader ? "-with-header" : "-no-header"}.xlsx`;
+      anchor.download = `tmdb-${year}-watched-${selectedMovies.length}${includeHeaderAndStatistics ? "-with-header-statistics" : "-rows-only"}.xlsx`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
@@ -196,9 +196,9 @@ export default function MovieExportPage() {
             </select>
           </label>
           {phase === "planning" || phase === "collecting" ? (
-            <button type="button" onClick={cancelDownload} className="mt-4 inline-flex h-11 w-full shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 sm:mt-0 sm:w-auto">조회 취소</button>
+            <button type="button" onClick={cancelDownload} className="mt-4 inline-flex h-11 w-auto shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 sm:mt-0">조회 취소</button>
           ) : (
-            <button type="button" onClick={loadMovies} disabled={isRunning} className="mt-4 inline-flex h-11 w-full shrink-0 items-center justify-center rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300 sm:mt-0 sm:w-auto">영화 조회</button>
+            <button type="button" onClick={loadMovies} disabled={isRunning} className="mt-4 inline-flex h-11 w-auto shrink-0 items-center justify-center rounded-lg bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300 sm:mt-0">영화 조회</button>
           )}
         </div>
 
@@ -257,16 +257,16 @@ export default function MovieExportPage() {
 
             <div className="mt-5 rounded-2xl bg-slate-50 p-5 dark:bg-slate-900/80 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end sm:gap-4">
               <label className="block w-full">
-                <span className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">다운로드 형식</span>
+                <span className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">헤더·통계 시트</span>
                 <select
                   value={downloadMode}
                   onChange={(event) => setDownloadMode(event.target.value as DownloadMode)}
                   disabled={isRunning}
                   className="h-14 w-full appearance-auto rounded-xl border border-slate-200 bg-white px-5 text-base font-bold text-slate-950 outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900/30"
-                  aria-label="다운로드 형식"
+                  aria-label="헤더와 통계 시트 포함 여부"
                 >
-                  <option value="with-header">헤더 포함</option>
-                  <option value="without-header">헤더 없음 · 붙여넣기용</option>
+                  <option value="with-header-statistics">헤더 + 통계 시트 포함</option>
+                  <option value="rows-only">헤더/통계 시트 없음 · 붙여넣기용</option>
                 </select>
               </label>
               <button type="button" onClick={copySelected} disabled={isRunning || selectedIds.size === 0} className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 sm:mt-0 sm:w-auto">선택 행 복사</button>

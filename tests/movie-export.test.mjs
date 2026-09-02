@@ -137,7 +137,7 @@ test("중복이나 누락이 있으면 부분 엑셀을 만들지 않는다", as
     movieExport.collectExportMovies(plan, async (window, page) => ({
       ...window, page, totalPages: 2, totalResults: 2, scannedIds: [1], excludedIds: [], movies: [makeMovie(1)],
     })),
-    /예상 2편 중 1편만 검증/,
+    /예상 2편 중 1편만 조회/,
   );
 });
 
@@ -328,6 +328,8 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     assert.equal(selectedWithoutHeader.getCell("E1").value, "Movie 1");
     assert.equal(selectedWithoutHeader.getCell("F1").numFmt, "yyyy-mm-dd");
     assert.equal(selectedWithoutHeader.getTables().length, 0);
+    assert.equal(selectedWithoutHeaderWorkbook.worksheets.length, 1);
+    assert.equal(selectedWithoutHeaderWorkbook.getWorksheet("통계"), undefined);
   } finally {
     await unlink(compiledPath).catch(() => undefined);
   }

@@ -46,7 +46,7 @@ function getDiscoverParams(year: number, window: DateWindow, page: number, query
     language: "ko-KR", include_adult: "false", include_video: "false",
     primary_release_year: String(year), "primary_release_date.gte": window.from,
     "primary_release_date.lte": window.to,
-    "with_runtime.gte": String(MIN_RUNTIME_MINUTES), page: String(page),
+    "with_runtime.gte": String(MIN_RUNTIME_MINUTES), sort_by: "primary_release_date.asc", page: String(page),
   };
   if (query === "global") {
     params["vote_count.gte"] = String(GLOBAL_MIN_VOTE_COUNT);

@@ -61,7 +61,7 @@ export function createSelectedReviewsClipboardText(movies: ExportMovie[]) {
     movie.id,
     movie.title,
     "",
-    "",
+    movie.release_date,
     movie.original_title,
     movie.release_date,
     movie.genres,

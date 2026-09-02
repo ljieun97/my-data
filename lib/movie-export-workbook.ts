@@ -106,7 +106,7 @@ export async function createSelectedReviewsWorkbook(year: number, movies: Export
     movie.id,
     safeText(movie.title),
     "",
-    "",
+    movie.release_date ? new Date(`${movie.release_date}T00:00:00Z`) : null,
     safeText(movie.original_title),
     movie.release_date ? new Date(`${movie.release_date}T00:00:00Z`) : null,
     safeText(movie.genres),

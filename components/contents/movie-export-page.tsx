@@ -2,8 +2,9 @@
 
 import { useRef, useState } from "react";
 import {
-  MIN_RUNTIME_MINUTES, MIN_VOTE_COUNT, collectExportMovies, planExportWindows,
-  type DateWindow, type ExportPage, type ExportProgress, type ExportSummary,
+  GLOBAL_MIN_VOTE_COUNT, KOREAN_MAX_VOTE_COUNT, KOREAN_MIN_VOTE_COUNT,
+  MIN_RUNTIME_MINUTES, collectExportMovies, planExportWindows,
+  type DateWindow, type ExportPage, type ExportPlanItem, type ExportProgress, type ExportQuery, type ExportSummary,
 } from "@/lib/movie-export";
 
 const currentYear = new Date().getFullYear();
@@ -32,16 +33,23 @@ export default function MovieExportPage() {
     setProgress(null);
     setPlannedCount(0);
     setError("");
-    const query = (window: DateWindow, extra: Record<string, string>) => {
-      const params = new URLSearchParams({ year: String(year), from: window.from, to: window.to, ...extra });
+    const query = (window: DateWindow, exportQuery: ExportQuery, extra: Record<string, string>) => {
+      const params = new URLSearchParams({ year: String(year), from: window.from, to: window.to, query: exportQuery, ...extra });
       return `/api/movie-export?${params}`;
     };
 
     try {
-      const plan = await planExportWindows(year, async (window) => {
-        const response = await fetch(query(window, { mode: "summary" }), { signal: controller.signal });
-        return readApiResponse<ExportSummary>(response);
-      });
+      const buildPlan = async (exportQuery: ExportQuery): Promise<ExportPlanItem[]> => {
+        const windows = await planExportWindows(year, async (window) => {
+          const response = await fetch(query(window, exportQuery, { mode: "summary" }), { signal: controller.signal });
+          return readApiResponse<ExportSummary>(response);
+        });
+        return windows.map((window) => ({ ...window, query: exportQuery }));
+      };
+      const [globalPlan, koreanLowVotePlan] = await Promise.all([
+        buildPlan("global"), buildPlan("korean-low-vote"),
+      ]);
+      const plan = [...globalPlan, ...koreanLowVotePlan];
       const expected = plan.reduce((sum, window) => sum + window.totalResults, 0);
       setPlannedCount(expected);
       if (expected === 0) throw new Error(`${year}년 조건에 맞는 영화가 없습니다.`);
@@ -50,7 +58,7 @@ export default function MovieExportPage() {
       const movies = await collectExportMovies(
         plan,
         async (window, page) => {
-          const response = await fetch(query(window, { page: String(page) }), { signal: controller.signal });
+          const response = await fetch(query(window, window.query, { page: String(page) }), { signal: controller.signal });
           return readApiResponse<ExportPage>(response);
         },
         setProgress,
@@ -101,7 +109,7 @@ export default function MovieExportPage() {
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">TMDB Export</p>
         <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">영화 엑셀 다운로드</h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-          연도를 선택하면 투표가 {MIN_VOTE_COUNT}개 이상이고 상영시간이 {MIN_RUNTIME_MINUTES}분 이상이며 한국어 줄거리가 있는 영화를 수집합니다.
+          연도를 선택하면 전체 영화는 투표가 {GLOBAL_MIN_VOTE_COUNT}개 이상, 한국 영화는 {KOREAN_MIN_VOTE_COUNT}개 이상이며 상영시간이 {MIN_RUNTIME_MINUTES}분 이상이고 한국어 줄거리가 있는 영화를 수집합니다.
           감독이 없는 항목은 제외하고 제작 국가·제작사, 전체 출연진도 포함합니다.
         </p>
 
@@ -141,6 +149,7 @@ export default function MovieExportPage() {
         </p>
         <div className="mt-5 grid gap-3 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-3">
           <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">연도 단위 조회</strong>전체 페이지 수집</div>
+          <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">투표수 기준</strong>한국 {KOREAN_MIN_VOTE_COUNT}~{KOREAN_MAX_VOTE_COUNT}표 추가 수집</div>
           <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">40분 이상</strong>단편·미등록 제외</div>
           <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">한국어 줄거리</strong>줄거리 미등록 제외</div>
           <div className="rounded-xl border border-slate-200/70 p-4 dark:border-slate-800"><strong className="block text-slate-950 dark:text-white">상세 항목</strong>제작진·전체 배우</div>

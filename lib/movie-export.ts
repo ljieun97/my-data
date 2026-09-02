@@ -1,6 +1,10 @@
-export const MIN_VOTE_COUNT = 2;
+export const GLOBAL_MIN_VOTE_COUNT = 11;
+export const KOREAN_MIN_VOTE_COUNT = 1;
+export const KOREAN_MAX_VOTE_COUNT = GLOBAL_MIN_VOTE_COUNT - 1;
 export const MIN_RUNTIME_MINUTES = 40;
 export const TMDB_MAX_PAGE = 500;
+
+export type ExportQuery = "global" | "korean-low-vote";
 
 export type TmdbMovie = {
   id: number;
@@ -28,7 +32,9 @@ export type ExportMovie = TmdbMovie & {
 
 export type DateWindow = { from: string; to: string };
 export type ExportSummary = DateWindow & { totalPages: number; totalResults: number };
+export type ExportPlanItem = ExportSummary & { query: ExportQuery };
 export type ExportPage = ExportSummary & {
+  query: ExportQuery;
   page: number;
   movies: ExportMovie[];
   scannedIds: number[];
@@ -41,7 +47,7 @@ export type ExportProgress = {
   expectedMovies: number;
   collectedMovies: number;
   excludedMovies: number;
-  window: DateWindow;
+  window: ExportPlanItem;
   page: number;
 };
 
@@ -105,8 +111,8 @@ export async function planExportWindows(
 }
 
 export async function collectExportMovies(
-  plan: ExportSummary[],
-  requestPage: (window: DateWindow, page: number) => Promise<ExportPage>,
+  plan: ExportPlanItem[],
+  requestPage: (window: ExportPlanItem, page: number) => Promise<ExportPage>,
   onProgress?: (progress: ExportProgress) => void,
 ): Promise<ExportMovie[]> {
   const pagesByWindow = plan.map((window) => window.totalPages);
@@ -123,6 +129,7 @@ export async function collectExportMovies(
     for (let page = 1; page <= pagesByWindow[index]; page++) {
       const result = await requestPage(window, page);
       if (result.from !== window.from || result.to !== window.to || result.page !== page
+        || result.query !== window.query
         || !Number.isInteger(result.totalPages) || result.totalPages < 0 || result.totalPages > TMDB_MAX_PAGE
         || !Number.isInteger(result.totalResults) || result.totalResults < 0
         || !Array.isArray(result.movies) || !Array.isArray(result.scannedIds) || !Array.isArray(result.excludedIds)) {
@@ -145,8 +152,12 @@ export async function collectExportMovies(
       }
       const accountedOnPage = new Set<number>();
       for (const movie of result.movies) {
+        const voteCount = movie.vote_count ?? 0;
+        const hasValidVoteCount = window.query === "global"
+          ? voteCount >= GLOBAL_MIN_VOTE_COUNT
+          : voteCount >= KOREAN_MIN_VOTE_COUNT && voteCount <= KOREAN_MAX_VOTE_COUNT;
         if (movie.runtime < MIN_RUNTIME_MINUTES
-          || (movie.vote_count ?? 0) < MIN_VOTE_COUNT
+          || !hasValidVoteCount
           || !movie.overview?.trim()
           || !movie.directors.trim()) {
           throw new Error("내보내기 조건에 맞지 않는 영화가 포함되었습니다.");

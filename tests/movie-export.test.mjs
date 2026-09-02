@@ -14,7 +14,7 @@ const movieExport = await import(`data:text/javascript;base64,${Buffer.from(js).
 const makeMovie = (id, popularity = id) => ({
   id, rank: 0, runtime: 40, title: `Movie ${id}`, original_title: `Movie ${id}`,
   release_date: "2025-01-01", genre_ids: [], original_language: "en",
-  vote_average: 5, vote_count: 2, popularity, overview: "Overview", poster_path: null,
+  vote_average: 5, vote_count: 11, popularity, overview: "Overview", poster_path: null,
   genres: "", countries: "", companies: "", directors: "Director", actors: "",
 });
 
@@ -54,7 +54,7 @@ test("500페이지가 넘을 때만 날짜 구간을 겹치지 않게 나눈다"
 });
 
 test("TOP 제한 없이 모든 페이지를 모으고 조회 순서를 유지한다", async () => {
-  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 2, totalResults: 3 }];
+  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 2, totalResults: 3, query: "global" }];
   const movies = await movieExport.collectExportMovies(plan, async (window, page) => ({
     ...window, page, totalPages: 2, totalResults: 3,
     scannedIds: page === 1 ? [1, 2] : [3],
@@ -65,10 +65,24 @@ test("TOP 제한 없이 모든 페이지를 모으고 조회 순서를 유지한
   assert.deepEqual(movies.map((movie) => movie.rank), [1, 2, 3]);
 });
 
+test("전체 11표 이상과 한국 1~10표 조회 결과를 하나로 합친다", async () => {
+  const plan = [
+    { from: "2025-01-01", to: "2025-12-31", totalPages: 1, totalResults: 1, query: "global" },
+    { from: "2025-01-01", to: "2025-12-31", totalPages: 1, totalResults: 1, query: "korean-low-vote" },
+  ];
+  const movies = await movieExport.collectExportMovies(plan, async (window, page) => ({
+    ...window, page, totalPages: 1, totalResults: 1,
+    scannedIds: [window.query === "global" ? 1 : 2], excludedIds: [],
+    movies: [{ ...makeMovie(window.query === "global" ? 1 : 2), vote_count: window.query === "global" ? 11 : 1 }],
+  }));
+  assert.deepEqual(movies.map((movie) => movie.id), [1, 2]);
+  assert.deepEqual(movies.map((movie) => movie.rank), [1, 2]);
+});
+
 test("여러 날짜 구간의 모든 페이지를 빠짐없이 수집한다", async () => {
   const plan = [
-    { from: "2025-01-01", to: "2025-01-31", totalPages: 2, totalResults: 2 },
-    { from: "2025-02-01", to: "2025-02-28", totalPages: 2, totalResults: 2 },
+    { from: "2025-01-01", to: "2025-01-31", totalPages: 2, totalResults: 2, query: "global" },
+    { from: "2025-02-01", to: "2025-02-28", totalPages: 2, totalResults: 2, query: "global" },
   ];
   const requested = [];
   const progress = [];
@@ -88,7 +102,7 @@ test("여러 날짜 구간의 모든 페이지를 빠짐없이 수집한다", as
 });
 
 test("조회 중 TMDB 전체 편수가 바뀌면 새 페이지 수에 맞춰 계속 수집한다", async () => {
-  const plan = [{ from: "2025-01-01", to: "2025-12-31", totalPages: 2, totalResults: 2 }];
+  const plan = [{ from: "2025-01-01", to: "2025-12-31", totalPages: 2, totalResults: 2, query: "global" }];
   const requested = [];
   const movies = await movieExport.collectExportMovies(plan, async (window, page) => {
     requested.push(page);
@@ -102,7 +116,7 @@ test("조회 중 TMDB 전체 편수가 바뀌면 새 페이지 수에 맞춰 계
 });
 
 test("중복이나 누락이 있으면 부분 엑셀을 만들지 않는다", async () => {
-  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 2, totalResults: 2 }];
+  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 2, totalResults: 2, query: "global" }];
   await assert.rejects(
     movieExport.collectExportMovies(plan, async (window, page) => ({
       ...window, page, totalPages: 2, totalResults: 2, scannedIds: [1], excludedIds: [], movies: [makeMovie(1)],
@@ -112,7 +126,7 @@ test("중복이나 누락이 있으면 부분 엑셀을 만들지 않는다", as
 });
 
 test("목록 필터와 상세 상영시간이 다른 항목은 검증 후 제외한다", async () => {
-  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 1, totalResults: 2 }];
+  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 1, totalResults: 2, query: "global" }];
   const movies = await movieExport.collectExportMovies(plan, async (window, page) => ({
     ...window, page, totalPages: 1, totalResults: 2,
     scannedIds: [1, 2], excludedIds: [2], movies: [makeMovie(1)],
@@ -121,7 +135,7 @@ test("목록 필터와 상세 상영시간이 다른 항목은 검증 후 제외
 });
 
 test("한국어 줄거리가 없는 영화가 포함되면 내보내기를 중단한다", async () => {
-  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 1, totalResults: 1 }];
+  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 1, totalResults: 1, query: "global" }];
   await assert.rejects(
     movieExport.collectExportMovies(plan, async (window, page) => ({
       ...window, page, totalPages: 1, totalResults: 1,
@@ -132,7 +146,7 @@ test("한국어 줄거리가 없는 영화가 포함되면 내보내기를 중�
 });
 
 test("감독이 없는 영화가 포함되면 내보내기를 중단한다", async () => {
-  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 1, totalResults: 1 }];
+  const plan = [{ from: "2025-01-01", to: "2025-01-31", totalPages: 1, totalResults: 1, query: "global" }];
   await assert.rejects(
     movieExport.collectExportMovies(plan, async (window, page) => ({
       ...window, page, totalPages: 1, totalResults: 1,
@@ -167,7 +181,7 @@ test("엑셀에 선택 목록과 TMDB ID 기반 감상기록을 만든다", asyn
     assert.equal(sheet.getCell("A4").value, "감상여부");
     assert.equal(sheet.getCell("A5").value, "미감상");
     assert.equal(sheet.getCell("M5").value, 40);
-    assert.equal(sheet.getCell("N5").value, 2);
+    assert.equal(sheet.getCell("N5").value, 11);
     assert.deepEqual(sheet.getRow(4).values.slice(1, 15), [
       "감상여부", "TMDB ID", "한국어 제목", "원제", "개봉일", "장르", "대표 제작국가", "대표 제작사", "감독",
       "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수",

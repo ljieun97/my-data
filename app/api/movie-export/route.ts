@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  MIN_RUNTIME_MINUTES, MIN_VOTE_COUNT, TMDB_MAX_PAGE, isWindowInYear, validateYear,
-  type DateWindow, type ExportMovie, type TmdbMovie,
+  GLOBAL_MIN_VOTE_COUNT, KOREAN_MAX_VOTE_COUNT, KOREAN_MIN_VOTE_COUNT,
+  MIN_RUNTIME_MINUTES, TMDB_MAX_PAGE, isWindowInYear, validateYear,
+  type DateWindow, type ExportMovie, type ExportQuery, type TmdbMovie,
 } from "@/lib/movie-export";
 
 export const dynamic = "force-dynamic";
@@ -40,13 +41,21 @@ async function fetchTmdb<T>(path: string, params: Record<string, string>, apiKey
   throw new Error("TMDB request failed after retries");
 }
 
-function getDiscoverParams(year: number, window: DateWindow, page: number) {
-  return {
+function getDiscoverParams(year: number, window: DateWindow, page: number, query: ExportQuery) {
+  const params: Record<string, string> = {
     language: "ko-KR", include_adult: "false", include_video: "false",
     primary_release_year: String(year), "primary_release_date.gte": window.from,
-    "primary_release_date.lte": window.to, "vote_count.gte": String(MIN_VOTE_COUNT),
+    "primary_release_date.lte": window.to,
     "with_runtime.gte": String(MIN_RUNTIME_MINUTES), page: String(page),
   };
+  if (query === "global") {
+    params["vote_count.gte"] = String(GLOBAL_MIN_VOTE_COUNT);
+  } else {
+    params["vote_count.gte"] = String(KOREAN_MIN_VOTE_COUNT);
+    params["vote_count.lte"] = String(KOREAN_MAX_VOTE_COUNT);
+    params.with_origin_country = "KR";
+  }
+  return params;
 }
 
 function getRequestInput(request: NextRequest) {
@@ -54,8 +63,10 @@ function getRequestInput(request: NextRequest) {
   const window = { from: request.nextUrl.searchParams.get("from") ?? "", to: request.nextUrl.searchParams.get("to") ?? "" };
   const page = Number(request.nextUrl.searchParams.get("page") ?? "1");
   const mode = request.nextUrl.searchParams.get("mode") === "summary" ? "summary" : "page";
+  const queryParam = request.nextUrl.searchParams.get("query") ?? "global";
+  if (queryParam !== "global" && queryParam !== "korean-low-vote") return null;
   if (!year || !isWindowInYear(window, year) || !Number.isInteger(page) || page < 1 || page > TMDB_MAX_PAGE) return null;
-  return { year, window, page, mode } as const;
+  return { year, window, page, mode, query: queryParam satisfies ExportQuery } as const;
 }
 
 function normalizeMovie(movie: TmdbMovie, details: DetailResponse, rank: number): ExportMovie {
@@ -83,8 +94,8 @@ export async function GET(request: NextRequest) {
   const input = getRequestInput(request);
   if (!input) return NextResponse.json({ error: "조회 연도, 날짜 범위 또는 페이지가 올바르지 않습니다." }, { status: 400 });
   try {
-    const discover = await fetchTmdb<DiscoverResponse>("/discover/movie", getDiscoverParams(input.year, input.window, input.page), apiKey, request.signal);
-    const base = { ...input.window, page: input.page, totalPages: discover.total_pages, totalResults: discover.total_results };
+    const discover = await fetchTmdb<DiscoverResponse>("/discover/movie", getDiscoverParams(input.year, input.window, input.page, input.query), apiKey, request.signal);
+    const base = { ...input.window, query: input.query, page: input.page, totalPages: discover.total_pages, totalResults: discover.total_results };
     if (input.mode === "summary") return NextResponse.json(base);
     const movies: ExportMovie[] = [];
     const excludedIds: number[] = [];
@@ -95,8 +106,12 @@ export async function GET(request: NextRequest) {
       )));
       details.forEach((detail, index) => {
         const movie = normalizeMovie(batch[index], detail, offset + index + 1);
+        const voteCount = movie.vote_count ?? 0;
+        const hasValidVoteCount = input.query === "global"
+          ? voteCount >= GLOBAL_MIN_VOTE_COUNT
+          : voteCount >= KOREAN_MIN_VOTE_COUNT && voteCount <= KOREAN_MAX_VOTE_COUNT;
         if (movie.runtime >= MIN_RUNTIME_MINUTES
-          && (movie.vote_count ?? 0) >= MIN_VOTE_COUNT
+          && hasValidVoteCount
           && movie.overview?.trim()
           && movie.directors.trim()) movies.push(movie);
         else excludedIds.push(movie.id);

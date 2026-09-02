@@ -13,6 +13,7 @@ const TMDB_API_BASE = "https://api.themoviedb.org/3";
 const DETAIL_BATCH_SIZE = 5;
 
 type DiscoverResponse = { page: number; results: TmdbMovie[]; total_pages: number; total_results: number };
+type SearchResponse = { page: number; results: TmdbMovie[]; total_pages: number; total_results: number };
 type DetailResponse = TmdbMovie & {
   runtime?: number;
   genres?: Array<{ id: number; name: string }>;
@@ -59,6 +60,12 @@ function getDiscoverParams(year: number, window: DateWindow, page: number, query
 }
 
 function getRequestInput(request: NextRequest) {
+  const movieId = Number(request.nextUrl.searchParams.get("movieId") ?? "");
+  if (Number.isInteger(movieId) && movieId > 0) return { mode: "movie-id", movieId } as const;
+
+  const title = request.nextUrl.searchParams.get("title")?.trim();
+  if (title) return { mode: "title-search", title } as const;
+
   const year = validateYear(request.nextUrl.searchParams.get("year"));
   const window = { from: request.nextUrl.searchParams.get("from") ?? "", to: request.nextUrl.searchParams.get("to") ?? "" };
   const page = Number(request.nextUrl.searchParams.get("page") ?? "1");
@@ -67,6 +74,19 @@ function getRequestInput(request: NextRequest) {
   if (queryParam !== "global" && queryParam !== "korean-low-vote") return null;
   if (!year || !isWindowInYear(window, year) || !Number.isInteger(page) || page < 1 || page > TMDB_MAX_PAGE) return null;
   return { year, window, page, mode, query: queryParam satisfies ExportQuery } as const;
+}
+
+function normalizeTitle(value: string) {
+  return value.toLowerCase().replace(/[\s:!?'".,()-]/g, "");
+}
+
+function selectBestSearchMatch(results: TmdbMovie[], title: string) {
+  if (!results.length) return null;
+  const normalizedTitle = normalizeTitle(title);
+  return results.find((movie) => {
+    const candidates = [movie.title, movie.original_title].filter(Boolean) as string[];
+    return candidates.some((candidate) => normalizeTitle(candidate) === normalizedTitle);
+  }) ?? results[0];
 }
 
 function normalizeMovie(movie: TmdbMovie, details: DetailResponse, rank: number): ExportMovie {
@@ -94,6 +114,35 @@ export async function GET(request: NextRequest) {
   const input = getRequestInput(request);
   if (!input) return NextResponse.json({ error: "조회 연도, 날짜 범위 또는 페이지가 올바르지 않습니다." }, { status: 400 });
   try {
+    if (input.mode === "movie-id") {
+      const detail = await fetchTmdb<DetailResponse>(
+        `/movie/${input.movieId}`, { language: "ko-KR", append_to_response: "credits" }, apiKey, request.signal,
+      );
+      return NextResponse.json({ movie: normalizeMovie(detail, detail, 1) });
+    }
+
+    if (input.mode === "title-search") {
+      const search = await fetchTmdb<SearchResponse>("/search/movie", {
+        query: input.title,
+        language: "ko-KR",
+        region: "KR",
+        include_adult: "false",
+        page: "1",
+      }, apiKey, request.signal);
+      const results = (search.results ?? []).slice(0, 6);
+      if (request.nextUrl.searchParams.get("suggest") === "1") {
+        return NextResponse.json({ results });
+      }
+      const matchedMovie = selectBestSearchMatch(results, input.title);
+      if (!matchedMovie) {
+        return NextResponse.json({ error: "제목과 일치하는 영화를 찾지 못했습니다." }, { status: 404 });
+      }
+      const detail = await fetchTmdb<DetailResponse>(
+        `/movie/${matchedMovie.id}`, { language: "ko-KR", append_to_response: "credits" }, apiKey, request.signal,
+      );
+      return NextResponse.json({ movie: normalizeMovie(matchedMovie, detail, 1) });
+    }
+
     const discover = await fetchTmdb<DiscoverResponse>("/discover/movie", getDiscoverParams(input.year, input.window, input.page, input.query), apiKey, request.signal);
     const base = { ...input.window, query: input.query, page: input.page, totalPages: discover.total_pages, totalResults: discover.total_results };
     if (input.mode === "summary") return NextResponse.json(base);

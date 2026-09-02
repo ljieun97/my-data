@@ -208,21 +208,19 @@ test("엑셀에 선택 목록과 감상기록을 만든다", async () => {
     assert.equal(sheet.getColumn(14).hidden, true);
     assert.match(sheet.getCell("N5").value.formula, /COUNTIF\(\$A\$5:A5,"감상"\)/);
     assert.equal(table.table.columns.every((column) => column.filterButton !== false), true);
-    assert.equal(table.table.style.theme, "TableStyleLight1");
+    assert.equal(table.table.style.theme, "TableStyleMedium2");
     assert.equal(table.table.style.showRowStripes, false);
-    assert.equal(sheet.getCell("B5").border.bottom.style, "thin");
-    assert.equal(sheet.getCell("B5").border.right.color.argb, "FFD9D9D9");
     assert.equal(sheet.getCell("A5").dataValidation.formulae[0], "SelectionOptions");
     assert.equal(sheet.getCell("D5").dataValidation, undefined);
 
     const reviews = workbook.getWorksheet("감상기록");
     const reviewTable = reviews.getTable("MovieReviews");
+    assert.equal(reviews.properties.defaultRowHeight, 48);
     assert.equal(reviews.views[0].xSplit, 3);
     assert.equal(reviews.views[0].ySplit, 4);
     assert.equal(reviews.views[0].activeCell, "D5");
-    assert.equal(reviewTable.table.style.theme, "TableStyleLight1");
+    assert.equal(reviewTable.table.style.theme, "TableStyleMedium2");
     assert.equal(reviewTable.table.style.showRowStripes, false);
-    assert.equal(reviews.getCell("B5").border.right.style, "thin");
     assert.deepEqual(reviewTable.table.columns.map((column) => column.name), [
       "한국어 제목", "내 별점", "감상날짜", "개봉일", "장르", "대표 제작국가",
       "대표 제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수", "_식별자",
@@ -238,6 +236,7 @@ test("엑셀에 선택 목록과 감상기록을 만든다", async () => {
     assert.equal(reviews.getCell("B5").dataValidation.formulae[0], "RatingOptions");
     assert.equal(reviews.getColumn(2).width, 16);
     assert.equal(reviews.getColumn(14).hidden, true);
+    assert.equal(reviews.getRow(5).height, 48);
     assert.equal(reviews.getCell("O5").value, null);
     assert.match(workbook.getWorksheet("조회정보").getCell("B7").value, /전체 영화 11개 이상 · 한국 영화 1개 이상/);
     const listValues = workbook.getWorksheet("_목록값");
@@ -292,13 +291,13 @@ test("엑셀에 선택 목록과 감상기록을 만든다", async () => {
     assert.equal(copySheet.getCell("A2").value, "미감상");
     assert.equal(copySheet.getCell("B2").value, "Movie 2");
     assert.equal(copySheet.getCell("C1").numFmt, "yyyy-mm-dd");
-    assert.equal(copySheet.getCell("B1").border.bottom.style, "thin");
     assert.equal(copySheet.getTables().length, 0);
 
     const selectedWithHeaderBuffer = await createSelectedReviewsWorkbook(2025, [makeMovie(1), makeMovie(2)], true);
     const selectedWithHeaderWorkbook = new ExcelJS.Workbook();
     await selectedWithHeaderWorkbook.xlsx.load(selectedWithHeaderBuffer);
     const selectedWithHeader = selectedWithHeaderWorkbook.getWorksheet("감상기록");
+    assert.equal(selectedWithHeader.properties.defaultRowHeight, 48);
     assert.equal(selectedWithHeader.rowCount, 3);
     assert.equal(selectedWithHeader.columnCount, 13);
     assert.deepEqual(selectedWithHeader.getRow(1).values.slice(1, 4), ["한국어 제목", "내 별점", "감상날짜"]);
@@ -307,8 +306,8 @@ test("엑셀에 선택 목록과 감상기록을 만든다", async () => {
     assert.equal(selectedWithHeader.getCell("C2").value.toISOString().slice(0, 10), "2025-01-01");
     assert.equal(selectedWithHeader.getCell("C2").numFmt, "yyyy-mm-dd");
     assert.equal(selectedWithHeader.getCell("D2").numFmt, "yyyy-mm-dd");
-    assert.equal(selectedWithHeader.getCell("A2").border.bottom.style, "thin");
-    assert.equal(selectedWithHeader.getTable("MovieReviews").table.style.theme, "TableStyleLight1");
+    assert.equal(selectedWithHeader.getRow(2).height, 48);
+    assert.equal(selectedWithHeader.getTable("MovieReviews").table.style.theme, "TableStyleMedium2");
     assert.equal(selectedWithHeaderWorkbook.worksheets.length, 3);
     const selectedStatistics = selectedWithHeaderWorkbook.getWorksheet("통계");
     assert.equal(selectedStatistics.getCell("B5").value.formula, 'COUNTIF(MovieReviews[한국어 제목],"<>")');
@@ -321,6 +320,7 @@ test("엑셀에 선택 목록과 감상기록을 만든다", async () => {
     const selectedWithoutHeaderWorkbook = new ExcelJS.Workbook();
     await selectedWithoutHeaderWorkbook.xlsx.load(selectedWithoutHeaderBuffer);
     const selectedWithoutHeader = selectedWithoutHeaderWorkbook.getWorksheet("감상기록 복사용");
+    assert.equal(selectedWithoutHeader.properties.defaultRowHeight, 48);
     assert.equal(selectedWithoutHeader.rowCount, 2);
     assert.equal(selectedWithoutHeader.columnCount, 13);
     assert.equal(selectedWithoutHeader.getCell("A1").value, "Movie 1");
@@ -328,7 +328,7 @@ test("엑셀에 선택 목록과 감상기록을 만든다", async () => {
     assert.equal(selectedWithoutHeader.getCell("C1").value.toISOString().slice(0, 10), "2025-01-01");
     assert.equal(selectedWithoutHeader.getCell("C1").numFmt, "yyyy-mm-dd");
     assert.equal(selectedWithoutHeader.getCell("D1").numFmt, "yyyy-mm-dd");
-    assert.equal(selectedWithoutHeader.getCell("A1").border.bottom.style, "thin");
+    assert.equal(selectedWithoutHeader.getRow(1).height, 48);
     assert.equal(selectedWithoutHeader.getTables().length, 0);
     assert.equal(selectedWithoutHeaderWorkbook.worksheets.length, 1);
     assert.equal(selectedWithoutHeaderWorkbook.getWorksheet("통계"), undefined);

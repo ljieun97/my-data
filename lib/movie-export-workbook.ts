@@ -1,9 +1,9 @@
 import ExcelJS from "exceljs";
 import type { ExportMovie } from "./movie-export";
 
-const DATA_ROW_HEIGHT = 36;
 const MAX_TEXT_FIT_WIDTH = 45;
 const OVERVIEW_COLUMN_WIDTH = 50;
+const REVIEW_ROW_HEIGHT = 48;
 
 function safeText(value: unknown) {
   const text = String(value ?? "");
@@ -77,13 +77,6 @@ export async function createCopyWorkbook(year: number, movies: ExportMovie[]) {
     7: 18, 8: 30, 9: 10, 10: OVERVIEW_COLUMN_WIDTH, 11: 16, 12: 12,
   });
   sheet.getColumn(3).numFmt = "yyyy-mm-dd";
-  rows.forEach((_, index) => {
-    const row = sheet.getRow(index + 1);
-    row.alignment = { vertical: "top", wrapText: true };
-    row.height = DATA_ROW_HEIGHT;
-  });
-  addGrid(sheet, 1, rows.length, columns.length);
-
   return workbook.xlsx.writeBuffer();
 }
 
@@ -95,7 +88,7 @@ export async function createSelectedReviewsWorkbook(year: number, movies: Export
 
   const sheet = workbook.addWorksheet(includeHeader ? "감상기록" : "감상기록 복사용", {
     views: includeHeader ? [{ state: "frozen", xSplit: 3, ySplit: 1, activeCell: "D2", showGridLines: false }] : undefined,
-    properties: { defaultRowHeight: 20 },
+    properties: { defaultRowHeight: REVIEW_ROW_HEIGHT },
   });
   const columns = [
     "한국어 제목", "내 별점", "감상날짜", "개봉일", "장르", "대표 제작국가",
@@ -123,7 +116,7 @@ export async function createSelectedReviewsWorkbook(year: number, movies: Export
       ref: "A1",
       headerRow: true,
       totalsRow: false,
-      style: { theme: "TableStyleLight1", showRowStripes: false },
+      style: { theme: "TableStyleMedium2", showRowStripes: false },
       columns: columns.map((name) => ({ name, filterButton: true })),
       rows,
     });
@@ -144,12 +137,12 @@ export async function createSelectedReviewsWorkbook(year: number, movies: Export
   });
   sheet.getColumn(3).numFmt = "yyyy-mm-dd";
   sheet.getColumn(4).numFmt = "yyyy-mm-dd";
+  if (includeHeader) {
+    sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
+  }
   rows.forEach((_, index) => {
-    const row = sheet.getRow(index + (includeHeader ? 2 : 1));
-    row.alignment = { vertical: "top", wrapText: true };
-    row.height = DATA_ROW_HEIGHT;
+    sheet.getRow(index + (includeHeader ? 2 : 1)).height = REVIEW_ROW_HEIGHT;
   });
-  addGrid(sheet, 1, rows.length + (includeHeader ? 1 : 0), columns.length);
 
   if (includeHeader) {
     const ratingLabels = ["☆", "★", "★☆", "★★", "★★☆", "★★★", "★★★☆", "★★★★", "★★★★☆", "★★★★★"];
@@ -285,7 +278,7 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     ref: "A4",
     headerRow: true,
     totalsRow: false,
-    style: { theme: "TableStyleLight1", showRowStripes: false },
+    style: { theme: "TableStyleMedium2", showRowStripes: false },
     columns: columns.map((name) => ({ name, filterButton: true })),
     rows,
   });
@@ -303,20 +296,6 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
         error: "목록에서 '미감상' 또는 '감상'을 골라 주세요.",
       };
     }
-    sheet.addConditionalFormatting({
-      ref: `A5:L${movies.length + 4}`,
-      rules: [{
-        type: "expression",
-        priority: 1,
-        formulae: ['$A5="감상"'],
-        style: {
-          fill: {
-            type: "pattern", pattern: "solid",
-            fgColor: { argb: "FFE5E7EB" }, bgColor: { argb: "FFE5E7EB" },
-          },
-        },
-      }],
-    });
   }
 
   sheet.getRow(4).height = 28;
@@ -325,18 +304,9 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   sheet.getColumn(13).hidden = true;
   sheet.getColumn(14).hidden = true;
 
-  movies.forEach((movie, index) => {
-    const rowNumber = index + 5;
-    const row = sheet.getRow(rowNumber);
-    row.alignment = { vertical: "top", wrapText: true };
-    row.height = DATA_ROW_HEIGHT;
-  });
-
-  addGrid(sheet, 4, movies.length + 4, 12);
-
   const reviews = workbook.addWorksheet("감상기록", {
     views: [{ state: "frozen", xSplit: 3, ySplit: 4, activeCell: "D5", showGridLines: false }],
-    properties: { defaultRowHeight: 20 },
+    properties: { defaultRowHeight: REVIEW_ROW_HEIGHT },
   });
   reviews.mergeCells("A1:N1");
   reviews.getCell("A1").value = "감상기록";
@@ -375,7 +345,7 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
     ref: "A4",
     headerRow: true,
     totalsRow: false,
-    style: { theme: "TableStyleLight1", showRowStripes: false },
+    style: { theme: "TableStyleMedium2", showRowStripes: false },
     columns: [
       "한국어 제목", "내 별점", "감상날짜", "개봉일", "장르", "대표 제작국가",
       "대표 제작사", "감독", "배우 전체", "원어", "한국어 줄거리", "상영시간(분)", "투표수", "_식별자",
@@ -413,13 +383,10 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   reviews.getColumn(4).numFmt = "yyyy-mm-dd";
   reviews.getColumn(11).alignment = { vertical: "top", wrapText: true };
   reviews.getColumn(14).hidden = true;
-  reviews.getRow(4).height = 28;
   for (let rowNumber = 5; rowNumber < reviewRows.length + 5; rowNumber++) {
-    reviews.getRow(rowNumber).height = DATA_ROW_HEIGHT;
+    reviews.getRow(rowNumber).height = REVIEW_ROW_HEIGHT;
   }
-
-  addGrid(reviews, 4, reviewRows.length + 4, 13);
-
+  reviews.getRow(4).height = 28;
   const statistics = workbook.addWorksheet("통계", {
     views: [{ state: "frozen", ySplit: 4, activeCell: "A5", showGridLines: true }],
     properties: { defaultRowHeight: 22 },
@@ -473,7 +440,7 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   ];
   statistics.addTable({
     name: "MovieViewingStatistics", ref: "A4", headerRow: true, totalsRow: false,
-    style: { theme: "TableStyleLight1", showRowStripes: false },
+    style: { theme: "TableStyleMedium2", showRowStripes: false },
     columns: ["연도", "개봉연도 감상 수", "감상연도 감상 수", "별점 입력 수", "평균 별점", ...statisticRatingLabels].map((name) => ({ name, filterButton: true })),
     rows: [totalRow, ...yearRows],
   });

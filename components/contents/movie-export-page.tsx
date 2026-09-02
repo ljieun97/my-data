@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   GLOBAL_MIN_VOTE_COUNT, KOREAN_MAX_VOTE_COUNT, KOREAN_MIN_VOTE_COUNT,
   MIN_RUNTIME_MINUTES, collectExportMovies, createSelectedReviewsClipboardText, planExportWindows,
@@ -11,6 +11,15 @@ const currentYear = new Date().getFullYear();
 const availableYears = Array.from({ length: currentYear + 2 - 1888 + 1 }, (_, index) => currentYear + 2 - index);
 type Phase = "idle" | "planning" | "collecting" | "building";
 type DownloadMode = "with-header-statistics" | "rows-only";
+type TitleSearchResponse = { movie?: ExportMovie };
+type TitleSuggestion = {
+  id: number;
+  title?: string;
+  original_title?: string;
+  release_date?: string;
+  poster_path?: string | null;
+};
+type TitleSuggestionsResponse = { results?: TitleSuggestion[] };
 
 async function readApiResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => null);
@@ -26,6 +35,11 @@ export default function MovieExportPage() {
   const [movies, setMovies] = useState<ExportMovie[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
   const [search, setSearch] = useState("");
+  const [titleSearch, setTitleSearch] = useState("");
+  const [titleResults, setTitleResults] = useState<TitleSuggestion[]>([]);
+  const [isTitleFocused, setIsTitleFocused] = useState(false);
+  const [isTitleSearching, setIsTitleSearching] = useState(false);
+  const [highlightedTitleIndex, setHighlightedTitleIndex] = useState(0);
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
   const controllerRef = useRef<AbortController | null>(null);
@@ -135,6 +149,58 @@ export default function MovieExportPage() {
     }
   };
 
+  const copyTitleMovie = async (movieId: number, fallbackTitle: string) => {
+    setError("");
+    setCopyMessage("");
+    setPhase("building");
+    try {
+      const response = await fetch(`/api/movie-export?movieId=${movieId}`);
+      const data = await readApiResponse<TitleSearchResponse>(response);
+      if (!data.movie) throw new Error("제목과 일치하는 영화를 찾지 못했습니다.");
+      await navigator.clipboard.writeText(createSelectedReviewsClipboardText([data.movie]));
+      setCopyMessage(`'${data.movie.title || fallbackTitle}' 감상기록 행을 복사했습니다. 감상기록 표의 첫 빈 행에 붙여넣으세요.`);
+      setTitleSearch(data.movie.title || fallbackTitle);
+      setTitleResults([]);
+    } catch (searchError) {
+      setError(searchError instanceof Error ? searchError.message : "영화를 검색하거나 복사하지 못했습니다.");
+    } finally {
+      setPhase("idle");
+    }
+  };
+
+  const copyHighlightedTitle = () => {
+    const selected = titleResults[highlightedTitleIndex] ?? titleResults[0];
+    if (selected) {
+      void copyTitleMovie(selected.id, selected.title || selected.original_title || titleSearch);
+      return;
+    }
+
+    const keyword = titleSearch.trim();
+    if (!keyword) {
+      setError("검색할 영화 제목을 입력해 주세요.");
+      setCopyMessage("");
+      return;
+    }
+
+    void (async () => {
+      setError("");
+      setCopyMessage("");
+      setPhase("building");
+      try {
+        const response = await fetch(`/api/movie-export?title=${encodeURIComponent(keyword)}`);
+        const data = await readApiResponse<TitleSearchResponse>(response);
+        if (!data.movie) throw new Error("제목과 일치하는 영화를 찾지 못했습니다.");
+        await navigator.clipboard.writeText(createSelectedReviewsClipboardText([data.movie]));
+        setCopyMessage(`'${data.movie.title || keyword}' 감상기록 행을 복사했습니다. 감상기록 표의 첫 빈 행에 붙여넣으세요.`);
+        setTitleResults([]);
+      } catch (searchError) {
+        setError(searchError instanceof Error ? searchError.message : "영화를 검색하거나 복사하지 못했습니다.");
+      } finally {
+        setPhase("idle");
+      }
+    })();
+  };
+
   const toggleMovie = (movieId: number) => {
     setCopyMessage("");
     setSelectedIds((current) => {
@@ -166,8 +232,44 @@ export default function MovieExportPage() {
     : phase === "collecting" && progress
       ? `${progressPercent}% · ${progress.scannedMovies.toLocaleString()} / ${progress.expectedMovies.toLocaleString()}편 확인 · ${progress.collectedMovies.toLocaleString()}편 포함 · ${progress.excludedMovies.toLocaleString()}편 제외`
       : phase === "building"
-        ? `${selectedIds.size.toLocaleString()}편을 감상기록 파일로 만드는 중...`
+        ? "감상기록 행을 준비하는 중..."
         : "";
+  const showTitleResults = isTitleFocused && Boolean(titleSearch.trim());
+
+  useEffect(() => {
+    const keyword = titleSearch.trim();
+    if (!keyword) {
+      setTitleResults([]);
+      setHighlightedTitleIndex(0);
+      setIsTitleSearching(false);
+      return;
+    }
+
+    let isCancelled = false;
+    setIsTitleSearching(true);
+    const timerId = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/movie-export?title=${encodeURIComponent(keyword)}&suggest=1`);
+        const data = await readApiResponse<TitleSuggestionsResponse>(response);
+        if (isCancelled) return;
+        setTitleResults(Array.isArray(data.results) ? data.results : []);
+        setHighlightedTitleIndex(0);
+      } catch {
+        if (!isCancelled) {
+          setTitleResults([]);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsTitleSearching(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timerId);
+    };
+  }, [titleSearch]);
 
   return (
     <section className="mx-auto max-w-4xl py-8 sm:py-16">
@@ -179,6 +281,84 @@ export default function MovieExportPage() {
         </p>
 
         <div className="mt-10 rounded-2xl bg-slate-50 p-5 dark:bg-slate-900/80 sm:flex sm:items-end sm:gap-4">
+          <label className="relative block w-full sm:min-w-[18rem] sm:flex-1">
+            <span className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">제목 바로 검색</span>
+            <input
+              type="search"
+              value={titleSearch}
+              onChange={(event) => setTitleSearch(event.target.value)}
+              onFocus={() => setIsTitleFocused(true)}
+              onBlur={() => {
+                window.setTimeout(() => setIsTitleFocused(false), 120);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown" && titleResults.length > 0) {
+                  event.preventDefault();
+                  setHighlightedTitleIndex((current) => (current + 1) % titleResults.length);
+                } else if (event.key === "ArrowUp" && titleResults.length > 0) {
+                  event.preventDefault();
+                  setHighlightedTitleIndex((current) => (current - 1 + titleResults.length) % titleResults.length);
+                } else if (event.key === "Enter") {
+                  event.preventDefault();
+                  copyHighlightedTitle();
+                }
+              }}
+              placeholder="영화 제목"
+              disabled={isRunning}
+              className="h-14 w-full rounded-xl border border-slate-200 bg-white px-5 text-lg font-bold text-slate-950 outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-amber-900/30"
+            />
+            {showTitleResults ? (
+              <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-950">
+                {isTitleSearching ? (
+                  <div className="px-3 py-3 text-sm text-slate-500 dark:text-slate-400">검색 중...</div>
+                ) : null}
+                {!isTitleSearching && titleResults.length === 0 ? (
+                  <div className="px-3 py-3 text-sm text-slate-500 dark:text-slate-400">검색 결과가 없습니다</div>
+                ) : null}
+                {titleResults.map((movie, index) => {
+                  const title = movie.title || movie.original_title || "제목 없음";
+                  const year = movie.release_date ? movie.release_date.slice(0, 4) : "개봉일 미정";
+                  const isHighlighted = index === highlightedTitleIndex;
+                  return (
+                    <button
+                      key={movie.id}
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onMouseEnter={() => setHighlightedTitleIndex(index)}
+                      onClick={() => {
+                        void copyTitleMovie(movie.id, title);
+                      }}
+                      className={[
+                        "flex w-full items-center gap-3 px-3 py-2 text-left transition",
+                        isHighlighted ? "bg-slate-100 dark:bg-slate-900" : "hover:bg-slate-50 dark:hover:bg-slate-900",
+                      ].join(" ")}
+                    >
+                      {movie.poster_path ? (
+                        <img
+                          alt=""
+                          src={`https://image.tmdb.org/t/p/w185${movie.poster_path}`}
+                          className="h-14 w-10 shrink-0 object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-14 w-10 shrink-0 items-center justify-center bg-slate-200 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                          NO
+                        </span>
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</span>
+                        <span className="block text-xs text-slate-500 dark:text-slate-400">{year}</span>
+                      </span>
+                      <span className="shrink-0 text-xs font-semibold text-slate-500 dark:text-slate-400">복사</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+          </label>
+          <button type="button" onClick={copyHighlightedTitle} disabled={isRunning || !titleSearch.trim()} className="mt-3 inline-flex h-9 w-auto shrink-0 items-center justify-center self-start rounded-md border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 sm:mt-0 sm:self-auto">복사</button>
+        </div>
+
+        <div className="mt-4 rounded-2xl bg-slate-50 p-5 dark:bg-slate-900/80 sm:flex sm:items-end sm:gap-4">
           <label className="block w-full sm:min-w-[18rem] sm:flex-1">
             <span className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">개봉 연도</span>
             <select

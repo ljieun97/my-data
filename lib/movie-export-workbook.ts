@@ -44,6 +44,39 @@ function addGrid(sheet: ExcelJS.Worksheet, firstRow: number, lastRow: number, la
   }
 }
 
+function addVisibleColumnBorders(
+  sheet: ExcelJS.Worksheet,
+  firstRow: number,
+  lastRow: number,
+  lastColumn: number,
+  headerRow: number,
+) {
+  const horizontal: Partial<ExcelJS.Border> = { style: "thin", color: { argb: "FFC7CDD4" } };
+  for (let row = firstRow; row <= lastRow; row++) {
+    const vertical: Partial<ExcelJS.Border> = {
+      style: "thin",
+      color: { argb: row === headerRow ? "FFFFFFFF" : "FF9CA3AF" },
+    };
+    for (let column = 1; column <= lastColumn; column++) {
+      sheet.getCell(row, column).border = {
+        top: horizontal,
+        bottom: horizontal,
+        left: vertical,
+        right: vertical,
+      };
+    }
+  }
+}
+
+function styleDataRows(sheet: ExcelJS.Worksheet, firstRow: number, rowCount: number, lastColumn: number) {
+  for (let rowNumber = firstRow; rowNumber < firstRow + rowCount; rowNumber++) {
+    sheet.getRow(rowNumber).height = REVIEW_ROW_HEIGHT;
+    for (let column = 1; column <= lastColumn; column++) {
+      sheet.getCell(rowNumber, column).alignment = { vertical: "top", wrapText: true };
+    }
+  }
+}
+
 export async function createCopyWorkbook(year: number, movies: ExportMovie[]) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "TOVIE";
@@ -77,6 +110,8 @@ export async function createCopyWorkbook(year: number, movies: ExportMovie[]) {
     7: 18, 8: 30, 9: 10, 10: OVERVIEW_COLUMN_WIDTH, 11: 16, 12: 12,
   });
   sheet.getColumn(3).numFmt = "yyyy-mm-dd";
+  styleDataRows(sheet, 1, rows.length, 12);
+  addGrid(sheet, 1, rows.length, 12);
   return workbook.xlsx.writeBuffer();
 }
 
@@ -140,9 +175,9 @@ export async function createSelectedReviewsWorkbook(year: number, movies: Export
   if (includeHeader) {
     sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
   }
-  rows.forEach((_, index) => {
-    sheet.getRow(index + (includeHeader ? 2 : 1)).height = REVIEW_ROW_HEIGHT;
-  });
+  styleDataRows(sheet, includeHeader ? 2 : 1, rows.length, 13);
+  addGrid(sheet, 1, rows.length + (includeHeader ? 1 : 0), 13);
+  if (includeHeader) addVisibleColumnBorders(sheet, 1, rows.length + 1, 13, 1);
 
   if (includeHeader) {
     const ratingLabels = ["☆", "★", "★☆", "★★", "★★☆", "★★★", "★★★☆", "★★★★", "★★★★☆", "★★★★★"];
@@ -303,6 +338,9 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   sheet.getColumn(3).numFmt = "yyyy-mm-dd";
   sheet.getColumn(13).hidden = true;
   sheet.getColumn(14).hidden = true;
+  styleDataRows(sheet, 5, movies.length, 12);
+  addGrid(sheet, 4, movies.length + 4, 12);
+  addVisibleColumnBorders(sheet, 4, movies.length + 4, 12, 4);
 
   const reviews = workbook.addWorksheet("감상기록", {
     views: [{ state: "frozen", xSplit: 3, ySplit: 4, activeCell: "D5", showGridLines: false }],
@@ -383,10 +421,10 @@ export async function createWorkbook(year: number, movies: ExportMovie[]) {
   reviews.getColumn(4).numFmt = "yyyy-mm-dd";
   reviews.getColumn(11).alignment = { vertical: "top", wrapText: true };
   reviews.getColumn(14).hidden = true;
-  for (let rowNumber = 5; rowNumber < reviewRows.length + 5; rowNumber++) {
-    reviews.getRow(rowNumber).height = REVIEW_ROW_HEIGHT;
-  }
+  styleDataRows(reviews, 5, reviewRows.length, 13);
   reviews.getRow(4).height = 28;
+  addGrid(reviews, 4, reviewRows.length + 4, 13);
+  addVisibleColumnBorders(reviews, 4, reviewRows.length + 4, 13, 4);
   const statistics = workbook.addWorksheet("통계", {
     views: [{ state: "frozen", ySplit: 4, activeCell: "A5", showGridLines: true }],
     properties: { defaultRowHeight: 22 },

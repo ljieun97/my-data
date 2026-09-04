@@ -74,6 +74,46 @@ export function createSelectedReviewsClipboardText(movies: ExportMovie[]) {
   ].map(toClipboardCell).join("\t")).join("\r\n");
 }
 
+function escapeClipboardHtml(value: unknown) {
+  return toClipboardCell(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export function createSelectedReviewsClipboardHtml(movies: ExportMovie[]) {
+  const rows = movies.map((movie) => [
+    movie.title,
+    "",
+    movie.release_date,
+    movie.release_date,
+    movie.genres,
+    movie.countries,
+    movie.companies,
+    movie.directors,
+    movie.actors,
+    movie.original_language,
+    movie.overview,
+    movie.runtime,
+    movie.vote_count ?? 0,
+  ]);
+  const cellStyle = [
+    "border-top:1px solid #C7CDD4",
+    "border-bottom:1px solid #C7CDD4",
+    "border-left:1px solid #9CA3AF",
+    "border-right:1px solid #9CA3AF",
+    "vertical-align:top",
+    "white-space:normal",
+  ].join(";");
+
+  return `<table style="border-collapse:collapse"><tbody>${rows.map((row) =>
+    `<tr style="height:48pt;mso-height-source:userset">${row.map((value, index) =>
+      `<td style="${cellStyle}${index === 2 || index === 3 ? ';mso-number-format:&quot;yyyy-mm-dd&quot;' : ""}">${escapeClipboardHtml(value)}</td>`,
+    ).join("")}</tr>`,
+  ).join("")}</tbody></table>`;
+}
+
 export function getYearWindows(year: number): DateWindow[] {
   return [{ from: `${year}-01-01`, to: `${year}-12-31` }];
 }

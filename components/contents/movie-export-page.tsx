@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   GLOBAL_MIN_VOTE_COUNT, KOREAN_MAX_VOTE_COUNT, KOREAN_MIN_VOTE_COUNT,
-  MIN_RUNTIME_MINUTES, collectExportMovies, createSelectedReviewsClipboardText, planExportWindows,
+  MIN_RUNTIME_MINUTES, collectExportMovies, createSelectedReviewsClipboardHtml, createSelectedReviewsClipboardText, planExportWindows,
   type DateWindow, type ExportMovie, type ExportPage, type ExportPlanItem, type ExportProgress, type ExportQuery, type ExportSummary,
 } from "@/lib/movie-export";
 
@@ -25,6 +25,19 @@ async function readApiResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => null);
   if (!response.ok) throw new Error(data?.error || "영화 정보를 조회하지 못했습니다.");
   return data as T;
+}
+
+async function writeSelectedReviewsToClipboard(movies: ExportMovie[]) {
+  const text = createSelectedReviewsClipboardText(movies);
+  if (typeof ClipboardItem !== "undefined" && navigator.clipboard.write) {
+    const html = createSelectedReviewsClipboardHtml(movies);
+    await navigator.clipboard.write([new ClipboardItem({
+      "text/plain": new Blob([text], { type: "text/plain" }),
+      "text/html": new Blob([html], { type: "text/html" }),
+    })]);
+    return;
+  }
+  await navigator.clipboard.writeText(text);
 }
 
 export default function MovieExportPage() {
@@ -140,7 +153,7 @@ export default function MovieExportPage() {
       return;
     }
     try {
-      await navigator.clipboard.writeText(createSelectedReviewsClipboardText(selectedMovies));
+      await writeSelectedReviewsToClipboard(selectedMovies);
       setError("");
       setCopyMessage(`${selectedMovies.length.toLocaleString()}편의 감상기록 행을 복사했습니다. 감상기록 표 바로 아래 첫 빈 행에 붙여넣으세요.`);
     } catch {
@@ -157,7 +170,7 @@ export default function MovieExportPage() {
       const response = await fetch(`/api/movie-export?movieId=${movieId}`);
       const data = await readApiResponse<TitleSearchResponse>(response);
       if (!data.movie) throw new Error("제목과 일치하는 영화를 찾지 못했습니다.");
-      await navigator.clipboard.writeText(createSelectedReviewsClipboardText([data.movie]));
+      await writeSelectedReviewsToClipboard([data.movie]);
       setCopyMessage(`'${data.movie.title || fallbackTitle}' 감상기록 행을 복사했습니다. 감상기록 표의 첫 빈 행에 붙여넣으세요.`);
       setTitleSearch(data.movie.title || fallbackTitle);
       setTitleResults([]);
@@ -190,7 +203,7 @@ export default function MovieExportPage() {
         const response = await fetch(`/api/movie-export?title=${encodeURIComponent(keyword)}`);
         const data = await readApiResponse<TitleSearchResponse>(response);
         if (!data.movie) throw new Error("제목과 일치하는 영화를 찾지 못했습니다.");
-        await navigator.clipboard.writeText(createSelectedReviewsClipboardText([data.movie]));
+        await writeSelectedReviewsToClipboard([data.movie]);
         setCopyMessage(`'${data.movie.title || keyword}' 감상기록 행을 복사했습니다. 감상기록 표의 첫 빈 행에 붙여넣으세요.`);
         setTitleResults([]);
       } catch (searchError) {

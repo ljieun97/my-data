@@ -33,6 +33,21 @@ test("선택한 영화는 엑셀 감상기록 13열에 맞는 행으로 복사�
   assert.equal(rows[1][0], "'=Formula");
 });
 
+test("선택 행 복사용 HTML은 행 높이와 모든 셀의 열 경계선을 포함한다", () => {
+  const html = movieExport.createSelectedReviewsClipboardHtml([
+    { ...makeMovie(1), title: "Movie <One>", overview: "Line 1\nLine 2" },
+    makeMovie(2),
+  ]);
+  assert.equal((html.match(/<tr /g) ?? []).length, 2);
+  assert.equal((html.match(/<td /g) ?? []).length, 26);
+  assert.match(html, /height:48pt/);
+  assert.match(html, /border-left:1px solid #9CA3AF/);
+  assert.match(html, /border-right:1px solid #9CA3AF/);
+  assert.match(html, /mso-number-format:&quot;yyyy-mm-dd&quot;/);
+  assert.match(html, /Movie &lt;One&gt;/);
+  assert.doesNotMatch(html, /<th/);
+});
+
 test("연도와 날짜 범위를 엄격하게 검증한다", () => {
   assert.equal(movieExport.validateYear("2025", 2026), 2025);
   assert.equal(movieExport.validateYear("2025.5", 2026), null);

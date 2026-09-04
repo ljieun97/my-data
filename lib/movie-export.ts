@@ -99,10 +99,10 @@ export function createSelectedReviewsClipboardHtml(movies: ExportMovie[]) {
     movie.vote_count ?? 0,
   ]);
   const cellStyle = [
-    "border-top:1px solid #C7CDD4",
-    "border-bottom:1px solid #C7CDD4",
-    "border-left:1px solid #9CA3AF",
-    "border-right:1px solid #9CA3AF",
+    "border-top:0.5pt solid #C7CDD4",
+    "border-bottom:0.5pt solid #C7CDD4",
+    "border-left:0.5pt solid #9CA3AF",
+    "border-right:0.5pt solid #9CA3AF",
     "vertical-align:top",
     "white-space:normal",
   ].join(";");

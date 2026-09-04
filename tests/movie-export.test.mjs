@@ -41,8 +41,8 @@ test("선택 행 복사용 HTML은 행 높이와 모든 셀의 열 경계선을 
   assert.equal((html.match(/<tr /g) ?? []).length, 2);
   assert.equal((html.match(/<td /g) ?? []).length, 26);
   assert.match(html, /height:48pt/);
-  assert.match(html, /border-left:1px solid #9CA3AF/);
-  assert.match(html, /border-right:1px solid #9CA3AF/);
+  assert.match(html, /border-left:0\.5pt solid #9CA3AF/);
+  assert.match(html, /border-right:0\.5pt solid #9CA3AF/);
   assert.match(html, /mso-number-format:&quot;yyyy-mm-dd&quot;/);
   assert.match(html, /Movie &lt;One&gt;/);
   assert.doesNotMatch(html, /<th/);
